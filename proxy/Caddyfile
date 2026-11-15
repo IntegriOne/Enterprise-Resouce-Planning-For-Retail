@@ -1,0 +1,35 @@
+# ERP local development: /api/graphql is the only public HTTP API.
+erp.localhost {
+    tls /etc/caddy/certs/erp.localhost.crt /etc/caddy/certs/erp.localhost.key
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "same-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        -Server
+    }
+
+    @graphql path /api/graphql
+    @otherAPI path /api /api/*
+
+    route {
+        handle @graphql {
+            reverse_proxy gateway-1:8080 gateway-2:8080 {
+                lb_policy round_robin
+                health_uri /api/graphql?query=%7Bhealth%7D
+            }
+        }
+
+        # Retired REST API paths must not fall through to Next.js.
+        handle @otherAPI {
+            respond "Not Found" 404
+        }
+
+        handle {
+            reverse_proxy frontend-1:3000 frontend-2:3000 {
+                lb_policy round_robin
+            }
+        }
+    }
+}

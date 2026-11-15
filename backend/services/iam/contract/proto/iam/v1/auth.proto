@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+import "google/protobuf/timestamp.proto";
+import "iam/v1/common.proto";
+import "iam/v1/session.proto";
+import "iam/v1/user.proto";
+
+// UserTotpFactor merepresentasikan metadata faktor TOTP milik pengguna tanpa secret terenkripsi.
+message UserTotpFactor {
+  string id = 1;
+  string user_id = 2;
+  int32 key_version = 3;
+  bool is_enabled = 4;
+  google.protobuf.Timestamp confirmed_at = 5;
+  optional int64 last_used_step = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message AuthenticatePasswordRequest {
+  string identifier = 1;
+  string password = 2;
+  string ip_address = 3;
+  string user_agent = 4;
+}
+
+message AuthenticatePasswordResponse {
+  AuthStatus status = 1;
+  User user = 2;
+  IssuedSession issued_session = 3;
+  string redirect_path = 4;
+  bool must_change_password = 5;
+  string mfa_challenge_token = 6;
+  google.protobuf.Timestamp mfa_challenge_expires_at = 7;
+}
+
+message VerifyMfaChallengeRequest {
+  string challenge_token = 1;
+  string code = 2;
+  string ip_address = 3;
+  string user_agent = 4;
+}
+
+message VerifyMfaChallengeResponse {
+  AuthStatus status = 1;
+  User user = 2;
+  IssuedSession issued_session = 3;
+  string redirect_path = 4;
+  bool must_change_password = 5;
+}
+
+message VerifyRecoveryCodeChallengeRequest {
+  string challenge_token = 1;
+  string recovery_code = 2;
+  string ip_address = 3;
+  string user_agent = 4;
+}
+
+message VerifyRecoveryCodeChallengeResponse {
+  AuthStatus status = 1;
+  User user = 2;
+  IssuedSession issued_session = 3;
+  string redirect_path = 4;
+  bool must_change_password = 5;
+}
+
+message VerifySessionMfaRequest {
+  string user_id = 1;
+  string session_id = 2;
+  string code = 3;
+}
+
+message VerifySessionMfaResponse {
+  Session session = 1;
+  string csrf_token = 2;
+}
+
+message ChangePasswordRequest {
+  string user_id = 1;
+  string current_password = 2;
+  string new_password = 3;
+}
+
+message ChangePasswordResponse {
+  bool changed = 1;
+  int64 sessions_revoked = 2;
+  google.protobuf.Timestamp password_changed_at = 3;
+}
+
+message RequestPasswordResetRequest {
+  string email = 1;
+  string identifier = 2;
+}
+
+message RequestPasswordResetResponse {
+  IssuedToken issued_token = 1;
+}
+
+message ConfirmPasswordResetRequest {
+  string raw_token = 1;
+  string new_password = 2;
+}
+
+message ConfirmPasswordResetResponse {}
+
+message EnrollTotpRequest {
+  string user_id = 1;
+  string account_label = 2;
+}
+
+message EnrollTotpResponse {
+  string factor_id = 1;
+  string otp_auth_uri = 2;
+}
+
+message ConfirmTotpRequest {
+  string user_id = 1;
+  string code = 2;
+}
+
+message ConfirmTotpResponse {
+  UserTotpFactor factor = 1;
+  repeated string recovery_codes = 2;
+}
+
+message DisableTotpRequest {
+  string user_id = 1;
+}
+
+message DisableTotpResponse {}
+
+message RegenerateRecoveryCodesRequest {
+  string user_id = 1;
+}
+
+message RegenerateRecoveryCodesResponse {
+  repeated string recovery_codes = 1;
+}
+
+message CountUnusedRecoveryCodesRequest {
+  string user_id = 1;
+}
+
+message CountUnusedRecoveryCodesResponse {
+  int64 count = 1;
+}
+
+// AuthService mengelola autentikasi sandi, MFA TOTP, kode pemulihan, dan rotasi/reset sandi.
+service AuthService {
+  rpc AuthenticatePassword(AuthenticatePasswordRequest) returns (AuthenticatePasswordResponse);
+  rpc VerifyMfaChallenge(VerifyMfaChallengeRequest) returns (VerifyMfaChallengeResponse);
+  rpc VerifyRecoveryCodeChallenge(VerifyRecoveryCodeChallengeRequest) returns (VerifyRecoveryCodeChallengeResponse);
+  rpc VerifySessionMfa(VerifySessionMfaRequest) returns (VerifySessionMfaResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
+  rpc ConfirmPasswordReset(ConfirmPasswordResetRequest) returns (ConfirmPasswordResetResponse);
+  rpc EnrollTotp(EnrollTotpRequest) returns (EnrollTotpResponse);
+  rpc ConfirmTotp(ConfirmTotpRequest) returns (ConfirmTotpResponse);
+  rpc DisableTotp(DisableTotpRequest) returns (DisableTotpResponse);
+  rpc RegenerateRecoveryCodes(RegenerateRecoveryCodesRequest) returns (RegenerateRecoveryCodesResponse);
+  rpc CountUnusedRecoveryCodes(CountUnusedRecoveryCodesRequest) returns (CountUnusedRecoveryCodesResponse);
+}

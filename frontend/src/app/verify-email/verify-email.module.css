@@ -1,0 +1,242 @@
+/* ==========================================================================
+   IntegriOne Verify Email Experience Styling
+   ========================================================================== */
+
+.pageShell {
+  --brand-navy-primary: #133554;
+  --brand-navy-deep: #0b2439;
+  --brand-navy-soft: #e9eef2;
+  --brand-accent: #da414a;
+  --brand-offwhite: #f9fafb;
+  --brand-dark-text: #17202a;
+  --brand-text-muted: #66717c;
+  --brand-border: #dde3e8;
+  --font-display: var(--font-fraunces, "Fraunces", Georgia, serif);
+  --font-ui: var(--font-source-sans-3, "Source Sans 3", sans-serif);
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--brand-offwhite);
+  color: var(--brand-dark-text);
+  font-family: var(--font-ui);
+}
+
+.topNav {
+  height: 68px;
+  background-color: rgba(244, 247, 248, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(221, 227, 232, 0.8);
+}
+
+.topNavInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navBrandLockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.navBrandMark {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: var(--brand-navy-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navBrandText {
+  display: flex;
+  flex-direction: column;
+}
+
+.navBrandName {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--brand-navy-deep);
+  line-height: 1.1;
+}
+
+.navBrandTag {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--brand-text-muted);
+}
+
+.navLink {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--brand-navy-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 150ms ease;
+}
+
+.navLink:hover {
+  color: var(--brand-accent);
+}
+
+.mainContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 40px 32px;
+  border: 1px solid var(--brand-border);
+  box-shadow: 0 10px 30px rgba(11, 36, 57, 0.06);
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.iconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.iconSuccess {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.iconWarning {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+.iconDanger {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.iconInfo {
+  background-color: var(--brand-navy-soft);
+  color: var(--brand-navy-primary);
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 600;
+  color: var(--brand-navy-deep);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.description {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--brand-text-muted);
+  margin: 0 0 12px;
+  max-width: 400px;
+}
+
+.primaryBtn {
+  width: 100%;
+  height: 48px;
+  border-radius: 10px;
+  background-color: var(--brand-navy-primary);
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.primaryBtn:hover {
+  background-color: var(--brand-navy-deep);
+}
+
+.secondaryBtn {
+  width: 100%;
+  height: 48px;
+  border-radius: 10px;
+  background-color: transparent;
+  color: var(--brand-navy-deep);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: 1px solid var(--brand-border);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.secondaryBtn:hover {
+  background-color: var(--brand-navy-soft);
+}
+
+.btnRow {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(19, 53, 84, 0.15);
+  border-top-color: var(--brand-navy-primary);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+  .primaryBtn,
+  .secondaryBtn,
+  .navLink {
+    transition: none;
+  }
+}

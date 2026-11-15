@@ -1,0 +1,90 @@
+name: integrione-iam
+
+services:
+  iam-postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${IAM_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${IAM_POSTGRES_PASSWORD:-iam_dev_local_pass}
+      POSTGRES_DB: ${IAM_POSTGRES_DB:-iam}
+      TZ: ${TZ:-Asia/Jakarta}
+      PGTZ: ${TZ:-Asia/Jakarta}
+    ports:
+      - "127.0.0.1:${IAM_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - iam_pgdata:/var/lib/postgresql
+    networks:
+      - iam-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${IAM_POSTGRES_USER:-postgres} -d ${IAM_POSTGRES_DB:-iam}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  iam:
+    build:
+      context: ../..
+      dockerfile: services/iam/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      iam-postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${IAM_GRPC_PORT:-9001}:9001"
+    environment:
+      TZ: ${TZ:-Asia/Jakarta}
+      APP_ENV: ${APP_ENV:-development}
+      IAM_SERVICE_NAME: ${IAM_SERVICE_NAME:-integrione-iam}
+      IAM_GRPC_HOST: ${IAM_GRPC_HOST:-0.0.0.0}
+      IAM_GRPC_PORT: 9001
+      IAM_GRPC_URL: ${IAM_GRPC_URL:-127.0.0.1:9001}
+      IAM_DATABASE_DSN: postgres://${IAM_POSTGRES_USER:-postgres}:${IAM_POSTGRES_PASSWORD:-iam_dev_local_pass}@iam-postgres:5432/${IAM_POSTGRES_DB:-iam}?sslmode=disable&TimeZone=${TZ:-Asia/Jakarta}
+      IAM_SHUTDOWN_TIMEOUT_SECONDS: ${IAM_SHUTDOWN_TIMEOUT_SECONDS:-10}
+      IAM_TOTP_KEYRING: ${IAM_TOTP_KEYRING:-}
+      IAM_TOTP_ACTIVE_KEY_VERSION: ${IAM_TOTP_ACTIVE_KEY_VERSION:-1}
+      IAM_TOTP_ISSUER: ${IAM_TOTP_ISSUER:-IntegriOne ERP}
+      IAM_CSRF_HMAC_KEYRING: ${IAM_CSRF_HMAC_KEYRING:-}
+      IAM_CSRF_ACTIVE_KEY_VERSION: ${IAM_CSRF_ACTIVE_KEY_VERSION:-1}
+      IAM_INTERNAL_GATEWAY_HMAC_SECRET: ${IAM_INTERNAL_GATEWAY_HMAC_SECRET:-}
+      IAM_MAX_FAILED_LOGIN_ATTEMPTS: ${IAM_MAX_FAILED_LOGIN_ATTEMPTS:-5}
+      IAM_LOGIN_LOCK_DURATION_SECONDS: ${IAM_LOGIN_LOCK_DURATION_SECONDS:-900}
+      IAM_ALLOWED_REDIRECT_PATHS: ${IAM_ALLOWED_REDIRECT_PATHS:-}
+      IAM_REDIS_ENABLED: ${IAM_REDIS_ENABLED:-false}
+      IAM_REDIS_ENV: ${IAM_REDIS_ENV:-development}
+      IAM_REDIS_ADDR: ${IAM_REDIS_ADDR:-}
+      IAM_REDIS_USERNAME: ${IAM_REDIS_USERNAME:-iam_writer}
+      IAM_REDIS_PASSWORD: ${IAM_REDIS_PASSWORD:-}
+      IAM_REDIS_CA_CERT_PATH: ${IAM_REDIS_CA_CERT_PATH:-/etc/integrione/certs/ca.crt}
+      IAM_REDIS_SERVER_NAME: ${IAM_REDIS_SERVER_NAME:-redis}
+      IAM_REDIS_TLS_INSECURE_SKIP_VERIFY: ${IAM_REDIS_TLS_INSECURE_SKIP_VERIFY:-false}
+      IAM_SYSTEM_USER_UID: ${IAM_SYSTEM_USER_UID:-}
+      IAM_SYSTEM_USERNAME: ${IAM_SYSTEM_USERNAME:-systemiam}
+      IAM_SYSTEM_EMAIL: ${IAM_SYSTEM_EMAIL:-systemiam@integrione.local}
+      IAM_SYSTEM_PASSWORD: ${IAM_SYSTEM_PASSWORD:-}
+      IAM_SYSTEM_DISPLAY_NAME: ${IAM_SYSTEM_DISPLAY_NAME:-SystemIAM}
+      IAM_SYSTEM_USER_KIND: ${IAM_SYSTEM_USER_KIND:-system}
+      IAM_SYSTEM_ROLE_CODE: ${IAM_SYSTEM_ROLE_CODE:-superadmin}
+    networks:
+      - iam-internal
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/grpc-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  iam_pgdata:
+
+networks:
+  iam-internal:
+    driver: bridge

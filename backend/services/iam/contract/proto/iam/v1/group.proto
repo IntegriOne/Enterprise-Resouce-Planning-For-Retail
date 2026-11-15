@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+import "google/protobuf/timestamp.proto";
+import "iam/v1/common.proto";
+import "iam/v1/user.proto";
+
+// Group merepresentasikan kelompok pengguna IAM.
+message Group {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  string description = 4;
+  bool is_active = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// GroupMember merepresentasikan keanggotaan pengguna dalam sebuah grup.
+message GroupMember {
+  string group_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+// GroupRole merepresentasikan penugasan peran RBAC ke sebuah grup.
+message GroupRole {
+  string id = 1;
+  string group_id = 2;
+  string role_id = 3;
+  Scope scope = 4;
+  optional string granted_by = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetGroupByIdRequest {
+  string id = 1;
+}
+
+message GetGroupByIdResponse {
+  Group group = 1;
+}
+
+message GetGroupByCodeRequest {
+  string code = 1;
+}
+
+message GetGroupByCodeResponse {
+  Group group = 1;
+}
+
+message ListGroupsRequest {
+  string query = 1;
+  bool active_only = 2;
+  PageRequest page = 3;
+}
+
+message ListGroupsResponse {
+  repeated Group items = 1;
+  PageInfo page = 2;
+}
+
+message CreateGroupRequest {
+  string code = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message CreateGroupResponse {
+  Group group = 1;
+}
+
+message UpdateGroupDetailsRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message UpdateGroupDetailsResponse {
+  Group group = 1;
+}
+
+message ActivateGroupRequest {
+  string id = 1;
+}
+
+message ActivateGroupResponse {
+  Group group = 1;
+}
+
+message DeactivateGroupRequest {
+  string id = 1;
+}
+
+message DeactivateGroupResponse {
+  Group group = 1;
+}
+
+message DeleteGroupRequest {
+  string id = 1;
+}
+
+message DeleteGroupResponse {}
+
+message AddGroupMemberRequest {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+message AddGroupMemberResponse {
+  GroupMember member = 1;
+}
+
+message RemoveGroupMemberRequest {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+message RemoveGroupMemberResponse {}
+
+message ListGroupMembersRequest {
+  string group_id = 1;
+  PageRequest page = 2;
+}
+
+message ListGroupMembersResponse {
+  repeated User items = 1;
+  PageInfo page = 2;
+}
+
+message ListUserGroupsRequest {
+  string user_id = 1;
+}
+
+message ListUserGroupsResponse {
+  repeated Group groups = 1;
+}
+
+message AssignGroupRoleRequest {
+  string group_id = 1;
+  string role_id = 2;
+  ScopeType scope_type = 3;
+  optional string scope_id = 4;
+  optional string granted_by = 5;
+  google.protobuf.Timestamp expires_at = 6;
+}
+
+message AssignGroupRoleResponse {
+  GroupRole group_role = 1;
+}
+
+message RevokeGroupRoleRequest {
+  string assignment_id = 1;
+}
+
+message RevokeGroupRoleResponse {}
+
+message ListGroupRolesRequest {
+  string group_id = 1;
+  bool include_expired = 2;
+}
+
+message ListGroupRolesResponse {
+  repeated GroupRole group_roles = 1;
+}
+
+// GroupService mengelola grup pengguna, keanggotaan grup, dan pewarisan peran.
+service GroupService {
+  rpc GetGroupById(GetGroupByIdRequest) returns (GetGroupByIdResponse);
+  rpc GetGroupByCode(GetGroupByCodeRequest) returns (GetGroupByCodeResponse);
+  rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+  rpc UpdateGroupDetails(UpdateGroupDetailsRequest) returns (UpdateGroupDetailsResponse);
+  rpc ActivateGroup(ActivateGroupRequest) returns (ActivateGroupResponse);
+  rpc DeactivateGroup(DeactivateGroupRequest) returns (DeactivateGroupResponse);
+  rpc DeleteGroup(DeleteGroupRequest) returns (DeleteGroupResponse);
+  rpc AddGroupMember(AddGroupMemberRequest) returns (AddGroupMemberResponse);
+  rpc RemoveGroupMember(RemoveGroupMemberRequest) returns (RemoveGroupMemberResponse);
+  rpc ListGroupMembers(ListGroupMembersRequest) returns (ListGroupMembersResponse);
+  rpc ListUserGroups(ListUserGroupsRequest) returns (ListUserGroupsResponse);
+  rpc AssignGroupRole(AssignGroupRoleRequest) returns (AssignGroupRoleResponse);
+  rpc RevokeGroupRole(RevokeGroupRoleRequest) returns (RevokeGroupRoleResponse);
+  rpc ListGroupRoles(ListGroupRolesRequest) returns (ListGroupRolesResponse);
+}

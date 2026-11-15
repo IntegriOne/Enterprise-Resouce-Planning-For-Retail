@@ -1,0 +1,441 @@
+# Zona 1 — Skema GraphQL Domain RBAC (Role, Permission, Group, Grant, dan Access Snapshot IAM).
+# Seluruh field tipe domain dan input memakai konvensi snake_case serta standar Relay (Node/Edge/Connection).
+
+# Role merepresentasikan peran RBAC dengan Global ID `gid://integrione/role/<uuid>`.
+type Role implements Node {
+  id: ID!
+  _id: ID!
+  code: String!
+  name: String!
+  description: String!
+  management_domain: String!
+  default_redirect_path: String!
+  redirect_priority: Int!
+  is_system: Boolean!
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+
+  # Daftar izin yang terhubung ke Role beserta timestamp penetapan pada edge.
+  permissions(after: String, before: String, first: Int, last: Int): RolePermissionConnection!
+}
+
+# Permission merepresentasikan katalog izin atomik dengan Global ID `gid://integrione/permission/<uuid>`.
+type Permission implements Node {
+  id: ID!
+  _id: ID!
+  code: String!
+  resource: String!
+  action: String!
+  description: String!
+  is_sensitive: Boolean!
+  created_at: Time!
+}
+
+# Group merepresentasikan grup pengguna dan pewarisan peran dengan Global ID `gid://integrione/group/<uuid>`.
+type Group implements Node {
+  id: ID!
+  _id: ID!
+  code: String!
+  name: String!
+  description: String!
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+
+  # Relasi anggota (User) dan peran (Role) pada Group beserta atribut edge-nya.
+  members(after: String, before: String, first: Int, last: Int): GroupMemberConnection!
+  roles(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    include_expired: Boolean = false
+  ): GroupRoleConnection!
+}
+
+type ScopedPermission {
+  permission_code: String!
+  is_sensitive: Boolean!
+  scope: Scope!
+}
+
+type RoleGrant {
+  id: ID!
+  code: String!
+  name: String!
+  priority: Int!
+  default_redirect_path: String!
+}
+
+type AccessSnapshot {
+  principal_id: ID!
+  user_kind: String!
+  status: String!
+  mfa_enabled: Boolean!
+  auth_epoch: Int!
+  perm_revision: Int!
+  recovery_epoch: Int!
+  can_access_identity: Boolean!
+  default_redirect_path: String!
+  allowed_redirect_paths: [String!]!
+  roles: [RoleGrant!]!
+  permissions: [ScopedPermission!]!
+  synced_at_unix: Int!
+  fresh_until_unix: Int!
+}
+
+# --- Edge & Connection Standar Relay (Opsi A) untuk Role, Permission, Group, dan Relasinya ---
+
+# RoleEdge menghubungkan node Role dengan cursor paginasi.
+type RoleEdge {
+  cursor: String!
+  node: Role!
+}
+
+# RoleConnection menyediakan daftar Role dalam format Relay.
+type RoleConnection {
+  edges: [RoleEdge!]!
+  nodes: [Role!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# PermissionEdge menghubungkan node Permission dengan cursor paginasi.
+type PermissionEdge {
+  cursor: String!
+  node: Permission!
+}
+
+# PermissionConnection menyediakan daftar Permission dalam format Relay.
+type PermissionConnection {
+  edges: [PermissionEdge!]!
+  nodes: [Permission!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# GroupEdge menghubungkan node Group dengan cursor paginasi.
+type GroupEdge {
+  cursor: String!
+  node: Group!
+}
+
+# GroupConnection menyediakan daftar Group dalam format Relay.
+type GroupConnection {
+  edges: [GroupEdge!]!
+  nodes: [Group!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# RolePermissionEdge merepresentasikan keterhubungan Role dengan Permission beserta timestamp penetapan.
+type RolePermissionEdge {
+  cursor: String!
+  node: Permission!
+  role_id: ID!
+  created_at: Time!
+}
+
+# RolePermissionConnection menyediakan daftar relasi Permission milik Role dalam format Relay.
+type RolePermissionConnection {
+  edges: [RolePermissionEdge!]!
+  nodes: [Permission!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# UserRoleEdge merepresentasikan penetapan Role ke User beserta metadata scope, pemberi izin, dan masa berlaku.
+type UserRoleEdge {
+  cursor: String!
+  node: Role!
+  assignment_id: ID!
+  user_id: ID!
+  scope: Scope!
+  granted_by: ID
+  expires_at: Time
+  created_at: Time!
+}
+
+# UserRoleConnection menyediakan daftar penetapan Role milik User dalam format Relay.
+type UserRoleConnection {
+  edges: [UserRoleEdge!]!
+  nodes: [Role!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# GroupMemberEdge merepresentasikan keanggotaan User pada Group beserta waktu bergabungnya.
+type GroupMemberEdge {
+  cursor: String!
+  node: User!
+  group_id: ID!
+  created_at: Time!
+}
+
+# GroupMemberConnection menyediakan daftar anggota User pada Group dalam format Relay.
+type GroupMemberConnection {
+  edges: [GroupMemberEdge!]!
+  nodes: [User!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# GroupRoleEdge merepresentasikan penetapan Role ke Group beserta metadata scope, pemberi izin, dan masa berlaku.
+type GroupRoleEdge {
+  cursor: String!
+  node: Role!
+  assignment_id: ID!
+  group_id: ID!
+  scope: Scope!
+  granted_by: ID
+  expires_at: Time
+  created_at: Time!
+}
+
+# GroupRoleConnection menyediakan daftar penetapan Role milik Group dalam format Relay.
+type GroupRoleConnection {
+  edges: [GroupRoleEdge!]!
+  nodes: [Role!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateRoleInput {
+  code: String!
+  name: String!
+  description: String
+  management_domain: String!
+  default_redirect_path: String!
+  redirect_priority: Int = 50
+  is_system: Boolean = false
+}
+
+input UpdateRoleDetailsInput {
+  id: ID!
+  name: String!
+  description: String
+  management_domain: String!
+  default_redirect_path: String!
+  redirect_priority: Int = 50
+}
+
+input AssignUserRoleInput {
+  user_id: ID!
+  role_id: ID!
+  scope_type: ScopeType!
+  scope_id: ID
+  expires_at: Time
+}
+
+input CreateGroupInput {
+  code: String!
+  name: String!
+  description: String
+}
+
+input UpdateGroupDetailsInput {
+  id: ID!
+  name: String!
+  description: String
+}
+
+input AssignGroupRoleInput {
+  group_id: ID!
+  role_id: ID!
+  scope_type: ScopeType!
+  scope_id: ID
+  expires_at: Time
+}
+
+extend type Query {
+  # Operasi baca manajemen peran, izin, dan grup RBAC.
+  # Seluruh argumen ID menerima Global Object ID (`gid://integrione/<resource>/<uuid>`) maupun UUID mentah.
+  roles(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    management_domain: String
+    active_only: Boolean = false
+  ): RoleConnection!
+  role(id: ID!): Role
+  roleByCode(code: String!): Role
+  rolePermissions(
+    role_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): RolePermissionConnection!
+
+  permissions(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    resource: String
+    is_sensitive: Boolean
+  ): PermissionConnection!
+  permission(id: ID!): Permission
+
+  groups(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    active_only: Boolean = false
+  ): GroupConnection!
+  group(id: ID!): Group
+  groupMembers(
+    group_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): GroupMemberConnection!
+  groupRoles(
+    group_id: ID!
+    include_expired: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): GroupRoleConnection!
+}
+
+# Payload hasil mutasi domain manajemen peran dan grup RBAC (implementasi MutationResult).
+type CreateRolePayload implements MutationResult {
+  role: Role
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateRoleDetailsPayload implements MutationResult {
+  role: Role
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateRolePayload implements MutationResult {
+  role: Role
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivateRolePayload implements MutationResult {
+  role: Role
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteRolePayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AssignRolePermissionPayload implements MutationResult {
+  role_permission_edge: RolePermissionEdge
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RevokeRolePermissionPayload implements MutationResult {
+  revoked: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AssignUserRolePayload implements MutationResult {
+  user_role_edge: UserRoleEdge
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RevokeUserRolePayload implements MutationResult {
+  revoked: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type CreateGroupPayload implements MutationResult {
+  group: Group
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateGroupDetailsPayload implements MutationResult {
+  group: Group
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateGroupPayload implements MutationResult {
+  group: Group
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivateGroupPayload implements MutationResult {
+  group: Group
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteGroupPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AddGroupMemberPayload implements MutationResult {
+  group_member_edge: GroupMemberEdge
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RemoveGroupMemberPayload implements MutationResult {
+  removed: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AssignGroupRolePayload implements MutationResult {
+  group_role_edge: GroupRoleEdge
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RevokeGroupRolePayload implements MutationResult {
+  revoked: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Mutation {
+  # Manajemen peran RBAC dan pemberian izin (mutasi relasi mengembalikan Payload standar MutationResult).
+  createRole(input: CreateRoleInput!): CreateRolePayload!
+  updateRoleDetails(input: UpdateRoleDetailsInput!): UpdateRoleDetailsPayload!
+  activateRole(id: ID!): ActivateRolePayload!
+  deactivateRole(id: ID!): DeactivateRolePayload!
+  deleteRole(id: ID!): DeleteRolePayload!
+  assignRolePermission(role_id: ID!, permission_id: ID!): AssignRolePermissionPayload!
+  revokeRolePermission(role_id: ID!, permission_id: ID!): RevokeRolePermissionPayload!
+  assignUserRole(input: AssignUserRoleInput!): AssignUserRolePayload!
+  revokeUserRole(assignment_id: ID!): RevokeUserRolePayload!
+
+  # Manajemen grup pengguna dan pewarisan peran (mutasi relasi mengembalikan Payload standar MutationResult).
+  createGroup(input: CreateGroupInput!): CreateGroupPayload!
+  updateGroupDetails(input: UpdateGroupDetailsInput!): UpdateGroupDetailsPayload!
+  activateGroup(id: ID!): ActivateGroupPayload!
+  deactivateGroup(id: ID!): DeactivateGroupPayload!
+  deleteGroup(id: ID!): DeleteGroupPayload!
+  addGroupMember(group_id: ID!, user_id: ID!): AddGroupMemberPayload!
+  removeGroupMember(group_id: ID!, user_id: ID!): RemoveGroupMemberPayload!
+  assignGroupRole(input: AssignGroupRoleInput!): AssignGroupRolePayload!
+  revokeGroupRole(assignment_id: ID!): RevokeGroupRolePayload!
+}

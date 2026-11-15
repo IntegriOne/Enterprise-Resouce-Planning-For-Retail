@@ -1,0 +1,81 @@
+# Zona 2 — Skema GraphQL Inti Bersama Gateway IntegriOne (`/api/graphql`).
+# File ini HANYA berisi primitif inti lintas domain (bukan motherfile domain).
+# Setiap management mendefinisikan tipe, Edge, Connection, Query, dan Mutation di berkas `<domain>.graphql` masing-masing.
+
+scalar Time
+
+# ScopeType mendefinisikan tingkat lingkup otorisasi lintas domain ERP dan commerce.
+enum ScopeType {
+  GLOBAL
+  LEGAL_ENTITY
+  ORGANIZATION_UNIT
+  FACILITY
+  SUPPLIER_PARTY
+  VENDOR_PARTY
+  SELF
+}
+
+# Scope merepresentasikan pasangan jenis cakupan dan pengenal target opsional.
+type Scope {
+  type: ScopeType!
+  id: ID
+}
+
+# PageInfo membawa metadata paginasi berbasis cursor standar Relay untuk seluruh Connection lintas domain.
+type PageInfo {
+  # endCursor adalah cursor item terakhir pada halaman hasil saat ini.
+  endCursor: String
+  # hasNextPage menandakan apakah masih tersedia halaman berikutnya setelah endCursor.
+  hasNextPage: Boolean!
+  # hasPreviousPage menandakan apakah tersedia halaman sebelumnya sebelum startCursor.
+  hasPreviousPage: Boolean!
+  # startCursor adalah cursor item pertama pada halaman hasil saat ini.
+  startCursor: String
+}
+
+# Node adalah antarmuka Global Object Identification lintas domain (`/api/graphql`).
+# Seluruh entitas persisten domain mengimplementasikan Node dengan Global ID berformat `gid://integrione/<resource>/<uuid>`.
+interface Node {
+  # id adalah Global Object ID persisten untuk refetch lintas domain melalui Query.node.
+  id: ID!
+}
+
+# ErrorTypeEnum mengklasifikasikan kategori error terstruktur untuk seluruh hasil mutasi ke frontend.
+enum ErrorTypeEnum {
+  ARGUMENT
+  AUTHENTICATION
+  AUTHORIZATION
+  CONFLICT
+  NOT_FOUND
+  THROTTLE
+  UNPROCESSABLE_ENTITY
+  UNAVAILABLE
+  INTERNAL_ERROR
+}
+
+# MutationError merepresentasikan detail error ringkas (kategori enum dan pesan) untuk ditampilkan di frontend.
+type MutationError {
+  type: ErrorTypeEnum!
+  message: String!
+}
+
+# MutationResult adalah kontrak antarmuka standar untuk seluruh payload mutasi lintas domain.
+interface MutationResult {
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# Query root inti Gateway; manajemen domain memperluas tipe ini melalui extend type Query pada berkas masing-masing.
+type Query {
+  # node mengambil satu entitas lintas domain berdasarkan Global ID (`gid://integrione/<resource>/<uuid>`).
+  node(id: ID!): Node
+  # health mengembalikan status kesiapan endpoint tunggal `/api/graphql` untuk probe Caddy dan Docker.
+  health: String!
+}
+
+# Mutation root inti Gateway; manajemen domain memperluas tipe ini melalui extend type Mutation pada berkas masing-masing.
+type Mutation {
+  # Placeholder dasar agar tipe Mutation valid sebelum domain memperluasnya.
+  _empty: Boolean
+}
+

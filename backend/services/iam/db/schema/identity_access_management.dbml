@@ -1,0 +1,411 @@
+// ============================================================================
+// INTEGRIONE — IDENTITY & ACCESS MANAGEMENT (IAM)
+// ============================================================================
+// Fokus Inti (Simple & Understandable):
+// 1. Users & Identities (akun, email/username, password, MFA, token verifikasi/reset)
+// 2. Sessions           (sesi login browser opaque: idle 30m, absolut 8h)
+// 3. Roles & Permissions (RBAC sederhana + rute redirect pasca-login)
+// 4. Groups             (pengelompokan user dan role per grup)
+// ============================================================================
+
+Project integrione_iam {
+  database_type: 'PostgreSQL'
+  Note: 'Skema inti IAM IntegriOne yang ringkas dan mudah dipahami: Users, Sessions, Roles, Permissions, dan Groups.'
+}
+
+// ============================================================================
+// 1. ENUMS
+// ============================================================================
+
+enum user_kind {
+  customer [note: 'Pelanggan / pembeli Web Commerce']
+  employee [note: 'Pegawai / staf internal perusahaan']
+  vendor [note: 'Mitra eksternal Vendor CMT (maklun pengolahan produk)']
+  supplier [note: 'Mitra eksternal Supplier (pemasok bahan mentah)']
+  system [note: 'Akun sistem untuk komunikasi internal antar-service']
+}
+
+enum user_status {
+  pending [note: 'Baru mendaftar / diundang, menunggu verifikasi email atau aktivasi']
+  active [note: 'Akun aktif dan dapat login']
+  suspended [note: 'Akun dibekukan sementara']
+  disabled [note: 'Akun dinonaktifkan']
+}
+
+enum user_identities_kind {
+  email [note: 'Alamat email ternormalisasi (huruf kecil)']
+  username [note: 'Username unik untuk login']
+}
+
+enum token_purpose {
+  email_verification [note: 'Token verifikasi email saat registrasi (/verify-email)']
+  password_reset [note: 'Token lupa kata sandi (reset password)']
+  account_invitation [note: 'Token undangan akun employee/vendor/supplier']
+  mfa_challenge [note: 'Token tantangan sementara saat login membutuhkan langkah ke-2 (MFA)']
+}
+
+enum token_status {
+  active [note: 'Token masih aktif dan belum digunakan atau kedaluwarsa']
+  consumed [note: 'Token sudah dipakai satu kali']
+  expired [note: 'Token digantikan oleh permintaan baru atau melewati batas waktu']
+  revoked [note: 'Token dibatalkan sebelum dipakai (mis. pending email dihapus)']
+}
+
+enum session_end_reason {
+  logout [note: 'Pengguna keluar sesi (logout)']
+  idle_timeout [note: 'Sesi habis karena tidak aktif selama 30 menit']
+  absolute_timeout [note: 'Sesi habis karena melewati batas maksimal 8 jam']
+  password_changed [note: 'Kata sandi diubah sehingga sesi lama dicabut']
+  admin_revoked [note: 'Sesi dicabut oleh administrator']
+  user_disabled [note: 'Akun pengguna dinonaktifkan']
+}
+
+enum scope_type {
+  global [note: 'Berlaku global di seluruh sistem (scope_id = NULL)']
+  legal_entity [note: 'Terbatas pada PT / badan hukum tertentu']
+  organization_unit [note: 'Terbatas pada divisi / departemen tertentu']
+  facility [note: 'Terbatas pada gudang / cabang tertentu']
+  supplier_party [note: 'Terbatas hanya pada data milik perusahaan Supplier terkait']
+  vendor_party [note: 'Terbatas hanya pada data milik perusahaan Vendor CMT terkait']
+  self [note: 'Terbatas hanya pada data milik akun pengguna itu sendiri']
+}
+
+enum outbox_status {
+  pending [note: 'Event perubahan keamanan/otorisasi belum efektif terproyeksi ke Redis']
+  effective [note: 'Event sudah berhasil terproyeksi ke Redis']
+  failed [note: 'Event gagal diproses melampaui batas wajar dan butuh audit/pemulihan']
+}
+
+// ============================================================================
+// 2. USERS, IDENTITIES & CREDENTIALS
+// ============================================================================
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_kind user_kind [not null, default: 'customer', note: 'Kategori utama user: customer, employee, vendor, supplier, atau system']
+  status user_status [not null, default: 'pending']
+  display_name varchar(200) [not null, note: 'Nama lengkap / nama tampilan pengguna']
+  avatar_url varchar(1000)
+  locale varchar(20) [not null, default: 'id-ID']
+  timezone varchar(80) [not null, default: 'Asia/Jakarta']
+  auth_epoch bigint [not null, default: 1, note: 'Epoch autentikasi monotonik untuk invalidasi instan sesi lama di Redis']
+  perm_revision bigint [not null, default: 1, note: 'Revisi hak akses monotonik untuk menjamin kesegaran AccessSnapshot']
+  last_login_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  deleted_at timestamptz
+
+  Note: 'Tabel utama pengguna IntegriOne.'
+
+  indexes {
+    (user_kind, status) [name: 'ix_users_kind_status']
+    deleted_at [name: 'ix_users_deleted_at']
+  }
+}
+
+Table user_identities {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  kind user_identities_kind [not null, note: 'email atau username']
+  value varchar(320) [not null, note: 'Nilai email atau username (huruf kecil)']
+  is_primary boolean [not null, default: true]
+  is_verified boolean [not null, default: false]
+  verified_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  Note: 'Identitas login pengguna (email & username) untuk masuk lewat satu pintu /login, termasuk maksimal 1 pending email.'
+
+  indexes {
+    (kind, value) [unique, name: 'uq_user_identities_kind_value']
+    (user_id, kind) [name: 'ix_user_identities_user_kind']
+    user_id [name: 'uq_user_identities_one_pending_email_per_user', note: "Partial unique index PostgreSQL: (user_id) WHERE (kind = 'email' AND is_verified = false)"]
+    user_id [name: 'uq_user_identities_one_verified_email_per_user', note: "Partial unique index PostgreSQL: (user_id) WHERE (kind = 'email' AND is_verified = true)"]
+    user_id [name: 'uq_user_identities_one_username_per_user', note: "Partial unique index PostgreSQL: (user_id) WHERE (kind = 'username')"]
+  }
+}
+
+Table user_credentials {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, unique, note: '1 akun memiliki 1 kredensial password aktif']
+  password_hash text [not null, note: 'Hash kata sandi menggunakan Argon2id']
+  password_changed_at timestamptz [not null, default: `now()`]
+  must_change_password boolean [not null, default: false]
+  failed_login_attempts integer [not null, default: 0]
+  locked_until timestamptz [note: 'Jika terisi, akun terkunci sementara karena terlalu banyak salah password']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  Note: 'Kredensial kata sandi pengguna (Argon2id) beserta proteksi salah password.'
+}
+
+Table user_totp_factors {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, unique]
+  encrypted_secret bytea [not null, note: 'Secret TOTP terenkripsi untuk aplikasi Authenticator']
+  key_version smallint [not null, default: 1]
+  is_enabled boolean [not null, default: false]
+  confirmed_at timestamptz
+  last_used_step bigint [note: 'Mencegah kode OTP 6-digit yang sama dipakai dua kali']
+  last_used_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  Note: 'Pengaturan keamanan MFA 2-langkah (TOTP Authenticator) per pengguna.'
+}
+
+Table user_recovery_codes {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  code_hash text [not null, unique, note: 'Hash dari kode cadangan MFA sekali pakai']
+  used_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Kode pemulihan cadangan jika pengguna kehilangan akses ke aplikasi Authenticator.'
+
+  indexes {
+    (user_id, used_at) [name: 'ix_user_recovery_codes_user_unused']
+  }
+}
+
+Table user_tokens {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  identity_id uuid [note: 'Opsional: target user_identities.id untuk verifikasi email / pending email']
+  purpose token_purpose [not null, note: 'email_verification, password_reset, account_invitation, mfa_challenge']
+  status token_status [not null, default: 'active', note: 'active, consumed, expired, revoked; maksimal 1 active per (user_id, purpose)']
+  token_digest bytea [not null, unique, note: 'SHA-256 hash dari token acak; token asli dikirim via email/response']
+  expires_at timestamptz [not null]
+  consumed_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Token satu kali pakai untuk verifikasi email, lupa password, undangan, dan tantangan MFA.'
+
+  indexes {
+    (user_id, purpose, expires_at) [name: 'ix_user_tokens_user_purpose']
+    identity_id [name: 'ix_user_tokens_identity_id']
+    (user_id, purpose) [name: 'uq_user_tokens_one_active_per_purpose', note: "Partial unique index PostgreSQL: WHERE (status = 'active')"]
+  }
+}
+
+// ============================================================================
+// 3. SESSIONS
+// ============================================================================
+
+Table sessions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  token_digest bytea [not null, unique, note: 'SHA-256 digest dari nilai cookie opaque __Host-integrione_session']
+  csrf_token_digest bytea [note: 'Digest token CSRF yang terikat pada sesi ini']
+  generation bigint [not null, default: 1, note: 'Generasi sesi monotonik untuk pencegahan balapan Touch vs Revoke']
+  csrf_key_version int [not null, default: 1, note: 'Versi kunci HMAC CSRF yang dipakai saat menerbitkan sesi']
+  ip_address inet
+  user_agent text
+  authenticated_at timestamptz [not null, default: `now()`]
+  last_seen_at timestamptz [not null, default: `now()`]
+  idle_expires_at timestamptz [not null, note: 'Berakhir jika tidak aktif selama 30 menit']
+  absolute_expires_at timestamptz [not null, note: 'Berakhir mutlak 8 jam sejak login']
+  mfa_verified boolean [not null, default: false]
+  mfa_verified_at timestamptz
+  ended_at timestamptz
+  end_reason session_end_reason
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Sesi login browser opaque (__Host-integrione_session).'
+
+  indexes {
+    (user_id, ended_at) [name: 'ix_sessions_user_active']
+    absolute_expires_at [name: 'ix_sessions_expiry']
+  }
+}
+
+// ============================================================================
+// 4. ROLES & PERMISSIONS
+// ============================================================================
+
+Table roles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(100) [not null, unique, note: 'Contoh: superadmin, hrm_admin, finance_staff, supplier_pic, vendor_cmt_pic, customer']
+  name varchar(160) [not null]
+  description text
+  management_domain varchar(100) [not null, default: 'iam', note: 'Domain modul: iam, hrm, procurement, warehouse, finance, product, commerce']
+  default_redirect_path varchar(120) [not null, default: '/', note: 'Tujuan redirect setelah login: /identity, /human-resource, /procurement, /warehouse, /finance, /accounting, /product, /supplier, /vendor, /commerce, /']
+  redirect_priority smallint [not null, default: 100, note: 'Urutan prioritas redirect jika user punya lebih dari 1 role (angka terkecil menang)']
+  is_system boolean [not null, default: false]
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  Note: 'Daftar peran (Role) beserta rute halaman dashboard default setelah login.'
+
+  indexes {
+    (management_domain, is_active) [name: 'ix_roles_domain_active']
+  }
+}
+
+Table permissions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(160) [not null, unique, note: 'Format: <domain>.<resource>.<action>, contoh: iam.users.read, procurement.po.approve']
+  resource varchar(100) [not null, note: 'Contoh: iam.users, iam.roles, procurement.po']
+  action varchar(60) [not null, note: 'Contoh: read, create, update, delete, approve']
+  description text
+  is_sensitive boolean [not null, default: false, note: 'Jika true, aksi ini membutuhkan pengecekan ulang sesi aktif sebelum disimpan']
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Daftar izin (Permission) spesifik untuk setiap aksi di dalam sistem.'
+
+  indexes {
+    (resource, action) [unique, name: 'uq_permissions_resource_action']
+  }
+}
+
+Table role_permissions {
+  role_id uuid [not null]
+  permission_id uuid [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Daftar permission yang dimiliki oleh masing-masing role.'
+
+  indexes {
+    (role_id, permission_id) [pk, name: 'pk_role_permissions']
+    permission_id [name: 'ix_role_permissions_permission']
+  }
+}
+
+// ============================================================================
+// 5. GROUPS
+// ============================================================================
+
+Table groups {
+  id uuid [pk, default: `gen_random_uuid()`]
+  code varchar(100) [not null, unique, note: 'Contoh: tim_gudang_pusat, tim_finance_ap, mitra_vendor_cmt']
+  name varchar(160) [not null]
+  description text
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  Note: 'Grup pengguna untuk memudahkan pemberian role ke banyak orang sekaligus.'
+}
+
+Table group_members {
+  id uuid [pk, default: `gen_random_uuid()`]
+  group_id uuid [not null]
+  user_id uuid [not null]
+  added_by uuid
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Anggota user di dalam suatu grup.'
+
+  indexes {
+    (group_id, user_id) [unique, name: 'uq_group_members_group_user']
+    user_id [name: 'ix_group_members_user']
+  }
+}
+
+// ============================================================================
+// 6. ROLE ASSIGNMENTS (PENUGASAN ROLE KE USER & GROUP)
+// ============================================================================
+
+Table user_roles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  role_id uuid [not null]
+  scope_type scope_type [not null, default: 'global', note: 'Lingkup akses: global, legal_entity, supplier_party, vendor_party, dll.']
+  scope_id uuid [note: 'UUID objek terkait (misal ID perusahaan Supplier/Vendor). NULL jika scope_type = global']
+  assigned_by uuid
+  expires_at timestamptz [note: 'Opsional: batas waktu berakhirnya role']
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Penugasan role secara langsung ke seorang user.'
+
+  indexes {
+    (user_id, role_id, scope_type, scope_id) [unique, name: 'uq_user_roles_assignment']
+    user_id [name: 'ix_user_roles_user']
+  }
+}
+
+Table group_roles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  group_id uuid [not null]
+  role_id uuid [not null]
+  scope_type scope_type [not null, default: 'global']
+  scope_id uuid
+  assigned_by uuid
+  expires_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Penugasan role ke suatu grup (otomatis berlaku bagi seluruh anggota grup tersebut).'
+
+  indexes {
+    (group_id, role_id, scope_type, scope_id) [unique, name: 'uq_group_roles_assignment']
+    group_id [name: 'ix_group_roles_group']
+  }
+}
+
+// ============================================================================
+// 6B. SECURITY CONTROL & REDIS OUTBOX
+// ============================================================================
+
+Table iam_security_control {
+  id smallint [pk, default: 1, note: 'Singleton id=1 menyimpan recovery_epoch global']
+  recovery_epoch bigint [not null, default: 1, note: 'Naik monotonik tiap pemulihan gate Redis atau penumpukan outbox']
+  updated_at timestamptz [not null, default: `now()`]
+
+  Note: 'Kontrol sinkronisasi gate Redis IAM lintas restart.'
+}
+
+Table iam_outbox_events {
+  id uuid [pk, default: `gen_random_uuid()`]
+  event_type varchar(80) [not null]
+  aggregate_type varchar(40) [not null]
+  aggregate_id uuid [not null]
+  payload jsonb [not null, default: `'{}'::jsonb`]
+  status outbox_status [not null, default: 'pending']
+  attempt_count int [not null, default: 0]
+  next_retry_at timestamptz [not null, default: `now()`]
+  last_error text
+  processed_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  Note: 'Antrean transaksional pending/effective/failed untuk menjamin proyeksi keamanan PostgreSQL -> Redis tetap konsisten.'
+
+  indexes {
+    (status, next_retry_at, created_at) [name: 'ix_iam_outbox_pending']
+    (aggregate_type, aggregate_id, created_at) [name: 'ix_iam_outbox_aggregate']
+  }
+}
+
+// ============================================================================
+// 7. FOREIGN KEY REFERENCES
+// ============================================================================
+
+// Users & Auth
+Ref: user_identities.user_id > users.id [delete: cascade]
+Ref: user_credentials.user_id - users.id [delete: cascade]
+Ref: user_totp_factors.user_id - users.id [delete: cascade]
+Ref: user_recovery_codes.user_id > users.id [delete: cascade]
+Ref: user_tokens.user_id > users.id [delete: cascade]
+Ref: user_tokens.identity_id > user_identities.id [delete: set null]
+
+// Sessions
+Ref: sessions.user_id > users.id [delete: cascade]
+
+// Roles & Permissions
+Ref: role_permissions.role_id > roles.id [delete: cascade]
+Ref: role_permissions.permission_id > permissions.id [delete: cascade]
+
+// Groups
+Ref: group_members.group_id > groups.id [delete: cascade]
+Ref: group_members.user_id > users.id [delete: cascade]
+Ref: group_members.added_by > users.id [delete: set null]
+
+// Role Assignments
+Ref: user_roles.user_id > users.id [delete: cascade]
+Ref: user_roles.role_id > roles.id [delete: restrict]
+Ref: user_roles.assigned_by > users.id [delete: set null]
+
+Ref: group_roles.group_id > groups.id [delete: cascade]
+Ref: group_roles.role_id > roles.id [delete: restrict]
+Ref: group_roles.assigned_by > users.id [delete: set null]

@@ -1,0 +1,332 @@
+# Zona 1 — Skema GraphQL Domain Manajemen Pengguna, Identitas Login, dan Sesi Admin (IAM).
+# Seluruh field tipe domain dan input memakai konvensi snake_case serta standar Relay (Node/Edge/Connection).
+
+enum UserKind {
+  CUSTOMER
+  EMPLOYEE
+  VENDOR
+  SUPPLIER
+  SYSTEM
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum IdentityKind {
+  EMAIL
+  USERNAME
+}
+
+enum SessionEndReason {
+  LOGOUT
+  IDLE_TIMEOUT
+  ABSOLUTE_TIMEOUT
+  PASSWORD_CHANGED
+  ADMIN_REVOKED
+  USER_DISABLED
+}
+
+# User dapat diakses lewat `node(id: "gid://integrione/user/<uuid>")` menggunakan inline fragment `... on User`.
+# Field `id` menyimpan Global Object ID (`gid://integrione/user/<uuid>`), sedangkan `_id` menyimpan UUID asli database.
+type User implements Node {
+  id: ID!
+  _id: ID!
+  kind: UserKind!
+  status: UserStatus!
+  display_name: String!
+  avatar_url: String!
+  locale: String!
+  timezone: String!
+  last_login_at: Time
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+  auth_epoch: Int!
+  perm_revision: Int!
+
+  # Relasi grafik terhubung (Relay Connection) milik User.
+  identities(after: String, before: String, first: Int, last: Int): UserIdentityConnection!
+  roles(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    include_expired: Boolean = false
+  ): UserRoleConnection!
+  effective_roles(after: String, before: String, first: Int, last: Int): RoleConnection!
+  groups(after: String, before: String, first: Int, last: Int): GroupConnection!
+  sessions(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    active_only: Boolean = true
+  ): SessionConnection!
+}
+
+# UserIdentity merepresentasikan identitas login terverifikasi/belum terverifikasi milik User (`gid://integrione/user-identity/<uuid>`).
+type UserIdentity implements Node {
+  id: ID!
+  _id: ID!
+  user_id: ID!
+  kind: IdentityKind!
+  value: String!
+  is_verified: Boolean!
+  is_primary: Boolean!
+  verified_at: Time
+  created_at: Time!
+  updated_at: Time!
+  # Relasi balik ke node User pemilik identitas ini.
+  user: User!
+}
+
+# Session merepresentasikan sesi autentikasi opaque dengan Global ID `gid://integrione/session/<uuid>`.
+type Session implements Node {
+  id: ID!
+  _id: ID!
+  user_id: ID!
+  mfa_verified: Boolean!
+  mfa_verified_at: Time
+  ip_address: String!
+  user_agent: String!
+  authenticated_at: Time!
+  last_active_at: Time!
+  idle_expires_at: Time!
+  absolute_expires_at: Time!
+  ended_at: Time
+  end_reason: SessionEndReason
+  created_at: Time!
+  generation: Int!
+  # Relasi balik ke node User pemilik sesi ini.
+  user: User!
+}
+
+# --- Edge & Connection Standar Relay (Opsi A) untuk User, UserIdentity, dan Session ---
+
+# UserEdge menghubungkan node User dengan cursor paginasi.
+type UserEdge {
+  cursor: String!
+  node: User!
+}
+
+# UserConnection menyediakan daftar User dalam format Relay (edges, nodes, pageInfo, total_count).
+type UserConnection {
+  edges: [UserEdge!]!
+  nodes: [User!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# UserIdentityEdge menghubungkan node UserIdentity dengan cursor paginasi.
+type UserIdentityEdge {
+  cursor: String!
+  node: UserIdentity!
+}
+
+# UserIdentityConnection menyediakan daftar UserIdentity dalam format Relay.
+type UserIdentityConnection {
+  edges: [UserIdentityEdge!]!
+  nodes: [UserIdentity!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# SessionEdge menghubungkan node Session dengan cursor paginasi.
+type SessionEdge {
+  cursor: String!
+  node: Session!
+}
+
+# SessionConnection menyediakan daftar Session dalam format Relay.
+type SessionConnection {
+  edges: [SessionEdge!]!
+  nodes: [Session!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# CreateUserInput digunakan baik oleh pendaftaran publik Web Commerce maupun provisioning admin untuk membuat akun pelanggan (CUSTOMER) berstatus awal PENDING sampai tautan verifikasi email dikonfirmasi; full_name dipetakan ke display_name, sedangkan email dan username wajib serta unik.
+input CreateUserInput {
+  full_name: String!
+  email: String!
+  username: String!
+  password: String!
+}
+
+# CreateEmployeeUserInput digunakan untuk membuat akun pengguna internal karyawan (EMPLOYEE) secara ringkas dengan status awal PENDING
+# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+input CreateEmployeeUserInput {
+  full_name: String!
+  email: String!
+  username: String!
+  password: String!
+}
+
+# CreateVendorUserInput digunakan untuk membuat akun mitra vendor (VENDOR) secara ringkas dengan status awal PENDING
+# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+input CreateVendorUserInput {
+  full_name: String!
+  email: String!
+  username: String!
+  password: String!
+}
+
+# CreateSupplierUserInput digunakan untuk membuat akun mitra pemasok (SUPPLIER) secara ringkas dengan status awal PENDING
+# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+input CreateSupplierUserInput {
+  full_name: String!
+  email: String!
+  username: String!
+  password: String!
+}
+
+extend type Query {
+  # Operasi baca manajemen pengguna, identitas, peran terkait user, dan sesi.
+  # Seluruh argumen ID menerima Global Object ID (`gid://integrione/<resource>/<uuid>`) maupun UUID mentah.
+  user(id: ID!): User
+  users(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    kind: UserKind
+    status: UserStatus
+    include_deleted: Boolean = false
+  ): UserConnection!
+  userIdentities(
+    user_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): UserIdentityConnection!
+  userRoles(
+    user_id: ID!
+    include_expired: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): UserRoleConnection!
+  userEffectiveRoles(
+    user_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): RoleConnection!
+  userGroups(
+    user_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): GroupConnection!
+  userSessions(
+    user_id: ID!
+    active_only: Boolean = true
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): SessionConnection!
+}
+# Payload hasil mutasi domain manajemen pengguna dan sesi IAM (implementasi MutationResult).
+# CreateUserPayload mengembalikan objek User hanya untuk pemanggil yang telah login; pendaftaran publik mengembalikan user null serta redirectLocation/header Location ke /login apabila email sudah terdaftar.
+type CreateUserPayload implements MutationResult {
+  user: User
+  redirectLocation: String
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type CreateEmployeeUserPayload implements MutationResult {
+  user: User
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type CreateVendorUserPayload implements MutationResult {
+  user: User
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type CreateSupplierUserPayload implements MutationResult {
+  user: User
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateUserPayload implements MutationResult {
+  user: User
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SuspendUserPayload implements MutationResult {
+  user: User
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DisableUserPayload implements MutationResult {
+  user: User
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SoftDeleteUserPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SetPrimaryUserIdentityPayload implements MutationResult {
+  user_identity: UserIdentity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RemoveUserIdentityPayload implements MutationResult {
+  removed: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RevokeSessionPayload implements MutationResult {
+  revoked: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RevokeAllUserSessionsPayload implements MutationResult {
+  revoked_count: Int
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Mutation {
+  # Pendaftaran publik maupun pembuatan akun pelanggan (status awal PENDING hingga verifikasi email) serta varian akun bisnis dan pengelolaan siklus hidupnya.
+  createUser(input: CreateUserInput!): CreateUserPayload!
+  createEmployeeUser(input: CreateEmployeeUserInput!): CreateEmployeeUserPayload!
+  createVendorUser(input: CreateVendorUserInput!): CreateVendorUserPayload!
+  createSupplierUser(input: CreateSupplierUserInput!): CreateSupplierUserPayload!
+  activateUser(user_id: ID!): ActivateUserPayload!
+  suspendUser(user_id: ID!): SuspendUserPayload!
+  disableUser(user_id: ID!): DisableUserPayload!
+  softDeleteUser(user_id: ID!): SoftDeleteUserPayload!
+  # Penambahan identitas terpisah ditiadakan karena pembuatan user otomatis menetapkan email sebagai identitas utama dan username sebagai identitas login.
+  # Owner Note: these to operations that don't needed. in the backend email will automatically will be primary.
+  setPrimaryUserIdentity(user_id: ID!, identity_id: ID!): SetPrimaryUserIdentityPayload!
+  removeUserIdentity(user_id: ID!, identity_id: ID!): RemoveUserIdentityPayload!
+
+  # Manajemen pencabutan sesi aktif.
+  revokeSession(session_id: ID!, reason: SessionEndReason = ADMIN_REVOKED): RevokeSessionPayload!
+  revokeAllUserSessions(user_id: ID!, reason: SessionEndReason = ADMIN_REVOKED): RevokeAllUserSessionsPayload!
+}

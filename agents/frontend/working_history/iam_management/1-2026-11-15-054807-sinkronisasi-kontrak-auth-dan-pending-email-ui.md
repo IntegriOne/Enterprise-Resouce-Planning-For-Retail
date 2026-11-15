@@ -1,0 +1,5 @@
+# Sinkronisasi Kontrak Auth GraphQL dan UI Verifikasi Email IAM
+
+- Menyelaraskan klien GraphQL [`iam-browser-auth.ts`](../../../../frontend/src/lib/graphql/iam-browser-auth.ts) serta komponen [`verify-email-experience.tsx`](../../../../frontend/src/app/verify-email/verify-email-experience.tsx), [`login-experience.tsx`](../../../../frontend/src/app/login/login-experience.tsx), [`register-experience.tsx`](../../../../frontend/src/app/register/register-experience.tsx), dan [`login/README.md`](../../../../frontend/src/app/login/README.md) terhadap pembaruan kontrak `verifyEmail`, `requestPasswordReset`, dan `resendValidationEmailToken` pada Gateway.
+- Memperbarui unit test [`iam-browser-auth.test.ts`](../../../../frontend/src/lib/graphql/iam-browser-auth.test.ts) dan memverifikasi `4/4` test lulus, `npx next typegen`, `npm run lint`, `npx tsc --noEmit`, serta `npm run build` (`Next.js 16.4.6`) keluar dengan status `0`.
+- Mengonfirmasi rute publik `/login`, `/register`, dan `/verify-email` pada replika container `frontend-1`/`frontend-2` merespons `HTTP 200` lewat HTTPS Caddy (`https://erp.localhost:8443`).

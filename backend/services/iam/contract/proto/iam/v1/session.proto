@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "iam/v1/common.proto";
+import "iam/v1/user.proto";
+
+// Session merepresentasikan metadata sesi stateful pengguna tanpa digest rahasia.
+message Session {
+  string id = 1;
+  string user_id = 2;
+  bool mfa_verified = 3;
+  google.protobuf.Timestamp mfa_verified_at = 4;
+  string ip_address = 5;
+  string user_agent = 6;
+  google.protobuf.Timestamp authenticated_at = 7;
+  google.protobuf.Timestamp last_active_at = 8;
+  google.protobuf.Timestamp idle_expires_at = 9;
+  google.protobuf.Timestamp absolute_expires_at = 10;
+  google.protobuf.Timestamp ended_at = 11;
+  SessionEndReason end_reason = 12;
+  google.protobuf.Timestamp created_at = 13;
+  int64 generation = 14;
+  int32 csrf_key_version = 15;
+}
+
+// IssuedSession mengembalikan sesi terbitan beserta pasangan opaque session token dan CSRF token.
+message IssuedSession {
+  Session session = 1;
+  string session_token = 2;
+  string csrf_token = 3;
+}
+
+message IssueSessionRequest {
+  string user_id = 1;
+  bool mfa_verified = 2;
+  string ip_address = 3;
+  string user_agent = 4;
+}
+
+message IssueSessionResponse {
+  IssuedSession issued_session = 1;
+}
+
+message AuthenticateSessionRequest {
+  string session_token = 1;
+}
+
+message AuthenticateSessionResponse {
+  Session session = 1;
+}
+
+message VerifyCsrfRequest {
+  string session_id = 1;
+  string csrf_token = 2;
+}
+
+message VerifyCsrfResponse {
+  Session session = 1;
+}
+
+message MarkSessionMfaVerifiedRequest {
+  string session_id = 1;
+}
+
+message MarkSessionMfaVerifiedResponse {
+  Session session = 1;
+  string csrf_token = 2;
+}
+
+message LogoutSessionRequest {
+  string session_token = 1;
+}
+
+message LogoutSessionResponse {}
+
+message RevokeSessionByIdRequest {
+  string session_id = 1;
+  SessionEndReason reason = 2;
+}
+
+message RevokeSessionByIdResponse {}
+
+message RevokeAllUserSessionsRequest {
+  string user_id = 1;
+  SessionEndReason reason = 2;
+}
+
+message RevokeAllUserSessionsResponse {
+  int64 revoked_count = 1;
+}
+
+message ListUserSessionsRequest {
+  string user_id = 1;
+  bool active_only = 2;
+  PageRequest page = 3;
+}
+
+message ListUserSessionsResponse {
+  repeated Session items = 1;
+  PageInfo page = 2;
+}
+
+message CleanupEndedSessionsRequest {
+  google.protobuf.Duration retention = 1;
+}
+
+message CleanupEndedSessionsResponse {
+  int64 deleted_count = 1;
+}
+
+message AuthorizeSessionRequest {
+  string session_token = 1;
+  string csrf_token = 2;
+  bool require_csrf = 3;
+  string required_permission = 4;
+  Scope required_scope = 5;
+  bool require_sensitive_reauth = 6;
+}
+
+message AuthorizeSessionResponse {
+  User user = 1;
+  Session session = 2;
+  AccessSnapshot snapshot = 3;
+}
+
+message ResolvePostLoginRedirectRequest {
+  string user_id = 1;
+}
+
+message ResolvePostLoginRedirectResponse {
+  string redirect_path = 1;
+}
+
+message GetSessionCsrfRequest {
+  string session_id = 1;
+}
+
+message GetSessionCsrfResponse {
+  Session session = 1;
+  string csrf_token = 2;
+}
+
+message RefreshUserAccessSnapshotRequest {
+  string user_id = 1;
+}
+
+message RefreshUserAccessSnapshotResponse {
+  User user = 1;
+  AccessSnapshot snapshot = 2;
+  bool can_access_identity = 3;
+  string default_redirect_path = 4;
+  repeated string allowed_redirect_paths = 5;
+}
+
+// SessionService mengelola siklus hidup sesi opaque, verifikasi CSRF, dan evaluasi otorisasi.
+service SessionService {
+  rpc IssueSession(IssueSessionRequest) returns (IssueSessionResponse);
+  rpc AuthenticateSession(AuthenticateSessionRequest) returns (AuthenticateSessionResponse);
+  rpc VerifyCsrf(VerifyCsrfRequest) returns (VerifyCsrfResponse);
+  rpc GetSessionCsrf(GetSessionCsrfRequest) returns (GetSessionCsrfResponse);
+  rpc MarkSessionMfaVerified(MarkSessionMfaVerifiedRequest) returns (MarkSessionMfaVerifiedResponse);
+  rpc LogoutSession(LogoutSessionRequest) returns (LogoutSessionResponse);
+  rpc RevokeSessionById(RevokeSessionByIdRequest) returns (RevokeSessionByIdResponse);
+  rpc RevokeAllUserSessions(RevokeAllUserSessionsRequest) returns (RevokeAllUserSessionsResponse);
+  rpc ListUserSessions(ListUserSessionsRequest) returns (ListUserSessionsResponse);
+  rpc CleanupEndedSessions(CleanupEndedSessionsRequest) returns (CleanupEndedSessionsResponse);
+  rpc AuthorizeSession(AuthorizeSessionRequest) returns (AuthorizeSessionResponse);
+  rpc ResolvePostLoginRedirect(ResolvePostLoginRedirectRequest) returns (ResolvePostLoginRedirectResponse);
+  rpc RefreshUserAccessSnapshot(RefreshUserAccessSnapshotRequest) returns (RefreshUserAccessSnapshotResponse);
+}

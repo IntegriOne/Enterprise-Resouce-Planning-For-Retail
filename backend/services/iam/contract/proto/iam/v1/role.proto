@@ -1,0 +1,198 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+import "google/protobuf/timestamp.proto";
+import "iam/v1/common.proto";
+import "iam/v1/permission.proto";
+
+// Role merepresentasikan peran RBAC beserta rute redirect default-nya.
+message Role {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  string description = 4;
+  string management_domain = 5;
+  string default_redirect_path = 6;
+  int32 redirect_priority = 7;
+  bool is_system = 8;
+  bool is_active = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+// RolePermission merepresentasikan relasi antara peran dan izin.
+message RolePermission {
+  string role_id = 1;
+  string permission_id = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+// UserRole merepresentasikan penugasan peran langsung ke pengguna dengan lingkup opsional.
+message UserRole {
+  string id = 1;
+  string user_id = 2;
+  string role_id = 3;
+  Scope scope = 4;
+  optional string granted_by = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetRoleByIdRequest {
+  string id = 1;
+}
+
+message GetRoleByIdResponse {
+  Role role = 1;
+}
+
+message GetRoleByCodeRequest {
+  string code = 1;
+}
+
+message GetRoleByCodeResponse {
+  Role role = 1;
+}
+
+message ListRolesRequest {
+  string query = 1;
+  string management_domain = 2;
+  bool active_only = 3;
+  PageRequest page = 4;
+}
+
+message ListRolesResponse {
+  repeated Role items = 1;
+  PageInfo page = 2;
+}
+
+message CreateRoleRequest {
+  string code = 1;
+  string name = 2;
+  string description = 3;
+  string management_domain = 4;
+  string default_redirect_path = 5;
+  int32 redirect_priority = 6;
+  bool is_system = 7;
+}
+
+message CreateRoleResponse {
+  Role role = 1;
+}
+
+message UpdateRoleDetailsRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string management_domain = 4;
+  string default_redirect_path = 5;
+  int32 redirect_priority = 6;
+}
+
+message UpdateRoleDetailsResponse {
+  Role role = 1;
+}
+
+message ActivateRoleRequest {
+  string id = 1;
+}
+
+message ActivateRoleResponse {
+  Role role = 1;
+}
+
+message DeactivateRoleRequest {
+  string id = 1;
+}
+
+message DeactivateRoleResponse {
+  Role role = 1;
+}
+
+message DeleteRoleRequest {
+  string id = 1;
+}
+
+message DeleteRoleResponse {}
+
+message AssignRolePermissionRequest {
+  string role_id = 1;
+  string permission_id = 2;
+}
+
+message AssignRolePermissionResponse {
+  RolePermission role_permission = 1;
+}
+
+message RevokeRolePermissionRequest {
+  string role_id = 1;
+  string permission_id = 2;
+}
+
+message RevokeRolePermissionResponse {}
+
+message ListRolePermissionsRequest {
+  string role_id = 1;
+}
+
+message ListRolePermissionsResponse {
+  repeated Permission permissions = 1;
+}
+
+message AssignUserRoleRequest {
+  string user_id = 1;
+  string role_id = 2;
+  ScopeType scope_type = 3;
+  optional string scope_id = 4;
+  optional string granted_by = 5;
+  google.protobuf.Timestamp expires_at = 6;
+}
+
+message AssignUserRoleResponse {
+  UserRole user_role = 1;
+}
+
+message RevokeUserRoleRequest {
+  string assignment_id = 1;
+}
+
+message RevokeUserRoleResponse {}
+
+message ListUserRolesRequest {
+  string user_id = 1;
+  bool include_expired = 2;
+}
+
+message ListUserRolesResponse {
+  repeated UserRole user_roles = 1;
+}
+
+message ListEffectiveUserRolesRequest {
+  string user_id = 1;
+}
+
+message ListEffectiveUserRolesResponse {
+  repeated Role roles = 1;
+}
+
+// RoleService mengelola peran RBAC, relasi izin, serta penugasan peran pengguna.
+service RoleService {
+  rpc GetRoleById(GetRoleByIdRequest) returns (GetRoleByIdResponse);
+  rpc GetRoleByCode(GetRoleByCodeRequest) returns (GetRoleByCodeResponse);
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+  rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse);
+  rpc UpdateRoleDetails(UpdateRoleDetailsRequest) returns (UpdateRoleDetailsResponse);
+  rpc ActivateRole(ActivateRoleRequest) returns (ActivateRoleResponse);
+  rpc DeactivateRole(DeactivateRoleRequest) returns (DeactivateRoleResponse);
+  rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse);
+  rpc AssignRolePermission(AssignRolePermissionRequest) returns (AssignRolePermissionResponse);
+  rpc RevokeRolePermission(RevokeRolePermissionRequest) returns (RevokeRolePermissionResponse);
+  rpc ListRolePermissions(ListRolePermissionsRequest) returns (ListRolePermissionsResponse);
+  rpc AssignUserRole(AssignUserRoleRequest) returns (AssignUserRoleResponse);
+  rpc RevokeUserRole(RevokeUserRoleRequest) returns (RevokeUserRoleResponse);
+  rpc ListUserRoles(ListUserRolesRequest) returns (ListUserRolesResponse);
+  rpc ListEffectiveUserRoles(ListEffectiveUserRolesRequest) returns (ListEffectiveUserRolesResponse);
+}

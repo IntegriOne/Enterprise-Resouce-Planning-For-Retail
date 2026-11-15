@@ -1,0 +1,7 @@
+# Local ERP Retail orchestration. Requires Docker Compose v2.20+.
+# Run from repository root: docker compose up -d --build --wait
+name: integrione-retail
+include:
+  - path: ./backend/docker-compose.yml
+  - path: ./frontend/docker-compose.yml
+  - path: ./proxy/docker-compose.yml

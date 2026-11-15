@@ -1,0 +1,12 @@
+# Template ACL Redis keamanan IntegriOne.
+# Salin menjadi users.acl dan ganti placeholder password dengan rahasia kuat sebelum menjalankan Redis.
+
+# Matikan user default sepenuhnya (wajib autentikasi eksplisit)
+user default off
+
+# IAM Service & Outbox Reconciler: kontrol penuh namespace ig:*:iam:* untuk proyeksi sesi, snapshot, security state, dan gate
+user iam_writer on ><IAM_REDIS_PASSWORD> ~ig:*:iam:* +@read +@write +@keyspace +@scripting +ping +quit +hello +client +info -flushall -flushdb -config -debug -shutdown -acl
+
+# Gateway Runtime: hanya baca seluruh ig:*:iam:*, tulis hanya untuk perpanjangan TTL aktivitas sesi dan namespace ig:*:gw:*
+# Gateway tidak pernah memiliki izin tulis ke sess:tok, authz, user:sec, maupun ctrl:gate
+user gw_runtime on ><GW_REDIS_PASSWORD> %R~ig:*:iam:* %RW~ig:*:iam:sess:act:* %RW~ig:*:gw:* +@read +@write +@keyspace +@scripting +ping +quit +hello +client +info -flushall -flushdb -config -debug -shutdown -acl

@@ -1,0 +1,22 @@
+services:
+  caddy:
+    image: integrione-retail-caddy:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      gateway-1:
+        condition: service_healthy
+      gateway-2:
+        condition: service_healthy
+      frontend-1:
+        condition: service_healthy
+      frontend-2:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../backend/deploy/certs/erp.localhost.crt:/etc/caddy/certs/erp.localhost.crt:ro
+      - ../backend/deploy/certs/erp.localhost.key:/etc/caddy/certs/erp.localhost.key:ro

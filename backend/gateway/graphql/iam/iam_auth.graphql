@@ -1,0 +1,276 @@
+# Zona 1 — Skema GraphQL Domain Autentikasi Browser, Profil Diri, MFA, dan Sesi Pribadi (IAM).
+# Kontrak payload & input autentikasi browser berikut dipertahankan persis sesuai query/mutation frontend aktif;
+# tipe profil mandiri & MFA memakai konvensi snake_case.
+
+enum UserLoginStatus {
+  AUTHENTICATED
+  MFA_REQUIRED
+}
+
+enum VerifyEmailStatus {
+  VERIFIED
+  EXPIRED
+  ALREADY_USED
+  INVALID
+}
+
+type BrowserSessionPayload {
+  authenticated: Boolean!
+  principalId: ID
+  csrfToken: String
+}
+
+type WorkspaceAccessPayload {
+  canAccessIdentity: Boolean!
+  defaultLocation: String!
+}
+
+input UserLoginInput {
+  identifier: String!
+  password: String!
+}
+
+type UserLoginPayload implements MutationResult {
+  status: UserLoginStatus
+  mfaChallenge: String
+  mfaExpiresAt: String
+  csrfToken: String
+  redirectLocation: String
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+input ValidateUserMfaInput {
+  challenge: String!
+  totpCode: String
+  recoveryCode: String
+}
+
+type ValidateUserMfaPayload implements MutationResult {
+  csrfToken: String
+  redirectLocation: String
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# VerifyEmailInput dan VerifyEmailPayload digunakan bersama untuk memverifikasi email dan mengaktifkan
+# seluruh kategori akun non-SYSTEM yang berstatus PENDING (CUSTOMER, EMPLOYEE, VENDOR, SUPPLIER).
+input VerifyEmailInput {
+  token: String!
+}
+
+type VerifyEmailPayload implements MutationResult {
+  status: VerifyEmailStatus
+  verified: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+
+# UserResetPasswordInput menerima alamat email terverifikasi pengguna untuk permintaan pengaturan ulang kata sandi.
+input UserResetPasswordInput {
+  email: String!
+}
+
+input IAMResetPasswordInput {
+  token: String!
+  newPassword: String!
+}
+
+# ResetPasswordPayload mengembalikan status penyelesaian reset kata sandi menggunakan token pemulihan.
+type ResetPasswordPayload implements MutationResult {
+  reset: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# UserAvatarPayload mengembalikan URL avatar HTTPS terbaru hasil unggah avatar pengguna aktif.
+type UserAvatarPayload implements MutationResult {
+  avatar_url: String
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type EnrollTotpPayload implements MutationResult {
+  factor_id: ID
+  otp_auth_uri: String
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ConfirmTotpPayload implements MutationResult {
+  enabled: Boolean
+  recovery_codes: [String!]
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# UpdateMyProfileInput memperbarui profil dasar principal aktif; perubahan foto avatar dipisahkan ke uploadAvatarUser.
+input UpdateMyProfileInput {
+  display_name: String!
+  locale: String
+  timezone: String
+}
+
+# UpdateMyProfilePayload mengembalikan data User terbaru setelah profil principal aktif diperbarui.
+type UpdateMyProfilePayload implements MutationResult {
+  user: User
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# UserAvatarUploadInput membawa citra avatar AVIF hasil encode client (WASM) dalam format string base64.
+input UserAvatarUploadInput {
+  image: String!
+}
+
+# ChangeUserPasswordInput membawa kata sandi lama dan baru untuk penggantian kata sandi mandiri principal aktif.
+input ChangeUserPasswordInput {
+  current_password: String!
+  new_password: String!
+}
+
+# ChangeUserPasswordPayload mengembalikan ringkasan status penggantian kata sandi dan pencabutan sesi lama.
+type ChangeUserPasswordPayload implements MutationResult {
+  changed: Boolean
+  sessions_revoked: Int
+  password_changed_at: Time
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+input ConfirmTotpInput {
+  code: String!
+}
+
+# UserEmailInput mengajukan perubahan alamat email akun aktif sambil menahan email baru berstatus pending verifikasi.
+input UserEmailInput {
+  email: String!
+  current_password: String!
+}
+
+# UserEmailPayload mengembalikan informasi calon email baru yang menunggu verifikasi tanpa mengganti email utama aktif.
+type UserEmailPayload implements MutationResult {
+  pending_email: String
+  is_pending: Boolean
+  expires_at: Time
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# ResendValidationEmailInput menerima email target ketika pemanggil belum memiliki cookie autentikasi (kasus registrasi pending).
+input ResendValidationEmailInput {
+  email: String
+}
+
+# ResendValidationEmailPayload menandakan permintaan kirim ulang tautan verifikasi email telah diproses.
+type ResendValidationEmailPayload implements MutationResult {
+  is_resend: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# UserLogoutPayload menandakan sesi aktif principal telah diakhiri.
+type UserLogoutPayload implements MutationResult {
+  logged_out: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# DeletePendingUserEmailPayload menandakan pengubahan email tertunda telah dibatalkan.
+type DeletePendingUserEmailPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# VerifyMySessionMfaPayload menandakan verifikasi MFA pada sesi aktif telah berhasil.
+type VerifyMySessionMfaPayload implements MutationResult {
+  verified: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# DisableMyTotpPayload menandakan faktor TOTP akun principal aktif telah dinonaktifkan.
+type DisableMyTotpPayload implements MutationResult {
+  disabled: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# RegenerateMyRecoveryCodesPayload mengembalikan daftar kode pemulihan baru milik principal aktif.
+type RegenerateMyRecoveryCodesPayload implements MutationResult {
+  recovery_codes: [String!]
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  # Bootstrap sesi & CSRF untuk browser sebelum maupun sesudah login.
+  browserSession: BrowserSessionPayload!
+  # Guard akses portal /identity dan rute redirect default user aktif.
+  myWorkspaceAccess: WorkspaceAccessPayload!
+  # Profil akun principal terautentikasi saat ini.
+  me: User!
+  # Snapshot otorisasi efektif terkini dari Redis Gateway (disegarkan fail-closed bila kedaluwarsa >30d).
+  myAccessSnapshot: AccessSnapshot!
+  # Daftar sesi aktif/riwayat milik principal sendiri dalam format Relay Connection.
+  mySessions(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    active_only: Boolean = true
+  ): SessionConnection!
+}
+
+# UserResetPasswordPayload mengembalikan pesan informasi pengiriman tautan reset sandi serta status/error terstruktur.
+type UserResetPasswordPayload implements MutationResult {
+  message: String
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+# UsernameInput menerima nilai username baru untuk pengubahan username mandiri principal aktif.
+input UsernameInput {
+  username: String!
+}
+
+# UserNamePayload mengembalikan username terbaru serta hasil validasi mutasi changeUsername.
+type UserNamePayload implements MutationResult {
+  username: String
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Mutation {
+  changeUsername(input: UsernameInput!): UserNamePayload!
+  # Alur autentikasi dan registrasi browser (wajib Origin + X-CSRF-Token); verifyEmail memverifikasi seluruh akun non-SYSTEM yang berstatus PENDING.
+  userLogin(input: UserLoginInput!): UserLoginPayload!
+  validateUserMfa(input: ValidateUserMfaInput!): ValidateUserMfaPayload!
+  # Memverifikasi token email untuk berbagai jenis akun non-SYSTEM (CUSTOMER, EMPLOYEE, VENDOR, SUPPLIER).
+  verifyEmail(input: VerifyEmailInput!): VerifyEmailPayload!
+  changeUserPassword(input: ChangeUserPasswordInput!): ChangeUserPasswordPayload!
+  userResetPassword(input: UserResetPasswordInput!): UserResetPasswordPayload!
+  resetPassword(input: IAMResetPasswordInput!): ResetPasswordPayload!
+  userLogout: UserLogoutPayload!
+
+  # Operasi keamanan & profil mandiri principal aktif (wajib sesi valid + CSRF).
+  updateMyProfile(input: UpdateMyProfileInput!): UpdateMyProfilePayload!
+  uploadAvatarUser(input: UserAvatarUploadInput!): UserAvatarPayload!
+  updateUserEmail(input: UserEmailInput!): UserEmailPayload!
+  # Membatalkan dan menghapus pending email yang menunggu verifikasi milik principal aktif tanpa mengubah email utama aktif.
+  deletePendingUserEmail: DeletePendingUserEmailPayload!
+  # Mendukung dua kasus dengan 1 token verifikasi aktif (token lama otomatis expired):
+  # (1) Pengguna login dengan cookie auth (cek pending email pada user_identities by user_id;
+  #     hanya berhasil bila ada email verification pending, dan mengembalikan CONFLICT "your email has been verified"
+  #     bila email sudah terverifikasi tanpa pending email), atau
+  # (2) Pengguna belum login / registrasi PENDING dengan parameter input.email (respons netral anti-enumerasi).
+  # Jika user sudah login kemudian mengisi juga input pastikan yang di ambil hanya dari cookie jangan dari input.
+  resendValidationEmailToken(input: ResendValidationEmailInput): ResendValidationEmailPayload!
+  verifyMySessionMfa(totp_code: String!): VerifyMySessionMfaPayload!
+  enrollMyTotp: EnrollTotpPayload!
+  confirmMyTotp(input: ConfirmTotpInput!): ConfirmTotpPayload!
+  disableMyTotp: DisableMyTotpPayload!
+  regenerateMyRecoveryCodes: RegenerateMyRecoveryCodesPayload!
+}

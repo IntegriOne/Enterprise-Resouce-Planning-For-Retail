@@ -1,0 +1,65 @@
+{
+  "go.goroot": "/opt/go",
+  "go.toolsEnvVars": {
+    "GOWORK": "${workspaceFolder}/backend/go.work",
+    "GOTOOLCHAIN": "auto",
+    "PATH": "${env:PATH}:/opt/go/bin:${env:HOME}/go/bin"
+  },
+  "go.buildTags": "e2e",
+  "go.testTags": "e2e",
+  "gopls": {
+    "build.buildFlags": [
+      "-tags=e2e"
+    ],
+    "build.directoryFilters": [
+      "-",
+      "+backend"
+    ],
+    "build.expandWorkspaceToModule": true
+  },
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
+  },
+  "tooltitude.build.tags": "e2e",
+  "tooltitude.go.checks": false,
+  "tooltitude.brokenImportsEnabled": false,
+  "tooltitude.brokenRefsEnabled": false,
+  "tooltitude.unusedImportsEnabled": false,
+  "tooltitude.unusedVarsEnabled": false,
+  "tooltitude.unusedInitsEnabled": false,
+  "tooltitude.unusedWritesEnabled": false,
+  "tooltitude.unhandledErrorsEnabled": false,
+  "tooltitude.unreachableStmtsEnabled": false,
+  "tooltitude.tag.diags": false,
+  "eslint.workingDirectories": [
+    {
+      "directory": "frontend"
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "css.lint.unknownAtRules": "ignore",
+  "tailwindCSS.experimental.configFile": "frontend/src/app/globals.css",
+  "tailwindCSS.files.exclude": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/.next/**"
+  ],
+  "files.associations": {
+    "**/globals.css": "tailwindcss"
+  },
+  "search.exclude": {
+    "**/.next/**": true,
+    "**/node_modules/**": true
+  },
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/node_modules/**": true
+  }
+}

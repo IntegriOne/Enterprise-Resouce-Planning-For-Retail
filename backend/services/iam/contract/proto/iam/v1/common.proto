@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+// UserKind merepresentasikan kategori akun utama dalam tabel users IAM.
+enum UserKind {
+  USER_KIND_UNSPECIFIED = 0;
+  USER_KIND_CUSTOMER = 1;
+  USER_KIND_EMPLOYEE = 2;
+  USER_KIND_VENDOR = 3;
+  USER_KIND_SUPPLIER = 4;
+  USER_KIND_SYSTEM = 5;
+}
+
+// UserStatus merepresentasikan status siklus hidup akun IAM.
+enum UserStatus {
+  USER_STATUS_UNSPECIFIED = 0;
+  USER_STATUS_PENDING = 1;
+  USER_STATUS_ACTIVE = 2;
+  USER_STATUS_SUSPENDED = 3;
+  USER_STATUS_DISABLED = 4;
+}
+
+// IdentityKind merepresentasikan tipe pengenal login yang terikat ke pengguna.
+enum IdentityKind {
+  IDENTITY_KIND_UNSPECIFIED = 0;
+  IDENTITY_KIND_EMAIL = 1;
+  IDENTITY_KIND_USERNAME = 2;
+}
+
+// TokenPurpose merepresentasikan tujuan penerbitan token sekali pakai.
+enum TokenPurpose {
+  TOKEN_PURPOSE_UNSPECIFIED = 0;
+  TOKEN_PURPOSE_EMAIL_VERIFICATION = 1;
+  TOKEN_PURPOSE_PASSWORD_RESET = 2;
+  TOKEN_PURPOSE_ACCOUNT_INVITATION = 3;
+  TOKEN_PURPOSE_MFA_CHALLENGE = 4;
+}
+
+// TokenStatus merepresentasikan status siklus hidup token sekali pakai.
+enum TokenStatus {
+  TOKEN_STATUS_UNSPECIFIED = 0;
+  TOKEN_STATUS_ACTIVE = 1;
+  TOKEN_STATUS_CONSUMED = 2;
+  TOKEN_STATUS_EXPIRED = 3;
+  TOKEN_STATUS_REVOKED = 4;
+}
+
+// SessionEndReason merepresentasikan alasan pengakhiran sesi autentikasi.
+enum SessionEndReason {
+  SESSION_END_REASON_UNSPECIFIED = 0;
+  SESSION_END_REASON_LOGOUT = 1;
+  SESSION_END_REASON_IDLE_TIMEOUT = 2;
+  SESSION_END_REASON_ABSOLUTE_TIMEOUT = 3;
+  SESSION_END_REASON_PASSWORD_CHANGED = 4;
+  SESSION_END_REASON_ADMIN_REVOKED = 5;
+  SESSION_END_REASON_USER_DISABLED = 6;
+}
+
+// ScopeType merepresentasikan tipe lingkup otorisasi RBAC/ABAC.
+enum ScopeType {
+  SCOPE_TYPE_UNSPECIFIED = 0;
+  SCOPE_TYPE_GLOBAL = 1;
+  SCOPE_TYPE_LEGAL_ENTITY = 2;
+  SCOPE_TYPE_ORGANIZATION_UNIT = 3;
+  SCOPE_TYPE_FACILITY = 4;
+  SCOPE_TYPE_SUPPLIER_PARTY = 5;
+  SCOPE_TYPE_VENDOR_PARTY = 6;
+  SCOPE_TYPE_SELF = 7;
+}
+
+// AuthStatus merepresentasikan status keluaran proses login atau verifikasi MFA.
+enum AuthStatus {
+  AUTH_STATUS_UNSPECIFIED = 0;
+  AUTH_STATUS_AUTHENTICATED = 1;
+  AUTH_STATUS_MFA_REQUIRED = 2;
+}
+
+// Scope merepresentasikan pasangan tipe dan ID target lingkup otorisasi.
+message Scope {
+  ScopeType type = 1;
+  optional string id = 2;
+}
+
+// PageRequest membawa parameter paginasi berbasis limit dan offset.
+message PageRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+// PageInfo membawa metadata hasil paginasi.
+message PageInfo {
+  int64 total = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  bool has_more = 4;
+}

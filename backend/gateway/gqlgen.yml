@@ -1,0 +1,65 @@
+# Konfigurasi generator gqlgen untuk API GraphQL Gateway IntegriOne (arsitektur Hybrid A1).
+# Skema dan generated code dipecah per file domain agar tidak membentuk motherfile.
+
+schema:
+  - graphql/**/*.graphql
+
+exec:
+  layout: follow-schema
+  dir: graph/generated
+  package: generated
+  filename_template: "{name}.generated.go"
+
+# Output tunggal sementara dari modelgen dipecah otomatis oleh plugin internal/gqltools
+# menjadi graph/model/{name}_models_gen.go (tetap dalam package model).
+model:
+  filename: graph/model/models_gen.go
+  package: model
+
+resolver:
+  layout: follow-schema
+  dir: graph/resolvers
+  package: resolvers
+  filename_template: "{name}.resolvers.go"
+  preserve_resolver: false
+
+autobind:
+  - github.com/integrione/erp-retail/backend/gateway/graph/model
+
+fast_validation: true
+use_buffer_pooling: true
+
+models:
+  Time:
+    model:
+      - github.com/99designs/gqlgen/graphql.Time
+  User:
+    fields:
+      identities:
+        resolver: true
+      roles:
+        resolver: true
+      effective_roles:
+        resolver: true
+      groups:
+        resolver: true
+      sessions:
+        resolver: true
+  UserIdentity:
+    fields:
+      user:
+        resolver: true
+  Session:
+    fields:
+      user:
+        resolver: true
+  Role:
+    fields:
+      permissions:
+        resolver: true
+  Group:
+    fields:
+      members:
+        resolver: true
+      roles:
+        resolver: true

@@ -1,0 +1,7 @@
+# Sertifikat TLS pengembangan lokal, kunci privat, dan file ACL aktif tidak boleh masuk VCS
+certs/*.key
+certs/*.crt
+certs/*.csr
+certs/*.srl
+certs/*.cnf
+redis/users.acl

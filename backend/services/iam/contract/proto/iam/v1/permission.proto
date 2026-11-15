@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+import "google/protobuf/timestamp.proto";
+import "iam/v1/common.proto";
+
+// Permission merepresentasikan izin atomik RBAC pada katalog IAM.
+message Permission {
+  string id = 1;
+  string code = 2;
+  string resource = 3;
+  string action = 4;
+  string description = 5;
+  bool is_sensitive = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetPermissionByIdRequest {
+  string id = 1;
+}
+
+message GetPermissionByIdResponse {
+  Permission permission = 1;
+}
+
+message GetPermissionByCodeRequest {
+  string code = 1;
+}
+
+message GetPermissionByCodeResponse {
+  Permission permission = 1;
+}
+
+message ListPermissionsRequest {
+  string query = 1;
+  string resource = 2;
+  optional bool is_sensitive = 3;
+  PageRequest page = 4;
+}
+
+message ListPermissionsResponse {
+  repeated Permission items = 1;
+  PageInfo page = 2;
+}
+
+message ListPermissionsByRoleRequest {
+  string role_id = 1;
+}
+
+message ListPermissionsByRoleResponse {
+  repeated Permission permissions = 1;
+}
+
+message CreatePermissionRequest {
+  string code = 1;
+  string resource = 2;
+  string action = 3;
+  string description = 4;
+  bool is_sensitive = 5;
+}
+
+message CreatePermissionResponse {
+  Permission permission = 1;
+}
+
+message DeletePermissionRequest {
+  string id = 1;
+}
+
+message DeletePermissionResponse {}
+
+// PermissionService mengelola katalog izin atomik RBAC IAM.
+service PermissionService {
+  rpc GetPermissionById(GetPermissionByIdRequest) returns (GetPermissionByIdResponse);
+  rpc GetPermissionByCode(GetPermissionByCodeRequest) returns (GetPermissionByCodeResponse);
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
+  rpc ListPermissionsByRole(ListPermissionsByRoleRequest) returns (ListPermissionsByRoleResponse);
+  rpc CreatePermission(CreatePermissionRequest) returns (CreatePermissionResponse);
+  rpc DeletePermission(DeletePermissionRequest) returns (DeletePermissionResponse);
+}

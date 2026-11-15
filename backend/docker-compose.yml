@@ -1,0 +1,154 @@
+services:
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Jakarta
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: cdc74f9183b351870270f25273e4c81e0643f20f147f0c25
+      SERVICES_DB_PASSWORD: d931eeb77575bfc4c1b2b99e11807050529d2756c5d1d5d2
+    ports:
+      - "127.0.0.1:6543:5432"
+    volumes:
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+      - pgdata18:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d postgres"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    environment:
+      TZ: Asia/Jakarta
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./deploy/redis/redis.conf:/etc/redis/redis.conf:ro
+      - ./deploy/redis/users.acl:/etc/redis/users.acl:ro
+      - ./deploy/certs:/etc/redis/certs:ro
+      - redisdata:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "REDISCLI_AUTH=ig_iam_dd97a17159dd5a21640c6517c9b9f30f0a906e32 redis-cli --tls --cacert /etc/redis/certs/ca.crt --user iam_writer -h 127.0.0.1 -p 6379 ping | grep -qx PONG",
+        ]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+
+  iam:
+    build:
+      context: .
+      dockerfile: services/iam/Dockerfile
+    image: integrione-retail-iam:dev
+    restart: unless-stopped
+    env_file:
+      - ./services/iam/.env
+    environment:
+      TZ: Asia/Jakarta
+      IAM_POSTGRES_HOST: postgres
+      IAM_POSTGRES_PORT: "5432"
+      IAM_POSTGRES_USER: iam_management_svc
+      IAM_POSTGRES_PASSWORD: d931eeb77575bfc4c1b2b99e11807050529d2756c5d1d5d2
+      IAM_POSTGRES_DB: iam
+      IAM_DATABASE_DSN: postgres://iam_management_svc:d931eeb77575bfc4c1b2b99e11807050529d2756c5d1d5d2@postgres:5432/iam?sslmode=disable&TimeZone=Asia/Jakarta
+      IAM_TEST_DATABASE_DSN: postgres://iam_management_svc:d931eeb77575bfc4c1b2b99e11807050529d2756c5d1d5d2@postgres:5432/iam_test?sslmode=disable&TimeZone=Asia/Jakarta
+      IAM_REDIS_ENABLED: "true"
+      IAM_REDIS_ADDR: redis:6379
+      IAM_REDIS_CA_CERT_PATH: /etc/integrione/certs/ca.crt
+      IAM_REDIS_SERVER_NAME: redis
+      IAM_REDIS_TLS_INSECURE_SKIP_VERIFY: "false"
+    ports:
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - ./deploy/certs/ca.crt:/etc/integrione/certs/ca.crt:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/grpc-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      start_period: 15s
+      retries: 5
+
+  gateway-1:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    image: integrione-retail-gateway:dev
+    restart: unless-stopped
+    env_file:
+      - ./gateway/.env
+    environment:
+      TZ: Asia/Jakarta
+      IAM_GRPC_TARGET: iam:9001
+      GATEWAY_REDIS_ENABLED: "true"
+      GATEWAY_REDIS_ADDR: redis:6379
+      GATEWAY_REDIS_CA_CERT_PATH: /etc/integrione/certs/ca.crt
+      GATEWAY_REDIS_SERVER_NAME: redis
+      GATEWAY_REDIS_TLS_INSECURE_SKIP_VERIFY: "false"
+    ports:
+      - "127.0.0.1:5000:8080"
+    volumes:
+      - ./deploy/certs/ca.crt:/etc/integrione/certs/ca.crt:ro
+    depends_on:
+      iam:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/gateway-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+
+  gateway-2:
+    image: integrione-retail-gateway:dev
+    pull_policy: never
+    restart: unless-stopped
+    env_file:
+      - ./gateway/.env
+    environment:
+      TZ: Asia/Jakarta
+      IAM_GRPC_TARGET: iam:9001
+      GATEWAY_REDIS_ENABLED: "true"
+      GATEWAY_REDIS_ADDR: redis:6379
+      GATEWAY_REDIS_CA_CERT_PATH: /etc/integrione/certs/ca.crt
+      GATEWAY_REDIS_SERVER_NAME: redis
+      GATEWAY_REDIS_TLS_INSECURE_SKIP_VERIFY: "false"
+    ports:
+      - "127.0.0.1:5001:8080"
+    volumes:
+      - ./deploy/certs/ca.crt:/etc/integrione/certs/ca.crt:ro
+    depends_on:
+      gateway-1:
+        condition: service_healthy
+      iam:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/gateway-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+
+volumes:
+  pgdata18:
+    external: true
+    name: deploy_pgdata18
+  redisdata:
+    external: true
+    name: deploy_redisdata

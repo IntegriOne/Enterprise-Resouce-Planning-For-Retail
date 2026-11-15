@@ -1,0 +1,310 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+import "google/protobuf/timestamp.proto";
+import "iam/v1/common.proto";
+import "iam/v1/role.proto";
+
+// User merepresentasikan akun utama IAM (internal maupun eksternal).
+message User {
+  string id = 1;
+  UserKind kind = 2;
+  UserStatus status = 3;
+  string display_name = 4;
+  string avatar_url = 5;
+  string locale = 6;
+  string timezone = 7;
+  google.protobuf.Timestamp last_login_at = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+  google.protobuf.Timestamp deleted_at = 11;
+  int64 auth_epoch = 12;
+  int64 perm_revision = 13;
+}
+
+// UserIdentity merepresentasikan identitas login (email atau username) milik pengguna.
+message UserIdentity {
+  string id = 1;
+  string user_id = 2;
+  IdentityKind kind = 3;
+  string value = 4;
+  bool is_verified = 5;
+  bool is_primary = 6;
+  google.protobuf.Timestamp verified_at = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+// ScopedPermission merepresentasikan izin yang telah terikat ke scope tertentu.
+message ScopedPermission {
+  string permission_code = 1;
+  bool is_sensitive = 2;
+  Scope scope = 3;
+}
+
+// AccessSnapshot merangkum status akses efektif pengguna pada waktu pengecekan.
+message AccessSnapshot {
+  string user_id = 1;
+  UserKind user_kind = 2;
+  UserStatus user_status = 3;
+  bool mfa_enabled = 4;
+  repeated Role roles = 5;
+  repeated ScopedPermission permissions = 6;
+  google.protobuf.Timestamp checked_at = 7;
+  int64 auth_epoch = 8;
+  int64 perm_revision = 9;
+  int64 recovery_epoch = 10;
+}
+
+// UserToken merepresentasikan metadata token sekali pakai tanpa digest sensitif.
+message UserToken {
+  string id = 1;
+  string user_id = 2;
+  TokenPurpose purpose = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  google.protobuf.Timestamp used_at = 5;
+  google.protobuf.Timestamp created_at = 6;
+  optional string identity_id = 7;
+  TokenStatus status = 8;
+}
+
+// IssuedToken membawa token terbitan beserta plaintext token untuk dikirim melalui kanal terpisah.
+message IssuedToken {
+  UserToken token = 1;
+  string plaintext_token = 2;
+}
+
+message CreateUserRequest {
+  UserKind kind = 1;
+  UserStatus status = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  string locale = 5;
+  string timezone = 6;
+  string email = 7;
+  string username = 8;
+  string password = 9;
+  bool require_password_change = 10;
+  bool mark_identities_verified = 11;
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+message GetUserByIdRequest {
+  string user_id = 1;
+}
+
+message GetUserByIdResponse {
+  User user = 1;
+}
+
+message GetUserAccessSnapshotRequest {
+  string user_id = 1;
+}
+
+message GetUserAccessSnapshotResponse {
+  AccessSnapshot snapshot = 1;
+}
+
+message ListUsersRequest {
+  string query = 1;
+  optional UserKind kind = 2;
+  optional UserStatus status = 3;
+  bool include_deleted = 4;
+  PageRequest page = 5;
+}
+
+message ListUsersResponse {
+  repeated User items = 1;
+  PageInfo page = 2;
+}
+
+message UpdateUserProfileRequest {
+  string user_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string locale = 4;
+  string timezone = 5;
+  bool preserve_avatar_url = 6;
+}
+
+message UpdateUserProfileResponse {
+  User user = 1;
+}
+
+message ActivateUserRequest {
+  string user_id = 1;
+}
+
+message ActivateUserResponse {
+  User user = 1;
+}
+
+message SuspendUserRequest {
+  string user_id = 1;
+}
+
+message SuspendUserResponse {
+  User user = 1;
+}
+
+message DisableUserRequest {
+  string user_id = 1;
+}
+
+message DisableUserResponse {
+  User user = 1;
+}
+
+message SoftDeleteUserRequest {
+  string user_id = 1;
+}
+
+message SoftDeleteUserResponse {}
+
+message ListUserIdentitiesRequest {
+  string user_id = 1;
+}
+
+message ListUserIdentitiesResponse {
+  repeated UserIdentity identities = 1;
+}
+
+message AddUserIdentityRequest {
+  string user_id = 1;
+  IdentityKind kind = 2;
+  string value = 3;
+  bool is_primary = 4;
+}
+
+message AddUserIdentityResponse {
+  UserIdentity identity = 1;
+}
+
+message RequestIdentityVerificationRequest {
+  string identity_id = 1;
+}
+
+message RequestIdentityVerificationResponse {
+  IssuedToken issued_token = 1;
+}
+
+message ConfirmIdentityVerificationRequest {
+  string identity_id = 1;
+  string raw_token = 2;
+  bool activate_pending_user = 3;
+}
+
+message ConfirmIdentityVerificationResponse {
+  UserIdentity identity = 1;
+}
+
+message SetPrimaryUserIdentityRequest {
+  string user_id = 1;
+  string identity_id = 2;
+}
+
+message SetPrimaryUserIdentityResponse {
+  UserIdentity identity = 1;
+}
+
+message RemoveUserIdentityRequest {
+  string user_id = 1;
+  string identity_id = 2;
+}
+
+message RemoveUserIdentityResponse {}
+
+// VerifyEmailStatus merepresentasikan hasil deterministik konfirmasi tautan verifikasi email.
+enum VerifyEmailStatus {
+  VERIFY_EMAIL_STATUS_UNSPECIFIED = 0;
+  VERIFY_EMAIL_STATUS_VERIFIED = 1;
+  VERIFY_EMAIL_STATUS_EXPIRED = 2;
+  VERIFY_EMAIL_STATUS_ALREADY_USED = 3;
+  VERIFY_EMAIL_STATUS_INVALID = 4;
+}
+
+message ConfirmEmailVerificationByTokenRequest {
+  string raw_token = 1;
+}
+
+message ConfirmEmailVerificationByTokenResponse {
+  bool verified = 1;
+  VerifyEmailStatus status = 2;
+  string message = 3;
+  User user = 4;
+  UserIdentity identity = 5;
+}
+
+message UpdateUserEmailRequest {
+  string user_id = 1;
+  string email = 2;
+  string current_password = 3;
+}
+
+message UpdateUserEmailResponse {
+  string pending_email = 1;
+  bool is_pending = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  UserIdentity identity = 4;
+  string verification_token = 5;
+}
+
+message UpdateUserUsernameRequest {
+  string user_id = 1;
+  string username = 2;
+}
+
+message UpdateUserUsernameResponse {
+  string username = 1;
+  UserIdentity identity = 2;
+}
+
+message DeletePendingUserEmailRequest {
+  string user_id = 1;
+}
+
+message DeletePendingUserEmailResponse {
+  bool deleted = 1;
+}
+
+message ResendValidationEmailTokenRequest {
+  string user_id = 1;
+  string email = 2;
+}
+
+message ResendValidationEmailTokenResponse {
+  bool is_resend = 1;
+  string pending_email = 2;
+  string verification_token = 3;
+  google.protobuf.Timestamp expires_at = 4;
+}
+
+// UserService mengelola siklus hidup akun pengguna, profil, snapshot akses, dan identitas login.
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+  rpc GetUserAccessSnapshot(GetUserAccessSnapshotRequest) returns (GetUserAccessSnapshotResponse);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc UpdateUserProfile(UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
+  rpc UpdateUserEmail(UpdateUserEmailRequest) returns (UpdateUserEmailResponse);
+  rpc UpdateUserUsername(UpdateUserUsernameRequest) returns (UpdateUserUsernameResponse);
+  rpc DeletePendingUserEmail(DeletePendingUserEmailRequest) returns (DeletePendingUserEmailResponse);
+  rpc ResendValidationEmailToken(ResendValidationEmailTokenRequest) returns (ResendValidationEmailTokenResponse);
+  rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse);
+  rpc SuspendUser(SuspendUserRequest) returns (SuspendUserResponse);
+  rpc DisableUser(DisableUserRequest) returns (DisableUserResponse);
+  rpc SoftDeleteUser(SoftDeleteUserRequest) returns (SoftDeleteUserResponse);
+  rpc ListUserIdentities(ListUserIdentitiesRequest) returns (ListUserIdentitiesResponse);
+  rpc AddUserIdentity(AddUserIdentityRequest) returns (AddUserIdentityResponse);
+  rpc RequestIdentityVerification(RequestIdentityVerificationRequest) returns (RequestIdentityVerificationResponse);
+  rpc ConfirmIdentityVerification(ConfirmIdentityVerificationRequest) returns (ConfirmIdentityVerificationResponse);
+  rpc ConfirmEmailVerificationByToken(ConfirmEmailVerificationByTokenRequest) returns (ConfirmEmailVerificationByTokenResponse);
+  rpc SetPrimaryUserIdentity(SetPrimaryUserIdentityRequest) returns (SetPrimaryUserIdentityResponse);
+  rpc RemoveUserIdentity(RemoveUserIdentityRequest) returns (RemoveUserIdentityResponse);
+}
