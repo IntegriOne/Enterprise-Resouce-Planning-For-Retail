@@ -14,6 +14,8 @@ Pemetaan tabel berikut merupakan **keputusan desain untuk repositori ini**, buka
 
 ## Fungsi bisnis dan tabel
 
+**Keputusan owner 16 November 2026:** Talent Management menjadi domain internal HRM; recruitment/ATS tetap di HRM. Rincian 17 tabel lanjutan dan alur promosi: [Talent Management](talent-management.md).
+
 | Kelompok fungsi | Tabel utama | Perubahan |
 |---|---|---|
 | Perencanaan kebutuhan dan organisasi | `hr_job_families`, `hr_jobs`, `hr_positions`, `hr_workforce_plans`, `hr_workforce_plan_lines` | Dua tabel rencana/headcount baru; tidak menduplikasi unit organisasi Foundation. |
@@ -30,7 +32,7 @@ Pemetaan tabel berikut merupakan **keputusan desain untuk repositori ini**, buka
 
 Kelompok teknis terpisah: `hr_access_requests`, `hr_outbox_events`, `hr_inbox_events`. Ketiganya mencatat permintaan/receipt dan pengiriman, **bukan** divisi HR, sistem grant lokal, atau bukti integrasi sudah berjalan.
 
-Total: **45 → 69 tabel**, yaitu **24 tambahan**, 9 enum, 95 FK internal, 113 CHECK DBML dan 12 TableGroup (11 bisnis + 1 integrasi). Baseline menambah empat exclusion constraint, lima trigger dan tiga function.
+Perluasan pertama: 45 → 69 tabel. Penyatuan Talent Management menambah 17 tabel sehingga total sekarang **86 tabel**, 9 enum, **130 FK internal**, **147 CHECK DBML** dan 12 TableGroup (11 bisnis + 1 integrasi). Baseline menambah lima exclusion constraint, 14 trigger dan delapan function. Matriks di atas diperlengkap oleh tabel pada dokumen Talent Management.
 
 ## Mengapa cakupan ini proporsional
 
@@ -82,7 +84,7 @@ Tidak ada Go service, kontrak HRM, endpoint atau worker baru dalam perubahan ini
 
 ## Generasi dan verifikasi
 
-Baseline tunggal mengikuti keputusan owner pra-rilis: [000001_hrm.up.sql](../db/migrations/000001_hrm.up.sql) dan [000001_hrm.down.sql](../db/migrations/000001_hrm.down.sql). Generator memakai CLI resmi `@dbml/cli@12.0.0`, lalu menggabungkan tambahan invariant; jangan edit baseline generated manual. Tidak ada migrasi `000002`.
+Baseline tunggal mengikuti keputusan owner pra-rilis: [000001_hrm.up.sql](../db/migrations/000001_hrm.up.sql) dan [000001_hrm.down.sql](../db/migrations/000001_hrm.down.sql). Generator memakai CLI resmi `@dbml/cli@12.0.0`, lalu menggabungkan tambahan invariant dan menghapus timestamp export agar regenerasi deterministik; jangan edit baseline generated manual. Tidak ada migrasi `000002`.
 
 ```bash
 bash backend/services/human_resource/db/schema/generate.sh
@@ -91,7 +93,7 @@ bash backend/services/human_resource/db/test/verify_schema.sh
 
 Verifier menggunakan service PostgreSQL resmi Docker Compose, membuat nama unik `hrm_schema_*_test`, menjalankan up → kasus integritas → down → up, lalu menghapus hanya database yang berhasil dibuat verifier. Tidak mencetak secret, tidak menyentuh database management lain, tidak membuat service PostgreSQL host.
 
-Hasil aktual: PostgreSQL Docker **18.6** (bukan mengasumsikan 18.7 dari dokumentasi); **38 skenario negatif lulus** dan fixture positif lulus. Termasuk primary bersebelahan/secondary paralel, kompensasi komponen berbeda, payroll bayar sebelum akhir bulan, reimbursement yang membuat net melebihi gross, approval/posted/paid valid, serta versi metrik baru. Ini pengujian integritas SQL, bukan E2E GraphQL atau benchmark. `docker compose config --quiet` lulus. Tidak ada image HRM/runtime Go pada folder ini untuk dibuild; deployment service bersama tidak diubah.
+Hasil aktual: PostgreSQL Docker **18.6** (bukan mengasumsikan 18.7 dari dokumentasi); **70 skenario negatif lulus** (38 integritas HRM + 32 Talent Management) dan fixture positif lulus. Termasuk primary bersebelahan/secondary paralel, kompensasi komponen berbeda, payroll bayar sebelum akhir bulan, reimbursement yang membuat net melebihi gross, approval/posted/paid valid, serta versi metrik baru. Ini pengujian integritas SQL, bukan E2E GraphQL atau benchmark. `docker compose config --quiet` lulus. Tidak ada image HRM/runtime Go pada folder ini untuk dibuild; deployment service bersama tidak diubah.
 
 ## Catatan skill Database Engineer
 
@@ -99,6 +101,6 @@ Hasil aktual: PostgreSQL Docker **18.6** (bukan mengasumsikan 18.7 dari dokument
 - `source`: `analysis`.
 - `ontology`: fungsi HR → kelompok bisnis → tabel/relasi pada matriks di atas.
 - `semanticGaps`: publikasi/asesmen recruitment, perencanaan tenaga kerja, kompetensi, offboarding, ledger cuti, pengembangan, kebijakan/layanan, PKB dan engagement yang sebelumnya belum direpresentasikan penuh.
-- `recommendations`: penambahan 24 tabel dan penguatan integritas; implementasi bertahap mengikuti dependency, tanpa pemindahan ownership.
+- `recommendations`: perluasan pertama 24 tabel, dilanjutkan 17 tabel Talent Management atas keputusan owner dan penguatan integritas; implementasi bertahap mengikuti dependency, tanpa pemindahan ownership.
 - `evidence`: sumber CIPD, boundary/principals, DBML sebelum/sesudah, export SQL, dan tes PostgreSQL yang dapat diulang.
 - `confidence`: tinggi untuk cakupan struktur dan constraint yang diuji; menengah untuk prioritas fitur yang belum divalidasi dengan proses HR perusahaan; belum dinilai untuk aturan pajak/hukum, workload/performa dan kesiapan runtime.

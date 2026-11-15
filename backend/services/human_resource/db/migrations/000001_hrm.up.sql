@@ -747,7 +747,6 @@ CREATE TABLE "hr_learning_courses" (
   "provider_party_reference_id" uuid,
   "delivery_mode" varchar(40) NOT NULL,
   "duration_hours" numeric(10,2),
-  "competency_id" uuid,
   "credential_awarded" boolean NOT NULL DEFAULT false,
   "expiry_months" integer,
   "valid_from" date,
@@ -809,6 +808,7 @@ CREATE TABLE "hr_succession_candidates" (
   "readiness_code" varchar(40) NOT NULL,
   "readiness_assessed_at" date NOT NULL,
   "readiness_rationale" text,
+  "talent_assessment_id" uuid,
   "development_plan_id" uuid,
   "risk_of_loss" varchar(30)
 );
@@ -1278,6 +1278,259 @@ CREATE TABLE "hr_inbox_events" (
   CONSTRAINT "ck_hr_inbox_state" CHECK (status IN ('pending','processed','rejected') AND (status <> 'processed' OR processed_at IS NOT NULL))
 );
 
+CREATE TABLE "hr_talent_frameworks" (
+  "id" uuid PRIMARY KEY,
+  "framework_code" varchar(100) NOT NULL,
+  "framework_version" integer NOT NULL,
+  "framework_name" varchar(180) NOT NULL,
+  "rubric_document_version_reference_id" uuid NOT NULL,
+  "rubric_digest" bytea NOT NULL,
+  "effective_from" date NOT NULL,
+  "effective_to" date,
+  "approved_by_principal_id" uuid NOT NULL,
+  "approved_at" timestamptz NOT NULL,
+  CONSTRAINT "ck_hr_talent_framework_version" CHECK (framework_version > 0 AND (effective_to IS NULL OR effective_to >= effective_from))
+);
+
+CREATE TABLE "hr_talent_dimensions" (
+  "id" uuid PRIMARY KEY,
+  "framework_id" uuid NOT NULL,
+  "dimension_code" varchar(80) NOT NULL,
+  "dimension_name" varchar(180) NOT NULL,
+  "definition" text NOT NULL,
+  "rating_anchors" jsonb NOT NULL,
+  "weight_percent" numeric(6,3) NOT NULL,
+  "is_required" boolean NOT NULL DEFAULT true,
+  CONSTRAINT "ck_hr_talent_dimension_weight" CHECK (weight_percent BETWEEN 0 AND 100)
+);
+
+CREATE TABLE "hr_talent_review_cycles" (
+  "id" uuid PRIMARY KEY,
+  "cycle_code" varchar(100) UNIQUE NOT NULL,
+  "framework_id" uuid NOT NULL,
+  "legal_entity_reference_id" uuid NOT NULL,
+  "organization_unit_reference_id" uuid,
+  "period_start" date NOT NULL,
+  "period_end" date NOT NULL,
+  "status" varchar(30) NOT NULL DEFAULT 'draft',
+  "owner_principal_id" uuid NOT NULL,
+  "closed_at" timestamptz,
+  CONSTRAINT "ck_hr_talent_cycle_period" CHECK (period_end >= period_start),
+  CONSTRAINT "ck_hr_talent_cycle_status" CHECK (status IN ('draft','open','calibration','closed','cancelled')),
+  CONSTRAINT "ck_hr_talent_cycle_closed" CHECK (status <> 'closed' OR closed_at IS NOT NULL)
+);
+
+CREATE TABLE "hr_talent_assessments" (
+  "id" uuid PRIMARY KEY,
+  "worker_id" uuid NOT NULL,
+  "talent_review_cycle_id" uuid NOT NULL,
+  "framework_id" uuid NOT NULL,
+  "assessment_version" integer NOT NULL,
+  "performance_review_id" uuid,
+  "status" varchar(30) NOT NULL DEFAULT 'draft',
+  "assessed_by_principal_id" uuid NOT NULL,
+  "assessed_at" timestamptz NOT NULL DEFAULT (now()),
+  "evidence_document_version_reference_id" uuid NOT NULL,
+  "evidence_digest" bytea NOT NULL,
+  "segment_code" varchar(80),
+  "finalized_by_principal_id" uuid,
+  "finalized_at" timestamptz,
+  CONSTRAINT "ck_hr_talent_assessment_version" CHECK (assessment_version > 0),
+  CONSTRAINT "ck_hr_talent_assessment_status" CHECK (status IN ('draft','submitted','finalized','withdrawn')),
+  CONSTRAINT "ck_hr_talent_assessment_finalized" CHECK (status <> 'finalized' OR (finalized_at IS NOT NULL AND finalized_by_principal_id IS NOT NULL)),
+  CONSTRAINT "ck_hr_talent_assessment_dates" CHECK (finalized_at IS NULL OR finalized_at >= assessed_at)
+);
+
+CREATE TABLE "hr_talent_assessment_scores" (
+  "id" uuid PRIMARY KEY,
+  "assessment_id" uuid NOT NULL,
+  "framework_id" uuid NOT NULL,
+  "dimension_id" uuid NOT NULL,
+  "score" smallint NOT NULL,
+  "evidence_document_version_reference_id" uuid NOT NULL,
+  "evidence_digest" bytea NOT NULL,
+  CONSTRAINT "ck_hr_talent_score" CHECK (score BETWEEN 1 AND 5)
+);
+
+CREATE TABLE "hr_talent_calibration_sessions" (
+  "id" uuid PRIMARY KEY,
+  "talent_review_cycle_id" uuid NOT NULL,
+  "session_code" varchar(100) NOT NULL,
+  "chair_principal_id" uuid NOT NULL,
+  "scheduled_at" timestamptz NOT NULL,
+  "status" varchar(30) NOT NULL DEFAULT 'planned',
+  "closed_at" timestamptz,
+  "minutes_document_version_reference_id" uuid,
+  CONSTRAINT "ck_hr_calibration_status" CHECK (status IN ('planned','open','closed','cancelled')),
+  CONSTRAINT "ck_hr_calibration_closed" CHECK (status <> 'closed' OR (closed_at IS NOT NULL AND minutes_document_version_reference_id IS NOT NULL))
+);
+
+CREATE TABLE "hr_talent_calibration_decisions" (
+  "id" uuid PRIMARY KEY,
+  "session_id" uuid NOT NULL,
+  "talent_review_cycle_id" uuid NOT NULL,
+  "assessment_id" uuid NOT NULL,
+  "dimension_id" uuid NOT NULL,
+  "original_score" smallint NOT NULL,
+  "calibrated_score" smallint NOT NULL,
+  "rationale_document_version_reference_id" uuid NOT NULL,
+  "rationale_digest" bytea NOT NULL,
+  "decided_by_principal_id" uuid NOT NULL,
+  "decided_at" timestamptz NOT NULL DEFAULT (now()),
+  CONSTRAINT "ck_hr_calibration_score" CHECK (calibrated_score BETWEEN 1 AND 5)
+);
+
+CREATE TABLE "hr_talent_pools" (
+  "id" uuid PRIMARY KEY,
+  "pool_code" varchar(100) NOT NULL,
+  "pool_version" integer NOT NULL,
+  "pool_name" varchar(180) NOT NULL,
+  "legal_entity_reference_id" uuid NOT NULL,
+  "target_job_id" uuid,
+  "eligibility_document_version_reference_id" uuid NOT NULL,
+  "eligibility_digest" bytea NOT NULL,
+  "valid_from" date NOT NULL,
+  "valid_to" date,
+  "owner_principal_id" uuid NOT NULL,
+  CONSTRAINT "ck_hr_talent_pool_dates" CHECK (pool_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from))
+);
+
+CREATE TABLE "hr_talent_pool_memberships" (
+  "id" uuid PRIMARY KEY,
+  "talent_pool_id" uuid NOT NULL,
+  "worker_id" uuid NOT NULL,
+  "assessment_id" uuid NOT NULL,
+  "nominated_by_principal_id" uuid NOT NULL,
+  "status" varchar(30) NOT NULL DEFAULT 'nominated',
+  "valid_from" date NOT NULL,
+  "valid_to" date,
+  "approved_by_principal_id" uuid,
+  "approved_at" timestamptz,
+  "exit_reason_code" varchar(80),
+  CONSTRAINT "ck_hr_pool_membership_dates" CHECK (valid_to IS NULL OR valid_to >= valid_from),
+  CONSTRAINT "ck_hr_pool_membership_status" CHECK (status IN ('nominated','active','rejected','exited')),
+  CONSTRAINT "ck_hr_pool_membership_approval" CHECK (status NOT IN ('active','exited') OR (approved_by_principal_id IS NOT NULL AND approved_at IS NOT NULL)),
+  CONSTRAINT "ck_hr_pool_membership_exit" CHECK (status <> 'exited' OR (valid_to IS NOT NULL AND exit_reason_code IS NOT NULL))
+);
+
+CREATE TABLE "hr_career_paths" (
+  "id" uuid PRIMARY KEY,
+  "path_code" varchar(100) NOT NULL,
+  "path_version" integer NOT NULL,
+  "path_name" varchar(180) NOT NULL,
+  "job_family_id" uuid NOT NULL,
+  "valid_from" date NOT NULL,
+  "valid_to" date,
+  "approved_by_principal_id" uuid NOT NULL,
+  "approved_at" timestamptz NOT NULL,
+  CONSTRAINT "ck_hr_career_path_dates" CHECK (path_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from))
+);
+
+CREATE TABLE "hr_career_path_transitions" (
+  "id" uuid PRIMARY KEY,
+  "career_path_id" uuid NOT NULL,
+  "from_job_id" uuid NOT NULL,
+  "to_job_id" uuid NOT NULL,
+  "movement_type" varchar(30) NOT NULL,
+  "minimum_tenure_months" integer NOT NULL DEFAULT 0,
+  "requirements_document_version_reference_id" uuid NOT NULL,
+  "requirements_digest" bytea NOT NULL,
+  CONSTRAINT "ck_hr_career_transition_jobs" CHECK (from_job_id <> to_job_id AND minimum_tenure_months >= 0),
+  CONSTRAINT "ck_hr_career_transition_type" CHECK (movement_type IN ('promotion','lateral','specialization'))
+);
+
+CREATE TABLE "hr_worker_career_aspirations" (
+  "id" uuid PRIMARY KEY,
+  "worker_id" uuid NOT NULL,
+  "target_job_id" uuid NOT NULL,
+  "career_path_transition_id" uuid,
+  "preference_rank" integer NOT NULL,
+  "recorded_at" timestamptz NOT NULL DEFAULT (now()),
+  "recorded_by_principal_id" uuid NOT NULL,
+  "target_date" date,
+  "mobility_preference" varchar(30) NOT NULL DEFAULT 'unspecified',
+  "preferred_location_reference_id" uuid,
+  "withdrawn_at" timestamptz,
+  CONSTRAINT "ck_hr_career_preference_rank" CHECK (preference_rank > 0),
+  CONSTRAINT "ck_hr_career_mobility" CHECK (mobility_preference IN ('unspecified','current_location','open_to_relocation','remote')),
+  CONSTRAINT "ck_hr_career_aspiration_dates" CHECK (withdrawn_at IS NULL OR withdrawn_at >= recorded_at)
+);
+
+CREATE TABLE "hr_promotion_recommendations" (
+  "id" uuid PRIMARY KEY,
+  "recommendation_number" varchar(120) UNIQUE NOT NULL,
+  "worker_id" uuid NOT NULL,
+  "source_assignment_id" uuid NOT NULL,
+  "target_position_id" uuid NOT NULL,
+  "assessment_id" uuid NOT NULL,
+  "supersedes_recommendation_id" uuid,
+  "recommended_effective_date" date NOT NULL,
+  "rationale_document_version_reference_id" uuid NOT NULL,
+  "rationale_digest" bytea NOT NULL,
+  "recommended_by_principal_id" uuid NOT NULL,
+  "recommended_at" timestamptz NOT NULL DEFAULT (now()),
+  "status" varchar(30) NOT NULL DEFAULT 'draft',
+  "approval_decision_id" uuid,
+  "applied_assignment_id" uuid UNIQUE,
+  "applied_lifecycle_event_id" bigint UNIQUE,
+  "applied_at" timestamptz,
+  "idempotency_key" varchar(160) UNIQUE NOT NULL,
+  CONSTRAINT "ck_hr_promotion_status" CHECK (status IN ('draft','submitted','approved','rejected','returned','cancelled','applied')),
+  CONSTRAINT "ck_hr_promotion_approval_reference" CHECK ((status IN ('approved','applied')) = (approval_decision_id IS NOT NULL)),
+  CONSTRAINT "ck_hr_promotion_application" CHECK ((status = 'applied') = (applied_assignment_id IS NOT NULL AND applied_lifecycle_event_id IS NOT NULL AND applied_at IS NOT NULL)),
+  CONSTRAINT "ck_hr_promotion_no_partial_application" CHECK (status = 'applied' OR (applied_assignment_id IS NULL AND applied_lifecycle_event_id IS NULL AND applied_at IS NULL)),
+  CONSTRAINT "ck_hr_promotion_new_assignment" CHECK (applied_assignment_id IS NULL OR applied_assignment_id <> source_assignment_id),
+  CONSTRAINT "ck_hr_promotion_not_self_revision" CHECK (supersedes_recommendation_id IS NULL OR supersedes_recommendation_id <> id)
+);
+
+CREATE TABLE "hr_promotion_decisions" (
+  "id" uuid PRIMARY KEY,
+  "recommendation_id" uuid NOT NULL,
+  "step_number" integer NOT NULL,
+  "decision" hr_approval_decision_enum NOT NULL,
+  "decided_by_principal_id" uuid NOT NULL,
+  "decided_at" timestamptz NOT NULL DEFAULT (now()),
+  "rationale_document_version_reference_id" uuid NOT NULL,
+  "rationale_digest" bytea NOT NULL,
+  "idempotency_key" varchar(160) UNIQUE NOT NULL,
+  CONSTRAINT "ck_hr_promotion_decision_step" CHECK (step_number > 0)
+);
+
+CREATE TABLE "hr_learning_course_competencies" (
+  "course_id" uuid NOT NULL,
+  "competency_id" uuid NOT NULL,
+  "target_level" smallint NOT NULL,
+  CONSTRAINT "ck_hr_course_competency_level" CHECK (target_level BETWEEN 1 AND 5),
+  PRIMARY KEY ("course_id", "competency_id")
+);
+
+CREATE TABLE "hr_performance_goal_updates" (
+  "id" uuid PRIMARY KEY,
+  "goal_id" uuid NOT NULL,
+  "observed_at" timestamptz NOT NULL,
+  "actual_value" numeric(24,8) NOT NULL,
+  "evidence_document_version_reference_id" uuid NOT NULL,
+  "evidence_digest" bytea NOT NULL,
+  "recorded_by_principal_id" uuid NOT NULL,
+  "recorded_at" timestamptz NOT NULL DEFAULT (now()),
+  "supersedes_update_id" uuid UNIQUE,
+  "idempotency_key" varchar(160) UNIQUE NOT NULL,
+  CONSTRAINT "ck_hr_goal_update_revision" CHECK (supersedes_update_id IS NULL OR supersedes_update_id <> id)
+);
+
+CREATE TABLE "hr_performance_review_goal_scores" (
+  "id" uuid PRIMARY KEY,
+  "performance_review_id" uuid NOT NULL,
+  "goal_id" uuid NOT NULL,
+  "worker_id" uuid NOT NULL,
+  "performance_cycle_id" uuid NOT NULL,
+  "rating" smallint NOT NULL,
+  "weight_percent_snapshot" numeric(6,3) NOT NULL,
+  "rubric_document_version_reference_id" uuid NOT NULL,
+  "evidence_document_version_reference_id" uuid NOT NULL,
+  CONSTRAINT "ck_hr_review_goal_score" CHECK (rating BETWEEN 1 AND 5 AND weight_percent_snapshot BETWEEN 0 AND 100)
+);
+
 CREATE INDEX "ix_hr_job_family_level" ON "hr_jobs" ("job_family_id", "job_level_code", "is_active");
 
 CREATE INDEX "ix_hr_position_org_period" ON "hr_positions" ("organization_unit_reference_id", "valid_from");
@@ -1289,6 +1542,8 @@ CREATE INDEX "ix_hr_contract_worker_period" ON "hr_employment_contracts" ("worke
 CREATE UNIQUE INDEX "uq_hr_worker_assignment_period" ON "hr_worker_assignments" ("worker_id", "position_id", "assignment_type", "valid_from");
 
 CREATE UNIQUE INDEX "uq_hr_assignment_worker_pair" ON "hr_worker_assignments" ("id", "worker_id");
+
+CREATE UNIQUE INDEX ON "hr_worker_assignments" ("id", "worker_id", "position_id");
 
 CREATE INDEX "ix_hr_assignment_position_period" ON "hr_worker_assignments" ("position_id", "valid_from", "valid_to");
 
@@ -1371,6 +1626,10 @@ CREATE UNIQUE INDEX "uq_hr_worker_performance_goal" ON "hr_performance_goals" ("
 CREATE UNIQUE INDEX "uq_hr_goal_worker_cycle_pair" ON "hr_performance_goals" ("id", "worker_id", "performance_cycle_id");
 
 CREATE UNIQUE INDEX "uq_hr_performance_review_version" ON "hr_performance_reviews" ("worker_id", "performance_cycle_id", "reviewer_principal_id", "reviewer_role", "review_version");
+
+CREATE UNIQUE INDEX ON "hr_performance_reviews" ("id", "worker_id");
+
+CREATE UNIQUE INDEX ON "hr_performance_reviews" ("id", "worker_id", "performance_cycle_id");
 
 CREATE UNIQUE INDEX "uq_hr_learning_course_version" ON "hr_learning_courses" ("course_code", "course_version");
 
@@ -1455,6 +1714,56 @@ CREATE INDEX "ix_hr_outbox_delivery" ON "hr_outbox_events" ("published_at", "ava
 CREATE UNIQUE INDEX ON "hr_inbox_events" ("source_management", "source_event_id");
 
 CREATE INDEX "ix_hr_inbox_processing" ON "hr_inbox_events" ("status", "received_at");
+
+CREATE UNIQUE INDEX ON "hr_talent_frameworks" ("framework_code", "framework_version");
+
+CREATE UNIQUE INDEX ON "hr_talent_dimensions" ("framework_id", "dimension_code");
+
+CREATE UNIQUE INDEX ON "hr_talent_dimensions" ("id", "framework_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_review_cycles" ("id", "framework_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_assessments" ("worker_id", "talent_review_cycle_id", "assessment_version");
+
+CREATE UNIQUE INDEX ON "hr_talent_assessments" ("id", "worker_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_assessments" ("id", "framework_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_assessments" ("id", "talent_review_cycle_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_assessment_scores" ("assessment_id", "dimension_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_assessment_scores" ("assessment_id", "dimension_id", "score");
+
+CREATE UNIQUE INDEX ON "hr_talent_calibration_sessions" ("talent_review_cycle_id", "session_code");
+
+CREATE UNIQUE INDEX ON "hr_talent_calibration_sessions" ("id", "talent_review_cycle_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_calibration_decisions" ("session_id", "assessment_id", "dimension_id");
+
+CREATE UNIQUE INDEX ON "hr_talent_pools" ("legal_entity_reference_id", "pool_code", "pool_version");
+
+CREATE UNIQUE INDEX ON "hr_talent_pool_memberships" ("talent_pool_id", "worker_id", "valid_from");
+
+CREATE UNIQUE INDEX ON "hr_career_paths" ("path_code", "path_version");
+
+CREATE UNIQUE INDEX ON "hr_career_path_transitions" ("career_path_id", "from_job_id", "to_job_id");
+
+CREATE UNIQUE INDEX ON "hr_career_path_transitions" ("id", "to_job_id");
+
+CREATE UNIQUE INDEX ON "hr_worker_career_aspirations" ("worker_id", "target_job_id", "recorded_at");
+
+CREATE UNIQUE INDEX ON "hr_promotion_recommendations" ("id", "worker_id");
+
+CREATE UNIQUE INDEX ON "hr_promotion_decisions" ("recommendation_id", "step_number");
+
+CREATE UNIQUE INDEX ON "hr_promotion_decisions" ("id", "recommendation_id");
+
+CREATE INDEX "ix_hr_goal_measurement_history" ON "hr_performance_goal_updates" ("goal_id", "observed_at");
+
+CREATE UNIQUE INDEX ON "hr_performance_goal_updates" ("id", "goal_id");
+
+CREATE UNIQUE INDEX ON "hr_performance_review_goal_scores" ("performance_review_id", "goal_id");
 
 COMMENT ON COLUMN "hr_job_families"."job_domain" IS 'manufacturing, engineering, finance, sales, operations, professional, executive, other';
 
@@ -1604,6 +1913,32 @@ COMMENT ON TABLE "hr_outbox_events" IS 'Ditulis atomik bersama perubahan bisnis.
 
 COMMENT ON TABLE "hr_inbox_events" IS 'Receipt processed dan efek bisnis harus satu transaksi. Sumber terautentikasi; event ID sama dengan digest berbeda ditolak. Ordering/replay dan payload retrieval memerlukan transport durable; tabel ini bukan implementasi consumer.';
 
+COMMENT ON TABLE "hr_talent_frameworks" IS 'Rubrik disahkan dan berversi; arti level 1–5 serta pemetaan band/9-box harus eksplisit. Bukan label kepribadian atau keputusan kerja otomatis.';
+
+COMMENT ON COLUMN "hr_talent_dimensions"."rating_anchors" IS 'Definisi bukti teramati untuk seluruh level 1–5; divalidasi service';
+
+COMMENT ON TABLE "hr_talent_assessments" IS 'Potensi/readiness berbeda dari hasil performance dan kompetensi. Snapshot final immutable; revisi memakai assessment_version baru. Kandidat eksternal tetap di ATS sampai menjadi worker.';
+
+COMMENT ON COLUMN "hr_talent_assessments"."segment_code" IS 'Kode hasil interpretasi rubrik berversi, bukan grant atau keputusan promosi';
+
+COMMENT ON TABLE "hr_talent_calibration_decisions" IS 'Keputusan panel terpisah dari skor awal; bukti/skor awal tidak ditimpa. Service memeriksa assessment final, sesi terbuka dan mandat panel. Koreksi melalui sesi baru.';
+
+COMMENT ON TABLE "hr_talent_pool_memberships" IS 'Keanggotaan talenta internal berbeda dari candidate talent_pool ATS dan group IAM; tidak memberi janji promosi.';
+
+COMMENT ON TABLE "hr_career_path_transitions" IS 'Jalur bisa bercabang; kebutuhan skill memakai hr_job_competencies pada job tujuan. Mobilitas lateral dapat membentuk siklus yang sah; transisi tidak mengeksekusi perpindahan.';
+
+COMMENT ON TABLE "hr_worker_career_aspirations" IS 'Aspirasi dinyatakan pekerja, bukan penilaian manajer. Jangan menyimpulkan kesediaan relokasi dari data keluarga atau demografi.';
+
+COMMENT ON TABLE "hr_promotion_recommendations" IS 'Rekomendasi bukan perubahan jabatan. Service HRM menerapkan keputusan dalam transaksi: tutup assignment lama, buat assignment baru, catat event promotion dan outbox, kemudian tandai applied. IAM memproses perubahan akses secara terpisah. Draft dapat diedit; revisi setelah submitted memakai rekomendasi baru.';
+
+COMMENT ON TABLE "hr_promotion_decisions" IS 'Riwayat keputusan append-only. Penyetuju berbeda dari pengusul; service memverifikasi mandat, seluruh tahap wajib dan larangan persetujuan diri pekerja melalui IAM.';
+
+COMMENT ON TABLE "hr_learning_course_competencies" IS 'Satu kursus dapat mengembangkan banyak kompetensi. Selesai kursus tidak otomatis memberi skor kompetensi tanpa asesmen.';
+
+COMMENT ON TABLE "hr_performance_goal_updates" IS 'Riwayat hasil KPI append-only; koreksi menunjuk pengukuran pada goal sama. actual_value pada goal adalah proyeksi terakhir, diperbarui service secara atomik.';
+
+COMMENT ON TABLE "hr_performance_review_goal_scores" IS 'Goal dan review harus milik pekerja serta siklus yang sama. Service memverifikasi total bobot/rubrik dan membekukan rincian saat review difinalisasi.';
+
 ALTER TABLE "hr_jobs" ADD FOREIGN KEY ("job_family_id") REFERENCES "hr_job_families" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "hr_positions" ADD FOREIGN KEY ("job_id") REFERENCES "hr_jobs" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
@@ -1728,8 +2063,6 @@ ALTER TABLE "hr_worker_competency_assessments" ADD FOREIGN KEY ("worker_id") REF
 
 ALTER TABLE "hr_worker_competency_assessments" ADD FOREIGN KEY ("competency_id") REFERENCES "hr_competencies" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "hr_learning_courses" ADD FOREIGN KEY ("competency_id") REFERENCES "hr_competencies" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
-
 ALTER TABLE "hr_job_postings" ADD FOREIGN KEY ("requisition_id") REFERENCES "hr_requisitions" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "hr_applications" ADD FOREIGN KEY ("source_posting_id", "requisition_id") REFERENCES "hr_job_postings" ("id", "requisition_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
@@ -1793,6 +2126,78 @@ ALTER TABLE "hr_engagement_survey_results" ADD FOREIGN KEY ("survey_id") REFEREN
 ALTER TABLE "hr_access_requests" ADD FOREIGN KEY ("worker_id") REFERENCES "hr_workers" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "hr_access_requests" ADD FOREIGN KEY ("lifecycle_event_id", "worker_id") REFERENCES "hr_worker_lifecycle_events" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_dimensions" ADD FOREIGN KEY ("framework_id") REFERENCES "hr_talent_frameworks" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_review_cycles" ADD FOREIGN KEY ("framework_id") REFERENCES "hr_talent_frameworks" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_assessments" ADD FOREIGN KEY ("worker_id") REFERENCES "hr_workers" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_assessments" ADD FOREIGN KEY ("talent_review_cycle_id", "framework_id") REFERENCES "hr_talent_review_cycles" ("id", "framework_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_assessments" ADD FOREIGN KEY ("performance_review_id", "worker_id") REFERENCES "hr_performance_reviews" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_assessment_scores" ADD FOREIGN KEY ("assessment_id", "framework_id") REFERENCES "hr_talent_assessments" ("id", "framework_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_assessment_scores" ADD FOREIGN KEY ("dimension_id", "framework_id") REFERENCES "hr_talent_dimensions" ("id", "framework_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_calibration_sessions" ADD FOREIGN KEY ("talent_review_cycle_id") REFERENCES "hr_talent_review_cycles" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_calibration_decisions" ADD FOREIGN KEY ("session_id", "talent_review_cycle_id") REFERENCES "hr_talent_calibration_sessions" ("id", "talent_review_cycle_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_calibration_decisions" ADD FOREIGN KEY ("assessment_id", "talent_review_cycle_id") REFERENCES "hr_talent_assessments" ("id", "talent_review_cycle_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_calibration_decisions" ADD FOREIGN KEY ("assessment_id", "dimension_id", "original_score") REFERENCES "hr_talent_assessment_scores" ("assessment_id", "dimension_id", "score") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_pools" ADD FOREIGN KEY ("target_job_id") REFERENCES "hr_jobs" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_pool_memberships" ADD FOREIGN KEY ("talent_pool_id") REFERENCES "hr_talent_pools" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_talent_pool_memberships" ADD FOREIGN KEY ("assessment_id", "worker_id") REFERENCES "hr_talent_assessments" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_career_paths" ADD FOREIGN KEY ("job_family_id") REFERENCES "hr_job_families" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_career_path_transitions" ADD FOREIGN KEY ("career_path_id") REFERENCES "hr_career_paths" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_career_path_transitions" ADD FOREIGN KEY ("from_job_id") REFERENCES "hr_jobs" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_career_path_transitions" ADD FOREIGN KEY ("to_job_id") REFERENCES "hr_jobs" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_worker_career_aspirations" ADD FOREIGN KEY ("worker_id") REFERENCES "hr_workers" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_worker_career_aspirations" ADD FOREIGN KEY ("target_job_id") REFERENCES "hr_jobs" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_worker_career_aspirations" ADD FOREIGN KEY ("career_path_transition_id", "target_job_id") REFERENCES "hr_career_path_transitions" ("id", "to_job_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_recommendations" ADD FOREIGN KEY ("source_assignment_id", "worker_id") REFERENCES "hr_worker_assignments" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_recommendations" ADD FOREIGN KEY ("target_position_id") REFERENCES "hr_positions" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_recommendations" ADD FOREIGN KEY ("assessment_id", "worker_id") REFERENCES "hr_talent_assessments" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_recommendations" ADD FOREIGN KEY ("supersedes_recommendation_id", "worker_id") REFERENCES "hr_promotion_recommendations" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_recommendations" ADD FOREIGN KEY ("approval_decision_id", "id") REFERENCES "hr_promotion_decisions" ("id", "recommendation_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_recommendations" ADD FOREIGN KEY ("applied_assignment_id", "worker_id", "target_position_id") REFERENCES "hr_worker_assignments" ("id", "worker_id", "position_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_recommendations" ADD FOREIGN KEY ("applied_lifecycle_event_id", "worker_id") REFERENCES "hr_worker_lifecycle_events" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_promotion_decisions" ADD FOREIGN KEY ("recommendation_id") REFERENCES "hr_promotion_recommendations" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_learning_course_competencies" ADD FOREIGN KEY ("course_id") REFERENCES "hr_learning_courses" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_learning_course_competencies" ADD FOREIGN KEY ("competency_id") REFERENCES "hr_competencies" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_performance_goal_updates" ADD FOREIGN KEY ("goal_id") REFERENCES "hr_performance_goals" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_performance_goal_updates" ADD FOREIGN KEY ("supersedes_update_id", "goal_id") REFERENCES "hr_performance_goal_updates" ("id", "goal_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_performance_review_goal_scores" ADD FOREIGN KEY ("performance_review_id", "worker_id", "performance_cycle_id") REFERENCES "hr_performance_reviews" ("id", "worker_id", "performance_cycle_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_performance_review_goal_scores" ADD FOREIGN KEY ("goal_id", "worker_id", "performance_cycle_id") REFERENCES "hr_performance_goals" ("id", "worker_id", "performance_cycle_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_succession_candidates" ADD FOREIGN KEY ("talent_assessment_id", "candidate_worker_id") REFERENCES "hr_talent_assessments" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
 
 -- Invariant PostgreSQL yang tidak dapat dinyatakan penuh dalam DBML.
 -- Tanggal efektif inklusif; periode berikutnya dimulai sehari setelah akhir.
@@ -1922,3 +2327,176 @@ END;
 $$;
 CREATE TRIGGER tr_hr_payroll_run_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_payroll_runs
   FOR EACH ROW EXECUTE FUNCTION hr_guard_payroll_run();
+
+-- Snapshot penilaian final dan bukti riwayat tidak diubah diam-diam.
+CREATE TRIGGER tr_hr_talent_calibration_immutable BEFORE UPDATE OR DELETE ON hr_talent_calibration_decisions
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+CREATE TRIGGER tr_hr_goal_update_immutable BEFORE UPDATE OR DELETE ON hr_performance_goal_updates
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+CREATE TRIGGER tr_hr_promotion_decision_immutable BEFORE UPDATE OR DELETE ON hr_promotion_decisions
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+
+CREATE FUNCTION hr_guard_talent_assessment() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.status <> 'draft' THEN
+      RAISE EXCEPTION 'Talent assessment must start as draft' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF OLD.status = 'finalized' THEN
+    RAISE EXCEPTION 'Finalized talent assessment is immutable' USING ERRCODE = '23514';
+  END IF;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  IF NEW.status = 'finalized' THEN
+    IF NOT EXISTS (SELECT 1 FROM hr_talent_assessment_scores WHERE assessment_id = NEW.id)
+      OR EXISTS (SELECT 1 FROM hr_talent_dimensions d WHERE d.framework_id = NEW.framework_id AND d.is_required
+        AND NOT EXISTS (SELECT 1 FROM hr_talent_assessment_scores s WHERE s.assessment_id = NEW.id AND s.dimension_id = d.id)) THEN
+      RAISE EXCEPTION 'Required talent dimension scores are missing' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_talent_assessment_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_talent_assessments
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_talent_assessment();
+
+CREATE FUNCTION hr_guard_talent_score() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  row_data jsonb;
+  parent_status text;
+BEGIN
+  FOR row_data IN SELECT value FROM jsonb_array_elements(
+    CASE TG_OP WHEN 'INSERT' THEN jsonb_build_array(to_jsonb(NEW))
+      WHEN 'DELETE' THEN jsonb_build_array(to_jsonb(OLD))
+      ELSE jsonb_build_array(to_jsonb(OLD), to_jsonb(NEW)) END)
+  LOOP
+    SELECT status INTO parent_status FROM hr_talent_assessments
+      WHERE id = (row_data->>'assessment_id')::uuid FOR UPDATE;
+    IF parent_status = 'finalized' THEN
+      RAISE EXCEPTION 'Finalized talent scores are immutable' USING ERRCODE = '23514';
+    END IF;
+  END LOOP;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_talent_score_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_talent_assessment_scores
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_talent_score();
+
+CREATE FUNCTION hr_guard_promotion_decision() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  recommendation hr_promotion_recommendations%ROWTYPE;
+BEGIN
+  SELECT * INTO recommendation FROM hr_promotion_recommendations WHERE id = NEW.recommendation_id FOR UPDATE;
+  IF NOT FOUND OR recommendation.status <> 'submitted' THEN
+    RAISE EXCEPTION 'Promotion decision requires a submitted recommendation' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.decided_by_principal_id = recommendation.recommended_by_principal_id THEN
+    RAISE EXCEPTION 'Promotion requester cannot approve own recommendation' USING ERRCODE = '23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM hr_promotion_decisions WHERE recommendation_id = NEW.recommendation_id AND step_number >= NEW.step_number) THEN
+    RAISE EXCEPTION 'Promotion decision steps must increase' USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_promotion_decision_guard BEFORE INSERT ON hr_promotion_decisions
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_promotion_decision();
+
+CREATE FUNCTION hr_guard_promotion_recommendation() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  editable_fields text[] := ARRAY['status','approval_decision_id','applied_assignment_id','applied_lifecycle_event_id','applied_at'];
+  latest_decision hr_promotion_decisions%ROWTYPE;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.status <> 'draft' THEN
+      RAISE EXCEPTION 'Promotion recommendation must start as draft' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.status <> 'draft' THEN
+      RAISE EXCEPTION 'Submitted promotion history cannot be deleted' USING ERRCODE = '23514';
+    END IF;
+    RETURN OLD;
+  END IF;
+  IF OLD.status <> 'draft' AND (to_jsonb(NEW) - editable_fields) IS DISTINCT FROM (to_jsonb(OLD) - editable_fields) THEN
+    RAISE EXCEPTION 'Submitted promotion proposal is immutable; create a revision' USING ERRCODE = '23514';
+  END IF;
+  IF NOT (NEW.status = OLD.status
+    OR (OLD.status = 'draft' AND NEW.status IN ('submitted','cancelled'))
+    OR (OLD.status = 'submitted' AND NEW.status IN ('approved','rejected','returned','cancelled'))
+    OR (OLD.status = 'approved' AND NEW.status = 'applied')) THEN
+    RAISE EXCEPTION 'Invalid promotion status transition' USING ERRCODE = '23514';
+  END IF;
+  IF OLD.status IN ('approved','applied','rejected','returned','cancelled') THEN
+    IF OLD.status = NEW.status AND NEW IS DISTINCT FROM OLD THEN
+      RAISE EXCEPTION 'Final promotion evidence cannot be overwritten' USING ERRCODE = '23514';
+    END IF;
+    IF NEW.approval_decision_id IS DISTINCT FROM OLD.approval_decision_id THEN
+      RAISE EXCEPTION 'Promotion approval cannot be replaced' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF NEW.status = 'submitted' THEN
+    IF NOT EXISTS (SELECT 1 FROM hr_talent_assessments WHERE id = NEW.assessment_id AND status = 'finalized') THEN
+      RAISE EXCEPTION 'Promotion requires a finalized talent assessment' USING ERRCODE = '23514';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM hr_worker_assignments WHERE id = NEW.source_assignment_id
+      AND assignment_type = 'primary' AND position_id <> NEW.target_position_id) THEN
+      RAISE EXCEPTION 'Promotion requires a primary source and a different target position' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF OLD.status = 'submitted' AND NEW.status IN ('approved','rejected','returned') THEN
+    SELECT * INTO latest_decision FROM hr_promotion_decisions
+      WHERE recommendation_id = NEW.id ORDER BY step_number DESC LIMIT 1;
+    IF NOT FOUND
+      OR (NEW.status = 'approved' AND (latest_decision.decision <> 'approve' OR NEW.approval_decision_id IS DISTINCT FROM latest_decision.id))
+      OR (NEW.status = 'rejected' AND latest_decision.decision <> 'reject')
+      OR (NEW.status = 'returned' AND latest_decision.decision <> 'return') THEN
+      RAISE EXCEPTION 'Promotion status must match the latest decision' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF NEW.status = 'applied' THEN
+    IF NOT EXISTS (SELECT 1 FROM hr_worker_assignments a JOIN hr_workers w ON w.id = a.worker_id
+      WHERE a.id = NEW.applied_assignment_id AND a.assignment_type = 'primary'
+        AND a.valid_from = NEW.recommended_effective_date AND w.primary_assignment_id = a.id)
+      OR NOT EXISTS (SELECT 1 FROM hr_worker_assignments WHERE id = NEW.source_assignment_id
+        AND valid_to = NEW.recommended_effective_date - 1)
+      OR NOT EXISTS (SELECT 1 FROM hr_worker_lifecycle_events WHERE id = NEW.applied_lifecycle_event_id
+        AND event_type = 'promotion' AND effective_date = NEW.recommended_effective_date AND source_reference = NEW.id::text) THEN
+      RAISE EXCEPTION 'Promotion application requires matching assignment and lifecycle evidence' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_promotion_recommendation_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_promotion_recommendations
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_promotion_recommendation();
+
+CREATE TRIGGER tr_hr_talent_framework_immutable BEFORE UPDATE OR DELETE ON hr_talent_frameworks
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+CREATE FUNCTION hr_guard_talent_dimension() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  row_data jsonb;
+BEGIN
+  FOR row_data IN SELECT value FROM jsonb_array_elements(
+    CASE TG_OP WHEN 'INSERT' THEN jsonb_build_array(to_jsonb(NEW))
+      WHEN 'DELETE' THEN jsonb_build_array(to_jsonb(OLD))
+      ELSE jsonb_build_array(to_jsonb(OLD), to_jsonb(NEW)) END)
+  LOOP
+    PERFORM 1 FROM hr_talent_frameworks WHERE id = (row_data->>'framework_id')::uuid FOR UPDATE;
+    IF EXISTS (SELECT 1 FROM hr_talent_review_cycles WHERE framework_id = (row_data->>'framework_id')::uuid) THEN
+      RAISE EXCEPTION 'Talent dimensions are frozen once a cycle references the framework' USING ERRCODE = '23514';
+    END IF;
+  END LOOP;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_talent_dimension_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_talent_dimensions
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_talent_dimension();
+
+ALTER TABLE hr_talent_pool_memberships ADD CONSTRAINT ex_hr_talent_pool_membership
+  EXCLUDE USING gist (talent_pool_id WITH =, worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
+  WHERE (status IN ('active','exited'));

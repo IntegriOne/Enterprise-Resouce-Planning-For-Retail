@@ -6,6 +6,8 @@
 // pembayaran. DRM memiliki versi dokumen, digest, retensi dan legal hold.
 // Roster, shift, absensi dan jam aktual tetap di batas rancangan Workforce;
 // skema ini tidak mengaktifkan management baru di luar 13 management owner.
+// Keputusan owner 16 November 2026: Talent Management menyatu di HRM; ATS
+// tetap dalam HRM. Lihat ../../docs/talent-management.md untuk alur promosi.
 // Fungsi HR tidak sama dengan divisi organisasi atau role IAM otomatis.
 // Riset dan pemetaan lengkap: ../../docs/schema-design.md (16 November 2026).
 // Referensi: https://www.cipd.org/en/the-people-profession/the-profession-map/explore-the-profession-map/specialist-knowledge/
@@ -214,6 +216,7 @@ Table hr_worker_assignments {
   indexes {
     (worker_id, position_id, assignment_type, valid_from) [unique, name: 'uq_hr_worker_assignment_period']
     (id, worker_id) [unique, name: 'uq_hr_assignment_worker_pair']
+    (id, worker_id, position_id) [unique]
     (position_id, valid_from, valid_to) [name: 'ix_hr_assignment_position_period']
     (manager_worker_id, valid_from) [name: 'ix_hr_assignment_manager']
   }
@@ -847,7 +850,11 @@ Table hr_performance_reviews {
   finalized_at timestamptz
   visibility_class varchar(30) [not null, default: 'restricted']
   content_digest bytea
-  indexes { (worker_id, performance_cycle_id, reviewer_principal_id, reviewer_role, review_version) [unique, name: 'uq_hr_performance_review_version'] }
+  indexes {
+    (worker_id, performance_cycle_id, reviewer_principal_id, reviewer_role, review_version) [unique, name: 'uq_hr_performance_review_version']
+    (id, worker_id) [unique]
+    (id, worker_id, performance_cycle_id) [unique]
+  }
   checks { `review_version > 0` [name: 'ck_hr_performance_review_version'] }
   Note: 'Evaluation is confidential employment data; access, retention, worker response/correction and appeal process depend on law and policy.'
 }
@@ -861,7 +868,6 @@ Table hr_learning_courses {
   provider_party_reference_id uuid
   delivery_mode varchar(40) [not null]
   duration_hours numeric(10,2)
-  competency_id uuid
   credential_awarded boolean [not null, default: false]
   expiry_months integer
   valid_from date
@@ -927,6 +933,7 @@ Table hr_succession_candidates {
   readiness_code varchar(40) [not null, note: 'ready_now, 1_year, 2_3_years, development_needed']
   readiness_assessed_at date [not null]
   readiness_rationale text
+  talent_assessment_id uuid
   development_plan_id uuid
   risk_of_loss varchar(30)
   indexes { (succession_plan_id, candidate_worker_id) [unique, name: 'uq_hr_succession_candidate'] }
@@ -1565,7 +1572,6 @@ Ref: hr_job_competencies.job_id > hr_jobs.id [delete: restrict]
 Ref: hr_job_competencies.competency_id > hr_competencies.id [delete: restrict]
 Ref: hr_worker_competency_assessments.worker_id > hr_workers.id [delete: restrict]
 Ref: hr_worker_competency_assessments.competency_id > hr_competencies.id [delete: restrict]
-Ref: hr_learning_courses.competency_id >? hr_competencies.id [delete: restrict]
 Ref: hr_job_postings.requisition_id > hr_requisitions.id [delete: restrict]
 Ref: hr_applications.(source_posting_id, requisition_id) >? hr_job_postings.(id, requisition_id) [delete: restrict]
 Ref: hr_application_assessments.application_id > hr_applications.id [delete: restrict]
@@ -1598,6 +1604,362 @@ Ref: hr_service_request_events.service_request_id > hr_service_requests.id [dele
 Ref: hr_engagement_survey_results.survey_id > hr_engagement_surveys.id [delete: restrict]
 Ref: hr_access_requests.worker_id > hr_workers.id [delete: restrict]
 Ref: hr_access_requests.(lifecycle_event_id, worker_id) > hr_worker_lifecycle_events.(id, worker_id) [delete: restrict]
+
+// Talent Management adalah domain internal HRM, memakai worker yang sama.
+// Asesmen, pool dan aspirasi tidak mengubah assignment ataupun grant IAM.
+Table hr_talent_frameworks {
+  id uuid [pk]
+  framework_code varchar(100) [not null]
+  framework_version integer [not null]
+  framework_name varchar(180) [not null]
+  rubric_document_version_reference_id uuid [not null]
+  rubric_digest bytea [not null]
+  effective_from date [not null]
+  effective_to date
+  approved_by_principal_id uuid [not null]
+  approved_at timestamptz [not null]
+  indexes { (framework_code, framework_version) [unique] }
+  checks { `framework_version > 0 AND (effective_to IS NULL OR effective_to >= effective_from)` [name: 'ck_hr_talent_framework_version'] }
+  Note: 'Rubrik disahkan dan berversi; arti level 1–5 serta pemetaan band/9-box harus eksplisit. Bukan label kepribadian atau keputusan kerja otomatis.'
+}
+
+Table hr_talent_dimensions {
+  id uuid [pk]
+  framework_id uuid [not null]
+  dimension_code varchar(80) [not null]
+  dimension_name varchar(180) [not null]
+  definition text [not null]
+  rating_anchors jsonb [not null, note: 'Definisi bukti teramati untuk seluruh level 1–5; divalidasi service']
+  weight_percent numeric(6,3) [not null]
+  is_required boolean [not null, default: true]
+  indexes {
+    (framework_id, dimension_code) [unique]
+    (id, framework_id) [unique]
+  }
+  checks { `weight_percent BETWEEN 0 AND 100` [name: 'ck_hr_talent_dimension_weight'] }
+}
+
+Table hr_talent_review_cycles {
+  id uuid [pk]
+  cycle_code varchar(100) [not null, unique]
+  framework_id uuid [not null]
+  legal_entity_reference_id uuid [not null]
+  organization_unit_reference_id uuid
+  period_start date [not null]
+  period_end date [not null]
+  status varchar(30) [not null, default: 'draft']
+  owner_principal_id uuid [not null]
+  closed_at timestamptz
+  indexes { (id, framework_id) [unique] }
+  checks {
+    `period_end >= period_start` [name: 'ck_hr_talent_cycle_period']
+    `status IN ('draft','open','calibration','closed','cancelled')` [name: 'ck_hr_talent_cycle_status']
+    `status <> 'closed' OR closed_at IS NOT NULL` [name: 'ck_hr_talent_cycle_closed']
+  }
+}
+
+Table hr_talent_assessments {
+  id uuid [pk]
+  worker_id uuid [not null]
+  talent_review_cycle_id uuid [not null]
+  framework_id uuid [not null]
+  assessment_version integer [not null]
+  performance_review_id uuid
+  status varchar(30) [not null, default: 'draft']
+  assessed_by_principal_id uuid [not null]
+  assessed_at timestamptz [not null, default: `now()`]
+  evidence_document_version_reference_id uuid [not null]
+  evidence_digest bytea [not null]
+  segment_code varchar(80) [note: 'Kode hasil interpretasi rubrik berversi, bukan grant atau keputusan promosi']
+  finalized_by_principal_id uuid
+  finalized_at timestamptz
+  indexes {
+    (worker_id, talent_review_cycle_id, assessment_version) [unique]
+    (id, worker_id) [unique]
+    (id, framework_id) [unique]
+    (id, talent_review_cycle_id) [unique]
+  }
+  checks {
+    `assessment_version > 0` [name: 'ck_hr_talent_assessment_version']
+    `status IN ('draft','submitted','finalized','withdrawn')` [name: 'ck_hr_talent_assessment_status']
+    `status <> 'finalized' OR (finalized_at IS NOT NULL AND finalized_by_principal_id IS NOT NULL)` [name: 'ck_hr_talent_assessment_finalized']
+    `finalized_at IS NULL OR finalized_at >= assessed_at` [name: 'ck_hr_talent_assessment_dates']
+  }
+  Note: 'Potensi/readiness berbeda dari hasil performance dan kompetensi. Snapshot final immutable; revisi memakai assessment_version baru. Kandidat eksternal tetap di ATS sampai menjadi worker.'
+}
+
+Table hr_talent_assessment_scores {
+  id uuid [pk]
+  assessment_id uuid [not null]
+  framework_id uuid [not null]
+  dimension_id uuid [not null]
+  score smallint [not null]
+  evidence_document_version_reference_id uuid [not null]
+  evidence_digest bytea [not null]
+  indexes {
+    (assessment_id, dimension_id) [unique]
+    (assessment_id, dimension_id, score) [unique]
+  }
+  checks { `score BETWEEN 1 AND 5` [name: 'ck_hr_talent_score'] }
+}
+
+Table hr_talent_calibration_sessions {
+  id uuid [pk]
+  talent_review_cycle_id uuid [not null]
+  session_code varchar(100) [not null]
+  chair_principal_id uuid [not null]
+  scheduled_at timestamptz [not null]
+  status varchar(30) [not null, default: 'planned']
+  closed_at timestamptz
+  minutes_document_version_reference_id uuid
+  indexes {
+    (talent_review_cycle_id, session_code) [unique]
+    (id, talent_review_cycle_id) [unique]
+  }
+  checks {
+    `status IN ('planned','open','closed','cancelled')` [name: 'ck_hr_calibration_status']
+    `status <> 'closed' OR (closed_at IS NOT NULL AND minutes_document_version_reference_id IS NOT NULL)` [name: 'ck_hr_calibration_closed']
+  }
+}
+
+Table hr_talent_calibration_decisions {
+  id uuid [pk]
+  session_id uuid [not null]
+  talent_review_cycle_id uuid [not null]
+  assessment_id uuid [not null]
+  dimension_id uuid [not null]
+  original_score smallint [not null]
+  calibrated_score smallint [not null]
+  rationale_document_version_reference_id uuid [not null]
+  rationale_digest bytea [not null]
+  decided_by_principal_id uuid [not null]
+  decided_at timestamptz [not null, default: `now()`]
+  indexes { (session_id, assessment_id, dimension_id) [unique] }
+  checks { `calibrated_score BETWEEN 1 AND 5` [name: 'ck_hr_calibration_score'] }
+  Note: 'Keputusan panel terpisah dari skor awal; bukti/skor awal tidak ditimpa. Service memeriksa assessment final, sesi terbuka dan mandat panel. Koreksi melalui sesi baru.'
+}
+
+Table hr_talent_pools {
+  id uuid [pk]
+  pool_code varchar(100) [not null]
+  pool_version integer [not null]
+  pool_name varchar(180) [not null]
+  legal_entity_reference_id uuid [not null]
+  target_job_id uuid
+  eligibility_document_version_reference_id uuid [not null]
+  eligibility_digest bytea [not null]
+  valid_from date [not null]
+  valid_to date
+  owner_principal_id uuid [not null]
+  indexes { (legal_entity_reference_id, pool_code, pool_version) [unique] }
+  checks { `pool_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_talent_pool_dates'] }
+}
+
+Table hr_talent_pool_memberships {
+  id uuid [pk]
+  talent_pool_id uuid [not null]
+  worker_id uuid [not null]
+  assessment_id uuid [not null]
+  nominated_by_principal_id uuid [not null]
+  status varchar(30) [not null, default: 'nominated']
+  valid_from date [not null]
+  valid_to date
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  exit_reason_code varchar(80)
+  indexes { (talent_pool_id, worker_id, valid_from) [unique] }
+  checks {
+    `valid_to IS NULL OR valid_to >= valid_from` [name: 'ck_hr_pool_membership_dates']
+    `status IN ('nominated','active','rejected','exited')` [name: 'ck_hr_pool_membership_status']
+    `status NOT IN ('active','exited') OR (approved_by_principal_id IS NOT NULL AND approved_at IS NOT NULL)` [name: 'ck_hr_pool_membership_approval']
+    `status <> 'exited' OR (valid_to IS NOT NULL AND exit_reason_code IS NOT NULL)` [name: 'ck_hr_pool_membership_exit']
+  }
+  Note: 'Keanggotaan talenta internal berbeda dari candidate talent_pool ATS dan group IAM; tidak memberi janji promosi.'
+}
+
+Table hr_career_paths {
+  id uuid [pk]
+  path_code varchar(100) [not null]
+  path_version integer [not null]
+  path_name varchar(180) [not null]
+  job_family_id uuid [not null]
+  valid_from date [not null]
+  valid_to date
+  approved_by_principal_id uuid [not null]
+  approved_at timestamptz [not null]
+  indexes { (path_code, path_version) [unique] }
+  checks { `path_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_career_path_dates'] }
+}
+
+Table hr_career_path_transitions {
+  id uuid [pk]
+  career_path_id uuid [not null]
+  from_job_id uuid [not null]
+  to_job_id uuid [not null]
+  movement_type varchar(30) [not null]
+  minimum_tenure_months integer [not null, default: 0]
+  requirements_document_version_reference_id uuid [not null]
+  requirements_digest bytea [not null]
+  indexes {
+    (career_path_id, from_job_id, to_job_id) [unique]
+    (id, to_job_id) [unique]
+  }
+  checks {
+    `from_job_id <> to_job_id AND minimum_tenure_months >= 0` [name: 'ck_hr_career_transition_jobs']
+    `movement_type IN ('promotion','lateral','specialization')` [name: 'ck_hr_career_transition_type']
+  }
+  Note: 'Jalur bisa bercabang; kebutuhan skill memakai hr_job_competencies pada job tujuan. Mobilitas lateral dapat membentuk siklus yang sah; transisi tidak mengeksekusi perpindahan.'
+}
+
+Table hr_worker_career_aspirations {
+  id uuid [pk]
+  worker_id uuid [not null]
+  target_job_id uuid [not null]
+  career_path_transition_id uuid
+  preference_rank integer [not null]
+  recorded_at timestamptz [not null, default: `now()`]
+  recorded_by_principal_id uuid [not null]
+  target_date date
+  mobility_preference varchar(30) [not null, default: 'unspecified']
+  preferred_location_reference_id uuid
+  withdrawn_at timestamptz
+  indexes { (worker_id, target_job_id, recorded_at) [unique] }
+  checks {
+    `preference_rank > 0` [name: 'ck_hr_career_preference_rank']
+    `mobility_preference IN ('unspecified','current_location','open_to_relocation','remote')` [name: 'ck_hr_career_mobility']
+    `withdrawn_at IS NULL OR withdrawn_at >= recorded_at` [name: 'ck_hr_career_aspiration_dates']
+  }
+  Note: 'Aspirasi dinyatakan pekerja, bukan penilaian manajer. Jangan menyimpulkan kesediaan relokasi dari data keluarga atau demografi.'
+}
+
+Table hr_promotion_recommendations {
+  id uuid [pk]
+  recommendation_number varchar(120) [not null, unique]
+  worker_id uuid [not null]
+  source_assignment_id uuid [not null]
+  target_position_id uuid [not null]
+  assessment_id uuid [not null]
+  supersedes_recommendation_id uuid
+  recommended_effective_date date [not null]
+  rationale_document_version_reference_id uuid [not null]
+  rationale_digest bytea [not null]
+  recommended_by_principal_id uuid [not null]
+  recommended_at timestamptz [not null, default: `now()`]
+  status varchar(30) [not null, default: 'draft']
+  approval_decision_id uuid
+  applied_assignment_id uuid [unique]
+  applied_lifecycle_event_id bigint [unique]
+  applied_at timestamptz
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (id, worker_id) [unique] }
+  checks {
+    `status IN ('draft','submitted','approved','rejected','returned','cancelled','applied')` [name: 'ck_hr_promotion_status']
+    `(status IN ('approved','applied')) = (approval_decision_id IS NOT NULL)` [name: 'ck_hr_promotion_approval_reference']
+    `(status = 'applied') = (applied_assignment_id IS NOT NULL AND applied_lifecycle_event_id IS NOT NULL AND applied_at IS NOT NULL)` [name: 'ck_hr_promotion_application']
+    `status = 'applied' OR (applied_assignment_id IS NULL AND applied_lifecycle_event_id IS NULL AND applied_at IS NULL)` [name: 'ck_hr_promotion_no_partial_application']
+    `applied_assignment_id IS NULL OR applied_assignment_id <> source_assignment_id` [name: 'ck_hr_promotion_new_assignment']
+    `supersedes_recommendation_id IS NULL OR supersedes_recommendation_id <> id` [name: 'ck_hr_promotion_not_self_revision']
+  }
+  Note: 'Rekomendasi bukan perubahan jabatan. Service HRM menerapkan keputusan dalam transaksi: tutup assignment lama, buat assignment baru, catat event promotion dan outbox, kemudian tandai applied. IAM memproses perubahan akses secara terpisah. Draft dapat diedit; revisi setelah submitted memakai rekomendasi baru.'
+}
+
+Table hr_promotion_decisions {
+  id uuid [pk]
+  recommendation_id uuid [not null]
+  step_number integer [not null]
+  decision hr_approval_decision_enum [not null]
+  decided_by_principal_id uuid [not null]
+  decided_at timestamptz [not null, default: `now()`]
+  rationale_document_version_reference_id uuid [not null]
+  rationale_digest bytea [not null]
+  idempotency_key varchar(160) [not null, unique]
+  indexes {
+    (recommendation_id, step_number) [unique]
+    (id, recommendation_id) [unique]
+  }
+  checks { `step_number > 0` [name: 'ck_hr_promotion_decision_step'] }
+  Note: 'Riwayat keputusan append-only. Penyetuju berbeda dari pengusul; service memverifikasi mandat, seluruh tahap wajib dan larangan persetujuan diri pekerja melalui IAM.'
+}
+
+Table hr_learning_course_competencies {
+  course_id uuid [not null]
+  competency_id uuid [not null]
+  target_level smallint [not null]
+  indexes { (course_id, competency_id) [pk] }
+  checks { `target_level BETWEEN 1 AND 5` [name: 'ck_hr_course_competency_level'] }
+  Note: 'Satu kursus dapat mengembangkan banyak kompetensi. Selesai kursus tidak otomatis memberi skor kompetensi tanpa asesmen.'
+}
+
+Table hr_performance_goal_updates {
+  id uuid [pk]
+  goal_id uuid [not null]
+  observed_at timestamptz [not null]
+  actual_value numeric(24,8) [not null]
+  evidence_document_version_reference_id uuid [not null]
+  evidence_digest bytea [not null]
+  recorded_by_principal_id uuid [not null]
+  recorded_at timestamptz [not null, default: `now()`]
+  supersedes_update_id uuid [unique]
+  idempotency_key varchar(160) [not null, unique]
+  indexes {
+    (goal_id, observed_at) [name: 'ix_hr_goal_measurement_history']
+    (id, goal_id) [unique]
+  }
+  checks { `supersedes_update_id IS NULL OR supersedes_update_id <> id` [name: 'ck_hr_goal_update_revision'] }
+  Note: 'Riwayat hasil KPI append-only; koreksi menunjuk pengukuran pada goal sama. actual_value pada goal adalah proyeksi terakhir, diperbarui service secara atomik.'
+}
+
+Table hr_performance_review_goal_scores {
+  id uuid [pk]
+  performance_review_id uuid [not null]
+  goal_id uuid [not null]
+  worker_id uuid [not null]
+  performance_cycle_id uuid [not null]
+  rating smallint [not null]
+  weight_percent_snapshot numeric(6,3) [not null]
+  rubric_document_version_reference_id uuid [not null]
+  evidence_document_version_reference_id uuid [not null]
+  indexes { (performance_review_id, goal_id) [unique] }
+  checks { `rating BETWEEN 1 AND 5 AND weight_percent_snapshot BETWEEN 0 AND 100` [name: 'ck_hr_review_goal_score'] }
+  Note: 'Goal dan review harus milik pekerja serta siklus yang sama. Service memverifikasi total bobot/rubrik dan membekukan rincian saat review difinalisasi.'
+}
+
+Ref: hr_talent_dimensions.framework_id > hr_talent_frameworks.id [delete: restrict]
+Ref: hr_talent_review_cycles.framework_id > hr_talent_frameworks.id [delete: restrict]
+Ref: hr_talent_assessments.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_talent_assessments.(talent_review_cycle_id, framework_id) > hr_talent_review_cycles.(id, framework_id) [delete: restrict]
+Ref: hr_talent_assessments.(performance_review_id, worker_id) >? hr_performance_reviews.(id, worker_id) [delete: restrict]
+Ref: hr_talent_assessment_scores.(assessment_id, framework_id) > hr_talent_assessments.(id, framework_id) [delete: restrict]
+Ref: hr_talent_assessment_scores.(dimension_id, framework_id) > hr_talent_dimensions.(id, framework_id) [delete: restrict]
+Ref: hr_talent_calibration_sessions.talent_review_cycle_id > hr_talent_review_cycles.id [delete: restrict]
+Ref: hr_talent_calibration_decisions.(session_id, talent_review_cycle_id) > hr_talent_calibration_sessions.(id, talent_review_cycle_id) [delete: restrict]
+Ref: hr_talent_calibration_decisions.(assessment_id, talent_review_cycle_id) > hr_talent_assessments.(id, talent_review_cycle_id) [delete: restrict]
+Ref: hr_talent_calibration_decisions.(assessment_id, dimension_id, original_score) > hr_talent_assessment_scores.(assessment_id, dimension_id, score) [delete: restrict]
+Ref: hr_talent_pools.target_job_id >? hr_jobs.id [delete: restrict]
+Ref: hr_talent_pool_memberships.talent_pool_id > hr_talent_pools.id [delete: restrict]
+Ref: hr_talent_pool_memberships.(assessment_id, worker_id) > hr_talent_assessments.(id, worker_id) [delete: restrict]
+Ref: hr_career_paths.job_family_id > hr_job_families.id [delete: restrict]
+Ref: hr_career_path_transitions.career_path_id > hr_career_paths.id [delete: restrict]
+Ref: hr_career_path_transitions.from_job_id > hr_jobs.id [delete: restrict]
+Ref: hr_career_path_transitions.to_job_id > hr_jobs.id [delete: restrict]
+Ref: hr_worker_career_aspirations.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_worker_career_aspirations.target_job_id > hr_jobs.id [delete: restrict]
+Ref: hr_worker_career_aspirations.(career_path_transition_id, target_job_id) >? hr_career_path_transitions.(id, to_job_id) [delete: restrict]
+Ref: hr_promotion_recommendations.(source_assignment_id, worker_id) > hr_worker_assignments.(id, worker_id) [delete: restrict]
+Ref: hr_promotion_recommendations.target_position_id > hr_positions.id [delete: restrict]
+Ref: hr_promotion_recommendations.(assessment_id, worker_id) > hr_talent_assessments.(id, worker_id) [delete: restrict]
+Ref: hr_promotion_recommendations.(supersedes_recommendation_id, worker_id) >? hr_promotion_recommendations.(id, worker_id) [delete: restrict]
+Ref: hr_promotion_recommendations.(approval_decision_id, id) >? hr_promotion_decisions.(id, recommendation_id) [delete: restrict]
+Ref: hr_promotion_recommendations.(applied_assignment_id, worker_id, target_position_id) >? hr_worker_assignments.(id, worker_id, position_id) [delete: restrict]
+Ref: hr_promotion_recommendations.(applied_lifecycle_event_id, worker_id) >? hr_worker_lifecycle_events.(id, worker_id) [delete: restrict]
+Ref: hr_promotion_decisions.recommendation_id > hr_promotion_recommendations.id [delete: restrict]
+Ref: hr_learning_course_competencies.course_id > hr_learning_courses.id [delete: restrict]
+Ref: hr_learning_course_competencies.competency_id > hr_competencies.id [delete: restrict]
+Ref: hr_performance_goal_updates.goal_id > hr_performance_goals.id [delete: restrict]
+Ref: hr_performance_goal_updates.(supersedes_update_id, goal_id) >? hr_performance_goal_updates.(id, goal_id) [delete: restrict]
+Ref: hr_performance_review_goal_scores.(performance_review_id, worker_id, performance_cycle_id) > hr_performance_reviews.(id, worker_id, performance_cycle_id) [delete: restrict]
+Ref: hr_performance_review_goal_scores.(goal_id, worker_id, performance_cycle_id) > hr_performance_goals.(id, worker_id, performance_cycle_id) [delete: restrict]
+Ref: hr_succession_candidates.(talent_assessment_id, candidate_worker_id) >? hr_talent_assessments.(id, worker_id) [delete: restrict]
 
 TableGroup workforce_planning_and_organization {
   hr_job_families
@@ -1662,7 +2024,24 @@ TableGroup leave_entitlements {
   hr_leave_ledger_entries
 }
 
-TableGroup performance_and_talent {
+TableGroup talent_management {
+  hr_talent_frameworks
+  hr_talent_dimensions
+  hr_talent_review_cycles
+  hr_talent_assessments
+  hr_talent_assessment_scores
+  hr_talent_calibration_sessions
+  hr_talent_calibration_decisions
+  hr_talent_pools
+  hr_talent_pool_memberships
+  hr_career_paths
+  hr_career_path_transitions
+  hr_worker_career_aspirations
+  hr_promotion_recommendations
+  hr_promotion_decisions
+  hr_performance_goal_updates
+  hr_performance_review_goal_scores
+
   hr_performance_cycles
   hr_performance_goals
   hr_performance_reviews
@@ -1673,6 +2052,7 @@ TableGroup performance_and_talent {
 }
 
 TableGroup learning_and_competencies {
+  hr_learning_course_competencies
   hr_learning_courses
   hr_learning_enrollments
   hr_worker_qualifications

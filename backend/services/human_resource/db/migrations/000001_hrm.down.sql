@@ -67,10 +67,32 @@ DROP TABLE "hr_job_families",
   "hr_engagement_survey_results",
   "hr_access_requests",
   "hr_outbox_events",
-  "hr_inbox_events";
+  "hr_inbox_events",
+  "hr_talent_frameworks",
+  "hr_talent_dimensions",
+  "hr_talent_review_cycles",
+  "hr_talent_assessments",
+  "hr_talent_assessment_scores",
+  "hr_talent_calibration_sessions",
+  "hr_talent_calibration_decisions",
+  "hr_talent_pools",
+  "hr_talent_pool_memberships",
+  "hr_career_paths",
+  "hr_career_path_transitions",
+  "hr_worker_career_aspirations",
+  "hr_promotion_recommendations",
+  "hr_promotion_decisions",
+  "hr_learning_course_competencies",
+  "hr_performance_goal_updates",
+  "hr_performance_review_goal_scores";
 DROP FUNCTION hr_reject_immutable_change();
 DROP FUNCTION hr_guard_payroll_result();
 DROP FUNCTION hr_guard_payroll_run();
+DROP FUNCTION hr_guard_talent_assessment();
+DROP FUNCTION hr_guard_talent_score();
+DROP FUNCTION hr_guard_promotion_decision();
+DROP FUNCTION hr_guard_promotion_recommendation();
+DROP FUNCTION hr_guard_talent_dimension();
 DROP TYPE "hr_worker_category_enum";
 DROP TYPE "hr_worker_status_enum";
 DROP TYPE "hr_application_status_enum";

@@ -126,3 +126,176 @@ END;
 $$;
 CREATE TRIGGER tr_hr_payroll_run_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_payroll_runs
   FOR EACH ROW EXECUTE FUNCTION hr_guard_payroll_run();
+
+-- Snapshot penilaian final dan bukti riwayat tidak diubah diam-diam.
+CREATE TRIGGER tr_hr_talent_calibration_immutable BEFORE UPDATE OR DELETE ON hr_talent_calibration_decisions
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+CREATE TRIGGER tr_hr_goal_update_immutable BEFORE UPDATE OR DELETE ON hr_performance_goal_updates
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+CREATE TRIGGER tr_hr_promotion_decision_immutable BEFORE UPDATE OR DELETE ON hr_promotion_decisions
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+
+CREATE FUNCTION hr_guard_talent_assessment() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.status <> 'draft' THEN
+      RAISE EXCEPTION 'Talent assessment must start as draft' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF OLD.status = 'finalized' THEN
+    RAISE EXCEPTION 'Finalized talent assessment is immutable' USING ERRCODE = '23514';
+  END IF;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  IF NEW.status = 'finalized' THEN
+    IF NOT EXISTS (SELECT 1 FROM hr_talent_assessment_scores WHERE assessment_id = NEW.id)
+      OR EXISTS (SELECT 1 FROM hr_talent_dimensions d WHERE d.framework_id = NEW.framework_id AND d.is_required
+        AND NOT EXISTS (SELECT 1 FROM hr_talent_assessment_scores s WHERE s.assessment_id = NEW.id AND s.dimension_id = d.id)) THEN
+      RAISE EXCEPTION 'Required talent dimension scores are missing' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_talent_assessment_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_talent_assessments
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_talent_assessment();
+
+CREATE FUNCTION hr_guard_talent_score() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  row_data jsonb;
+  parent_status text;
+BEGIN
+  FOR row_data IN SELECT value FROM jsonb_array_elements(
+    CASE TG_OP WHEN 'INSERT' THEN jsonb_build_array(to_jsonb(NEW))
+      WHEN 'DELETE' THEN jsonb_build_array(to_jsonb(OLD))
+      ELSE jsonb_build_array(to_jsonb(OLD), to_jsonb(NEW)) END)
+  LOOP
+    SELECT status INTO parent_status FROM hr_talent_assessments
+      WHERE id = (row_data->>'assessment_id')::uuid FOR UPDATE;
+    IF parent_status = 'finalized' THEN
+      RAISE EXCEPTION 'Finalized talent scores are immutable' USING ERRCODE = '23514';
+    END IF;
+  END LOOP;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_talent_score_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_talent_assessment_scores
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_talent_score();
+
+CREATE FUNCTION hr_guard_promotion_decision() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  recommendation hr_promotion_recommendations%ROWTYPE;
+BEGIN
+  SELECT * INTO recommendation FROM hr_promotion_recommendations WHERE id = NEW.recommendation_id FOR UPDATE;
+  IF NOT FOUND OR recommendation.status <> 'submitted' THEN
+    RAISE EXCEPTION 'Promotion decision requires a submitted recommendation' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.decided_by_principal_id = recommendation.recommended_by_principal_id THEN
+    RAISE EXCEPTION 'Promotion requester cannot approve own recommendation' USING ERRCODE = '23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM hr_promotion_decisions WHERE recommendation_id = NEW.recommendation_id AND step_number >= NEW.step_number) THEN
+    RAISE EXCEPTION 'Promotion decision steps must increase' USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_promotion_decision_guard BEFORE INSERT ON hr_promotion_decisions
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_promotion_decision();
+
+CREATE FUNCTION hr_guard_promotion_recommendation() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  editable_fields text[] := ARRAY['status','approval_decision_id','applied_assignment_id','applied_lifecycle_event_id','applied_at'];
+  latest_decision hr_promotion_decisions%ROWTYPE;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.status <> 'draft' THEN
+      RAISE EXCEPTION 'Promotion recommendation must start as draft' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.status <> 'draft' THEN
+      RAISE EXCEPTION 'Submitted promotion history cannot be deleted' USING ERRCODE = '23514';
+    END IF;
+    RETURN OLD;
+  END IF;
+  IF OLD.status <> 'draft' AND (to_jsonb(NEW) - editable_fields) IS DISTINCT FROM (to_jsonb(OLD) - editable_fields) THEN
+    RAISE EXCEPTION 'Submitted promotion proposal is immutable; create a revision' USING ERRCODE = '23514';
+  END IF;
+  IF NOT (NEW.status = OLD.status
+    OR (OLD.status = 'draft' AND NEW.status IN ('submitted','cancelled'))
+    OR (OLD.status = 'submitted' AND NEW.status IN ('approved','rejected','returned','cancelled'))
+    OR (OLD.status = 'approved' AND NEW.status = 'applied')) THEN
+    RAISE EXCEPTION 'Invalid promotion status transition' USING ERRCODE = '23514';
+  END IF;
+  IF OLD.status IN ('approved','applied','rejected','returned','cancelled') THEN
+    IF OLD.status = NEW.status AND NEW IS DISTINCT FROM OLD THEN
+      RAISE EXCEPTION 'Final promotion evidence cannot be overwritten' USING ERRCODE = '23514';
+    END IF;
+    IF NEW.approval_decision_id IS DISTINCT FROM OLD.approval_decision_id THEN
+      RAISE EXCEPTION 'Promotion approval cannot be replaced' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF NEW.status = 'submitted' THEN
+    IF NOT EXISTS (SELECT 1 FROM hr_talent_assessments WHERE id = NEW.assessment_id AND status = 'finalized') THEN
+      RAISE EXCEPTION 'Promotion requires a finalized talent assessment' USING ERRCODE = '23514';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM hr_worker_assignments WHERE id = NEW.source_assignment_id
+      AND assignment_type = 'primary' AND position_id <> NEW.target_position_id) THEN
+      RAISE EXCEPTION 'Promotion requires a primary source and a different target position' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF OLD.status = 'submitted' AND NEW.status IN ('approved','rejected','returned') THEN
+    SELECT * INTO latest_decision FROM hr_promotion_decisions
+      WHERE recommendation_id = NEW.id ORDER BY step_number DESC LIMIT 1;
+    IF NOT FOUND
+      OR (NEW.status = 'approved' AND (latest_decision.decision <> 'approve' OR NEW.approval_decision_id IS DISTINCT FROM latest_decision.id))
+      OR (NEW.status = 'rejected' AND latest_decision.decision <> 'reject')
+      OR (NEW.status = 'returned' AND latest_decision.decision <> 'return') THEN
+      RAISE EXCEPTION 'Promotion status must match the latest decision' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF NEW.status = 'applied' THEN
+    IF NOT EXISTS (SELECT 1 FROM hr_worker_assignments a JOIN hr_workers w ON w.id = a.worker_id
+      WHERE a.id = NEW.applied_assignment_id AND a.assignment_type = 'primary'
+        AND a.valid_from = NEW.recommended_effective_date AND w.primary_assignment_id = a.id)
+      OR NOT EXISTS (SELECT 1 FROM hr_worker_assignments WHERE id = NEW.source_assignment_id
+        AND valid_to = NEW.recommended_effective_date - 1)
+      OR NOT EXISTS (SELECT 1 FROM hr_worker_lifecycle_events WHERE id = NEW.applied_lifecycle_event_id
+        AND event_type = 'promotion' AND effective_date = NEW.recommended_effective_date AND source_reference = NEW.id::text) THEN
+      RAISE EXCEPTION 'Promotion application requires matching assignment and lifecycle evidence' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_promotion_recommendation_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_promotion_recommendations
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_promotion_recommendation();
+
+CREATE TRIGGER tr_hr_talent_framework_immutable BEFORE UPDATE OR DELETE ON hr_talent_frameworks
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();
+CREATE FUNCTION hr_guard_talent_dimension() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  row_data jsonb;
+BEGIN
+  FOR row_data IN SELECT value FROM jsonb_array_elements(
+    CASE TG_OP WHEN 'INSERT' THEN jsonb_build_array(to_jsonb(NEW))
+      WHEN 'DELETE' THEN jsonb_build_array(to_jsonb(OLD))
+      ELSE jsonb_build_array(to_jsonb(OLD), to_jsonb(NEW)) END)
+  LOOP
+    PERFORM 1 FROM hr_talent_frameworks WHERE id = (row_data->>'framework_id')::uuid FOR UPDATE;
+    IF EXISTS (SELECT 1 FROM hr_talent_review_cycles WHERE framework_id = (row_data->>'framework_id')::uuid) THEN
+      RAISE EXCEPTION 'Talent dimensions are frozen once a cycle references the framework' USING ERRCODE = '23514';
+    END IF;
+  END LOOP;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER tr_hr_talent_dimension_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_talent_dimensions
+  FOR EACH ROW EXECUTE FUNCTION hr_guard_talent_dimension();
+
+ALTER TABLE hr_talent_pool_memberships ADD CONSTRAINT ex_hr_talent_pool_membership
+  EXCLUDE USING gist (talent_pool_id WITH =, worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
+  WHERE (status IN ('active','exited'));

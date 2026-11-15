@@ -14,6 +14,10 @@ DRM memiliki migration/kerangka pada audit awal; jangan mengklaim scan atau sert
 ## HRM: pegawai dan status hubungan kerja
 HRM menguasai worker, kontrak, penempatan, cuti/kompensasi sesuai domain aktual. Referensi `iam_principal_reference_id` adalah hubungan logis, worker ID bukan user IAM. HRM boleh **meminta** role/grant dan menandai perubahan penempatan, tetapi IAM tetap sumber keputusan akses, revoke dan sesi.
 
+**Keputusan owner 16 November 2026:** Talent Management disatukan sebagai domain internal HRM. Recruitment/ATS tetap di HRM; potensi, kompetensi, kinerja, learning, karier dan suksesi memakai worker yang sama. Rekomendasi promosi → keputusan pejabat berwenang → transaksi perubahan assignment resmi → event promotion; approval tidak otomatis mengubah jabatan atau grant IAM. Unit organisasi tetap Foundation dan boundary absensi/roster tetap berlaku.
+
+[Desain HRM–Talent dan bukti SQL](../../backend/services/human_resource/docs/talent-management.md) · [DBML aktif](../../backend/services/human_resource/db/schema/human_resource_management.dbml). Statusnya desain/baseline teruji, belum implementasi runtime/E2E.
+
 ## F1/F2
 Employee onboarding→HRM persetujuan hubungan kerja→IAM access request/independent approval→active role scoped enterprise unit. Supplier/vendor **bukan** HRM worker hanya karena menerima akses portal. Kasus PII employee atau kontrak membutuhkan audit/retensi serta prinsip least privilege.
 

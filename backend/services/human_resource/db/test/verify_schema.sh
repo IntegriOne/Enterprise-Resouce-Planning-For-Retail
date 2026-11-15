@@ -19,6 +19,7 @@ run_sql() {
 }
 run_sql < "$test_dir/../migrations/000001_hrm.up.sql"
 run_sql < "$test_dir/schema_integrity.sql"
+run_sql < "$test_dir/talent_integrity.sql"
 run_sql < "$test_dir/../migrations/000001_hrm.down.sql"
 printf '%s\n' "DO \$\$ BEGIN IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE 'hr_%') THEN RAISE EXCEPTION 'Rollback left HR tables'; END IF; END \$\$;" | run_sql
 run_sql < "$test_dir/../migrations/000001_hrm.up.sql"
