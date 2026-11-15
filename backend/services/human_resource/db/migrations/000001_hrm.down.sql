@@ -1,0 +1,83 @@
+-- Dihasilkan oleh db/schema/generate.sh; jangan edit baseline secara manual.
+DROP TABLE "hr_job_families",
+  "hr_jobs",
+  "hr_positions",
+  "hr_workers",
+  "hr_employment_contracts",
+  "hr_worker_assignments",
+  "hr_worker_lifecycle_events",
+  "hr_worker_documents",
+  "hr_emergency_contacts",
+  "hr_requisitions",
+  "hr_candidates",
+  "hr_applications",
+  "hr_application_stage_history",
+  "hr_interviews",
+  "hr_interview_panelists",
+  "hr_interview_feedback",
+  "hr_offers",
+  "hr_onboarding_plans",
+  "hr_onboarding_tasks",
+  "hr_compensation_bands",
+  "hr_compensation_records",
+  "hr_benefit_plans",
+  "hr_benefit_enrollments",
+  "hr_payroll_profiles",
+  "hr_pay_components",
+  "hr_payroll_periods",
+  "hr_payroll_runs",
+  "hr_payroll_results",
+  "hr_payroll_result_lines",
+  "hr_payroll_adjustments",
+  "hr_leave_policies",
+  "hr_leave_entitlements",
+  "hr_leave_adjustments",
+  "hr_performance_cycles",
+  "hr_performance_goals",
+  "hr_performance_reviews",
+  "hr_learning_courses",
+  "hr_learning_enrollments",
+  "hr_worker_qualifications",
+  "hr_succession_plans",
+  "hr_succession_candidates",
+  "hr_employee_relations_cases",
+  "hr_employee_relations_events",
+  "hr_human_capital_metric_definitions",
+  "hr_human_capital_metric_snapshots",
+  "hr_workforce_plans",
+  "hr_workforce_plan_lines",
+  "hr_competencies",
+  "hr_job_competencies",
+  "hr_worker_competency_assessments",
+  "hr_job_postings",
+  "hr_application_assessments",
+  "hr_offboarding_plans",
+  "hr_offboarding_tasks",
+  "hr_payroll_groups",
+  "hr_payroll_rule_sets",
+  "hr_leave_ledger_entries",
+  "hr_development_plans",
+  "hr_development_actions",
+  "hr_collective_agreements",
+  "hr_policies",
+  "hr_policy_acknowledgements",
+  "hr_service_requests",
+  "hr_service_request_events",
+  "hr_engagement_surveys",
+  "hr_engagement_survey_results",
+  "hr_access_requests",
+  "hr_outbox_events",
+  "hr_inbox_events";
+DROP FUNCTION hr_reject_immutable_change();
+DROP FUNCTION hr_guard_payroll_result();
+DROP FUNCTION hr_guard_payroll_run();
+DROP TYPE "hr_worker_category_enum";
+DROP TYPE "hr_worker_status_enum";
+DROP TYPE "hr_application_status_enum";
+DROP TYPE "hr_payroll_run_status_enum";
+DROP TYPE "hr_compensation_status_enum";
+DROP TYPE "hr_performance_cycle_status_enum";
+DROP TYPE "hr_learning_status_enum";
+DROP TYPE "hr_case_status_enum";
+DROP TYPE "hr_approval_decision_enum";
+-- Extension btree_gist dipertahankan karena dapat digunakan objek lain.

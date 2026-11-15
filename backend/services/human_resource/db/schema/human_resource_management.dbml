@@ -1,0 +1,1705 @@
+// ERP RETAIL — HUMAN RESOURCE MANAGEMENT (HRM)
+// HRM memiliki hubungan kerja, kebutuhan pegawai, rekrutmen, kompetensi,
+// kompensasi, perhitungan payroll, hak cuti, pengembangan dan hubungan karyawan.
+// Foundation memiliki party, badan hukum, unit organisasi dan lokasi; IAM
+// memiliki identitas, akses dan sesi; Finance memiliki jurnal serta verifikasi
+// pembayaran. DRM memiliki versi dokumen, digest, retensi dan legal hold.
+// Roster, shift, absensi dan jam aktual tetap di batas rancangan Workforce;
+// skema ini tidak mengaktifkan management baru di luar 13 management owner.
+// Fungsi HR tidak sama dengan divisi organisasi atau role IAM otomatis.
+// Riset dan pemetaan lengkap: ../../docs/schema-design.md (16 November 2026).
+// Referensi: https://www.cipd.org/en/the-people-profession/the-profession-map/explore-the-profession-map/specialist-knowledge/
+// https://www.cipd.org/en/knowledge/factsheets/workforce-planning-factsheet/
+// https://www.cipd.org/en/knowledge/factsheets/recruitment-factsheet/
+// Aturan temporal/immutable PostgreSQL: postgresql-invariants.sql, digabung
+// generator ke baseline 000001; DBML saja tidak menegakkan aturan lintas baris.
+
+Project human_resource_management {
+  database_type: 'PostgreSQL'
+  Note: 'Model fungsi HR untuk Retail ERP satu perusahaan, dapat mencakup beberapa badan hukum. Tabel bukan struktur divisi atau role IAM. Rujukan lintas management adalah ID logis; layanan pemilik memvalidasi status, versi dan scope. Parameter payroll harus disahkan sesuai yurisdiksi. Fitur siap pakai memerlukan service dan E2E; skema bukan klaim implementasi atau kepatuhan hukum.'
+}
+
+Enum hr_worker_category_enum {
+  employee
+  fixed_term_employee
+  contractor
+  agency_worker
+  apprentice
+  intern
+  volunteer
+  contingent_worker
+}
+Enum hr_worker_status_enum {
+  preboarding
+  active
+  leave_of_absence
+  suspended
+  notice_period
+  terminated
+  deceased
+}
+Enum hr_application_status_enum {
+  received
+  screening
+  shortlisted
+  interview
+  assessment
+  offer
+  hired
+  rejected
+  withdrawn
+  talent_pool
+}
+Enum hr_payroll_run_status_enum {
+  draft
+  calculating
+  calculated
+  review
+  approved
+  posted
+  paid
+  cancelled
+  failed
+}
+Enum hr_compensation_status_enum {
+  proposed
+  approved
+  active
+  superseded
+  cancelled
+}
+Enum hr_performance_cycle_status_enum {
+  draft
+  open
+  self_review
+  manager_review
+  calibration
+  finalized
+  archived
+}
+Enum hr_learning_status_enum {
+  planned
+  enrolled
+  in_progress
+  completed
+  failed
+  withdrawn
+  expired
+}
+Enum hr_case_status_enum {
+  open
+  triage
+  investigation
+  action_required
+  resolved
+  closed
+  withdrawn
+}
+Enum hr_approval_decision_enum {
+  approve
+  reject
+  return
+  defer
+}
+
+Table hr_job_families {
+  id uuid [pk]
+  family_code varchar(80) [not null, unique]
+  family_name varchar(180) [not null]
+  description text
+  job_domain varchar(60) [not null, note: 'manufacturing, engineering, finance, sales, operations, professional, executive, other']
+  is_active boolean [not null, default: true]
+}
+
+Table hr_jobs {
+  id uuid [pk]
+  job_family_id uuid [not null]
+  job_code varchar(100) [not null, unique]
+  job_title varchar(180) [not null]
+  job_level_code varchar(60)
+  job_description text
+  responsibilities jsonb [not null, default: `'[]'`]
+  qualification_requirements jsonb [not null, default: `'{}'`]
+  valid_from date [not null]
+  valid_to date
+  is_active boolean [not null, default: true]
+  indexes { (job_family_id, job_level_code, is_active) [name: 'ix_hr_job_family_level'] }
+  checks { `valid_to IS NULL OR valid_to >= valid_from` [name: 'ck_hr_job_validity'] }
+}
+
+Table hr_positions {
+  id uuid [pk]
+  position_code varchar(100) [not null, unique]
+  position_title varchar(180) [not null]
+  job_id uuid [not null]
+  organization_unit_reference_id uuid [not null, note: 'Organization structure is Enterprise Foundation-owned']
+  legal_entity_reference_id uuid [not null]
+  reports_to_position_id uuid
+  position_status varchar(30) [not null, default: 'planned']
+  headcount_authorized numeric(8,2) [not null, default: 1]
+  work_location_reference_id uuid
+  cost_center_reference_id uuid [note: 'Finance owns cost-center accounting']
+  valid_from date [not null]
+  valid_to date
+  indexes { (organization_unit_reference_id, valid_from) [name: 'ix_hr_position_org_period'] }
+  checks {
+    `reports_to_position_id IS NULL OR reports_to_position_id <> id` [name: 'ck_hr_position_not_self_manager']
+    `headcount_authorized > 0 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_position_values']
+  }
+  Note: 'Position hierarchy cycles and temporal overlap are validated by HR workflow; position is an authorized seat, not an employee record.'
+}
+
+Table hr_workers {
+  id uuid [pk]
+  worker_number varchar(100) [not null, unique]
+  person_party_reference_id uuid [not null, note: 'Natural-person identity and shared name/contact data are Enterprise Foundation-owned']
+  worker_category hr_worker_category_enum [not null]
+  status hr_worker_status_enum [not null, default: 'preboarding']
+  hire_date date
+  service_start_date date
+  termination_date date
+  termination_reason_code varchar(80)
+  primary_legal_entity_reference_id uuid [not null]
+  primary_assignment_id uuid
+  iam_principal_reference_id uuid [note: 'Optional identity link; IAM credential and roles are not HR-owned']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  created_by_principal_id uuid
+  indexes { (person_party_reference_id, status) [name: 'ix_hr_worker_person_status'] }
+  checks { `termination_date IS NULL OR hire_date IS NULL OR termination_date >= hire_date` [name: 'ck_hr_worker_dates'] }
+  Note: 'One worker record per employment relationship; rehire can create a new relationship linked to the same person_party_reference_id. Do not delete employment history.'
+}
+
+Table hr_employment_contracts {
+  id uuid [pk]
+  worker_id uuid [not null]
+  contract_number varchar(120) [not null, unique]
+  contract_type varchar(60) [not null, note: 'permanent, fixed_term, hourly, contractor, apprenticeship, collective_agreement, other']
+  contract_status varchar(30) [not null, default: 'draft']
+  employing_legal_entity_reference_id uuid [not null]
+  effective_from date [not null]
+  effective_to date
+  signed_at timestamptz
+  signed_document_reference_id uuid
+  signed_document_version_reference_id uuid
+  signed_content_digest bytea
+  probation_end_date date
+  notice_period_days integer
+  work_country_code char(2) [not null]
+  governing_jurisdiction_code varchar(80) [not null]
+  collective_agreement_id uuid
+  created_at timestamptz [not null, default: `now()`]
+  indexes { (worker_id, effective_from) [name: 'ix_hr_contract_worker_period'] }
+  checks {
+    `signed_at IS NULL OR (signed_document_reference_id IS NOT NULL AND signed_document_version_reference_id IS NOT NULL AND signed_content_digest IS NOT NULL)` [name: 'ck_hr_contract_signed_evidence']
+    `effective_to IS NULL OR effective_to >= effective_from` [name: 'ck_hr_contract_effective_dates']
+    `(probation_end_date IS NULL OR probation_end_date >= effective_from) AND (notice_period_days IS NULL OR notice_period_days >= 0)` [name: 'ck_hr_contract_terms']
+  }
+  Note: 'Contract content is legal-document data with role-restricted access, immutable signed snapshots, retention and jurisdictional rules.'
+}
+
+Table hr_worker_assignments {
+  id uuid [pk]
+  worker_id uuid [not null]
+  position_id uuid [not null]
+  manager_worker_id uuid
+  assignment_type varchar(40) [not null, note: 'primary, secondary, acting, temporary, project, concurrent']
+  employment_status_snapshot varchar(40)
+  fte_percent numeric(6,3) [not null, default: 100]
+  valid_from date [not null]
+  valid_to date
+  assignment_reason varchar(80)
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  indexes {
+    (worker_id, position_id, assignment_type, valid_from) [unique, name: 'uq_hr_worker_assignment_period']
+    (id, worker_id) [unique, name: 'uq_hr_assignment_worker_pair']
+    (position_id, valid_from, valid_to) [name: 'ix_hr_assignment_position_period']
+    (manager_worker_id, valid_from) [name: 'ix_hr_assignment_manager']
+  }
+  checks {
+    `manager_worker_id IS NULL OR manager_worker_id <> worker_id` [name: 'ck_hr_assignment_not_self_manager']
+    `fte_percent > 0 AND fte_percent <= 100 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_assignment_values']
+  }
+  Note: 'Penempatan paralel diperbolehkan; satu penempatan maksimal 100% FTE. Service memeriksa kapasitas posisi dan jumlah FTE lintas penempatan. Baseline mencegah periode primary yang bertumpuk. Roster/jam aktual tetap di batas Workforce.'
+}
+
+Table hr_worker_lifecycle_events {
+  id bigint [pk, increment]
+  worker_id uuid [not null]
+  event_type varchar(60) [not null, note: 'hire, transfer, promotion, leave, return, suspension, termination, rehire, legal_entity_change']
+  occurred_at timestamptz [not null]
+  effective_date date [not null]
+  previous_status hr_worker_status_enum
+  new_status hr_worker_status_enum
+  source_reference varchar(160)
+  actor_principal_id uuid
+  event_payload jsonb [not null, default: `'{}'`]
+  idempotency_key varchar(160) [not null, unique]
+  indexes {
+    (worker_id, effective_date, occurred_at) [name: 'ix_hr_worker_lifecycle_history']
+    (id, worker_id) [unique]
+  }
+  Note: 'Append-only employment lifecycle history; corrections are compensating events with actor/reason, not destructive edits.'
+}
+
+Table hr_worker_documents {
+  id uuid [pk]
+  worker_id uuid [not null]
+  document_type varchar(60) [not null, note: 'contract, qualification, license, policy_acknowledgement, work_authorization, tax_form, other']
+  document_reference_id uuid [not null, note: 'File belongs in protected document/content storage; do not store document bytes here']
+  document_version_reference_id uuid [not null, note: 'Versi immutable milik DRM']
+  content_digest bytea [not null]
+  document_number_digest bytea [note: 'Use keyed digest for searchable identifiers where required; avoid plaintext national ID']
+  issuing_country_code char(2)
+  issued_on date
+  expires_on date
+  verification_status varchar(30) [not null, default: 'pending']
+  verified_by_principal_id uuid
+  verified_at timestamptz
+  retention_class varchar(80) [not null]
+  access_class varchar(30) [not null, default: 'restricted']
+  created_at timestamptz [not null, default: `now()`]
+  indexes { (worker_id, document_type, expires_on) [name: 'ix_hr_worker_document_expiry'] }
+  checks { `expires_on IS NULL OR issued_on IS NULL OR expires_on >= issued_on` [name: 'ck_hr_worker_document_dates'] }
+}
+
+Table hr_emergency_contacts {
+  id uuid [pk]
+  worker_id uuid [not null]
+  contact_party_reference_id uuid [not null]
+  relationship_code varchar(60) [not null]
+  priority_order integer [not null]
+  authorization_confirmed_at timestamptz
+  is_active boolean [not null, default: true]
+  indexes { (worker_id, priority_order) [unique, name: 'uq_hr_emergency_contact_priority'] }
+  checks { `priority_order > 0` [name: 'ck_hr_emergency_contact_priority'] }
+}
+
+Table hr_requisitions {
+  id uuid [pk]
+  requisition_number varchar(120) [not null, unique]
+  workforce_plan_line_id uuid
+  position_id uuid
+  job_id uuid [not null]
+  organization_unit_reference_id uuid [not null]
+  hiring_manager_principal_id uuid [not null]
+  recruiter_principal_id uuid
+  requisition_type varchar(40) [not null, note: 'new_headcount, replacement, temporary, confidential, evergreen']
+  status varchar(30) [not null, default: 'draft']
+  headcount integer [not null, default: 1]
+  target_start_date date
+  budget_reference_id uuid [note: 'Finance owns authorized budget']
+  work_location_reference_id uuid
+  employment_category hr_worker_category_enum [not null]
+  minimum_qualifications jsonb [not null, default: `'{}'`]
+  desired_qualifications jsonb [not null, default: `'{}'`]
+  approved_at timestamptz
+  approved_by_principal_id uuid
+  opened_at timestamptz
+  closed_at timestamptz
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (status, recruiter_principal_id, opened_at) [name: 'ix_hr_requisition_queue'] }
+  checks { `headcount > 0 AND (closed_at IS NULL OR opened_at IS NULL OR closed_at >= opened_at)` [name: 'ck_hr_requisition_values'] }
+}
+
+Table hr_candidates {
+  id uuid [pk]
+  candidate_number varchar(120) [not null, unique]
+  person_party_reference_id uuid
+  preferred_name varchar(180)
+  contact_reference_id uuid [note: 'Candidate contact details use Foundation party/contact with limited access']
+  source_type varchar(60)
+  source_reference varchar(160)
+  privacy_notice_version varchar(60) [not null]
+  notice_acknowledged_at timestamptz
+  data_retention_until date
+  candidate_status varchar(30) [not null, default: 'active']
+  created_at timestamptz [not null, default: `now()`]
+  created_by_principal_id uuid
+  indexes { (person_party_reference_id, candidate_status) [name: 'ix_hr_candidate_person'] }
+  Note: 'Candidate records have explicit purpose, notice, retention, correction/deletion workflow and restricted access under applicable law.'
+}
+
+Table hr_applications {
+  id uuid [pk]
+  candidate_id uuid [not null]
+  requisition_id uuid [not null]
+  application_number varchar(120) [not null, unique]
+  status hr_application_status_enum [not null, default: 'received']
+  applied_at timestamptz [not null, default: `now()`]
+  current_stage_code varchar(80)
+  assigned_recruiter_principal_id uuid
+  screening_score numeric(8,3)
+  scorecard_version varchar(60)
+  disposition_reason_code varchar(80)
+  decision_at timestamptz
+  decision_by_principal_id uuid
+  hired_worker_id uuid
+  source_posting_id uuid
+  idempotency_key varchar(160) [not null, unique]
+  indexes {
+    (candidate_id, requisition_id) [unique, name: 'uq_hr_candidate_requisition_application']
+    (requisition_id, status, applied_at) [name: 'ix_hr_application_requisition_status']
+  }
+  checks {
+    `screening_score IS NULL OR screening_score BETWEEN 0 AND 100` [name: 'ck_hr_application_screening_score']
+    `status <> 'hired' OR (hired_worker_id IS NOT NULL AND decision_at IS NOT NULL AND decision_by_principal_id IS NOT NULL)` [name: 'ck_hr_application_hired']
+  }
+  Note: 'Assessment scoring requires transparent job-related criteria, human review and jurisdiction-specific anti-discrimination safeguards; no automatic adverse decision is assumed.'
+}
+
+Table hr_application_stage_history {
+  id bigint [pk, increment]
+  application_id uuid [not null]
+  previous_status hr_application_status_enum
+  new_status hr_application_status_enum [not null]
+  stage_code varchar(80)
+  changed_at timestamptz [not null, default: `now()`]
+  changed_by_principal_id uuid
+  reason_code varchar(80)
+  indexes { (application_id, changed_at) [name: 'ix_hr_application_stage_history'] }
+}
+
+Table hr_interviews {
+  id uuid [pk]
+  application_id uuid [not null]
+  interview_round integer [not null]
+  interview_type varchar(60) [not null]
+  scheduled_start timestamptz
+  scheduled_end timestamptz
+  location_reference_id uuid
+  meeting_reference_id uuid
+  status varchar(30) [not null, default: 'planned']
+  candidate_timezone varchar(80)
+  created_by_principal_id uuid
+  indexes { (application_id, interview_round, interview_type) [unique, name: 'uq_hr_interview_round'] }
+  checks { `interview_round > 0 AND (scheduled_end IS NULL OR scheduled_start IS NULL OR scheduled_end > scheduled_start)` [name: 'ck_hr_interview_schedule'] }
+}
+
+Table hr_interview_panelists {
+  id uuid [pk]
+  interview_id uuid [not null]
+  interviewer_principal_id uuid [not null]
+  interviewer_role varchar(60)
+  scorecard_template_reference_id uuid
+  feedback_due_at timestamptz
+  indexes {
+    (interview_id, interviewer_principal_id) [unique, name: 'uq_hr_interview_panelist']
+    (id, interviewer_principal_id) [unique, name: 'uq_hr_interview_panelist_identity_pair']
+  }
+}
+
+Table hr_interview_feedback {
+  id uuid [pk]
+  interview_id uuid [not null]
+  interviewer_principal_id uuid [not null]
+  feedback_version integer [not null, default: 1]
+  submitted_at timestamptz [not null, default: `now()`]
+  overall_recommendation varchar(40) [not null]
+  competency_scores jsonb [not null]
+  evidence_notes text
+  content_digest bytea
+  visibility_class varchar(30) [not null, default: 'restricted']
+  indexes { (interview_id, interviewer_principal_id, feedback_version) [unique, name: 'uq_hr_interview_feedback_version'] }
+  checks { `feedback_version > 0` [name: 'ck_hr_interview_feedback_version'] }
+}
+
+Table hr_offers {
+  id uuid [pk]
+  application_id uuid [not null]
+  offer_number varchar(120) [not null, unique]
+  offer_version integer [not null, default: 1]
+  offer_status varchar(30) [not null, default: 'draft']
+  proposed_job_id uuid [not null]
+  proposed_legal_entity_reference_id uuid [not null]
+  proposed_start_date date
+  proposed_contract_type varchar(60) [not null]
+  proposed_compensation_document_version_reference_id uuid [note: 'Rincian usulan kompensasi di DRM, belum menjadi kompensasi aktif pekerja']
+  currency_code char(3)
+  offer_document_reference_id uuid
+  offer_document_version_reference_id uuid
+  offer_content_digest bytea
+  issued_at timestamptz
+  expires_at timestamptz
+  candidate_response varchar(30)
+  responded_at timestamptz
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  indexes { (application_id, offer_version) [unique, name: 'uq_hr_application_offer_version'] }
+  checks {
+    `issued_at IS NULL OR (offer_document_version_reference_id IS NOT NULL AND offer_content_digest IS NOT NULL AND approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)` [name: 'ck_hr_offer_issued_evidence']
+    `offer_version > 0 AND (expires_at IS NULL OR issued_at IS NULL OR expires_at > issued_at)` [name: 'ck_hr_offer_validity'] }
+}
+
+Table hr_onboarding_plans {
+  id uuid [pk]
+  worker_id uuid [not null]
+  plan_code varchar(100) [not null]
+  plan_version integer [not null, default: 1]
+  start_date date [not null]
+  target_completion_date date
+  status varchar(30) [not null, default: 'draft']
+  template_reference_id uuid
+  created_by_principal_id uuid
+  indexes { (worker_id, plan_code, plan_version) [unique, name: 'uq_hr_onboarding_plan_version'] }
+  checks { `plan_version > 0 AND (target_completion_date IS NULL OR target_completion_date >= start_date)` [name: 'ck_hr_onboarding_plan_dates'] }
+}
+
+Table hr_onboarding_tasks {
+  id uuid [pk]
+  onboarding_plan_id uuid [not null]
+  task_code varchar(100) [not null]
+  task_name varchar(180) [not null]
+  task_owner_type varchar(30) [not null, note: 'worker, manager, hr, it, security, facilities']
+  assigned_principal_id uuid
+  due_at timestamptz
+  completed_at timestamptz
+  completion_evidence_reference_id uuid
+  is_mandatory boolean [not null, default: true]
+  indexes { (onboarding_plan_id, task_code) [unique, name: 'uq_hr_onboarding_task'] }
+}
+
+Table hr_compensation_bands {
+  id uuid [pk]
+  band_code varchar(80) [not null]
+  band_version integer [not null]
+  job_level_code varchar(60) [not null]
+  jurisdiction_code varchar(80) [not null]
+  currency_code char(3) [not null]
+  pay_frequency varchar(30) [not null]
+  minimum_amount numeric(20,6) [not null]
+  midpoint_amount numeric(20,6) [not null]
+  maximum_amount numeric(20,6) [not null]
+  valid_from date [not null]
+  valid_to date
+  approval_reference_id uuid
+  indexes { (band_code, band_version, jurisdiction_code) [unique, name: 'uq_hr_compensation_band_version'] }
+  checks { `band_version > 0 AND minimum_amount >= 0 AND midpoint_amount >= minimum_amount AND maximum_amount >= midpoint_amount AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_compensation_band_range'] }
+}
+
+Table hr_compensation_records {
+  id uuid [pk]
+  worker_id uuid [not null]
+  assignment_id uuid [not null]
+  component_id uuid [not null]
+  component_code_snapshot varchar(80) [not null]
+  compensation_band_id uuid
+  compensation_type varchar(40) [not null, note: 'base_salary, hourly_rate, allowance, incentive_target, commission_target, equity_reference']
+  amount numeric(20,6) [not null]
+  currency_code char(3) [not null]
+  pay_frequency varchar(30) [not null]
+  effective_from date [not null]
+  effective_to date
+  status hr_compensation_status_enum [not null, default: 'proposed']
+  reason_code varchar(80)
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  source_change_reference_id uuid
+  access_class varchar(30) [not null, default: 'restricted']
+  indexes { (worker_id, assignment_id, component_id, effective_from) [unique, name: 'uq_hr_worker_compensation_period'] }
+  checks {
+    `amount >= 0 AND (effective_to IS NULL OR effective_to >= effective_from)` [name: 'ck_hr_compensation_record_values']
+    `status NOT IN ('approved','active','superseded') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)` [name: 'ck_hr_compensation_approval']
+  }
+  Note: 'Komponen membedakan tunjangan sejenis pada penempatan yang sama. Baseline melarang overlap kompensasi approved/active/superseded untuk penempatan dan kode komponen yang sama. Service memvalidasi mata uang, periode penempatan dan band sebelum approval.'
+}
+
+Table hr_benefit_plans {
+  id uuid [pk]
+  plan_code varchar(100) [not null]
+  plan_version integer [not null]
+  plan_name varchar(180) [not null]
+  benefit_type varchar(60) [not null, note: 'health, retirement, insurance, leave, allowance, meal, transport, other']
+  provider_party_reference_id uuid
+  jurisdiction_code varchar(80) [not null]
+  eligibility_rule jsonb [not null, default: `'{}'`]
+  employee_contribution_rule_reference_id uuid
+  employer_contribution_rule_reference_id uuid
+  valid_from date [not null]
+  valid_to date
+  is_active boolean [not null, default: true]
+  indexes { (plan_code, plan_version, jurisdiction_code) [unique, name: 'uq_hr_benefit_plan_version'] }
+  checks { `plan_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_benefit_plan_validity'] }
+}
+
+Table hr_benefit_enrollments {
+  id uuid [pk]
+  worker_id uuid [not null]
+  benefit_plan_id uuid [not null]
+  enrollment_status varchar(30) [not null, default: 'pending']
+  effective_from date [not null]
+  effective_to date
+  enrollment_reference varchar(160)
+  provider_member_reference varchar(200)
+  employee_contribution_amount numeric(20,6)
+  employer_contribution_amount numeric(20,6)
+  currency_code char(3)
+  elected_at timestamptz
+  verified_at timestamptz
+  indexes { (worker_id, benefit_plan_id, effective_from) [unique, name: 'uq_hr_worker_benefit_enrollment'] }
+  checks {
+    `effective_to IS NULL OR effective_to >= effective_from` [name: 'ck_hr_benefit_enrollment_period']
+    `(employee_contribution_amount IS NULL OR employee_contribution_amount >= 0) AND (employer_contribution_amount IS NULL OR employer_contribution_amount >= 0)` [name: 'ck_hr_benefit_contributions']
+  }
+}
+
+Table hr_payroll_profiles {
+  id uuid [pk]
+  worker_id uuid [not null]
+  payroll_country_code char(2) [not null]
+  payroll_jurisdiction_code varchar(80) [not null]
+  payroll_group_id uuid [not null]
+  employing_legal_entity_reference_id uuid [not null]
+  currency_code char(3) [not null]
+  tax_profile_reference_id uuid [note: 'Protected tax provider/vault reference; actual tax ID and calculation rules must be jurisdiction-restricted']
+  bank_account_token_reference_id uuid [note: 'Protected payment instrument reference owned by Finance/payment provider; never store full bank/card credentials here']
+  tax_status_code varchar(60)
+  withholding_election_reference_id uuid
+  effective_from date [not null]
+  effective_to date
+  is_active boolean [not null, default: true]
+  indexes {
+    (worker_id, payroll_group_id, effective_from) [unique, name: 'uq_hr_payroll_profile_period']
+    (id, worker_id, payroll_group_id, currency_code) [unique, name: 'uq_hr_payroll_profile_worker_group']
+  }
+  checks { `effective_to IS NULL OR effective_to >= effective_from` [name: 'ck_hr_payroll_profile_period'] }
+}
+
+Table hr_pay_components {
+  id uuid [pk]
+  component_code varchar(80) [not null]
+  component_version integer [not null]
+  component_name varchar(180) [not null]
+  component_type varchar(30) [not null, note: 'earning, deduction, employer_contribution, tax, reimbursement']
+  calculation_method varchar(40) [not null, note: 'fixed, hourly, percentage, formula, imported, statutory_engine']
+  tax_treatment_code varchar(80)
+  jurisdiction_code varchar(80) [not null]
+  currency_code char(3)
+  rule_set_id uuid
+  formula_reference_id uuid [note: 'Versioned rule engine; legal rates and formulas are jurisdiction-specific and not hard-coded in schema']
+  taxable boolean
+  pensionable boolean
+  effective_from date [not null]
+  effective_to date
+  is_active boolean [not null, default: true]
+  indexes {
+    (component_code, component_version, jurisdiction_code) [unique, name: 'uq_hr_pay_component_version']
+    (id, component_code) [unique]
+    (id, component_code, component_type) [unique]
+  }
+  checks {
+    `component_type IN ('earning','deduction','employer_contribution','tax','reimbursement')` [name: 'ck_hr_component_type']
+    `component_version > 0 AND (effective_to IS NULL OR effective_to >= effective_from)` [name: 'ck_hr_pay_component_period'] }
+}
+
+Table hr_payroll_periods {
+  id uuid [pk]
+  payroll_group_id uuid [not null]
+  employing_legal_entity_reference_id uuid [not null]
+  currency_code char(3) [not null]
+  jurisdiction_code varchar(80) [not null]
+  period_code varchar(80) [not null]
+  period_start date [not null]
+  period_end date [not null]
+  pay_date date [not null]
+  period_status varchar(30) [not null, default: 'open']
+  calendar_reference_id uuid
+  indexes {
+    (payroll_group_id, period_code) [unique, name: 'uq_hr_payroll_period_code']
+    (id, payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) [unique, name: 'uq_hr_payroll_period_scope']
+  }
+  checks { `period_end >= period_start` [name: 'ck_hr_payroll_period_dates'] }
+}
+
+Table hr_payroll_runs {
+  id uuid [pk]
+  payroll_period_id uuid [not null]
+  payroll_group_id uuid [not null]
+  employing_legal_entity_reference_id uuid [not null]
+  currency_code char(3) [not null]
+  rule_set_id uuid [not null]
+  original_run_id uuid
+  settlement_direction varchar(10) [not null, default: 'payable', note: 'payable atau recovery; jumlah hasil selalu magnitudo positif']
+  run_number integer [not null]
+  run_type varchar(40) [not null, note: 'regular, off_cycle, bonus, correction, termination, reversal']
+  status hr_payroll_run_status_enum [not null, default: 'draft']
+  jurisdiction_code varchar(80) [not null]
+  rule_engine_name varchar(120) [not null]
+  rule_engine_version varchar(80) [not null]
+  input_snapshot_reference_id uuid [not null]
+  input_digest bytea [not null]
+  output_digest bytea
+  calculated_at timestamptz
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  finance_journal_reference_id uuid
+  payment_batch_reference_id uuid
+  finance_settlement_event_reference_id uuid
+  finance_settled_at timestamptz
+  started_by_principal_id uuid [not null]
+  created_at timestamptz [not null, default: `now()`]
+  idempotency_key varchar(160) [not null, unique]
+  indexes {
+    (payroll_period_id, run_number) [unique, name: 'uq_hr_payroll_run_number']
+    (id, payroll_group_id, currency_code) [unique, name: 'uq_hr_payroll_run_group']
+  }
+  checks {
+    `run_type IN ('regular','off_cycle','bonus','correction','termination','reversal')` [name: 'ck_hr_payroll_run_type']
+    `settlement_direction IN ('payable','recovery')` [name: 'ck_hr_payroll_settlement_direction']
+    `(run_type IN ('correction','reversal')) = (original_run_id IS NOT NULL)` [name: 'ck_hr_payroll_correction_origin']
+    `original_run_id IS NULL OR original_run_id <> id` [name: 'ck_hr_payroll_not_self_correction']
+    `status <> 'paid' OR (payment_batch_reference_id IS NOT NULL AND finance_settlement_event_reference_id IS NOT NULL AND finance_settled_at IS NOT NULL)` [name: 'ck_hr_payroll_settlement_evidence']
+    `run_number > 0` [name: 'ck_hr_payroll_run_number']
+    `(status NOT IN ('calculated','review','approved','posted','paid') OR (calculated_at IS NOT NULL AND output_digest IS NOT NULL))` [name: 'ck_hr_payroll_run_calculation_state']
+    `(status NOT IN ('approved','posted','paid') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL))` [name: 'ck_hr_payroll_run_approval_state']
+    `(status NOT IN ('posted','paid') OR finance_journal_reference_id IS NOT NULL)` [name: 'ck_hr_payroll_run_posting_state']
+  }
+  Note: 'Calculation outputs are immutable snapshots by run/version. Approved payroll posts through Finance; payment execution and bank reconciliation belong to Finance.'
+}
+
+Table hr_payroll_results {
+  id uuid [pk]
+  payroll_run_id uuid [not null]
+  payroll_group_id uuid [not null]
+  worker_id uuid [not null]
+  payroll_profile_reference_id uuid [not null]
+  currency_code char(3) [not null]
+  gross_amount numeric(20,6) [not null]
+  reimbursement_amount numeric(20,6) [not null, default: 0]
+  total_deductions numeric(20,6) [not null]
+  employer_cost_amount numeric(20,6) [not null, note: 'Gross ditambah kontribusi pemberi kerja; reimbursement tidak masuk biaya remunerasi ini']
+  net_pay_amount numeric(20,6) [not null]
+  result_status varchar(30) [not null, default: 'calculated']
+  payment_reference_id uuid
+  payslip_document_reference_id uuid
+  calculation_digest bytea [not null]
+  created_at timestamptz [not null, default: `now()`]
+  indexes { (payroll_run_id, worker_id) [unique, name: 'uq_hr_payroll_worker_result'] }
+  Note: 'Net = gross + reimbursement - deductions (termasuk pajak pekerja). Recovery/reversal memakai magnitudo positif dan settlement_direction pada run. Baseline merekonsiliasi jumlah baris saat approval dan membekukan hasil setelah approval.'
+  checks {
+    `reimbursement_amount >= 0 AND gross_amount >= 0 AND total_deductions >= 0 AND employer_cost_amount >= 0 AND net_pay_amount >= 0` [name: 'ck_hr_payroll_result_nonnegative']
+    `net_pay_amount = gross_amount + reimbursement_amount - total_deductions` [name: 'ck_hr_payroll_net_equation']
+  }
+}
+
+Table hr_payroll_result_lines {
+  id uuid [pk]
+  payroll_result_id uuid [not null]
+  component_id uuid [not null]
+  component_code_snapshot varchar(80) [not null]
+  component_name_snapshot varchar(180) [not null]
+  component_type_snapshot varchar(30) [not null]
+  amount numeric(20,6) [not null]
+  quantity numeric(20,8)
+  rate numeric(20,8)
+  taxable_base numeric(20,6)
+  calculation_reference varchar(160)
+  line_sequence integer [not null]
+  indexes { (payroll_result_id, line_sequence) [unique, name: 'uq_hr_payroll_result_line_sequence'] }
+  checks {
+    `component_type_snapshot IN ('earning','deduction','employer_contribution','tax','reimbursement')` [name: 'ck_hr_result_line_type']
+    `line_sequence > 0 AND (taxable_base IS NULL OR taxable_base >= 0)` [name: 'ck_hr_payroll_result_line'] }
+}
+
+Table hr_payroll_adjustments {
+  id uuid [pk]
+  worker_id uuid [not null]
+  payroll_period_id uuid [not null]
+  component_id uuid [not null]
+  adjustment_type varchar(40) [not null]
+  amount numeric(20,6) [not null]
+  currency_code char(3) [not null]
+  reason text [not null]
+  source_reference varchar(160)
+  requested_by_principal_id uuid [not null]
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  idempotency_key varchar(160) [not null, unique]
+  created_at timestamptz [not null, default: `now()`]
+  indexes { (worker_id, payroll_period_id, component_id) [name: 'ix_hr_payroll_adjustment_worker_period'] }
+}
+
+Table hr_leave_policies {
+  id uuid [pk]
+  policy_code varchar(100) [not null]
+  policy_version integer [not null]
+  policy_name varchar(180) [not null]
+  leave_type_code varchar(80) [not null]
+  jurisdiction_code varchar(80) [not null]
+  accrual_method varchar(40) [not null, note: 'annual_grant, per_pay_period, hours_worked, tenure_tier, statutory_engine']
+  annual_entitlement numeric(12,4)
+  carryover_limit numeric(12,4)
+  max_balance numeric(12,4)
+  minimum_service_days integer
+  effective_from date [not null]
+  effective_to date
+  is_paid boolean [not null, default: true]
+  is_active boolean [not null, default: true]
+  indexes {
+    (policy_code, policy_version, jurisdiction_code) [unique, name: 'uq_hr_leave_policy_version']
+    (id, leave_type_code) [unique]
+  }
+  checks {
+    `policy_version > 0 AND (annual_entitlement IS NULL OR annual_entitlement >= 0) AND (carryover_limit IS NULL OR carryover_limit >= 0) AND (max_balance IS NULL OR max_balance >= 0)` [name: 'ck_hr_leave_policy_amounts']
+    `effective_to IS NULL OR effective_to >= effective_from` [name: 'ck_hr_leave_policy_period']
+  }
+  Note: 'Policy and entitlement parameters are versioned by jurisdiction and collective agreement; actual absence request/calendar impact is Workforce Management-owned.'
+}
+
+Table hr_leave_entitlements {
+  id uuid [pk]
+  worker_id uuid [not null]
+  leave_policy_id uuid [not null]
+  leave_type_code_snapshot varchar(80) [not null]
+  entitlement_period_start date [not null]
+  entitlement_period_end date [not null]
+  opening_balance numeric(12,4) [not null, default: 0]
+  accrued_quantity numeric(12,4) [not null, default: 0]
+  used_quantity_snapshot numeric(12,4) [not null, default: 0]
+  adjusted_quantity numeric(12,4) [not null, default: 0]
+  closing_balance_snapshot numeric(12,4) [not null, default: 0]
+  uom_code varchar(30) [not null, default: 'day']
+  revision bigint [not null, default: 1]
+  calculated_at timestamptz [not null, default: `now()`]
+  source_workforce_snapshot_reference_id uuid
+  indexes { (worker_id, leave_policy_id, entitlement_period_start) [unique, name: 'uq_hr_leave_entitlement_period'] }
+  checks {
+    `revision > 0 AND closing_balance_snapshot = opening_balance + accrued_quantity + adjusted_quantity - used_quantity_snapshot` [name: 'ck_hr_leave_balance_equation']
+    `entitlement_period_end >= entitlement_period_start` [name: 'ck_hr_leave_entitlement_dates']
+    `opening_balance >= 0 AND accrued_quantity >= 0 AND used_quantity_snapshot >= 0 AND closing_balance_snapshot >= 0` [name: 'ck_hr_leave_entitlement_values']
+  }
+  Note: 'Ledger HRM adalah sumber saldo. Opening/accrued/used/adjusted adalah proyeksi ledger dalam transaksi yang sama dengan lock entitlement dan kenaikan revision. Perintah pemakaian dari owner absensi memerlukan persetujuan HRM; kegagalan dependency tidak boleh menghasilkan approval. Ledger menyimpan grant awal; opening_balance harus sama dengan jumlah entry opening.'
+}
+
+Table hr_leave_adjustments {
+  id uuid [pk]
+  entitlement_id uuid [not null]
+  quantity_delta numeric(12,4) [not null]
+  reason_code varchar(80) [not null]
+  reason text [not null]
+  requested_by_principal_id uuid [not null]
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (id, entitlement_id) [unique, name: 'uq_hr_leave_adjustment_account'] }
+  checks {
+    `quantity_delta <> 0` [name: 'ck_hr_leave_adjustment_nonzero']
+    `(approved_at IS NULL) = (approved_by_principal_id IS NULL)` [name: 'ck_hr_leave_adjustment_approval']
+  }
+}
+
+Table hr_performance_cycles {
+  id uuid [pk]
+  cycle_code varchar(100) [not null, unique]
+  cycle_name varchar(180) [not null]
+  cycle_type varchar(40) [not null, note: 'annual, semiannual, probation, project, continuous_feedback']
+  status hr_performance_cycle_status_enum [not null, default: 'draft']
+  period_start date [not null]
+  period_end date [not null]
+  self_review_due_at timestamptz
+  manager_review_due_at timestamptz
+  calibration_due_at timestamptz
+  launched_at timestamptz
+  launched_by_principal_id uuid
+  configuration jsonb [not null, default: `'{}'`]
+  checks { `period_end >= period_start` [name: 'ck_hr_performance_cycle_dates'] }
+}
+
+Table hr_performance_goals {
+  id uuid [pk]
+  worker_id uuid [not null]
+  performance_cycle_id uuid [not null]
+  parent_goal_id uuid
+  goal_code varchar(100)
+  goal_title varchar(240) [not null]
+  goal_description text
+  goal_type varchar(40) [not null, note: 'business, development, safety, quality, customer, capability']
+  measure_definition jsonb
+  target_value numeric(24,8)
+  actual_value numeric(24,8)
+  unit_code varchar(30)
+  weight_percent numeric(6,3)
+  due_date date
+  goal_status varchar(30) [not null, default: 'draft']
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  indexes {
+    (worker_id, performance_cycle_id, goal_code) [unique, name: 'uq_hr_worker_performance_goal']
+    (id, worker_id, performance_cycle_id) [unique, name: 'uq_hr_goal_worker_cycle_pair']
+  }
+  checks { `weight_percent IS NULL OR weight_percent BETWEEN 0 AND 100` [name: 'ck_hr_performance_goal_weight'] }
+}
+
+Table hr_performance_reviews {
+  id uuid [pk]
+  worker_id uuid [not null]
+  performance_cycle_id uuid [not null]
+  reviewer_principal_id uuid [not null]
+  reviewer_role varchar(40) [not null, note: 'self, manager, peer, project_lead, calibration_panel']
+  review_version integer [not null, default: 1]
+  overall_rating_code varchar(60)
+  competency_assessment jsonb [not null, default: `'{}'`]
+  narrative text
+  development_plan_id uuid
+  submitted_at timestamptz
+  finalized_at timestamptz
+  visibility_class varchar(30) [not null, default: 'restricted']
+  content_digest bytea
+  indexes { (worker_id, performance_cycle_id, reviewer_principal_id, reviewer_role, review_version) [unique, name: 'uq_hr_performance_review_version'] }
+  checks { `review_version > 0` [name: 'ck_hr_performance_review_version'] }
+  Note: 'Evaluation is confidential employment data; access, retention, worker response/correction and appeal process depend on law and policy.'
+}
+
+Table hr_learning_courses {
+  id uuid [pk]
+  course_code varchar(100) [not null]
+  course_version varchar(60) [not null]
+  course_name varchar(240) [not null]
+  course_type varchar(40) [not null, note: 'compliance, safety, technical, leadership, professional, onboarding, qualification']
+  provider_party_reference_id uuid
+  delivery_mode varchar(40) [not null]
+  duration_hours numeric(10,2)
+  competency_id uuid
+  credential_awarded boolean [not null, default: false]
+  expiry_months integer
+  valid_from date
+  valid_to date
+  is_active boolean [not null, default: true]
+  indexes { (course_code, course_version) [unique, name: 'uq_hr_learning_course_version'] }
+  checks { `(duration_hours IS NULL OR duration_hours >= 0) AND (expiry_months IS NULL OR expiry_months > 0) AND (valid_to IS NULL OR valid_from IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_course_values'] }
+}
+
+Table hr_learning_enrollments {
+  id uuid [pk]
+  worker_id uuid [not null]
+  course_id uuid [not null]
+  enrollment_status hr_learning_status_enum [not null, default: 'planned']
+  assigned_by_principal_id uuid
+  assigned_at timestamptz [not null, default: `now()`]
+  due_at timestamptz
+  started_at timestamptz
+  completed_at timestamptz
+  score numeric(8,3)
+  credential_reference_id uuid
+  funding_reference_id uuid
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (worker_id, course_id, assigned_at) [unique, name: 'uq_hr_worker_course_assignment'] }
+  checks { `score IS NULL OR score BETWEEN 0 AND 100` [name: 'ck_hr_learning_score'] }
+}
+
+Table hr_worker_qualifications {
+  id uuid [pk]
+  worker_id uuid [not null]
+  qualification_type varchar(60) [not null, note: 'degree, license, certification, trade_skill, safety_authorization, language']
+  qualification_code varchar(120)
+  title varchar(240) [not null]
+  issuer_party_reference_id uuid
+  credential_reference_id uuid
+  obtained_on date
+  expires_on date
+  verification_status varchar(30) [not null, default: 'unverified']
+  verified_by_principal_id uuid
+  verified_at timestamptz
+  indexes { (worker_id, qualification_type, expires_on) [name: 'ix_hr_worker_qualification_expiry'] }
+  checks { `expires_on IS NULL OR obtained_on IS NULL OR expires_on >= obtained_on` [name: 'ck_hr_qualification_dates'] }
+}
+
+Table hr_succession_plans {
+  id uuid [pk]
+  position_id uuid [not null]
+  plan_code varchar(100) [not null]
+  plan_version integer [not null]
+  review_date date [not null]
+  confidentiality_class varchar(30) [not null, default: 'highly_restricted']
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  succession_risk varchar(30)
+  indexes { (position_id, plan_code, plan_version) [unique, name: 'uq_hr_succession_plan_version'] }
+  checks { `plan_version > 0` [name: 'ck_hr_succession_plan_version'] }
+}
+
+Table hr_succession_candidates {
+  id uuid [pk]
+  succession_plan_id uuid [not null]
+  candidate_worker_id uuid [not null]
+  readiness_code varchar(40) [not null, note: 'ready_now, 1_year, 2_3_years, development_needed']
+  readiness_assessed_at date [not null]
+  readiness_rationale text
+  development_plan_id uuid
+  risk_of_loss varchar(30)
+  indexes { (succession_plan_id, candidate_worker_id) [unique, name: 'uq_hr_succession_candidate'] }
+  Note: 'Succession and talent-potential data are highly restricted and should not be used as unreviewed automated employment decisions.'
+}
+
+Table hr_employee_relations_cases {
+  id uuid [pk]
+  case_number varchar(120) [not null, unique]
+  case_type varchar(60) [not null, note: 'grievance, conduct, investigation, accommodation, employee_support, ethics_referral']
+  status hr_case_status_enum [not null, default: 'open']
+  subject_worker_id uuid
+  reporting_party_reference_id uuid
+  assigned_investigator_principal_id uuid
+  opened_at timestamptz [not null, default: `now()`]
+  due_at timestamptz
+  resolved_at timestamptz
+  outcome_code varchar(80)
+  restricted_summary_reference_id uuid [not null, note: 'Sensitive narratives/evidence stored in access-controlled case vault, not generic notes/logs']
+  confidentiality_class varchar(30) [not null, default: 'highly_restricted']
+  legal_hold_reference_id uuid
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (status, assigned_investigator_principal_id, due_at) [name: 'ix_hr_employee_case_queue'] }
+}
+
+Table hr_employee_relations_events {
+  id bigint [pk, increment]
+  case_id uuid [not null]
+  event_type varchar(60) [not null]
+  occurred_at timestamptz [not null, default: `now()`]
+  actor_principal_id uuid
+  event_digest bytea [not null]
+  event_reference_id uuid
+  indexes { (case_id, occurred_at) [name: 'ix_hr_employee_case_event_history'] }
+  Note: 'Append-only audit metadata; no sensitive narrative in event payload.'
+}
+
+Table hr_human_capital_metric_definitions {
+  id uuid [pk]
+  metric_code varchar(100) [not null]
+  metric_version varchar(60) [not null]
+  metric_name varchar(180) [not null]
+  metric_domain varchar(60) [not null, note: 'composition, diversity, cost, productivity, wellbeing, compliance, recruitment, mobility, turnover, skills, development']
+  numerator_definition text
+  denominator_definition text
+  inclusion_exclusion_rules jsonb
+  unit_code varchar(30)
+  standard_reference varchar(120)
+  indexes { (metric_code, metric_version) [unique, name: 'uq_hr_hc_metric_definition_version'] }
+}
+
+Table hr_human_capital_metric_snapshots {
+  id uuid [pk]
+  metric_definition_id uuid [not null]
+  period_start date [not null]
+  period_end date [not null]
+  organization_unit_reference_id uuid
+  jurisdiction_code varchar(80)
+  value_numeric numeric(24,8)
+  value_text varchar(500)
+  population_count bigint
+  data_quality_status varchar(30) [not null, default: 'provisional']
+  snapshot_version integer [not null, default: 1]
+  methodology_version varchar(60) [not null]
+  confidentiality_class varchar(30) [not null, default: 'restricted']
+  calculated_at timestamptz [not null, default: `now()`]
+  source_digest bytea [not null]
+  indexes { (metric_definition_id, period_start, period_end, `COALESCE(organization_unit_reference_id::text, '')`, `COALESCE(jurisdiction_code, '')`, methodology_version, snapshot_version) [unique, name: 'uq_hr_hc_metric_snapshot_scope'] }
+  checks { `snapshot_version > 0 AND period_end >= period_start AND (population_count IS NULL OR population_count >= 0)` [name: 'ck_hr_hc_metric_snapshot_values'] }
+}
+
+// FK hanya ke tabel internal HRM. Referensi owner eksternal diperiksa melalui
+// kontrak pemilik, beserta versi dan scope; tidak ada FK lintas database.
+Ref: hr_jobs.job_family_id > hr_job_families.id [delete: restrict]
+Ref: hr_positions.job_id > hr_jobs.id [delete: restrict]
+Ref: hr_positions.reports_to_position_id >? hr_positions.id [delete: restrict]
+Ref: hr_workers.(primary_assignment_id, id) >? hr_worker_assignments.(id, worker_id) [delete: restrict]
+Ref: hr_employment_contracts.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_worker_assignments.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_worker_assignments.position_id > hr_positions.id [delete: restrict]
+Ref: hr_worker_assignments.manager_worker_id >? hr_workers.id [delete: restrict]
+Ref: hr_worker_lifecycle_events.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_worker_documents.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_emergency_contacts.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_requisitions.position_id >? hr_positions.id [delete: restrict]
+Ref: hr_requisitions.job_id > hr_jobs.id [delete: restrict]
+Ref: hr_applications.candidate_id > hr_candidates.id [delete: restrict]
+Ref: hr_applications.requisition_id > hr_requisitions.id [delete: restrict]
+Ref: hr_applications.hired_worker_id >? hr_workers.id [delete: restrict]
+Ref: hr_application_stage_history.application_id > hr_applications.id [delete: cascade]
+Ref: hr_interviews.application_id > hr_applications.id [delete: cascade]
+Ref: hr_interview_panelists.interview_id > hr_interviews.id [delete: cascade]
+Ref: hr_interview_feedback.(interview_id, interviewer_principal_id) > hr_interview_panelists.(interview_id, interviewer_principal_id) [delete: cascade]
+Ref: hr_offers.application_id > hr_applications.id [delete: restrict]
+Ref: hr_offers.proposed_job_id > hr_jobs.id [delete: restrict]
+Ref: hr_onboarding_plans.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_onboarding_tasks.onboarding_plan_id > hr_onboarding_plans.id [delete: cascade]
+Ref: hr_compensation_records.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_compensation_records.(assignment_id, worker_id) > hr_worker_assignments.(id, worker_id) [delete: restrict]
+Ref: hr_compensation_records.compensation_band_id >? hr_compensation_bands.id [delete: restrict]
+Ref: hr_benefit_enrollments.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_benefit_enrollments.benefit_plan_id > hr_benefit_plans.id [delete: restrict]
+Ref: hr_payroll_profiles.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_payroll_runs.(payroll_period_id, payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) > hr_payroll_periods.(id, payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) [delete: restrict]
+Ref: hr_payroll_results.(payroll_run_id, payroll_group_id, currency_code) > hr_payroll_runs.(id, payroll_group_id, currency_code) [delete: restrict]
+Ref: hr_payroll_results.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_payroll_results.(payroll_profile_reference_id, worker_id, payroll_group_id, currency_code) > hr_payroll_profiles.(id, worker_id, payroll_group_id, currency_code) [delete: restrict]
+Ref: hr_payroll_result_lines.payroll_result_id > hr_payroll_results.id [delete: cascade]
+Ref: hr_payroll_result_lines.(component_id, component_code_snapshot, component_type_snapshot) > hr_pay_components.(id, component_code, component_type) [delete: restrict]
+Ref: hr_payroll_adjustments.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_payroll_adjustments.payroll_period_id > hr_payroll_periods.id [delete: restrict]
+Ref: hr_payroll_adjustments.component_id > hr_pay_components.id [delete: restrict]
+Ref: hr_leave_entitlements.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_leave_entitlements.(leave_policy_id, leave_type_code_snapshot) > hr_leave_policies.(id, leave_type_code) [delete: restrict]
+Ref: hr_leave_adjustments.entitlement_id > hr_leave_entitlements.id [delete: restrict]
+Ref: hr_performance_goals.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_performance_goals.performance_cycle_id > hr_performance_cycles.id [delete: restrict]
+Ref: hr_performance_goals.(parent_goal_id, worker_id, performance_cycle_id) >? hr_performance_goals.(id, worker_id, performance_cycle_id) [delete: restrict]
+Ref: hr_performance_reviews.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_performance_reviews.performance_cycle_id > hr_performance_cycles.id [delete: restrict]
+Ref: hr_learning_enrollments.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_learning_enrollments.course_id > hr_learning_courses.id [delete: restrict]
+Ref: hr_worker_qualifications.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_succession_plans.position_id > hr_positions.id [delete: restrict]
+Ref: hr_succession_candidates.succession_plan_id > hr_succession_plans.id [delete: cascade]
+Ref: hr_succession_candidates.candidate_worker_id > hr_workers.id [delete: restrict]
+Ref: hr_employee_relations_events.case_id > hr_employee_relations_cases.id [delete: restrict]
+Ref: hr_human_capital_metric_snapshots.metric_definition_id > hr_human_capital_metric_definitions.id [delete: restrict]
+
+
+// Perencanaan kebutuhan dan kompetensi; struktur organisasi tetap milik Foundation.
+Table hr_workforce_plans {
+  id uuid [pk]
+  plan_code varchar(100) [not null]
+  plan_version integer [not null]
+  legal_entity_reference_id uuid [not null]
+  period_start date [not null]
+  period_end date [not null]
+  scenario_code varchar(40) [not null, default: 'baseline']
+  status varchar(30) [not null, default: 'draft']
+  finance_budget_reference_id uuid
+  created_by_principal_id uuid [not null]
+  created_at timestamptz [not null, default: `now()`]
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  indexes { (legal_entity_reference_id, plan_code, plan_version) [unique] }
+  checks {
+    `plan_version > 0 AND period_end >= period_start` [name: 'ck_hr_workforce_plan_period']
+    `status IN ('draft','review','approved','superseded','cancelled')` [name: 'ck_hr_workforce_plan_status']
+    `status NOT IN ('approved','superseded') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)` [name: 'ck_hr_workforce_plan_approval']
+  }
+}
+
+Table hr_workforce_plan_lines {
+  id uuid [pk]
+  workforce_plan_id uuid [not null]
+  line_number integer [not null]
+  organization_unit_reference_id uuid [not null]
+  job_id uuid [not null]
+  work_location_reference_id uuid
+  worker_category hr_worker_category_enum [not null]
+  current_fte numeric(12,3) [not null]
+  required_fte numeric(12,3) [not null]
+  estimated_cost numeric(20,6)
+  currency_code char(3)
+  needed_from date [not null]
+  needed_until date
+  action_code varchar(40) [not null, note: 'recruit, develop, redeploy, retain, reduce']
+  rationale text [not null]
+  indexes { (workforce_plan_id, line_number) [unique] }
+  checks {
+    `line_number > 0 AND current_fte >= 0 AND required_fte >= 0` [name: 'ck_hr_workforce_line_capacity']
+    `estimated_cost IS NULL OR (estimated_cost >= 0 AND currency_code IS NOT NULL)` [name: 'ck_hr_workforce_line_cost']
+    `needed_until IS NULL OR needed_until >= needed_from` [name: 'ck_hr_workforce_line_dates']
+    `action_code IN ('recruit','develop','redeploy','retain','reduce')` [name: 'ck_hr_workforce_line_action']
+  }
+  Note: 'Rencana kebutuhan orang/FTE, bukan roster. Service memeriksa unit/job/lokasi serta tanggal dalam plan. Referensi budget tidak membuktikan persetujuan Finance.'
+}
+
+Table hr_competencies {
+  id uuid [pk]
+  competency_code varchar(100) [not null]
+  competency_version integer [not null]
+  competency_name varchar(180) [not null]
+  category_code varchar(60) [not null]
+  proficiency_scale jsonb [not null, note: 'Rubrik versi ini mendefinisikan level 1 sampai 5 secara eksplisit']
+  is_active boolean [not null, default: true]
+  indexes { (competency_code, competency_version) [unique] }
+  checks { `competency_version > 0` [name: 'ck_hr_competency_version'] }
+}
+
+Table hr_job_competencies {
+  id uuid [pk]
+  job_id uuid [not null]
+  competency_id uuid [not null]
+  required_level smallint [not null]
+  is_mandatory boolean [not null, default: true]
+  effective_from date [not null]
+  effective_to date
+  indexes { (job_id, competency_id, effective_from) [unique] }
+  checks {
+    `required_level BETWEEN 1 AND 5` [name: 'ck_hr_job_competency_level']
+    `effective_to IS NULL OR effective_to >= effective_from` [name: 'ck_hr_job_competency_dates']
+  }
+}
+
+Table hr_worker_competency_assessments {
+  id uuid [pk]
+  worker_id uuid [not null]
+  competency_id uuid [not null]
+  assessed_level smallint [not null]
+  assessment_method varchar(60) [not null]
+  assessed_at timestamptz [not null]
+  assessed_by_principal_id uuid [not null]
+  expires_on date
+  evidence_document_version_reference_id uuid
+  evidence_digest bytea
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (worker_id, competency_id, assessed_at) }
+  checks {
+    `assessed_level BETWEEN 1 AND 5` [name: 'ck_hr_worker_competency_level']
+    `(evidence_document_version_reference_id IS NULL) = (evidence_digest IS NULL)` [name: 'ck_hr_competency_evidence']
+  }
+  Note: 'Hasil asesmen adalah bukti kompetensi, bukan izin IAM atau pengganti sertifikat. Level antarversi rubrik tidak otomatis dapat dibandingkan.'
+}
+
+// Sourcing dan asesmen terstruktur melengkapi requisition, interview dan offer.
+Table hr_job_postings {
+  id uuid [pk]
+  requisition_id uuid [not null]
+  channel_code varchar(80) [not null]
+  posting_version integer [not null]
+  external_posting_reference varchar(200)
+  content_document_version_reference_id uuid [not null]
+  content_digest bytea [not null]
+  status varchar(30) [not null, default: 'draft']
+  published_at timestamptz
+  closes_at timestamptz
+  created_by_principal_id uuid [not null]
+  indexes {
+    (requisition_id, channel_code, posting_version) [unique]
+    (id, requisition_id) [unique]
+  }
+  checks {
+    `posting_version > 0 AND (closes_at IS NULL OR published_at IS NULL OR closes_at > published_at)` [name: 'ck_hr_posting_version_dates']
+    `status IN ('draft','published','closed','withdrawn') AND (status <> 'published' OR published_at IS NOT NULL)` [name: 'ck_hr_posting_status']
+  }
+}
+
+Table hr_application_assessments {
+  id uuid [pk]
+  application_id uuid [not null]
+  assessment_code varchar(100) [not null]
+  attempt_number integer [not null, default: 1]
+  rubric_document_version_reference_id uuid [not null]
+  rubric_digest bytea [not null]
+  status varchar(30) [not null, default: 'planned']
+  assessor_principal_id uuid
+  scheduled_at timestamptz
+  completed_at timestamptz
+  normalized_score numeric(8,3)
+  recommendation_code varchar(40)
+  evidence_document_version_reference_id uuid
+  evidence_digest bytea
+  indexes { (application_id, assessment_code, attempt_number) [unique] }
+  checks {
+    `attempt_number > 0 AND (normalized_score IS NULL OR normalized_score BETWEEN 0 AND 100)` [name: 'ck_hr_assessment_score']
+    `status IN ('planned','in_progress','completed','cancelled')` [name: 'ck_hr_assessment_status']
+    `status <> 'completed' OR (completed_at IS NOT NULL AND assessor_principal_id IS NOT NULL)` [name: 'ck_hr_assessment_completed']
+    `(evidence_document_version_reference_id IS NULL) = (evidence_digest IS NULL)` [name: 'ck_hr_assessment_evidence']
+  }
+}
+
+Table hr_offboarding_plans {
+  id uuid [pk]
+  worker_id uuid [not null]
+  plan_number varchar(120) [not null, unique]
+  reason_code varchar(80) [not null]
+  notice_date date [not null]
+  last_working_date date [not null]
+  termination_effective_date date [not null]
+  status varchar(30) [not null, default: 'draft']
+  exit_interview_document_version_reference_id uuid
+  final_payroll_run_id uuid
+  finance_clearance_reference_id uuid
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  completed_at timestamptz
+  created_by_principal_id uuid [not null]
+  created_at timestamptz [not null, default: `now()`]
+  indexes { (worker_id, termination_effective_date) }
+  checks {
+    `last_working_date >= notice_date AND termination_effective_date >= last_working_date` [name: 'ck_hr_offboarding_dates']
+    `status IN ('draft','approved','in_progress','completed','cancelled')` [name: 'ck_hr_offboarding_status']
+    `status NOT IN ('approved','in_progress','completed') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)` [name: 'ck_hr_offboarding_approval']
+    `status <> 'completed' OR completed_at IS NOT NULL` [name: 'ck_hr_offboarding_completed']
+  }
+  Note: 'Service memeriksa seluruh tugas wajib, pekerja dalam payroll final, bukti clearance dan keputusan IAM. Rencana selesai tidak otomatis menandai pembayaran atau revoke; masing-masing harus dibuktikan owner.'
+}
+
+Table hr_offboarding_tasks {
+  id uuid [pk]
+  offboarding_plan_id uuid [not null]
+  task_code varchar(100) [not null]
+  task_name varchar(180) [not null]
+  owner_management varchar(80) [not null]
+  assigned_principal_id uuid
+  status varchar(30) [not null, default: 'pending']
+  is_mandatory boolean [not null, default: true]
+  due_at timestamptz
+  completed_at timestamptz
+  owner_confirmation_reference_id uuid
+  waiver_reason text
+  waived_by_principal_id uuid
+  indexes { (offboarding_plan_id, task_code) [unique] }
+  checks {
+    `status IN ('pending','in_progress','completed','waived')` [name: 'ck_hr_offboarding_task_status']
+    `status <> 'completed' OR (completed_at IS NOT NULL AND owner_confirmation_reference_id IS NOT NULL)` [name: 'ck_hr_offboarding_task_evidence']
+    `status <> 'waived' OR (waiver_reason IS NOT NULL AND waived_by_principal_id IS NOT NULL)` [name: 'ck_hr_offboarding_task_waiver']
+  }
+}
+
+Table hr_payroll_groups {
+  id uuid [pk]
+  group_code varchar(80) [not null]
+  group_name varchar(180) [not null]
+  employing_legal_entity_reference_id uuid [not null]
+  jurisdiction_code varchar(80) [not null]
+  currency_code char(3) [not null]
+  currency_scale smallint [not null, note: 'Presisi pembulatan yang disahkan; nilai payroll disimpan enam desimal']
+  pay_frequency varchar(30) [not null]
+  timezone varchar(80) [not null]
+  is_active boolean [not null, default: true]
+  indexes {
+    (employing_legal_entity_reference_id, group_code) [unique]
+    (id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) [unique, name: 'uq_hr_payroll_group_scope']
+  }
+  checks { `currency_scale BETWEEN 0 AND 6` [name: 'ck_hr_payroll_currency_scale'] }
+  Note: 'Identitas legal entity/jurisdiction/currency bersifat tetap setelah direferensikan. Perubahan employer atau mata uang membuat grup baru. Service memvalidasi timezone dan currency melalui kontrak/reference yang disahkan.'
+}
+
+Table hr_payroll_rule_sets {
+  id uuid [pk]
+  rule_code varchar(100) [not null]
+  rule_version varchar(60) [not null]
+  jurisdiction_code varchar(80) [not null]
+  effective_from date [not null]
+  effective_to date
+  artifact_document_version_reference_id uuid [not null]
+  artifact_digest bytea [not null]
+  legal_basis_document_version_reference_id uuid [not null]
+  approved_by_principal_id uuid [not null]
+  approved_at timestamptz [not null]
+  indexes {
+    (rule_code, rule_version, jurisdiction_code) [unique]
+    (id, jurisdiction_code) [unique]
+  }
+  checks { `effective_to IS NULL OR effective_to >= effective_from` [name: 'ck_hr_payroll_rule_dates'] }
+  Note: 'Manifest immutable aturan payroll/THR/pajak/BPJS, versi engine dan parameter. Tidak ada tarif hukum bawaan. Service memeriksa keberlakuan, artefak/digest serta persetujuan domain sebelum menjalankan aturan; formula bukan SQL bebas.'
+}
+
+Table hr_leave_ledger_entries {
+  id uuid [pk]
+  entitlement_id uuid [not null]
+  entry_sequence bigint [not null]
+  entry_type varchar(30) [not null]
+  quantity_delta numeric(12,4) [not null]
+  effective_date date [not null]
+  adjustment_id uuid
+  reverses_entry_id uuid [unique]
+  source_management varchar(80) [not null]
+  source_event_id varchar(160) [not null]
+  source_line_key varchar(100) [not null]
+  source_digest bytea [not null]
+  reason_code varchar(80) [not null]
+  actor_principal_id uuid [not null]
+  recorded_at timestamptz [not null, default: `now()`]
+  indexes {
+    (entitlement_id, entry_sequence) [unique]
+    (id, entitlement_id) [unique]
+    (source_management, source_event_id, source_line_key) [unique, name: 'uq_hr_leave_source_event_line']
+    adjustment_id [unique]
+  }
+  checks {
+    `entry_sequence > 0 AND quantity_delta <> 0` [name: 'ck_hr_leave_entry_values']
+    `entry_type IN ('opening','accrual','usage','adjustment','expiry','reversal')` [name: 'ck_hr_leave_entry_type']
+    `(entry_type IN ('opening','accrual') AND quantity_delta > 0) OR (entry_type IN ('usage','expiry') AND quantity_delta < 0) OR entry_type IN ('adjustment','reversal')` [name: 'ck_hr_leave_entry_sign']
+    `(entry_type = 'reversal') = (reverses_entry_id IS NOT NULL)` [name: 'ck_hr_leave_reversal_reference']
+    `reverses_entry_id IS NULL OR reverses_entry_id <> id` [name: 'ck_hr_leave_not_self_reversal']
+    `(entry_type = 'adjustment') = (adjustment_id IS NOT NULL)` [name: 'ck_hr_leave_adjustment_reference']
+  }
+  Note: 'Append-only; satu pembalikan penuh per entry, jumlah kebalikan tepat divalidasi service dengan lock. Masa ledger mengikuti entitlement. Opening/accrual/usage mengisi bucket sejenis; adjustment/expiry/reversal mengisi adjusted_quantity. UOM diwarisi entitlement; satu sumber tidak boleh diposting dua kali. Event out-of-order ditahan sebelum acknowledgement.'
+}
+
+Table hr_development_plans {
+  id uuid [pk]
+  worker_id uuid [not null]
+  plan_code varchar(100) [not null]
+  plan_version integer [not null]
+  target_job_id uuid
+  start_date date [not null]
+  target_date date [not null]
+  status varchar(30) [not null, default: 'draft']
+  mentor_worker_id uuid
+  approved_by_principal_id uuid
+  approved_at timestamptz
+  indexes {
+    (worker_id, plan_code, plan_version) [unique]
+    (id, worker_id) [unique]
+  }
+  checks {
+    `plan_version > 0 AND target_date >= start_date` [name: 'ck_hr_development_plan_dates']
+    `mentor_worker_id IS NULL OR mentor_worker_id <> worker_id` [name: 'ck_hr_development_mentor']
+    `status IN ('draft','active','completed','cancelled')` [name: 'ck_hr_development_plan_status']
+  }
+}
+
+Table hr_development_actions {
+  id uuid [pk]
+  development_plan_id uuid [not null]
+  action_number integer [not null]
+  competency_id uuid
+  course_id uuid
+  action_type varchar(40) [not null, note: 'course, coaching, mentoring, assignment, self_study']
+  objective text [not null]
+  target_level smallint
+  due_date date [not null]
+  completed_at timestamptz
+  evidence_document_version_reference_id uuid
+  indexes { (development_plan_id, action_number) [unique] }
+  checks {
+    `action_number > 0 AND (target_level IS NULL OR target_level BETWEEN 1 AND 5)` [name: 'ck_hr_development_action_values']
+    `action_type IN ('course','coaching','mentoring','assignment','self_study')` [name: 'ck_hr_development_action_type']
+  }
+}
+
+// Hubungan industrial, kebijakan dan layanan karyawan.
+Table hr_collective_agreements {
+  id uuid [pk]
+  agreement_code varchar(100) [not null]
+  agreement_version integer [not null]
+  legal_entity_reference_id uuid [not null]
+  representative_party_reference_id uuid [not null]
+  jurisdiction_code varchar(80) [not null]
+  effective_from date [not null]
+  effective_to date
+  signed_at timestamptz [not null]
+  document_version_reference_id uuid [not null]
+  content_digest bytea [not null]
+  indexes { (legal_entity_reference_id, agreement_code, agreement_version) [unique] }
+  checks { `agreement_version > 0 AND (effective_to IS NULL OR effective_to >= effective_from)` [name: 'ck_hr_collective_agreement_dates'] }
+  Note: 'Perjanjian kerja bersama berversi; pihak perwakilan mengacu Foundation. Tidak menyimpan daftar keanggotaan serikat pekerja.'
+}
+
+Table hr_policies {
+  id uuid [pk]
+  policy_code varchar(100) [not null]
+  policy_version integer [not null]
+  policy_name varchar(180) [not null]
+  category_code varchar(60) [not null, note: 'conduct, inclusion, wellbeing, remote_work, grievance, other']
+  legal_entity_reference_id uuid [not null]
+  effective_from date [not null]
+  effective_to date
+  document_version_reference_id uuid [not null]
+  content_digest bytea [not null]
+  approved_by_principal_id uuid [not null]
+  approved_at timestamptz [not null]
+  indexes { (legal_entity_reference_id, policy_code, policy_version) [unique] }
+  checks { `policy_version > 0 AND (effective_to IS NULL OR effective_to >= effective_from)` [name: 'ck_hr_policy_dates'] }
+  Note: 'Kebijakan HR umum. Perhitungan hak cuti tetap memakai hr_leave_policies; tarif payroll memakai hr_payroll_rule_sets. Pengakuan telah membaca bukan persetujuan pemrosesan data otomatis.'
+}
+
+Table hr_policy_acknowledgements {
+  id uuid [pk]
+  policy_id uuid [not null]
+  worker_id uuid [not null]
+  assigned_at timestamptz [not null, default: `now()`]
+  due_at timestamptz
+  acknowledged_at timestamptz
+  acknowledged_by_principal_id uuid
+  evidence_document_version_reference_id uuid
+  indexes { (policy_id, worker_id) [unique] }
+  checks {
+    `(acknowledged_at IS NULL) = (acknowledged_by_principal_id IS NULL)` [name: 'ck_hr_policy_ack_actor']
+    `acknowledged_at IS NULL OR acknowledged_at >= assigned_at` [name: 'ck_hr_policy_ack_dates']
+  }
+}
+
+Table hr_service_requests {
+  id uuid [pk]
+  request_number varchar(120) [not null, unique]
+  worker_id uuid [not null]
+  request_type varchar(60) [not null, note: 'employment_letter, data_correction, benefit_query, payroll_query, policy_query, other']
+  requested_by_principal_id uuid [not null]
+  assigned_principal_id uuid
+  status varchar(30) [not null, default: 'open']
+  restricted_details_document_version_reference_id uuid [not null]
+  opened_at timestamptz [not null, default: `now()`]
+  due_at timestamptz
+  resolved_at timestamptz
+  resolution_document_version_reference_id uuid
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (status, assigned_principal_id, due_at) }
+  checks {
+    `status IN ('open','in_progress','waiting','resolved','closed','cancelled')` [name: 'ck_hr_service_request_status']
+    `status NOT IN ('resolved','closed') OR (resolved_at IS NOT NULL AND resolution_document_version_reference_id IS NOT NULL)` [name: 'ck_hr_service_request_resolution']
+    `resolved_at IS NULL OR resolved_at >= opened_at` [name: 'ck_hr_service_request_dates']
+  }
+  Note: 'Tiket layanan HR internal; bukan CRM/customer service. Penyelesaian tiket tidak menggantikan transaksi koreksi pada owner data. Grievance/investigasi sensitif memakai employee_relations_cases.'
+}
+
+Table hr_service_request_events {
+  id uuid [pk]
+  service_request_id uuid [not null]
+  event_type varchar(60) [not null]
+  decision hr_approval_decision_enum
+  actor_principal_id uuid [not null]
+  occurred_at timestamptz [not null, default: `now()`]
+  evidence_document_version_reference_id uuid
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (service_request_id, occurred_at) }
+}
+
+Table hr_engagement_surveys {
+  id uuid [pk]
+  survey_code varchar(100) [not null]
+  survey_version integer [not null]
+  legal_entity_reference_id uuid [not null]
+  topic_code varchar(60) [not null, note: 'engagement, wellbeing, inclusion, exit_experience']
+  opens_at timestamptz [not null]
+  closes_at timestamptz [not null]
+  questionnaire_document_version_reference_id uuid [not null]
+  questionnaire_digest bytea [not null]
+  minimum_reporting_population integer [not null]
+  indexes { (legal_entity_reference_id, survey_code, survey_version) [unique] }
+  checks { `survey_version > 0 AND closes_at > opens_at AND minimum_reporting_population >= 5` [name: 'ck_hr_survey_values'] }
+  Note: 'Hanya definisi dan hasil agregat, tanpa jawaban per orang, worker_id, diagnosis atau identitas responden. Ambang minimum produk 5 dapat dinaikkan; bukan jaminan anonimitas atau klaim kewajiban hukum. Service menolak cohort kecil/irisan yang dapat mengidentifikasi ulang.'
+}
+
+Table hr_engagement_survey_results {
+  id uuid [pk]
+  survey_id uuid [not null]
+  organization_unit_reference_id uuid
+  question_code varchar(100) [not null]
+  result_version integer [not null]
+  respondent_count integer [not null]
+  score_value numeric(12,6) [not null]
+  scale_minimum numeric(12,6) [not null]
+  scale_maximum numeric(12,6) [not null]
+  source_digest bytea [not null]
+  calculated_at timestamptz [not null, default: `now()`]
+  indexes { (survey_id, `COALESCE(organization_unit_reference_id::text, '')`, question_code, result_version) [unique, name: 'uq_hr_survey_result_scope'] }
+  checks {
+    `result_version > 0 AND respondent_count >= 5` [name: 'ck_hr_survey_result_population']
+    `scale_maximum > scale_minimum AND score_value BETWEEN scale_minimum AND scale_maximum` [name: 'ck_hr_survey_result_scale']
+  }
+}
+
+// Infrastruktur pengiriman; bukan sumber grant IAM atau master eksternal.
+Table hr_access_requests {
+  id uuid [pk]
+  worker_id uuid [not null]
+  lifecycle_event_id bigint [not null]
+  request_kind varchar(30) [not null, note: 'provision, change, revoke']
+  requested_scope_type varchar(40) [not null]
+  requested_scope_reference_id uuid [not null]
+  approved_catalog_reference_id uuid [note: 'Katalog owner yang disetujui; bukan role/grant efektif']
+  iam_request_reference_id uuid
+  iam_decision_event_reference_id uuid
+  status varchar(30) [not null, default: 'pending']
+  requested_by_principal_id uuid [not null]
+  requested_at timestamptz [not null, default: `now()`]
+  last_reconciled_at timestamptz
+  idempotency_key varchar(160) [not null, unique]
+  indexes { (status, requested_at) }
+  checks {
+    `request_kind IN ('provision','change','revoke')` [name: 'ck_hr_access_request_kind']
+    `status IN ('pending','submitted','approved','rejected','applied','failed','cancelled')` [name: 'ck_hr_access_request_status']
+    `status NOT IN ('submitted','approved','rejected','applied') OR iam_request_reference_id IS NOT NULL` [name: 'ck_hr_access_request_receipt']
+    `status NOT IN ('approved','rejected','applied') OR iam_decision_event_reference_id IS NOT NULL` [name: 'ck_hr_access_request_decision']
+    `request_kind = 'revoke' OR approved_catalog_reference_id IS NOT NULL` [name: 'ck_hr_access_catalog']
+  }
+  Note: 'Status adalah proyeksi hasil IAM, tidak pernah dipakai menghitung ALLOW. Revoke hanya akses hubungan kerja terkait; identitas pelanggan pekerja yang sama tidak otomatis dihapus. Actor dan scope harus terverifikasi server.'
+}
+
+Table hr_outbox_events {
+  id uuid [pk]
+  aggregate_type varchar(80) [not null]
+  aggregate_id uuid [not null]
+  aggregate_version bigint [not null]
+  event_type varchar(100) [not null]
+  schema_version integer [not null]
+  payload jsonb [not null]
+  payload_digest bytea [not null]
+  occurred_at timestamptz [not null, default: `now()`]
+  available_at timestamptz [not null, default: `now()`]
+  published_at timestamptz
+  attempt_count integer [not null, default: 0]
+  last_error_code varchar(80)
+  indexes {
+    (aggregate_type, aggregate_id, aggregate_version, event_type) [unique, name: 'uq_hr_outbox_aggregate_event']
+    (published_at, available_at) [name: 'ix_hr_outbox_delivery']
+  }
+  checks { `aggregate_version > 0 AND schema_version > 0 AND attempt_count >= 0` [name: 'ck_hr_outbox_values'] }
+  Note: 'Ditulis atomik bersama perubahan bisnis. Pengiriman at-least-once; published bukan bukti domain penerima selesai. Payload memakai allowlist ID/status/versi minimum, tanpa slip gaji/narasi kasus/secret. Worker memakai lock SKIP LOCKED dan penerima melakukan deduplikasi.'
+}
+
+Table hr_inbox_events {
+  id uuid [pk]
+  source_management varchar(80) [not null]
+  source_event_id varchar(160) [not null]
+  event_type varchar(100) [not null]
+  schema_version integer [not null]
+  source_aggregate_reference varchar(160) [not null]
+  source_aggregate_version bigint [not null]
+  payload_digest bytea [not null]
+  received_at timestamptz [not null, default: `now()`]
+  processed_at timestamptz
+  status varchar(30) [not null, default: 'pending']
+  failure_code varchar(80)
+  indexes {
+    (source_management, source_event_id) [unique]
+    (status, received_at) [name: 'ix_hr_inbox_processing']
+  }
+  checks {
+    `schema_version > 0 AND source_aggregate_version > 0` [name: 'ck_hr_inbox_version']
+    `status IN ('pending','processed','rejected') AND (status <> 'processed' OR processed_at IS NOT NULL)` [name: 'ck_hr_inbox_state']
+  }
+  Note: 'Receipt processed dan efek bisnis harus satu transaksi. Sumber terautentikasi; event ID sama dengan digest berbeda ditolak. Ordering/replay dan payload retrieval memerlukan transport durable; tabel ini bukan implementasi consumer.'
+}
+
+Ref: hr_workforce_plan_lines.workforce_plan_id > hr_workforce_plans.id [delete: restrict]
+Ref: hr_workforce_plan_lines.job_id > hr_jobs.id [delete: restrict]
+Ref: hr_requisitions.workforce_plan_line_id >? hr_workforce_plan_lines.id [delete: restrict]
+Ref: hr_job_competencies.job_id > hr_jobs.id [delete: restrict]
+Ref: hr_job_competencies.competency_id > hr_competencies.id [delete: restrict]
+Ref: hr_worker_competency_assessments.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_worker_competency_assessments.competency_id > hr_competencies.id [delete: restrict]
+Ref: hr_learning_courses.competency_id >? hr_competencies.id [delete: restrict]
+Ref: hr_job_postings.requisition_id > hr_requisitions.id [delete: restrict]
+Ref: hr_applications.(source_posting_id, requisition_id) >? hr_job_postings.(id, requisition_id) [delete: restrict]
+Ref: hr_application_assessments.application_id > hr_applications.id [delete: restrict]
+Ref: hr_offboarding_plans.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_offboarding_plans.final_payroll_run_id >? hr_payroll_runs.id [delete: restrict]
+Ref: hr_offboarding_tasks.offboarding_plan_id > hr_offboarding_plans.id [delete: restrict]
+Ref: hr_compensation_records.(component_id, component_code_snapshot) > hr_pay_components.(id, component_code) [delete: restrict]
+Ref: hr_pay_components.(rule_set_id, jurisdiction_code) >? hr_payroll_rule_sets.(id, jurisdiction_code) [delete: restrict]
+Ref: hr_payroll_profiles.(payroll_group_id, payroll_jurisdiction_code, currency_code, employing_legal_entity_reference_id) > hr_payroll_groups.(id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) [delete: restrict]
+Ref: hr_payroll_periods.(payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) > hr_payroll_groups.(id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) [delete: restrict]
+Ref: hr_payroll_runs.(rule_set_id, jurisdiction_code) > hr_payroll_rule_sets.(id, jurisdiction_code) [delete: restrict]
+Ref: hr_payroll_runs.(original_run_id, payroll_group_id, currency_code) >? hr_payroll_runs.(id, payroll_group_id, currency_code) [delete: restrict]
+Ref: hr_leave_ledger_entries.entitlement_id > hr_leave_entitlements.id [delete: restrict]
+Ref: hr_leave_ledger_entries.(reverses_entry_id, entitlement_id) >? hr_leave_ledger_entries.(id, entitlement_id) [delete: restrict]
+Ref: hr_leave_ledger_entries.(adjustment_id, entitlement_id) >? hr_leave_adjustments.(id, entitlement_id) [delete: restrict]
+Ref: hr_development_plans.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_development_plans.mentor_worker_id >? hr_workers.id [delete: restrict]
+Ref: hr_development_plans.target_job_id >? hr_jobs.id [delete: restrict]
+Ref: hr_development_actions.development_plan_id > hr_development_plans.id [delete: restrict]
+Ref: hr_development_actions.competency_id >? hr_competencies.id [delete: restrict]
+Ref: hr_development_actions.course_id >? hr_learning_courses.id [delete: restrict]
+Ref: hr_performance_reviews.(development_plan_id, worker_id) >? hr_development_plans.(id, worker_id) [delete: restrict]
+Ref: hr_succession_candidates.(development_plan_id, candidate_worker_id) >? hr_development_plans.(id, worker_id) [delete: restrict]
+Ref: hr_employment_contracts.collective_agreement_id >? hr_collective_agreements.id [delete: restrict]
+Ref: hr_employee_relations_cases.subject_worker_id >? hr_workers.id [delete: restrict]
+Ref: hr_policy_acknowledgements.policy_id > hr_policies.id [delete: restrict]
+Ref: hr_policy_acknowledgements.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_service_requests.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_service_request_events.service_request_id > hr_service_requests.id [delete: restrict]
+Ref: hr_engagement_survey_results.survey_id > hr_engagement_surveys.id [delete: restrict]
+Ref: hr_access_requests.worker_id > hr_workers.id [delete: restrict]
+Ref: hr_access_requests.(lifecycle_event_id, worker_id) > hr_worker_lifecycle_events.(id, worker_id) [delete: restrict]
+
+TableGroup workforce_planning_and_organization {
+  hr_job_families
+  hr_jobs
+  hr_positions
+  hr_workforce_plans
+  hr_workforce_plan_lines
+}
+
+TableGroup personnel_administration {
+  hr_workers
+  hr_employment_contracts
+  hr_worker_assignments
+  hr_worker_lifecycle_events
+  hr_worker_documents
+  hr_emergency_contacts
+}
+
+TableGroup recruitment_and_selection {
+  hr_requisitions
+  hr_candidates
+  hr_applications
+  hr_application_stage_history
+  hr_interviews
+  hr_interview_panelists
+  hr_interview_feedback
+  hr_offers
+  hr_job_postings
+  hr_application_assessments
+}
+
+TableGroup onboarding_and_offboarding {
+  hr_onboarding_plans
+  hr_onboarding_tasks
+  hr_offboarding_plans
+  hr_offboarding_tasks
+}
+
+TableGroup compensation_and_benefits {
+  hr_compensation_bands
+  hr_compensation_records
+  hr_benefit_plans
+  hr_benefit_enrollments
+}
+
+TableGroup payroll {
+  hr_payroll_groups
+  hr_payroll_rule_sets
+  hr_payroll_profiles
+  hr_pay_components
+  hr_payroll_periods
+  hr_payroll_runs
+  hr_payroll_results
+  hr_payroll_result_lines
+  hr_payroll_adjustments
+}
+
+TableGroup leave_entitlements {
+  hr_leave_policies
+  hr_leave_entitlements
+  hr_leave_adjustments
+  hr_leave_ledger_entries
+}
+
+TableGroup performance_and_talent {
+  hr_performance_cycles
+  hr_performance_goals
+  hr_performance_reviews
+  hr_succession_plans
+  hr_succession_candidates
+  hr_development_plans
+  hr_development_actions
+}
+
+TableGroup learning_and_competencies {
+  hr_learning_courses
+  hr_learning_enrollments
+  hr_worker_qualifications
+  hr_competencies
+  hr_job_competencies
+  hr_worker_competency_assessments
+}
+
+TableGroup employee_relations_and_services {
+  hr_employee_relations_cases
+  hr_employee_relations_events
+  hr_collective_agreements
+  hr_policies
+  hr_policy_acknowledgements
+  hr_service_requests
+  hr_service_request_events
+}
+
+TableGroup employee_experience_and_analytics {
+  hr_engagement_surveys
+  hr_engagement_survey_results
+  hr_human_capital_metric_definitions
+  hr_human_capital_metric_snapshots
+}
+
+TableGroup integration_delivery {
+  hr_access_requests
+  hr_outbox_events
+  hr_inbox_events
+}
