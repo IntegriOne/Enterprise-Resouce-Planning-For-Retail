@@ -1,0 +1,3 @@
+# Validator penugasan Learning
+
+`hr_learning_enrollments` kini mengunci worker lalu course, memeriksa status aktif/preboarding, masa berlaku course pada hari penugasan, due date, dan idempotency key. Referensi funding baru tetap ditolak tanpa verifikasi pemilik data. `assigned_by_principal_id` ditetapkan actor server; CRUD tidak boleh mengisi skor, credential, atau status penyelesaian. Penugasan `planned` dapat diubah tanggal jatuh temponya dan dihapus. Tes unit dan gRPC→PostgreSQL `_test` memeriksa create/read/update/delete, spoofing actor, duplikasi, larangan skor, dan outbox. Tujuh dari 78 resource mutable memiliki validator; 71 lainnya masih fail-closed. IAM/Gateway E2E dan scope parsial belum terbukti.

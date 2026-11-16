@@ -30,6 +30,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -155,9 +156,14 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	workerID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
 	var requirementID string
 	var competencyID string
 	var courseID string
+	var enrollmentID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
@@ -165,6 +171,9 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 			query string
 			value string
 		}{
+			{"DELETE FROM hr_learning_enrollments WHERE id = ?", enrollmentID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", enrollmentID},
+			{"DELETE FROM hr_workers WHERE id = ?", workerID},
 			{"DELETE FROM hr_learning_course_competencies WHERE course_id = ?", courseID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", courseID},
 			{"DELETE FROM hr_learning_courses WHERE id = ?", courseID},
@@ -327,6 +336,50 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 	if err != nil || updatedCourse.GetItem().GetCourseVersion() != nextVersion {
 		t.Fatalf("update unreferenced course version: %v", err)
 	}
+	if err := db.WithContext(ctx).Exec(
+		"INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, primary_legal_entity_reference_id) VALUES (?, ?, ?, ?, ?, ?)",
+		workerID, "WORKER-"+workerID, familyID, "employee", "active", familyID,
+	).Error; err != nil {
+		t.Fatal(err)
+	}
+	idempotencyKey := "enrollment-" + workerID
+	spoofedAssigner := familyID
+	enrollmentInput := &learningpb.LearningEnrollmentInput{
+		WorkerId: &workerID, CourseId: &courseID, IdempotencyKey: &idempotencyKey,
+		AssignedByPrincipalId: &spoofedAssigner,
+	}
+	enrollment, err := learningClient.CreateLearningEnrollment(ctx, &learningpb.CreateLearningEnrollmentRequest{Input: enrollmentInput})
+	if err != nil || enrollment.GetItem() == nil {
+		t.Fatalf("create learning enrollment through gRPC: %v", err)
+	}
+	enrollmentID = enrollment.Item.Id
+	if enrollmentID == "" || enrollment.Item.GetAssignedByPrincipalId() != "00000000-0000-4000-8000-000000000001" {
+		t.Fatal("server did not bind assignment identity")
+	}
+	if _, err := learningClient.CreateLearningEnrollment(ctx, &learningpb.CreateLearningEnrollmentRequest{Input: enrollmentInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate enrollment idempotency key: %v", err)
+	}
+	score := "98.000"
+	if _, err := learningClient.CreateLearningEnrollment(ctx, &learningpb.CreateLearningEnrollmentRequest{Input: &learningpb.LearningEnrollmentInput{
+		WorkerId: &workerID, CourseId: &courseID, IdempotencyKey: &idempotencyKey, Score: &score,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("score through enrollment CRUD: %v", err)
+	}
+	readEnrollment, err := learningClient.GetLearningEnrollmentByID(ctx, &common.IDRequest{Id: enrollmentID})
+	if err != nil || readEnrollment.GetItem().GetEnrollmentStatus() != "planned" {
+		t.Fatalf("read learning enrollment: %v", err)
+	}
+	dueAt := timestamppb.New(time.Now().Add(48 * time.Hour))
+	updatedEnrollment, err := learningClient.UpdateLearningEnrollment(ctx, &learningpb.UpdateLearningEnrollmentRequest{
+		Id: enrollmentID, Input: &learningpb.LearningEnrollmentInput{DueAt: dueAt},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"due_at"}},
+	})
+	if err != nil || updatedEnrollment.GetItem().GetDueAt() == nil {
+		t.Fatalf("update planned enrollment due date: %v", err)
+	}
+	if _, err := learningClient.DeleteLearningEnrollment(ctx, &common.IDRequest{Id: enrollmentID}); err != nil {
+		t.Fatalf("delete planned learning enrollment: %v", err)
+	}
 	if _, err := client.UpdateCompetency(ctx, &pb.UpdateCompetencyRequest{
 		Id: competencyID,
 		Input: &pb.CompetencyInput{ProficiencyScale: &common.JsonDocument{Utf8: []byte(`{"1":"changed"}`)}},
@@ -363,5 +416,11 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 	}
 	if events != 5 {
 		t.Fatalf("learning course event count = %d, want 5", events)
+	}
+	if err := db.WithContext(ctx).Raw("SELECT count(*) FROM hr_outbox_events WHERE aggregate_id = ?", enrollmentID).Scan(&events).Error; err != nil {
+		t.Fatal(err)
+	}
+	if events != 3 {
+		t.Fatalf("learning enrollment event count = %d, want 3", events)
 	}
 }

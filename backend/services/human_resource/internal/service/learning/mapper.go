@@ -197,6 +197,7 @@ func specLearningEnrollment() operation.Specification[entity.LearningEnrollment,
 		Initialize: func(v *entity.LearningEnrollment, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
 			v.AssignedAt = now
+			v.AssignedByPrincipalID = &actor.PrincipalID
 		},
 		Touch: func(v *entity.LearningEnrollment, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.LearningEnrollment) map[string]string {
@@ -217,13 +218,19 @@ func specLearningEnrollment() operation.Specification[entity.LearningEnrollment,
 			return a
 		},
 		Guard: func(action string, old, next *entity.LearningEnrollment) error {
+			if action == "create" && (next.StartedAt != nil || next.CompletedAt != nil || next.Score != nil || next.CredentialReferenceID != nil) {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if action == "update" && !reflect.DeepEqual(old.EnrollmentStatus, next.EnrollmentStatus) {
 				return hrerrors.ErrWorkflowRequired
 			}
-			if action == "create" && string(next.EnrollmentStatus) != "planned" {
+			if action == "update" && (old.WorkerID != next.WorkerID || old.CourseID != next.CourseID ||
+				old.IdempotencyKey != next.IdempotencyKey || !reflect.DeepEqual(old.AssignedByPrincipalID, next.AssignedByPrincipalID) ||
+				!reflect.DeepEqual(old.StartedAt, next.StartedAt) || !reflect.DeepEqual(old.Score, next.Score) ||
+				!reflect.DeepEqual(old.CredentialReferenceID, next.CredentialReferenceID)) {
 				return hrerrors.ErrWorkflowRequired
 			}
-			if action == "create" && next.CompletedAt != nil {
+			if action == "create" && string(next.EnrollmentStatus) != "planned" {
 				return hrerrors.ErrWorkflowRequired
 			}
 			if action == "update" && !reflect.DeepEqual(old.CompletedAt, next.CompletedAt) {

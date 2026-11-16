@@ -16,7 +16,7 @@ func LearningValidators(repos *repository.Registry) (map[string]MutationValidato
 	if repos == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	for _, dependency := range []any{repos.LearningCourse, repos.LearningCourseCompetency, repos.LearningEnrollment, repos.Competency} {
+	for _, dependency := range []any{repos.Worker, repos.LearningCourse, repos.LearningCourseCompetency, repos.LearningEnrollment, repos.Competency} {
 		if operation.RequireDependency(dependency) != nil {
 			return nil, hrerrors.ErrUnavailable
 		}
@@ -27,6 +27,9 @@ func LearningValidators(repos *repository.Registry) (map[string]MutationValidato
 		},
 		"hr_learning_course_competencies": &learningCourseCompetencyValidator{
 			courses: repos.LearningCourse, competencies: repos.Competency, links: repos.LearningCourseCompetency,
+		},
+		"hr_learning_enrollments": &learningEnrollmentValidator{
+			workers: repos.Worker, courses: repos.LearningCourse, enrollments: repos.LearningEnrollment,
 		},
 	}, nil
 }
