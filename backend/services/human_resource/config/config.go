@@ -31,6 +31,16 @@ type TLSConfig struct {
 	CertFile, KeyFile, CAFile, ServerName string
 }
 
+// OutboxConfig mengatur pengiriman event; standby mempertahankan antrean tanpa mengklaim terkirim.
+type OutboxConfig struct {
+	Mode              string
+	WebhookURL        string
+	WebhookHMACSecret []byte
+	PollInterval      time.Duration
+	PublishTimeout    time.Duration
+	MaxAttempts       int
+}
+
 // Config menyediakan dependency runtime yang sudah divalidasi sebelum listener dibuka.
 type Config struct {
 	AppEnv, ServiceName, GRPCHost string
@@ -42,6 +52,7 @@ type Config struct {
 	ShutdownTimeout               time.Duration
 	SecurityRedis                 authsession.RedisConfig
 	SecurityNamespace             string
+	Outbox                        OutboxConfig
 }
 
 // Load membaca environment; nilai secret dapat dipasang sebagai berkas Docker secret.
@@ -63,6 +74,10 @@ func Load() (Config, error) {
 			CertFile: env("HRM_GRPC_TLS_CERT_FILE", ""), KeyFile: env("HRM_GRPC_TLS_KEY_FILE", ""),
 			CAFile: env("HRM_GRPC_TLS_CA_FILE", ""), ServerName: env("HRM_GRPC_TLS_SERVER_NAME", "human-resource"),
 		},
+		Outbox: OutboxConfig{
+			Mode:       env("HRM_OUTBOX_MODE", "standby"),
+			WebhookURL: env("HRM_OUTBOX_WEBHOOK_URL", ""),
+		},
 	}
 	integers := []struct {
 		key      string
@@ -74,6 +89,7 @@ func Load() (Config, error) {
 		{"HRM_DB_MAX_IDLE_CONNS", 5, &cfg.Database.MaxIdleConns},
 		{"HRM_REDIS_POOL_SIZE", 16, &cfg.SecurityRedis.PoolSize},
 		{"HRM_REDIS_MIN_IDLE_CONNS", 0, &cfg.SecurityRedis.MinIdleConns},
+		{"HRM_OUTBOX_MAX_ATTEMPTS", 20, &cfg.Outbox.MaxAttempts},
 	}
 	for _, setting := range integers {
 		value, err := integer(setting.key, setting.fallback)
@@ -93,6 +109,8 @@ func Load() (Config, error) {
 		{"HRM_REDIS_DIAL_TIMEOUT", 2 * time.Second, &cfg.SecurityRedis.DialTimeout},
 		{"HRM_REDIS_READ_TIMEOUT", time.Second, &cfg.SecurityRedis.ReadTimeout},
 		{"HRM_REDIS_WRITE_TIMEOUT", time.Second, &cfg.SecurityRedis.WriteTimeout},
+		{"HRM_OUTBOX_POLL_INTERVAL", 5 * time.Second, &cfg.Outbox.PollInterval},
+		{"HRM_OUTBOX_PUBLISH_TIMEOUT", 5 * time.Second, &cfg.Outbox.PublishTimeout},
 	}
 	for _, setting := range durations {
 		value, err := time.ParseDuration(env(setting.key, setting.fallback.String()))
@@ -114,6 +132,12 @@ func Load() (Config, error) {
 	cfg.GatewayHMACSecret, err = secret("HRM_GATEWAY_HMAC_SECRET")
 	if err != nil {
 		return Config{}, err
+	}
+	if cfg.Outbox.Mode == "webhook" {
+		cfg.Outbox.WebhookHMACSecret, err = secret("HRM_OUTBOX_WEBHOOK_HMAC_SECRET")
+		if err != nil {
+			return Config{}, err
+		}
 	}
 	if err := cfg.Validate(); err != nil {
 		return Config{}, err
@@ -178,6 +202,26 @@ func (c Config) Validate() error {
 	}
 	if c.AppEnv == "production" && db.SSLMode != "verify-full" {
 		return errors.New("production HRM database requires verify-full TLS")
+	}
+	mode := strings.TrimSpace(c.Outbox.Mode)
+	if mode != "" && mode != "standby" && mode != "log" && mode != "webhook" {
+		return errors.New("HRM_OUTBOX_MODE must be standby, log, or webhook")
+	}
+	if c.AppEnv == "production" && mode == "log" {
+		return errors.New("production HRM outbox cannot use log mode")
+	}
+	if mode == "webhook" {
+		endpoint, err := url.Parse(c.Outbox.WebhookURL)
+		if err != nil || endpoint.Host == "" || endpoint.User != nil || endpoint.Fragment != "" ||
+			(endpoint.Scheme != "https" && (c.AppEnv == "production" || endpoint.Scheme != "http")) ||
+			len(c.Outbox.WebhookHMACSecret) < 32 {
+			return errors.New("HRM outbox webhook requires a valid URL and HMAC secret")
+		}
+	}
+	if c.Outbox.PollInterval <= 0 || c.Outbox.PollInterval > time.Hour ||
+		c.Outbox.PublishTimeout <= 0 || c.Outbox.PublishTimeout > time.Minute ||
+		c.Outbox.MaxAttempts < 1 || c.Outbox.MaxAttempts > 1000 {
+		return errors.New("HRM outbox retry settings are invalid")
 	}
 	if (db.SSLMode == "verify-full" || db.SSLMode == "verify-ca") && db.SSLRootCert == "" {
 		return errors.New("HRM_DB_SSLROOTCERT is required for database certificate verification")

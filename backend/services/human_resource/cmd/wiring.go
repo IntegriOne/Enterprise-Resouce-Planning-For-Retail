@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/config"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/outbox"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	appservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
@@ -22,6 +24,7 @@ type Dependencies struct {
 	DB           *gorm.DB
 	Repositories *repository.Registry
 	Services     *appservice.Registry
+	OutboxRelay  *outbox.Relay
 	pool         *sql.DB
 }
 
@@ -31,6 +34,7 @@ func BuildDependencies(
 	ctx context.Context,
 	cfg config.Config,
 	policy operation.Policy,
+	logger *slog.Logger,
 ) (*Dependencies, error) {
 	if err := operation.RequireDependency(policy); err != nil {
 		return nil, fmt.Errorf("policy dependency: %w", err)
@@ -62,7 +66,32 @@ func BuildDependencies(
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM services: %w", err))
 	}
-	return &Dependencies{DB: handle, Repositories: repos, Services: services, pool: pool}, nil
+	deliveryStore, err := outbox.NewStore(handle)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM outbox store: %w", err))
+	}
+	var publisher outbox.Publisher
+	switch cfg.Outbox.Mode {
+	case "", "standby":
+	case "log":
+		publisher = outbox.NewLogPublisher(logger)
+	case "webhook":
+		publisher, err = outbox.NewWebhookPublisher(cfg.Outbox.WebhookURL, cfg.Outbox.WebhookHMACSecret, cfg.Outbox.PublishTimeout)
+		if err != nil {
+			return fail(fmt.Errorf("initialize HRM outbox publisher: %w", err))
+		}
+	default:
+		return fail(hrerrors.ErrInvalidInput)
+	}
+	relay, err := outbox.NewRelay(repos.Transactor, deliveryStore, publisher, outbox.Config{
+		Standby:      cfg.Outbox.Mode == "" || cfg.Outbox.Mode == "standby",
+		PollInterval: cfg.Outbox.PollInterval, PublishTimeout: cfg.Outbox.PublishTimeout,
+		MaxAttempts: cfg.Outbox.MaxAttempts,
+	}, logger)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM outbox relay: %w", err))
+	}
+	return &Dependencies{DB: handle, Repositories: repos, Services: services, OutboxRelay: relay, pool: pool}, nil
 }
 
 // Close melepaskan pool saat startup gagal atau proses berhenti.

@@ -29,9 +29,34 @@ func validEnvironment(t *testing.T) {
 		"HRM_REDIS_POOL_SIZE": "16", "HRM_REDIS_MIN_IDLE_CONNS": "0",
 		"HRM_REDIS_DIAL_TIMEOUT": "2s", "HRM_REDIS_READ_TIMEOUT": "1s", "HRM_REDIS_WRITE_TIMEOUT": "1s",
 		"HRM_SECURITY_NAMESPACE": "test",
+		"HRM_OUTBOX_MODE":        "standby", "HRM_OUTBOX_WEBHOOK_URL": "",
+		"HRM_OUTBOX_WEBHOOK_HMAC_SECRET": "", "HRM_OUTBOX_WEBHOOK_HMAC_SECRET_FILE": "",
+		"HRM_OUTBOX_MAX_ATTEMPTS": "20", "HRM_OUTBOX_POLL_INTERVAL": "5s",
+		"HRM_OUTBOX_PUBLISH_TIMEOUT": "5s",
 	}
 	for key, value := range values {
 		t.Setenv(key, value)
+	}
+}
+
+func TestOutboxConfigurationGuardsDeliveryMode(t *testing.T) {
+	validEnvironment(t)
+	t.Setenv("HRM_OUTBOX_MODE", "webhook")
+	t.Setenv("HRM_OUTBOX_WEBHOOK_URL", "https://events.example.test/hrm")
+	t.Setenv("HRM_OUTBOX_WEBHOOK_HMAC_SECRET", strings.Repeat("h", 32))
+	if _, err := config.Load(); err != nil {
+		t.Fatalf("valid webhook configuration rejected: %v", err)
+	}
+	t.Setenv("HRM_OUTBOX_WEBHOOK_URL", "http://events.example.test/hrm")
+	t.Setenv("APP_ENV", "production")
+	t.Setenv("HRM_DB_SSLMODE", "verify-full")
+	t.Setenv("HRM_DB_SSLROOTCERT", "/fixture/postgres-ca.crt")
+	if _, err := config.Load(); err == nil {
+		t.Fatal("production accepted plaintext webhook")
+	}
+	t.Setenv("HRM_OUTBOX_MODE", "log")
+	if _, err := config.Load(); err == nil {
+		t.Fatal("production accepted log publisher")
 	}
 }
 
@@ -64,6 +89,7 @@ func TestInvalidConfigurationFailsWithoutSecretDisclosure(t *testing.T) {
 		{"HRM_REDIS_CA_CERT_PATH", ""}, {"HRM_REDIS_PASSWORD", ""}, {"HRM_REDIS_POOL_SIZE", "0"},
 		{"HRM_REDIS_ADDR", "redis"}, {"HRM_SECURITY_NAMESPACE", "test:other"},
 		{"HRM_REDIS_ADDR", ":6379"}, {"HRM_REDIS_ADDR", "redis:70000"},
+		{"HRM_OUTBOX_MAX_ATTEMPTS", "0"}, {"HRM_OUTBOX_POLL_INTERVAL", "0s"},
 	} {
 		t.Run(setting.key+"_"+setting.value, func(t *testing.T) {
 			validEnvironment(t)

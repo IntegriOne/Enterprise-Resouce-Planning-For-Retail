@@ -2,7 +2,7 @@
 
 Status: **entity, aturan domain, repository dan application service 22 domain tersedia**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
 
-Skema, baseline SQL, validasi domain dan repository 86 tabel tersedia dalam modul Go mandiri. Application service mencakup 84 tabel bisnis; inbox/outbox memakai jalur khusus. Adapter policy/referensi produksi, proses service, kontrak RPC, handler dan deployment HRM belum tersedia. Struktur mengikuti path aktif `human_resource`, bukan path historis `human_resource_management`.
+Skema, baseline SQL, validasi domain dan repository 86 tabel tersedia dalam modul Go mandiri. Application service mencakup 84 tabel bisnis; inbox/outbox memakai jalur khusus. Kontrak dan handler gRPC privat sudah tersedia dan container development sehat. Policy katalog berjalan untuk grant global; validator mutasi produksi baru tersedia untuk job family dan job. Relay outbox berjalan standby secara bawaan dan dapat memakai webhook bila dikonfigurasi. Scope parsial, validasi owner seluruh resource, grant IAM, E2E positif dan wiring Gateway HRM belum selesai. Struktur mengikuti path aktif `human_resource`, bukan path historis `human_resource_management`.
 
 ## Struktur lapisan
 
@@ -88,13 +88,13 @@ Talent Management mencakup `competency`, `performance`, `talent`, `career`, `suc
 
 ## Alur dan batas implementasi
 
-- Handler gRPC nantinya memetakan kontrak ke `internal/service/<domain>`; service menggunakan entitas/aturan/interface `domain`; repository dan adapter menyediakan implementasi dependency. `domain` tidak bergantung pada transport atau implementasi infrastruktur.
+- Handler gRPC memetakan kontrak ke `internal/service/<domain>`; service menggunakan entitas/aturan/interface `domain`; repository dan adapter menyediakan implementasi dependency. `domain` tidak bergantung pada transport atau implementasi infrastruktur.
 - Operasi lintas subdomain HRM, misalnya penerapan promosi, harus mengubah assignment, lifecycle event, status rekomendasi dan outbox dalam satu transaksi. Approval rekomendasi belum berarti jabatan berubah.
 - `personnel` mengelola tautan identitas pada `hr_workers.iam_principal_reference_id`. Binding akun dan lookup pekerja harus memakai kontrak IAM yang disepakati, dengan konteks legal entity dan hubungan kerja yang tepat. Worker ID bukan user ID; rehire dapat membentuk hubungan kerja baru. Kredensial, login, session, role dan grant tetap dimiliki IAM.
 - `accessrequest` mengelola permintaan/proyeksi akses HRM. Status lokal tidak menjadi izin otomatis. Adapter integrasi berkomunikasi lewat kontrak owner; tidak memakai SQL, FK atau repository management lain.
 - Master party/unit/lokasi tetap Foundation; jurnal dan pembayaran tetap Finance; dokumen berversi/retensi tetap Document Records. Folder integrasi tidak membuktikan kontrak dependency tersedia.
 - Hak/saldo cuti ada di `leave`. Roster/shift/absensi operasional tidak diambil alih oleh scaffold ini.
-- API publik tetap `/api/graphql` melalui Gateway; gRPC privat. Wiring Gateway, aktivasi modul dan katalog permission memerlukan implementasi serta verifikasi tersendiri.
+- API publik tetap `/api/graphql` melalui Gateway; gRPC HRM privat. Katalog permission sudah ditetapkan, sedangkan provisioning IAM, wiring Gateway dan aktivasi bisnis memerlukan implementasi serta verifikasi tersendiri.
 
 ## Urutan development
 

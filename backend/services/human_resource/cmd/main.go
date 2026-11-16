@@ -52,7 +52,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("configure HRM security policy: %w", err)
 	}
-	dependencies, err := BuildDependencies(startup, cfg, policy)
+	dependencies, err := BuildDependencies(startup, cfg, policy, logger)
 	if err != nil {
 		return fmt.Errorf("initialize HRM dependencies: %w", err)
 	}
@@ -76,18 +76,37 @@ func run(logger *slog.Logger) error {
 	logger.Warn("HRM mutation validators are limited to local workforce catalog resources; other mutations remain unavailable")
 	logger.Info("starting private HRM gRPC listener", "address", cfg.GRPCAddress())
 	served := make(chan error, 1)
+	relayed := make(chan error, 1)
 	go func() { served <- server.ListenAndServe() }()
+	go func() { relayed <- dependencies.OutboxRelay.Run(ctx) }()
 	select {
 	case err := <-served:
+		stop()
+		if relayErr := <-relayed; relayErr != nil {
+			return errors.Join(err, relayErr)
+		}
 		if err == nil {
 			return errors.New("HRM gRPC server stopped unexpectedly")
 		}
 		return err
+	case err := <-relayed:
+		shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+		defer finish()
+		stopErr := server.Stop(shutdown)
+		serveErr := <-served
+		if err == nil && ctx.Err() != nil {
+			return errors.Join(stopErr, serveErr)
+		}
+		if err == nil {
+			err = errors.New("HRM outbox relay stopped unexpectedly")
+		}
+		return errors.Join(err, stopErr, serveErr)
 	case <-ctx.Done():
 		shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 		defer finish()
 		stopErr := server.Stop(shutdown)
 		serveErr := <-served
-		return errors.Join(stopErr, serveErr)
+		relayErr := <-relayed
+		return errors.Join(stopErr, serveErr, relayErr)
 	}
 }
