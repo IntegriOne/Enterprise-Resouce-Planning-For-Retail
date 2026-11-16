@@ -406,6 +406,12 @@ func TestRoleService_LifecyclePermissionsAndUserAssignment(t *testing.T) {
 
 	// Tugaskan peran ke pengguna secara global dan periksa effective roles.
 	actorCtx := authcontext.WithCaller(context.Background(), authcontext.CallerContext{PrincipalID: userID, Authenticated: true})
+	legalEntityID, _ := idGen.NewUUID()
+	if _, err := svc.AssignToUser(actorCtx, role.AssignUserRoleInput{
+		UserID: userID, RoleID: created.ID, ScopeType: entity.ScopeTypeLegalEntity, ScopeID: &legalEntityID,
+	}); err == nil {
+		t.Fatal("external legal entity scope must fail without owner verification")
+	}
 	assignment, err := svc.AssignToUser(actorCtx, role.AssignUserRoleInput{
 		UserID:    userID,
 		RoleID:    created.ID,

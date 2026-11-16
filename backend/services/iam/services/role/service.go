@@ -399,6 +399,9 @@ func (s *Service) AssignToUser(ctx context.Context, in AssignUserRoleInput) (*en
 	if err != nil {
 		return nil, err
 	}
+	if err := domainservice.RequireScopeOwnerVerification(scope); err != nil {
+		return nil, err
+	}
 	now := s.clock.Now()
 	if in.ExpiresAt != nil && !in.ExpiresAt.After(now) {
 		return nil, iamerrors.WithField(iamerrors.ErrInvalidInput, "expires_at", "expires_at must be in the future")

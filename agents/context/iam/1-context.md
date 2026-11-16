@@ -2,6 +2,7 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Grant scope eksternal 17 November 2026 (audit nomor 11):** assignment role pengguna/grup kini gagal tertutup dengan `Unavailable` untuk scope non-global/non-self sampai ada pembuktian objek dari owner. Tes domain, service, dan bufconn mengonfirmasi penolakan sebelum penulisan; kebutuhan kontrak tercatat pada `agents/notes/enterprise_foundation/1-iam.md`.
 - **Hardening RBAC 17 November 2026 (audit nomor 10):** service role/group sekarang mewajibkan `SecurityRuntime` dan `OutboxCoord`; koordinator outbox gagal tertutup bila dependency internalnya tidak siap. Pencabutan assignment langsung/grup tidak dapat melewati resolusi subjek dan revisi akses. Tes PostgreSQL pada database disposable membuktikan kegagalan insert outbox me-rollback DELETE dan revisi, sedangkan jalur sukses menyimpan dua event. `go fmt`, `go vet`, `go build`, dan race test IAM lulus.
 - **Audit ulang seluruh business flow 17 November 2026 (audit nomor 9):** enam kelompok/81 RPC dicocokkan dengan lapisan domain–repository–service–handler dan dibedakan dari pembuktian transaksi nyata. `go vet`, race test, dan pengukuran coverage gabungan lulus; coverage statement gabungan empat lapisan 51,1%. Audit ini tidak mengubah source IAM.
 - **Audit menyeluruh lanjutan 17 November 2026 (audit nomor 8):** inventaris 16 tabel dan 81 RPC enam kelompok dicocokkan dengan lapisan domain–repository–service–handler. Bootstrap kini meneruskan kegagalan refresh snapshot, aktivasi akun, dan lookup UUID alih-alih melaporkan sukses; tiga tes injeksi gagal lulus. Go fmt/vet/build/race lulus. Bukti PostgreSQL/Redis dan temuan terbuka dibedakan secara eksplisit pada audit nomor 8.
@@ -28,8 +29,7 @@
 - Enam RPC list relasi belum memakai limit/offset; kontrak dan query repository perlu pagination.
 - Tes PostgreSQL terisolasi sudah ada untuk repository sesi, tetapi tes gRPC→PostgreSQL bagi seluruh alur auth/role/group belum lengkap.
 - Tes bufconn 81 RPC masih memakai transactor mock; belum ada pembuktian RPC→PostgreSQL untuk rollback sesi/outbox, concurrent MFA, dan perubahan grant/revoke sampai Redis lintas instance. Klaim "seluruh RPC tersentuh tes" tidak berarti seluruh business flow sudah terverifikasi.
-- Scope non-global belum dibuktikan ke owner Enterprise Foundation pada saat role assignment; pengiriman email belum memakai outbox tahan gangguan. Cakupan statement handler 69,4% dan service 62,3%; cabang fault injection repository belum lengkap.
-- Validasi kelayakan `scope_id` non-global terhadap owner objek Enterprise Foundation pada jalur assignment IAM/Gateway belum terbukti menyeluruh; IAM saat ini memvalidasi tipe/format UUID dan kepemilikan `self`.
+- Scope non-global/non-self kini ditolak sebelum assignment; validasi kelayakan `scope_id` terhadap objek owner masih menunggu kontrak pembuktian Enterprise Foundation dan keputusan pemilik `facility`. Pengiriman email belum memakai outbox tahan gangguan. Cakupan historis statement handler 69,4% dan service 62,3%; cabang fault injection repository belum lengkap.
 - Tes E2E `TestQueryPermissions` pada Gateway perlu menyelaraskan filter resource menjadi `iam.users`; audit data permission lama dalam database development masih perlu dilakukan.
 - Konfigurasi deployment produksi (`APP_ENV=production` dan mTLS internal gRPC) pada lingkungan staging/production nyata.
 - Integrasi layanan domain hilir lain (Enterprise Foundation, HRM, Procurement, Commerce) terhadap event/lookup IAM mengikuti fase berikutnya.
@@ -38,5 +38,5 @@
 
 1. Lanjutkan tes integrasi concurrent MFA dan invalidasi Redis dua instance; gunakan DB `iam_disposable_*_test` unik per eksekusi.
 2. Selaraskan tes filter resource Gateway, ulangi matriks E2E tanpa pengecualian, dan verifikasi metadata permission lama direkonsiliasi setelah bootstrap serta HMAC development bekerja.
-3. Tambahkan validasi target scope lintas owner pada alur pemberian role dengan kontrak pembuktian Enterprise Foundation, tanpa memberi IAM akses langsung ke database owner lain.
+3. Setelah kontrak owner pada `agents/notes/enterprise_foundation/1-iam.md` tersedia, pasang verifier target scope pada alur pemberian role tanpa memberi IAM akses langsung ke database owner lain; pertahankan penolakan `Unavailable` sampai itu terbukti.
 4. Lanjutkan integrasi lintas management sesuai prioritas program di [docs/README.md](file:///home/muriarfad/Documents/projects/erp-retail/docs/README.md) menggunakan principal tunggal IAM, batas RBAC `*self` vs internal staf, dan kontrak gRPC privat yang terverifikasi.

@@ -133,6 +133,14 @@ func TestRBACHandlers_BufconnEndToEnd(t *testing.T) {
 		t.Fatalf("CreateUser error = %v", err)
 	}
 	uid := createdUser.GetUser().GetId()
+	externalScopeID := "77777777-7777-4777-8777-777777777777"
+	_, err = roleClient.AssignUserRole(ctx, &iamv1.AssignUserRoleRequest{
+		UserId: uid, RoleId: r.GetId(), ScopeType: iamv1.ScopeType_SCOPE_TYPE_LEGAL_ENTITY,
+		ScopeId: &externalScopeID,
+	})
+	if status.Code(err) != codes.Unavailable {
+		t.Fatalf("external user role scope status = %s, want Unavailable", status.Code(err))
+	}
 
 	expiresAt := time.Now().Add(24 * time.Hour)
 	assignUR, err := roleClient.AssignUserRole(ctx, &iamv1.AssignUserRoleRequest{
@@ -157,6 +165,13 @@ func TestRBACHandlers_BufconnEndToEnd(t *testing.T) {
 		t.Fatalf("CreateGroup error = %v", err)
 	}
 	gid := grpResp.GetGroup().GetId()
+	_, err = groupClient.AssignGroupRole(ctx, &iamv1.AssignGroupRoleRequest{
+		GroupId: gid, RoleId: r.GetId(), ScopeType: iamv1.ScopeType_SCOPE_TYPE_FACILITY,
+		ScopeId: &externalScopeID,
+	})
+	if status.Code(err) != codes.Unavailable {
+		t.Fatalf("external group role scope status = %s, want Unavailable", status.Code(err))
+	}
 	if _, err := groupClient.AddGroupMember(ctx, &iamv1.AddGroupMemberRequest{
 		GroupId: gid,
 		UserId:  uid,

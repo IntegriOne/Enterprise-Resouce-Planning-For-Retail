@@ -384,11 +384,15 @@ func TestGroupService_LifecycleMembershipAndRoles(t *testing.T) {
 	}
 
 	facID, _ := idGen.NewUUID()
+	if _, err := svc.AssignRole(actorCtx, group.AssignGroupRoleInput{
+		GroupID: grp.ID, RoleID: roleID, ScopeType: entity.ScopeTypeFacility, ScopeID: &facID,
+	}); err == nil {
+		t.Fatal("external facility scope must fail without owner verification")
+	}
 	gr, err := svc.AssignRole(actorCtx, group.AssignGroupRoleInput{
 		GroupID:   grp.ID,
 		RoleID:    roleID,
-		ScopeType: entity.ScopeTypeFacility,
-		ScopeID:   &facID,
+		ScopeType: entity.ScopeTypeGlobal,
 		GrantedBy: &facID,
 	})
 	if err != nil {

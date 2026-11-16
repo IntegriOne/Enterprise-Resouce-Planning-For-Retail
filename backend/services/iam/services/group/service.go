@@ -370,6 +370,9 @@ func (s *Service) AssignRole(ctx context.Context, in AssignGroupRoleInput) (*ent
 	if err != nil {
 		return nil, err
 	}
+	if err := domainservice.RequireScopeOwnerVerification(scope); err != nil {
+		return nil, err
+	}
 	assignmentID, err := s.idGen.NewUUID()
 	if err != nil {
 		return nil, iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.Code("iam.group_role.id_generation_failed"), "failed to generate group role id")
