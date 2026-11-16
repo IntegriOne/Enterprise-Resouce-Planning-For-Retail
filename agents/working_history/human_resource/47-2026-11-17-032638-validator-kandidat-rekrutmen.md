@@ -1,0 +1,3 @@
+# Draf kandidat rekrutmen HRM
+
+Validator `hr_candidates` dipasang pada composition root. Create memerlukan nomor unik dan metadata persetujuan/retensi; update hanya mengizinkan koreksi nama; delete menolak kandidat dengan lamaran. Referensi Foundation dan sumber eksternal tetap ditolak. Tes unit/race, modul HRM fmt/vet/build, gRPC `bufconn`→PostgreSQL disposable dan build Docker lulus; container HRM `healthy`. Dokumentasi service dan konteks diperbarui menjadi 30/78 validator. Pekerjaan berikutnya: verifikasi notice dan referensi owner, lalu workflow lamaran/seleksi dengan grant IAM dan E2E Gateway.
