@@ -1,0 +1,5 @@
+# Domain HRM dan wiring repository
+
+Menambahkan constructor/Validate untuk 86 entity, validator sembilan enum, 147 CHECK yang dikompilasi menjadi Go statis, validasi UUID/field/precision/evidence dan decimal eksak. Aturan agregat meliputi penempatan, hiring, payroll, replay ledger/reversal cuti, talent/performance, karier, learning dan bukti promosi. Writer bertipe mengikat 86 validator ke port repository, menolak snapshot invalid sebelum write tanpa memindahkan logika bisnis ke repository.
+
+Verifikasi fmt/vet/test-race/build lulus. Unit/mock mencakup constraint, self-approval, tanggal efektif, ketepatan reversal, propagation error dan 16 writer serentak. PostgreSQL sementara: 86 writer, seluruh snapshot dari 27 tabel per fixture, 503 finder dan 81 percobaan write per fixture lulus; update melalui writer memakai rollback. Seluruh 70 kasus SQL tetap lulus. Database dibuang. Tidak mengubah skema/Gateway atau pekerjaan management lain. Workflow aplikasi, IAM/owner integration, transaksi bisnis lengkap dan E2E belum diimplementasikan. Rincian ada di docs/domain.md.

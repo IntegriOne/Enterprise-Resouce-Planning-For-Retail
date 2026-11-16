@@ -15,11 +15,13 @@
 
 - Repository GORM 86 tabel, entity/enum bertipe dan 503 finder, CRUD + GetAll(limit, offset)/Count, registry, transaksi context/savepoint dan row lock sudah tersedia. Default limit 20, maksimum 100, negatif ditolak; numeric memakai Decimal teks, NULL pointer/JSON eksplisit, Update snapshot lengkap tanpa upsert. [Kontrak dan bukti](../../../backend/services/human_resource/docs/repository.md). Modul mandiri diverifikasi dengan `GOWORK=off`: fmt/vet/test-race/build lulus. PostgreSQL Docker: seluruh model/kolom, GetAll/Count dan 503 finder pada dua fixture lulus; 27 tabel berisi data per fixture dan 81 percobaan write per fixture dibatalkan. Ini belum positive CRUD fixture seluruh tabel atau E2E.
 
+- Domain: 86 constructor/Validate, sembilan enum, 147 CHECK dikompilasi menjadi Go statis, UUID/field/precision/evidence validation dan aritmetika decimal eksak. Sembilan package aturan agregat (personnel, recruitment, payroll, leave, talent, performance, career, learning, promotion), serta writer domain terikat ke 86 port melalui `Registry.Writers()`. Tes unit/mock/race dan wiring PostgreSQL fixture lulus. [Kontrak dan batas](../../../backend/services/human_resource/docs/domain.md). Tidak ada perubahan DBML/SQL atau aktivasi runtime.
+
 ## Apa yang belum dikerjakan
 
-- Workflow Talent nyata, mandat panel/approval, eligibility/bobot rubrik, scope/SoD terhadap pekerja, finalisasi performance review, proyeksi KPI, transaksi promosi+outbox serta concurrency/E2E belum diimplementasikan; detail batas ada di dokumen Talent.
+- Workflow Talent nyata, mandat panel/approval, eligibility perusahaan, scope/SoD terverifikasi IAM, persistensi finalisasi review/proyeksi KPI, transaksi promosi+outbox serta concurrency/E2E belum diimplementasikan; validasi bobot/bukti dan korelasi agregat sudah ada sebagai fungsi domain murni; detail batas ada di dokumen Talent.
 - Proses runtime HRM, konfigurasi/koneksi DB dan bootstrap, kontrak internal, wiring GraphQL, consumer/outbox relay, otorisasi dan E2E belum dibuat pada folder aktif.
-- Posting ledger dan proyeksi saldo atomik, reverse tepat jumlah, approval lintas owner, validitas temporal lintas objek, SoD dan pembulatan/rule payroll lokal masih wajib pada service.
+- Posting ledger dan proyeksi saldo atomik, approval lintas owner, validitas temporal master, SoD dan pembulatan/rule payroll lokal masih wajib pada service. Replay saldo/reversal tepat jumlah, rekonsiliasi total dan bukti promosi sudah divalidasi domain, belum workflow persisten.
 - Tarif BPJS/pajak/THR, workflow HR perusahaan, proses clearance dan prioritas fitur belum dianggap keputusan implementasi otomatis dari riset.
 - Temporal/immutable guard di baseline tidak membuktikan keseluruhan business workflow atau performa. Dokumen desain memuat batas klaim dan pekerjaan lanjutan.
 

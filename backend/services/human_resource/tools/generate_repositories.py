@@ -96,5 +96,9 @@ for t in tables:out+=f' r.{t["name"]}, err = {t["domain"]}.New{t["name"]}Reposit
 out+=' return r,nil\n}\n'
 write(Path('repository/registry.go'),out)
 
+from domain_validation import generate, generate_wiring
+generate(tables, dbml_tables, sql, enums, write)
+generate_wiring(tables, write)
+
 subprocess.run(['gofmt','-w',str(root/'domain/entity'),str(root/'domain/repository'),str(root/'repository')],check=True)
 print(f'Generated {len(tables)} repositories, {sum(len(t["filters"]) for t in tables)} typed finders')

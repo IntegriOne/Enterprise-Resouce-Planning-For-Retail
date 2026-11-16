@@ -1,8 +1,8 @@
 # Human Resource Management
 
-Status: **lapisan entity, port dan repository GORM tersedia**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
+Status: **entity tervalidasi, aturan domain, port dan repository GORM tersedia**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
 
-Skema, baseline SQL dan repository 86 tabel tersedia dalam modul Go mandiri. Lapisan lain masih placeholder; belum ada proses service, kontrak RPC, handler, otorisasi, atau deployment HRM. Struktur mengikuti lapisan service IAM pada checkout aktif, bukan path historis `human_resource_management`.
+Skema, baseline SQL, validasi domain dan repository 86 tabel tersedia dalam modul Go mandiri. Lapisan aplikasi/transport masih placeholder; belum ada proses service, kontrak RPC, handler, otorisasi, atau deployment HRM. Struktur mengikuti lapisan service IAM pada checkout aktif, bukan path historis `human_resource_management`.
 
 ## Struktur lapisan
 
@@ -46,7 +46,7 @@ human_resource/
 └── docs/                       # Desain dan batas implementasi
 ```
 
-Placeholder `<domain>` di diagram berarti folder nyata yang tercantum pada tabel berikut. Unit test nantinya mengikuti package/lapisan terkait. Folder `test/` masih placeholder. Unit test value object berada di `domain/entity/`.
+Placeholder `<domain>` di diagram berarti folder nyata yang tercantum pada tabel berikut. Unit test nantinya mengikuti package/lapisan terkait. Folder `test/` masih placeholder. Unit test entity berada di `domain/entity/test/`; aturan agregat diuji di `domain/service/<domain>/test/`.
 
 ## Domain yang disiapkan
 
@@ -101,3 +101,5 @@ Talent Management mencakup `competency`, `performance`, `talent`, `career`, `suc
 [Desain skema](docs/schema-design.md) · [Talent Management](docs/talent-management.md) · [DBML](db/schema/human_resource_management.dbml) · [Boundary](../../../agents/boundary.md) · [Arsitektur](../../../agents/arsitektur.md)
 
 [Kontrak repository, pagination dan verifikasi](docs/repository.md).
+
+[Validasi domain, aturan agregat dan wiring writer](docs/domain.md).

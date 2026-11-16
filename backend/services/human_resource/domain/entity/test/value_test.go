@@ -2,8 +2,9 @@ package entity_test
 
 import (
 	"encoding/json"
-	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	"testing"
+
+	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 )
 
 func TestDecimalPrecision(t *testing.T) {

@@ -101,3 +101,5 @@ Verifikasi 16 November 2026 memakai PostgreSQL Docker 18.6 dan dua database seme
 | Unit test | Presisi decimal besar/pecahan, penolakan float dan input invalid, SQL NULL versus JSON null, kepemilikan buffer JSON; `go test -race` lulus. |
 
 Uji service dengan mock port dan E2E query/mutation nyata dilakukan ketika service/transport tersedia. Belum ada klaim otorisasi, concurrency workflow payroll/promosi, performa, deployment atau E2E HRM selesai.
+
+Validasi entity dan jalur write `Registry.Writers()` tersedia pada [kontrak domain](domain.md). Repository mentah tetap menangani persistensi; use case menjalankan aturan agregat sebelum write.
