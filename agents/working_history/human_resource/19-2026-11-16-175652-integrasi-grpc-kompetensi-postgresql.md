@@ -1,0 +1,3 @@
+# Integrasi gRPC kompetensi dengan PostgreSQL
+
+Menambahkan tes integrasi bertanda `integration` untuk RPC katalog kompetensi melalui `bufconn`, service dan repository nyata, migrasi baseline pada PostgreSQL Docker sementara `*_test`, transaksi dan outbox. Cases: create/get/list/find dengan pagination, update metadata, duplikasi kode/versi, perubahan rubrik serta delete saat direferensikan, penolakan permission, dan jumlah event hanya untuk mutasi berhasil. Tes `-race` lulus; `go vet -tags=integration` dan tes Go modul lulus. Tes memakai policy tiruan sehingga bukan bukti grant IAM, mTLS/HMAC runtime, scope parsial atau Gateway GraphQL.
