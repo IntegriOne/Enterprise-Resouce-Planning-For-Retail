@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"github.com/integrione/erp-retail/backend/services/iam/config"
 	iamv1 "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1"
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
+	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	iamrepo "github.com/integrione/erp-retail/backend/services/iam/repository"
@@ -21,6 +23,33 @@ import (
 	"github.com/integrione/erp-retail/backend/services/iam/transport/grpc/handler"
 	"github.com/integrione/erp-retail/backend/shared/authcontext"
 )
+
+type failingSnapshotUserRepository struct {
+	domainrepo.UserRepository
+	err error
+}
+
+func (r failingSnapshotUserRepository) SelectAccessSnapshotByUserID(context.Context, string, time.Time) (*entity.AccessSnapshot, error) {
+	return nil, r.err
+}
+
+type failingUpdateUserRepository struct {
+	domainrepo.UserRepository
+	err error
+}
+
+func (r failingUpdateUserRepository) Update(context.Context, *entity.User) error {
+	return r.err
+}
+
+type failingSelectUserRepository struct {
+	domainrepo.UserRepository
+	err error
+}
+
+func (r failingSelectUserRepository) SelectByID(context.Context, string) (*entity.User, error) {
+	return nil, r.err
+}
 
 func buildMemRepoRegistry(store *memStore) *iamrepo.Registry {
 	return &iamrepo.Registry{
@@ -146,6 +175,96 @@ func TestBootstrapBackfillAndCreateUserBaselineSelfRoles(t *testing.T) {
 	env.store.mu.Unlock()
 	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, config.SystemBootstrapConfig{}, logger); err == nil {
 		t.Fatal("bootstrap must reject a sensitivity mismatch in the existing catalog")
+	}
+}
+
+func TestBootstrapFailsWhenAccessSnapshotRefreshFails(t *testing.T) {
+	t.Parallel()
+
+	env := startBufconnServer(t)
+	ctx := context.Background()
+	repos := buildMemRepoRegistry(env.store)
+	cfg := config.SystemBootstrapConfig{
+		Email:    "bootstrap-snapshot@example.com",
+		Username: "bootstrap.snapshot",
+		Password: "ValidPass!2026Strong",
+	}
+	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, cfg, nil); err != nil {
+		t.Fatalf("initial bootstrap error = %v", err)
+	}
+
+	snapshotErr := errors.New("snapshot unavailable")
+	repos.Users = failingSnapshotUserRepository{UserRepository: repos.Users, err: snapshotErr}
+	reg, err := services.NewRegistry(repos, services.SecurityOptions{
+		AllowEphemeralDevKey:  true,
+		AllowEphemeralCSRFKey: true,
+	})
+	if err != nil {
+		t.Fatalf("NewRegistry() error = %v", err)
+	}
+	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, reg, cfg, nil); !errors.Is(err, snapshotErr) {
+		t.Fatalf("bootstrap error = %v, want snapshot error", err)
+	}
+}
+
+func TestBootstrapFailsWhenExistingUserActivationCannotPersist(t *testing.T) {
+	t.Parallel()
+
+	env := startBufconnServer(t)
+	ctx := context.Background()
+	repos := buildMemRepoRegistry(env.store)
+	cfg := config.SystemBootstrapConfig{
+		Email:    "bootstrap-activation@example.com",
+		Username: "bootstrap.activation",
+		Password: "ValidPass!2026Strong",
+	}
+	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, cfg, nil); err != nil {
+		t.Fatalf("initial bootstrap error = %v", err)
+	}
+	identity, err := repos.UserIdentities.FindUserIdentityByEmailKind(ctx, cfg.Email)
+	if err != nil {
+		t.Fatal(err)
+	}
+	env.store.mu.Lock()
+	env.store.users[identity.UserID].Status = entity.UserStatusPending
+	env.store.mu.Unlock()
+
+	updateErr := errors.New("activation update unavailable")
+	repos.Users = failingUpdateUserRepository{UserRepository: repos.Users, err: updateErr}
+	reg, err := services.NewRegistry(repos, services.SecurityOptions{
+		AllowEphemeralDevKey:  true,
+		AllowEphemeralCSRFKey: true,
+	})
+	if err != nil {
+		t.Fatalf("NewRegistry() error = %v", err)
+	}
+	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, reg, cfg, nil); !errors.Is(err, updateErr) {
+		t.Fatalf("bootstrap error = %v, want activation update error", err)
+	}
+}
+
+func TestBootstrapFailsWhenConfiguredUserLookupFails(t *testing.T) {
+	t.Parallel()
+
+	env := startBufconnServer(t)
+	repos := buildMemRepoRegistry(env.store)
+	lookupErr := errors.New("user lookup unavailable")
+	repos.Users = failingSelectUserRepository{UserRepository: repos.Users, err: lookupErr}
+	reg, err := services.NewRegistry(repos, services.SecurityOptions{
+		AllowEphemeralDevKey:  true,
+		AllowEphemeralCSRFKey: true,
+	})
+	if err != nil {
+		t.Fatalf("NewRegistry() error = %v", err)
+	}
+	cfg := config.SystemBootstrapConfig{
+		UserUID:  "99999999-9999-4999-8999-999999999999",
+		Email:    "bootstrap-lookup@example.com",
+		Username: "bootstrap.lookup",
+		Password: "ValidPass!2026Strong",
+	}
+	if err := services.BootstrapSystemPrincipalAndRBAC(context.Background(), repos, reg, cfg, nil); !errors.Is(err, lookupErr) {
+		t.Fatalf("bootstrap error = %v, want user lookup error", err)
 	}
 }
 

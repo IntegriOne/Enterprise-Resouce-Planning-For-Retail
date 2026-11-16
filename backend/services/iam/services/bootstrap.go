@@ -187,7 +187,9 @@ func BootstrapSystemPrincipalAndRBAC(
 	}
 
 	if reg.Sessions != nil {
-		_, _ = reg.Sessions.RefreshAccessSnapshot(ctx, userID)
+		if _, err := reg.Sessions.RefreshAccessSnapshot(ctx, userID); err != nil {
+			return err
+		}
 	}
 
 	if logger != nil {
@@ -313,8 +315,11 @@ func ensureBootstrapUser(ctx context.Context, repos *iamrepo.Registry, cfg confi
 		}
 		if existingUser.Status != entity.UserStatusActive && !existingUser.IsDeleted() {
 			now := domainservice.SystemClock{}.Now()
-			if err := existingUser.Activate(now); err == nil {
-				_ = repos.Users.Update(ctx, existingUser)
+			if err := existingUser.Activate(now); err != nil {
+				return "", err
+			}
+			if err := repos.Users.Update(ctx, existingUser); err != nil {
+				return "", err
 			}
 		}
 		return existingUID, nil
@@ -327,6 +332,8 @@ func ensureBootstrapUser(ctx context.Context, repos *iamrepo.Registry, cfg confi
 		}
 		if existingByID, err := repos.Users.SelectByID(ctx, uid); err == nil && existingByID != nil {
 			return existingByID.ID, nil
+		} else if err != nil && !errors.Is(err, iamerrors.ErrUserNotFound) {
+			return "", err
 		}
 	} else {
 		genID, err := crypto.NewUUIDGenerator().NewUUID()
