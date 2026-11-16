@@ -124,17 +124,15 @@ func specPerformanceCycle() operation.Specification[entity.PerformanceCycle, str
 			if action == "create" && string(next.Status) != "draft" {
 				return hrerrors.ErrWorkflowRequired
 			}
-			if action == "create" && next.LaunchedAt != nil {
+			if action == "create" && (next.LaunchedAt != nil || next.LaunchedByPrincipalID != nil) {
 				return hrerrors.ErrWorkflowRequired
 			}
-			if action == "update" && !reflect.DeepEqual(old.LaunchedAt, next.LaunchedAt) {
+			if action == "update" && (!reflect.DeepEqual(old.LaunchedAt, next.LaunchedAt) ||
+				!reflect.DeepEqual(old.LaunchedByPrincipalID, next.LaunchedByPrincipalID)) {
 				return hrerrors.ErrWorkflowRequired
 			}
-			if action != "create" {
-				switch string(old.Status) {
-				case "approved", "posted", "paid", "finalized", "applied", "closed", "archived", "terminated", "deceased", "completed", "accepted", "issued", "signed", "hired", "processed", "rejected", "cancelled", "withdrawn", "superseded":
-					return hrerrors.ErrWorkflowRequired
-				}
+			if action != "create" && old.Status != entity.PerformanceCycleStatusDraft {
+				return hrerrors.ErrWorkflowRequired
 			}
 			return nil
 		},
