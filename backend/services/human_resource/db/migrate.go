@@ -18,8 +18,17 @@ var baselineSQL string
 // Kunci transaksi advisory khusus HRM; lock dilepas otomatis saat commit/rollback.
 const migrationLockID int64 = 718291825
 
-// RunMigrationsUp memasang baseline tunggal 000001 secara atomik dan idempoten.
-// Checksum berbeda atau versi asing ditolak; tidak ada AutoMigrate maupun reset otomatis.
+type migration struct {
+	version int64
+	sql     string
+}
+
+var migrations = []migration{
+	{version: 1, sql: baselineSQL},
+}
+
+// RunMigrationsUp memasang migrasi berurutan secara atomik dan idempoten.
+// Checksum berbeda, versi asing, dan riwayat yang berlubang ditolak.
 func RunMigrationsUp(ctx context.Context, pool *sql.DB) (resultErr error) {
 	if ctx == nil {
 		return hrerrors.ErrInvalidInput
@@ -50,25 +59,47 @@ func RunMigrationsUp(ctx context.Context, pool *sql.DB) (resultErr error) {
 	if _, err := tx.ExecContext(ctx, tracker); err != nil {
 		return migrationError(ctx, "initialize migration tracker", err)
 	}
-	digest := sha256.Sum256([]byte(baselineSQL))
-	checksum := hex.EncodeToString(digest[:])
-	var unknownVersions int64
-	if err := tx.QueryRowContext(ctx, "SELECT count(*) FROM hrm_schema_migrations WHERE version <> 1").Scan(&unknownVersions); err != nil {
+	rows, err := tx.QueryContext(ctx, "SELECT version, checksum FROM hrm_schema_migrations ORDER BY version")
+	if err != nil {
 		return migrationError(ctx, "inspect migration versions", err)
 	}
-	if unknownVersions != 0 {
+	installed := make(map[int64]string)
+	for rows.Next() {
+		var version int64
+		var checksum string
+		if err := rows.Scan(&version, &checksum); err != nil {
+			_ = rows.Close()
+			return migrationError(ctx, "read migration tracker", err)
+		}
+		installed[version] = checksum
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close()
+		return migrationError(ctx, "read migration tracker", err)
+	}
+	if err := rows.Close(); err != nil {
+		return migrationError(ctx, "close migration tracker", err)
+	}
+	if len(installed) > len(migrations) {
 		return fmt.Errorf("%w: unsupported HRM migration version", hrerrors.ErrConflict)
 	}
-	var installedVersion int64
-	var installedChecksum string
-	err = tx.QueryRowContext(ctx, "SELECT version, checksum FROM hrm_schema_migrations WHERE version = 1").Scan(&installedVersion, &installedChecksum)
-	if err == nil {
-		if installedVersion != 1 || installedChecksum != checksum {
+	for index, item := range migrations {
+		if item.version != int64(index+1) {
+			return fmt.Errorf("%w: invalid HRM migration order", hrerrors.ErrConflict)
+		}
+		checksum, exists := installed[item.version]
+		if !exists {
+			if index < len(installed) {
+				return fmt.Errorf("%w: missing HRM migration version", hrerrors.ErrConflict)
+			}
+			continue
+		}
+		digest := sha256.Sum256([]byte(item.sql))
+		if checksum != hex.EncodeToString(digest[:]) {
 			return fmt.Errorf("%w: HRM migration version or checksum mismatch", hrerrors.ErrConflict)
 		}
-	} else if !errors.Is(err, sql.ErrNoRows) {
-		return migrationError(ctx, "read migration tracker", err)
-	} else {
+	}
+	if _, exists := installed[1]; !exists {
 		var existingSchema bool
 		if err := tx.QueryRowContext(ctx, `SELECT EXISTS (
 			SELECT 1 FROM information_schema.tables
@@ -79,11 +110,17 @@ func RunMigrationsUp(ctx context.Context, pool *sql.DB) (resultErr error) {
 		if existingSchema {
 			return fmt.Errorf("%w: existing HRM schema has no verified migration checksum", hrerrors.ErrConflict)
 		}
-		if _, err := tx.ExecContext(ctx, baselineSQL); err != nil {
-			return migrationError(ctx, "apply baseline 000001", err)
+	}
+	for _, item := range migrations {
+		if _, exists := installed[item.version]; exists {
+			continue
 		}
-		if _, err := tx.ExecContext(ctx, "INSERT INTO hrm_schema_migrations (version, checksum) VALUES ($1, $2)", 1, checksum); err != nil {
-			return migrationError(ctx, "record baseline checksum", err)
+		if _, err := tx.ExecContext(ctx, item.sql); err != nil {
+			return migrationError(ctx, fmt.Sprintf("apply HRM migration %06d", item.version), err)
+		}
+		digest := sha256.Sum256([]byte(item.sql))
+		if _, err := tx.ExecContext(ctx, "INSERT INTO hrm_schema_migrations (version, checksum) VALUES ($1, $2)", item.version, hex.EncodeToString(digest[:])); err != nil {
+			return migrationError(ctx, fmt.Sprintf("record HRM migration %06d checksum", item.version), err)
 		}
 	}
 	if err := tx.Commit(); err != nil {
