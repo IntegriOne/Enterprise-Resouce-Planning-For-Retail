@@ -68,6 +68,9 @@ func IsSensitiveOperation(resource, action string) bool {
 			resource == "hr_payroll_result_lines" || resource == "hr_payroll_profiles" ||
 			resource == "hr_payroll_adjustments" || strings.HasPrefix(resource, "hr_employee_relations_")
 	}
+	if resource == "hr_leave_policies" && (action == "create" || action == "update") {
+		return true
+	}
 	return strings.HasPrefix(resource, "hr_compensation_") || strings.HasPrefix(resource, "hr_payroll_") ||
 		resource == "hr_promotion_decisions"
 }

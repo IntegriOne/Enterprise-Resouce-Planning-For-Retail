@@ -72,6 +72,8 @@ func TestSensitiveOperationsRequireIndependentStepUp(t *testing.T) {
 		{"hr_career_paths", "approve", true},
 		{"hr_performance_cycles", "launch", true},
 		{"hr_leave_entitlements", "post_leave_entry", true},
+		{"hr_leave_policies", "create", true},
+		{"hr_leave_policies", "update", true},
 		{"hr_talent_assessments", "finalize", true},
 		{"hr_compensation_records", "read", true},
 		{"hr_compensation_bands", "list", true},

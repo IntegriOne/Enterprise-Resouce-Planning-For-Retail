@@ -103,6 +103,13 @@ func BuildDependencies(
 	for resource, validator := range talentDimensionValidators {
 		validators[resource] = validator
 	}
+	leaveValidators, err := security.LeaveValidators(repos)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM leave validators: %w", err))
+	}
+	for resource, validator := range leaveValidators {
+		validators[resource] = validator
+	}
 	integrity := security.NewIntegrity(validators)
 	services, err := appservice.NewRegistry(repos, operation.Dependencies{Policy: policy, Integrity: integrity})
 	if err != nil {
