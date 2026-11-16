@@ -20,6 +20,9 @@ func (s *Service) PostLedgerEntry(ctx context.Context, entitlementID string, in 
 		return nil, hrerrors.ErrUnavailable
 	}
 	return s.leaveEntitlement.Command(ctx, entitlementID, "post_leave_entry", func(txCtx context.Context, current *entity.LeaveEntitlement, actor operation.Actor, now time.Time) (*entity.LeaveEntitlement, error) {
+		if in.EntryType == "reversal" && actor.Kind != "human" {
+			return nil, hrerrors.ErrForbidden
+		}
 		if actor.Kind != "workload" && in.SourceManagement != "hrm" {
 			return nil, hrerrors.ErrForbidden
 		}

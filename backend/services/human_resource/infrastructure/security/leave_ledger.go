@@ -16,7 +16,7 @@ type leaveLedgerValidator struct {
 	ledger       leaveLedgerReader
 }
 
-// ValidateMutation mengizinkan opening, koreksi, dan kedaluwarsa saldo HRM.
+// ValidateMutation mengizinkan opening, koreksi, kedaluwarsa, dan pembalikan opening HRM.
 func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
 	if v == nil || table != "hr_leave_ledger_entries" || operation.RequireDependency(v.entitlements) != nil ||
 		operation.RequireDependency(v.policies) != nil || operation.RequireDependency(v.adjustments) != nil ||
@@ -33,8 +33,9 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 	if !ok || entry == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	if entry.SourceManagement != "hrm" || entry.ReversesEntryID != nil ||
-		(entry.EntryType != "opening" && entry.EntryType != "adjustment" && entry.EntryType != "expiry") {
+	if entry.SourceManagement != "hrm" ||
+		(entry.EntryType != "opening" && entry.EntryType != "adjustment" &&
+			entry.EntryType != "expiry" && entry.EntryType != "reversal") {
 		return hrerrors.ErrWorkflowRequired
 	}
 	entitlement, err := v.entitlements.FindByIDForUpdate(ctx, entry.EntitlementID)
@@ -69,6 +70,49 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 	}
 	if expired != 0 {
 		return hrerrors.ErrWorkflowRequired
+	}
+	if entry.EntryType == "reversal" {
+		if count == 0 || entry.ReversesEntryID == nil || entry.AdjustmentID != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		originals, err := v.ledger.SelectWhere(ctx, []domainrepo.Filter{
+			{Column: "id", Values: []any{*entry.ReversesEntryID}},
+			{Column: "entitlement_id", Values: []any{entry.EntitlementID}},
+		}, 1, 0)
+		if err != nil {
+			return err
+		}
+		if len(originals) != 1 || originals[0].EntryType != "opening" ||
+			originals[0].SourceManagement != "hrm" ||
+			originals[0].ActorPrincipalID == entry.ActorPrincipalID ||
+			entity.CompareDates(entry.EffectiveDate, originals[0].EffectiveDate) < 0 {
+			return hrerrors.ErrWorkflowRequired
+		}
+		reversals, err := v.ledger.CountWhere(ctx, []domainrepo.Filter{
+			{Column: "reverses_entry_id", Values: []any{*entry.ReversesEntryID}},
+		})
+		if err != nil {
+			return err
+		}
+		if reversals != 0 {
+			return hrerrors.ErrAlreadyExists
+		}
+		negated, err := entity.DecimalNegate(originals[0].QuantityDelta)
+		if err != nil {
+			return err
+		}
+		expected, err := negated.Rat()
+		if err != nil {
+			return err
+		}
+		actual, err := entry.QuantityDelta.Rat()
+		if err != nil {
+			return err
+		}
+		if actual.Cmp(expected) != 0 {
+			return hrerrors.Invalid("quantity_delta", "reversal must exactly negate the opening entry")
+		}
+		return nil
 	}
 	if entry.EntryType == "opening" {
 		if count != 0 || !emptyLeaveBalance(entitlement) || entry.AdjustmentID != nil {

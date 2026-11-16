@@ -186,7 +186,7 @@ Contoh ekspansi konkret: `workers` menghasilkan `human_resource.workers.read`, `
 
 | Command | Kandidat permission | Ketentuan tambahan |
 | --- | --- | --- |
-| PostLedgerEntry | `human_resource.leave_entitlements.post` | Sensitif: MFA, lock entitlement, periode valid, source/digest, approval adjustment independen, `expiry` tepat pada akhir periode, ledger lengkap, outbox atomik. |
+| PostLedgerEntry | `human_resource.leave_entitlements.post` | Sensitif: MFA, lock entitlement, periode valid, source/digest, approval adjustment independen, `expiry` tepat pada akhir periode, serta pembalikan penuh `opening` HRM oleh manusia berbeda dari pelaku awal; ledger lengkap dan outbox atomik. |
 | ApproveLeaveAdjustment | `human_resource.leave_adjustments.approve` | Sensitif: MFA, lock koreksi dan entitlement, actor manusia berbeda dari pengusul, approval tidak langsung memposting saldo. |
 | ApprovePayrollRun | `human_resource.payroll_runs.approve` | Sensitif: MFA, actor bukan kalkulator, mandat approval, legal entity, rekonsiliasi dan freeze hasil. |
 | ApproveCareerPath | `human_resource.career_paths.approve` | Sensitif: MFA, actor manusia berbeda dari pembuat draft, keluarga job aktif, versi path unik, freeze setelah approval. |

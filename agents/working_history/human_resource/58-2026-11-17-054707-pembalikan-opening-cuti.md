@@ -1,0 +1,3 @@
+# Pembalikan opening cuti
+
+HRM membuka pembalikan penuh entry `opening` dari sumber HRM melalui RPC `PostLedgerEntry` yang sudah ada. Pelaku harus manusia dan berbeda dari pelaku posting awal; validator menolak referensi lintas entitlement, tanggal yang mundur, jumlah tidak eksak, pembalikan kedua, dan posting setelah expiry. Saldo dan outbox tetap ditulis atomik. Dokumentasi service dan katalog izin diselaraskan tanpa permission baru. Tes race seluruh modul, vet, build, gRPC–PostgreSQL disposable, dan Docker healthy lulus. Grant IAM/Gateway serta sumber eksternal belum diverifikasi; jenis ledger lain tetap tertutup.

@@ -315,4 +315,90 @@ func TestLeaveLedgerRPCWithPostgreSQL(t *testing.T) {
 	if ledgerCount != 3 || outboxCount < 4 {
 		t.Fatalf("ledger/outbox count = %d/%d, want 3/at least 4", ledgerCount, outboxCount)
 	}
+	secondWorkerID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec(
+		"INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, hire_date, primary_legal_entity_reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		secondWorkerID, "LEAVE-"+secondWorkerID, "11111111-1111-4111-8111-111111111111", "employee", "active", "2025-01-01", "22222222-2222-4222-8222-222222222222",
+	).Error; err != nil {
+		t.Fatal(err)
+	}
+	second, err := client.CreateLeaveEntitlement(ctx, &pb.CreateLeaveEntitlementRequest{Input: &pb.LeaveEntitlementInput{
+		WorkerId: &secondWorkerID, LeavePolicyId: &policyID, LeaveTypeCodeSnapshot: &leaveType,
+		EntitlementPeriodStart: &start, EntitlementPeriodEnd: &end,
+	}})
+	if err != nil {
+		t.Fatalf("create reversal fixture: %v", err)
+	}
+	secondID := second.GetItem().GetId()
+	secondOpeningEvent := "opening-" + secondID
+	_, err = client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: secondID, Input: &pb.PostLedgerEntryInput{
+		EntryType: &entryType, QuantityDelta: &opening, EffectiveDate: &start,
+		SourceManagement: &source, SourceEventId: &secondOpeningEvent, SourceLineKey: &lineKey,
+		SourceDigest: []byte{21}, ReasonCode: &reason,
+	}})
+	if err != nil {
+		t.Fatalf("post reversal fixture opening: %v", err)
+	}
+	openingPage, err := client.FindLeaveLedgerEntryBySourceEventID(ctx, &common.StringFinderRequest{
+		Value: &secondOpeningEvent, Limit: 1,
+	})
+	if err != nil || len(openingPage.GetItems()) != 1 {
+		t.Fatalf("find original opening: %+v, %v", openingPage, err)
+	}
+	originalID := openingPage.GetItems()[0].GetId()
+	reversalType, reversalAmount, reversalReason := "reversal", "-12", "CORRECT_OPENING"
+	reversalEvent := "reversal-" + secondID
+	reversalInput := &pb.PostLedgerEntryInput{
+		EntryType: &reversalType, QuantityDelta: &reversalAmount, EffectiveDate: &start,
+		ReversesEntryId: &originalID, SourceManagement: &source,
+		SourceEventId: &reversalEvent, SourceLineKey: &lineKey,
+		SourceDigest: []byte{22}, ReasonCode: &reversalReason,
+	}
+	if _, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: secondID, Input: reversalInput}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("self reversal status = %v, want FailedPrecondition", status.Code(err))
+	}
+	partialReversal := *reversalInput
+	partialAmount := "-11"
+	partialReversal.QuantityDelta = &partialAmount
+	if _, err := client.PostLedgerEntry(approverCtx, &pb.PostLedgerEntryRequest{EntitlementId: secondID, Input: &partialReversal}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("partial reversal status = %v, want InvalidArgument", status.Code(err))
+	}
+	foreignOpening, err := client.FindLeaveLedgerEntryBySourceEventID(ctx, &common.StringFinderRequest{Value: &eventID, Limit: 1})
+	if err != nil || len(foreignOpening.GetItems()) != 1 {
+		t.Fatalf("find foreign opening: %+v, %v", foreignOpening, err)
+	}
+	foreignReversal := *reversalInput
+	foreignID := foreignOpening.GetItems()[0].GetId()
+	foreignReversal.ReversesEntryId = &foreignID
+	if _, err := client.PostLedgerEntry(approverCtx, &pb.PostLedgerEntryRequest{EntitlementId: secondID, Input: &foreignReversal}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("foreign entitlement reversal status = %v, want InvalidArgument", status.Code(err))
+	}
+	reversed, err := client.PostLedgerEntry(approverCtx, &pb.PostLedgerEntryRequest{EntitlementId: secondID, Input: reversalInput})
+	if err != nil || reversed.GetItem().GetRevision() != 3 || reversed.GetItem().GetClosingBalanceSnapshot() != "0.0000" {
+		t.Fatalf("reverse opening: %+v, %v", reversed, err)
+	}
+	if _, err := client.PostLedgerEntry(approverCtx, &pb.PostLedgerEntryRequest{EntitlementId: secondID, Input: reversalInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate reversal source status = %v, want AlreadyExists", status.Code(err))
+	}
+	newReversalEvent := "another-reversal-" + secondID
+	secondReversal := *reversalInput
+	secondReversal.SourceEventId = &newReversalEvent
+	if _, err := client.PostLedgerEntry(approverCtx, &pb.PostLedgerEntryRequest{EntitlementId: secondID, Input: &secondReversal}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("second reversal status = %v, want InvalidArgument", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_leave_ledger_entries").Where("entitlement_id = ?", secondID).Count(&ledgerCount).Error; err != nil {
+		t.Fatal(err)
+	}
+	if ledgerCount != 2 {
+		t.Fatalf("reversed entitlement has %d entries, want 2", ledgerCount)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", secondID).Count(&outboxCount).Error; err != nil {
+		t.Fatal(err)
+	}
+	if outboxCount != 3 {
+		t.Fatalf("reversed entitlement has %d events, want 3", outboxCount)
+	}
 }

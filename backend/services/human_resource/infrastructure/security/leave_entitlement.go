@@ -115,10 +115,27 @@ func (v *leaveEntitlementValidator) ValidateMutation(ctx context.Context, table 
 	}
 	adjustments := make([]entity.LeaveAdjustment, 0)
 	seen := make(map[string]bool)
+	entryByID := make(map[string]entity.LeaveLedgerEntry, len(entries))
+	for _, entry := range entries {
+		entryByID[strings.ToLower(entry.ID)] = entry
+	}
 	lastRecorded := false
 	for _, entry := range entries {
-		if entry.EntryType != "opening" && entry.EntryType != "adjustment" && entry.EntryType != "expiry" {
+		if entry.EntryType != "opening" && entry.EntryType != "adjustment" && entry.EntryType != "expiry" && entry.EntryType != "reversal" {
 			return hrerrors.ErrWorkflowRequired
+		}
+		if entry.EntryType == "reversal" {
+			if entry.ReversesEntryID == nil {
+				return hrerrors.ErrWorkflowRequired
+			}
+			original, exists := entryByID[strings.ToLower(*entry.ReversesEntryID)]
+			if !exists || original.EntryType != "opening" ||
+				original.EntrySequence >= entry.EntrySequence ||
+				original.SourceManagement != "hrm" ||
+				original.ActorPrincipalID == entry.ActorPrincipalID ||
+				entity.CompareDates(entry.EffectiveDate, original.EffectiveDate) < 0 {
+				return hrerrors.ErrWorkflowRequired
+			}
 		}
 		if entry.EntryType == "expiry" {
 			if entry.EntrySequence != count || entity.CompareDates(entry.EffectiveDate, entitlement.EntitlementPeriodEnd) != 0 {
