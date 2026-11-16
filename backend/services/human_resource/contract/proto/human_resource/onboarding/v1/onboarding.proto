@@ -21,6 +21,7 @@ service OnboardingService {
   rpc FindOnboardingPlanByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OnboardingPlansResponse);
   rpc CreateOnboardingTask(CreateOnboardingTaskRequest) returns (OnboardingTaskResponse);
   rpc UpdateOnboardingTask(UpdateOnboardingTaskRequest) returns (OnboardingTaskResponse);
+  rpc CompleteOnboardingTask(CompleteOnboardingTaskRequest) returns (OnboardingTaskResponse);
   rpc DeleteOnboardingTask(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetOnboardingTaskByID(human_resource.common.v1.IDRequest) returns (OnboardingTaskResponse);
   rpc GetAllOnboardingTasks(human_resource.common.v1.PageRequest) returns (OnboardingTasksResponse);
@@ -96,6 +97,10 @@ message UpdateOnboardingTaskRequest {
   string id = 1;
   OnboardingTaskInput input = 2;
   google.protobuf.FieldMask update_mask = 3;
+}
+message CompleteOnboardingTaskRequest {
+  string id = 1;
+  string evidence_document_version_reference_id = 2;
 }
 message OnboardingTaskResponse { OnboardingTask item = 1; }
 message OnboardingTasksResponse {

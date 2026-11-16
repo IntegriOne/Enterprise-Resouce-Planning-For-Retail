@@ -792,6 +792,58 @@ func (x *UpdateOnboardingTaskRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
 	return nil
 }
 
+type CompleteOnboardingTaskRequest struct {
+	state                              protoimpl.MessageState `protogen:"open.v1"`
+	Id                                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	EvidenceDocumentVersionReferenceId string                 `protobuf:"bytes,2,opt,name=evidence_document_version_reference_id,json=evidenceDocumentVersionReferenceId,proto3" json:"evidence_document_version_reference_id,omitempty"`
+	unknownFields                      protoimpl.UnknownFields
+	sizeCache                          protoimpl.SizeCache
+}
+
+func (x *CompleteOnboardingTaskRequest) Reset() {
+	*x = CompleteOnboardingTaskRequest{}
+	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteOnboardingTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteOnboardingTaskRequest) ProtoMessage() {}
+
+func (x *CompleteOnboardingTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteOnboardingTaskRequest.ProtoReflect.Descriptor instead.
+func (*CompleteOnboardingTaskRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_onboarding_v1_onboarding_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CompleteOnboardingTaskRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CompleteOnboardingTaskRequest) GetEvidenceDocumentVersionReferenceId() string {
+	if x != nil {
+		return x.EvidenceDocumentVersionReferenceId
+	}
+	return ""
+}
+
 type OnboardingTaskResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Item          *OnboardingTask        `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
@@ -801,7 +853,7 @@ type OnboardingTaskResponse struct {
 
 func (x *OnboardingTaskResponse) Reset() {
 	*x = OnboardingTaskResponse{}
-	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[10]
+	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -813,7 +865,7 @@ func (x *OnboardingTaskResponse) String() string {
 func (*OnboardingTaskResponse) ProtoMessage() {}
 
 func (x *OnboardingTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[10]
+	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -826,7 +878,7 @@ func (x *OnboardingTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnboardingTaskResponse.ProtoReflect.Descriptor instead.
 func (*OnboardingTaskResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_onboarding_v1_onboarding_proto_rawDescGZIP(), []int{10}
+	return file_human_resource_onboarding_v1_onboarding_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *OnboardingTaskResponse) GetItem() *OnboardingTask {
@@ -846,7 +898,7 @@ type OnboardingTasksResponse struct {
 
 func (x *OnboardingTasksResponse) Reset() {
 	*x = OnboardingTasksResponse{}
-	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[11]
+	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -858,7 +910,7 @@ func (x *OnboardingTasksResponse) String() string {
 func (*OnboardingTasksResponse) ProtoMessage() {}
 
 func (x *OnboardingTasksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[11]
+	mi := &file_human_resource_onboarding_v1_onboarding_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -871,7 +923,7 @@ func (x *OnboardingTasksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnboardingTasksResponse.ProtoReflect.Descriptor instead.
 func (*OnboardingTasksResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_onboarding_v1_onboarding_proto_rawDescGZIP(), []int{11}
+	return file_human_resource_onboarding_v1_onboarding_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *OnboardingTasksResponse) GetItems() []*OnboardingTask {
@@ -986,12 +1038,15 @@ const file_human_resource_onboarding_v1_onboarding_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12G\n" +
 	"\x05input\x18\x02 \x01(\v21.human_resource.onboarding.v1.OnboardingTaskInputR\x05input\x12;\n" +
 	"\vupdate_mask\x18\x03 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
-	"updateMask\"Z\n" +
+	"updateMask\"\x83\x01\n" +
+	"\x1dCompleteOnboardingTaskRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12R\n" +
+	"&evidence_document_version_reference_id\x18\x02 \x01(\tR\"evidenceDocumentVersionReferenceId\"Z\n" +
 	"\x16OnboardingTaskResponse\x12@\n" +
 	"\x04item\x18\x01 \x01(\v2,.human_resource.onboarding.v1.OnboardingTaskR\x04item\"\x95\x01\n" +
 	"\x17OnboardingTasksResponse\x12B\n" +
 	"\x05items\x18\x01 \x03(\v2,.human_resource.onboarding.v1.OnboardingTaskR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xcc\x16\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xda\x17\n" +
 	"\x11OnboardingService\x12\x87\x01\n" +
 	"\x14CreateOnboardingPlan\x129.human_resource.onboarding.v1.CreateOnboardingPlanRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12\x87\x01\n" +
 	"\x14UpdateOnboardingPlan\x129.human_resource.onboarding.v1.UpdateOnboardingPlanRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12p\n" +
@@ -1006,7 +1061,8 @@ const file_human_resource_onboarding_v1_onboarding_proto_rawDesc = "" +
 	"'FindOnboardingPlanByTemplateReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a5.human_resource.onboarding.v1.OnboardingPlansResponse\x12\x90\x01\n" +
 	"(FindOnboardingPlanByCreatedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a5.human_resource.onboarding.v1.OnboardingPlansResponse\x12\x87\x01\n" +
 	"\x14CreateOnboardingTask\x129.human_resource.onboarding.v1.CreateOnboardingTaskRequest\x1a4.human_resource.onboarding.v1.OnboardingTaskResponse\x12\x87\x01\n" +
-	"\x14UpdateOnboardingTask\x129.human_resource.onboarding.v1.UpdateOnboardingTaskRequest\x1a4.human_resource.onboarding.v1.OnboardingTaskResponse\x12d\n" +
+	"\x14UpdateOnboardingTask\x129.human_resource.onboarding.v1.UpdateOnboardingTaskRequest\x1a4.human_resource.onboarding.v1.OnboardingTaskResponse\x12\x8b\x01\n" +
+	"\x16CompleteOnboardingTask\x12;.human_resource.onboarding.v1.CompleteOnboardingTaskRequest\x1a4.human_resource.onboarding.v1.OnboardingTaskResponse\x12d\n" +
 	"\x14DeleteOnboardingTask\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12r\n" +
 	"\x15GetOnboardingTaskByID\x12#.human_resource.common.v1.IDRequest\x1a4.human_resource.onboarding.v1.OnboardingTaskResponse\x12u\n" +
 	"\x15GetAllOnboardingTasks\x12%.human_resource.common.v1.PageRequest\x1a5.human_resource.onboarding.v1.OnboardingTasksResponse\x12\x8c\x01\n" +
@@ -1028,93 +1084,96 @@ func file_human_resource_onboarding_v1_onboarding_proto_rawDescGZIP() []byte {
 	return file_human_resource_onboarding_v1_onboarding_proto_rawDescData
 }
 
-var file_human_resource_onboarding_v1_onboarding_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_human_resource_onboarding_v1_onboarding_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_human_resource_onboarding_v1_onboarding_proto_goTypes = []any{
-	(*OnboardingPlan)(nil),              // 0: human_resource.onboarding.v1.OnboardingPlan
-	(*OnboardingPlanInput)(nil),         // 1: human_resource.onboarding.v1.OnboardingPlanInput
-	(*CreateOnboardingPlanRequest)(nil), // 2: human_resource.onboarding.v1.CreateOnboardingPlanRequest
-	(*UpdateOnboardingPlanRequest)(nil), // 3: human_resource.onboarding.v1.UpdateOnboardingPlanRequest
-	(*OnboardingPlanResponse)(nil),      // 4: human_resource.onboarding.v1.OnboardingPlanResponse
-	(*OnboardingPlansResponse)(nil),     // 5: human_resource.onboarding.v1.OnboardingPlansResponse
-	(*OnboardingTask)(nil),              // 6: human_resource.onboarding.v1.OnboardingTask
-	(*OnboardingTaskInput)(nil),         // 7: human_resource.onboarding.v1.OnboardingTaskInput
-	(*CreateOnboardingTaskRequest)(nil), // 8: human_resource.onboarding.v1.CreateOnboardingTaskRequest
-	(*UpdateOnboardingTaskRequest)(nil), // 9: human_resource.onboarding.v1.UpdateOnboardingTaskRequest
-	(*OnboardingTaskResponse)(nil),      // 10: human_resource.onboarding.v1.OnboardingTaskResponse
-	(*OnboardingTasksResponse)(nil),     // 11: human_resource.onboarding.v1.OnboardingTasksResponse
-	(*timestamppb.Timestamp)(nil),       // 12: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),       // 13: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                 // 14: human_resource.common.v1.PageInfo
-	(*v1.IDRequest)(nil),                // 15: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),              // 16: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),      // 17: human_resource.common.v1.StringFinderRequest
-	(*v1.EmptyResponse)(nil),            // 18: human_resource.common.v1.EmptyResponse
+	(*OnboardingPlan)(nil),                // 0: human_resource.onboarding.v1.OnboardingPlan
+	(*OnboardingPlanInput)(nil),           // 1: human_resource.onboarding.v1.OnboardingPlanInput
+	(*CreateOnboardingPlanRequest)(nil),   // 2: human_resource.onboarding.v1.CreateOnboardingPlanRequest
+	(*UpdateOnboardingPlanRequest)(nil),   // 3: human_resource.onboarding.v1.UpdateOnboardingPlanRequest
+	(*OnboardingPlanResponse)(nil),        // 4: human_resource.onboarding.v1.OnboardingPlanResponse
+	(*OnboardingPlansResponse)(nil),       // 5: human_resource.onboarding.v1.OnboardingPlansResponse
+	(*OnboardingTask)(nil),                // 6: human_resource.onboarding.v1.OnboardingTask
+	(*OnboardingTaskInput)(nil),           // 7: human_resource.onboarding.v1.OnboardingTaskInput
+	(*CreateOnboardingTaskRequest)(nil),   // 8: human_resource.onboarding.v1.CreateOnboardingTaskRequest
+	(*UpdateOnboardingTaskRequest)(nil),   // 9: human_resource.onboarding.v1.UpdateOnboardingTaskRequest
+	(*CompleteOnboardingTaskRequest)(nil), // 10: human_resource.onboarding.v1.CompleteOnboardingTaskRequest
+	(*OnboardingTaskResponse)(nil),        // 11: human_resource.onboarding.v1.OnboardingTaskResponse
+	(*OnboardingTasksResponse)(nil),       // 12: human_resource.onboarding.v1.OnboardingTasksResponse
+	(*timestamppb.Timestamp)(nil),         // 13: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),         // 14: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                   // 15: human_resource.common.v1.PageInfo
+	(*v1.IDRequest)(nil),                  // 16: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                // 17: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),        // 18: human_resource.common.v1.StringFinderRequest
+	(*v1.EmptyResponse)(nil),              // 19: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_onboarding_v1_onboarding_proto_depIdxs = []int32{
-	12, // 0: human_resource.onboarding.v1.OnboardingPlan.started_at:type_name -> google.protobuf.Timestamp
-	12, // 1: human_resource.onboarding.v1.OnboardingPlan.completed_at:type_name -> google.protobuf.Timestamp
+	13, // 0: human_resource.onboarding.v1.OnboardingPlan.started_at:type_name -> google.protobuf.Timestamp
+	13, // 1: human_resource.onboarding.v1.OnboardingPlan.completed_at:type_name -> google.protobuf.Timestamp
 	1,  // 2: human_resource.onboarding.v1.CreateOnboardingPlanRequest.input:type_name -> human_resource.onboarding.v1.OnboardingPlanInput
 	1,  // 3: human_resource.onboarding.v1.UpdateOnboardingPlanRequest.input:type_name -> human_resource.onboarding.v1.OnboardingPlanInput
-	13, // 4: human_resource.onboarding.v1.UpdateOnboardingPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 4: human_resource.onboarding.v1.UpdateOnboardingPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 5: human_resource.onboarding.v1.OnboardingPlanResponse.item:type_name -> human_resource.onboarding.v1.OnboardingPlan
 	0,  // 6: human_resource.onboarding.v1.OnboardingPlansResponse.items:type_name -> human_resource.onboarding.v1.OnboardingPlan
-	14, // 7: human_resource.onboarding.v1.OnboardingPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
-	12, // 8: human_resource.onboarding.v1.OnboardingTask.due_at:type_name -> google.protobuf.Timestamp
-	12, // 9: human_resource.onboarding.v1.OnboardingTask.completed_at:type_name -> google.protobuf.Timestamp
-	12, // 10: human_resource.onboarding.v1.OnboardingTaskInput.due_at:type_name -> google.protobuf.Timestamp
-	12, // 11: human_resource.onboarding.v1.OnboardingTaskInput.completed_at:type_name -> google.protobuf.Timestamp
+	15, // 7: human_resource.onboarding.v1.OnboardingPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
+	13, // 8: human_resource.onboarding.v1.OnboardingTask.due_at:type_name -> google.protobuf.Timestamp
+	13, // 9: human_resource.onboarding.v1.OnboardingTask.completed_at:type_name -> google.protobuf.Timestamp
+	13, // 10: human_resource.onboarding.v1.OnboardingTaskInput.due_at:type_name -> google.protobuf.Timestamp
+	13, // 11: human_resource.onboarding.v1.OnboardingTaskInput.completed_at:type_name -> google.protobuf.Timestamp
 	7,  // 12: human_resource.onboarding.v1.CreateOnboardingTaskRequest.input:type_name -> human_resource.onboarding.v1.OnboardingTaskInput
 	7,  // 13: human_resource.onboarding.v1.UpdateOnboardingTaskRequest.input:type_name -> human_resource.onboarding.v1.OnboardingTaskInput
-	13, // 14: human_resource.onboarding.v1.UpdateOnboardingTaskRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 14: human_resource.onboarding.v1.UpdateOnboardingTaskRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,  // 15: human_resource.onboarding.v1.OnboardingTaskResponse.item:type_name -> human_resource.onboarding.v1.OnboardingTask
 	6,  // 16: human_resource.onboarding.v1.OnboardingTasksResponse.items:type_name -> human_resource.onboarding.v1.OnboardingTask
-	14, // 17: human_resource.onboarding.v1.OnboardingTasksResponse.page:type_name -> human_resource.common.v1.PageInfo
+	15, // 17: human_resource.onboarding.v1.OnboardingTasksResponse.page:type_name -> human_resource.common.v1.PageInfo
 	2,  // 18: human_resource.onboarding.v1.OnboardingService.CreateOnboardingPlan:input_type -> human_resource.onboarding.v1.CreateOnboardingPlanRequest
 	3,  // 19: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingPlan:input_type -> human_resource.onboarding.v1.UpdateOnboardingPlanRequest
-	15, // 20: human_resource.onboarding.v1.OnboardingService.StartOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 21: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 22: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 23: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 24: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:input_type -> human_resource.common.v1.PageRequest
-	17, // 25: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 26: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 27: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 28: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 29: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	16, // 20: human_resource.onboarding.v1.OnboardingService.StartOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	16, // 21: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	16, // 22: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	16, // 23: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 24: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:input_type -> human_resource.common.v1.PageRequest
+	18, // 25: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 26: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 27: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 28: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 29: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
 	8,  // 30: human_resource.onboarding.v1.OnboardingService.CreateOnboardingTask:input_type -> human_resource.onboarding.v1.CreateOnboardingTaskRequest
 	9,  // 31: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingTask:input_type -> human_resource.onboarding.v1.UpdateOnboardingTaskRequest
-	15, // 32: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:input_type -> human_resource.common.v1.IDRequest
-	15, // 33: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 34: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:input_type -> human_resource.common.v1.PageRequest
-	17, // 35: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 36: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 37: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 38: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 39: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 40: human_resource.onboarding.v1.OnboardingService.CreateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	4,  // 41: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	4,  // 42: human_resource.onboarding.v1.OnboardingService.StartOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	4,  // 43: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	18, // 44: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 45: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	5,  // 46: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 47: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 48: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 49: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 50: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 51: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	10, // 52: human_resource.onboarding.v1.OnboardingService.CreateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
-	10, // 53: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
-	18, // 54: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 55: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
-	11, // 56: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 57: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 58: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 59: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 60: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 61: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	40, // [40:62] is the sub-list for method output_type
-	18, // [18:40] is the sub-list for method input_type
+	10, // 32: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingTask:input_type -> human_resource.onboarding.v1.CompleteOnboardingTaskRequest
+	16, // 33: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:input_type -> human_resource.common.v1.IDRequest
+	16, // 34: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 35: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:input_type -> human_resource.common.v1.PageRequest
+	18, // 36: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 37: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 38: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 39: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 40: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 41: human_resource.onboarding.v1.OnboardingService.CreateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	4,  // 42: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	4,  // 43: human_resource.onboarding.v1.OnboardingService.StartOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	4,  // 44: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	19, // 45: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 46: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	5,  // 47: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 48: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 49: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 50: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 51: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 52: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	11, // 53: human_resource.onboarding.v1.OnboardingService.CreateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
+	11, // 54: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
+	11, // 55: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
+	19, // 56: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:output_type -> human_resource.common.v1.EmptyResponse
+	11, // 57: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
+	12, // 58: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	12, // 59: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	12, // 60: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	12, // 61: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	12, // 62: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	12, // 63: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	41, // [41:64] is the sub-list for method output_type
+	18, // [18:41] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
@@ -1135,7 +1194,7 @@ func file_human_resource_onboarding_v1_onboarding_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_onboarding_v1_onboarding_proto_rawDesc), len(file_human_resource_onboarding_v1_onboarding_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

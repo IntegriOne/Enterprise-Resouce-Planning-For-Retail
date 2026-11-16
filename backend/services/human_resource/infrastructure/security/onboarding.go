@@ -199,6 +199,7 @@ func (v *onboardingTaskValidator) ValidateMutation(ctx context.Context, table st
 		return err
 	}
 	var previous *entity.OnboardingTask
+	completing := false
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.OnboardingTask)
@@ -216,7 +217,8 @@ func (v *onboardingTaskValidator) ValidateMutation(ctx context.Context, table st
 		if !ok || task == nil {
 			return hrerrors.ErrInvalidInput
 		}
-		if task.CompletedAt != nil || task.CompletionEvidenceReferenceID != nil ||
+		completing = previous != nil && validOnboardingTaskComplete(previous, task)
+		if !completing && (task.CompletedAt != nil || task.CompletedByPrincipalID != nil || task.CompletionEvidenceReferenceID != nil) ||
 			!validOnboardingTaskOwner(task.TaskOwnerType) {
 			return hrerrors.ErrWorkflowRequired
 		}
@@ -228,7 +230,11 @@ func (v *onboardingTaskValidator) ValidateMutation(ctx context.Context, table st
 	if err != nil {
 		return onboardingReferenceError(err)
 	}
-	if plan == nil || plan.Status != "draft" || plan.TemplateReferenceID != nil {
+	if plan == nil || plan.TemplateReferenceID != nil ||
+		(completing && plan.Status != "in_progress") || (!completing && plan.Status != "draft") {
+		return hrerrors.ErrReferenceConflict
+	}
+	if completing && (plan.StartedAt == nil || task.CompletedAt.Before(*plan.StartedAt)) {
 		return hrerrors.ErrReferenceConflict
 	}
 	worker, err := v.workers.FindByIDForUpdate(ctx, plan.WorkerID)
@@ -244,6 +250,13 @@ func (v *onboardingTaskValidator) ValidateMutation(ctx context.Context, table st
 	if task.AssignedPrincipalID != nil && (task.TaskOwnerType != "worker" ||
 		worker.IAMPrincipalReferenceID == nil || !strings.EqualFold(*task.AssignedPrincipalID, *worker.IAMPrincipalReferenceID)) {
 		return hrerrors.ErrReferenceConflict
+	}
+	if completing && (task.TaskOwnerType != "worker" || task.AssignedPrincipalID == nil ||
+		!strings.EqualFold(*task.AssignedPrincipalID, *task.CompletedByPrincipalID)) {
+		return hrerrors.ErrReferenceConflict
+	}
+	if completing {
+		return nil
 	}
 	if task.DueAt != nil && (dateBefore(*task.DueAt, plan.StartDate) ||
 		plan.TargetCompletionDate != nil && dateBefore(*plan.TargetCompletionDate, *task.DueAt)) {
@@ -262,6 +275,19 @@ func (v *onboardingTaskValidator) ValidateMutation(ctx context.Context, table st
 		}
 	}
 	return nil
+}
+
+func validOnboardingTaskComplete(before, after *entity.OnboardingTask) bool {
+	if before == nil || after == nil || before.CompletedAt != nil || before.CompletedByPrincipalID != nil ||
+		before.CompletionEvidenceReferenceID != nil || after.CompletedAt == nil ||
+		after.CompletedByPrincipalID == nil || after.CompletionEvidenceReferenceID == nil {
+		return false
+	}
+	unchanged := *after
+	unchanged.CompletedAt = before.CompletedAt
+	unchanged.CompletedByPrincipalID = before.CompletedByPrincipalID
+	unchanged.CompletionEvidenceReferenceID = before.CompletionEvidenceReferenceID
+	return reflect.DeepEqual(*before, unchanged)
 }
 
 func validOnboardingTaskOwner(value string) bool {

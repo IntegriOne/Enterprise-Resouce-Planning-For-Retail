@@ -45,6 +45,35 @@ type onboardingTaskStub struct {
 	err     error
 }
 
+func TestOnboardingTaskValidatorAllowsOnlyWorkerCompletionOnStartedPlan(t *testing.T) {
+	t.Parallel()
+	principal := "00000000-0000-4000-8000-000000000001"
+	started := time.Date(2027, 1, 10, 9, 0, 0, 0, time.UTC)
+	completed := started.Add(time.Hour)
+	evidence := "00000000-0000-4000-8000-000000000002"
+	worker := &onboardingWorkerStub{value: &entity.Worker{Status: entity.WorkerStatusActive, IAMPrincipalReferenceID: &principal}}
+	plan := &onboardingPlanStub{value: &entity.OnboardingPlan{Status: "in_progress", StartedAt: &started, StartDate: started}}
+	tasks := &onboardingTaskStub{}
+	validator := &onboardingTaskValidator{workers: worker, plans: plan, tasks: tasks}
+	before := &entity.OnboardingTask{ID: "task", OnboardingPlanID: "plan", TaskCode: "ORIENTATION", TaskName: "Orientation", TaskOwnerType: "worker", AssignedPrincipalID: &principal, IsMandatory: true}
+	after := *before
+	after.CompletedAt = &completed
+	after.CompletedByPrincipalID = &principal
+	after.CompletionEvidenceReferenceID = &evidence
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_tasks", before, &after); err != nil {
+		t.Fatalf("valid worker completion: %v", err)
+	}
+	forged := after
+	forged.TaskName = "Changed during completion"
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_tasks", before, &forged); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("completion changed task fields: %v", err)
+	}
+	plan.value.Status = "draft"
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_tasks", before, &after); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("completion on draft plan: %v", err)
+	}
+}
+
 func (s *onboardingTaskStub) SelectWhere(_ context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.OnboardingTask, error) {
 	if len(filters) != 2 || filters[0].Column != "onboarding_plan_id" || filters[1].Column != "task_code" ||
 		limit != 2 || offset != 0 {

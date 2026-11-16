@@ -14,6 +14,87 @@ import (
 	mockdb "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/testsupport"
 )
 
+type evidenceVerifier struct {
+	verified  bool
+	immutable bool
+	versionID string
+	request   service.EvidenceRequest
+}
+
+func (v *evidenceVerifier) VerifyOnboardingEvidence(_ context.Context, request service.EvidenceRequest) (service.EvidenceResult, error) {
+	v.request = request
+	versionID := request.VersionID
+	if v.versionID != "" {
+		versionID = v.versionID
+	}
+	return service.EvidenceResult{VersionID: versionID, Verified: v.verified, Immutable: v.immutable}, nil
+}
+
+func TestCompleteOnboardingTaskRequiresVerifiedEvidenceAndAssignedWorker(t *testing.T) {
+	t.Parallel()
+	h := mockdb.New()
+	plans := mockdb.NewStore[entity.OnboardingPlan, string](h, func(v *entity.OnboardingPlan) string { return v.ID })
+	tasks := mockdb.NewStore[entity.OnboardingTask, string](h, func(v *entity.OnboardingTask) string { return v.ID })
+	withoutEvidence, err := service.NewService(service.Dependencies{Runtime: h.Runtime(), OnboardingPlan: plans, OnboardingTask: tasks})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := t.Context()
+	plan, err := withoutEvidence.CreateOnboardingPlan(ctx, input())
+	if err != nil {
+		t.Fatal(err)
+	}
+	assignee := h.Actor.PrincipalID
+	task, err := withoutEvidence.CreateOnboardingTask(ctx, service.CreateOnboardingTaskInput{
+		OnboardingPlanID: plan.ID, TaskCode: "ORIENTATION", TaskName: "Orientation", TaskOwnerType: "worker", AssignedPrincipalID: &assignee,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := withoutEvidence.StartOnboardingPlan(ctx, plan.ID); err != nil {
+		t.Fatal(err)
+	}
+	evidenceID := mockdb.ID(30)
+	if _, err := withoutEvidence.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrUnavailable) {
+		t.Fatalf("missing DRM verifier: %v", err)
+	}
+	verifier := &evidenceVerifier{}
+	svc, err := service.NewService(service.Dependencies{Runtime: h.Runtime(), OnboardingPlan: plans, OnboardingTask: tasks, Evidence: verifier})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("unverified evidence: %v", err)
+	}
+	if len(h.Events) != 3 || tasks.Rows[task.ID].CompletedAt != nil {
+		t.Fatal("rejected completion changed task or outbox")
+	}
+	verifier.verified = true
+	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("mutable evidence: %v", err)
+	}
+	verifier.immutable = true
+	verifier.versionID = mockdb.ID(31)
+	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("mismatched evidence version: %v", err)
+	}
+	verifier.versionID = ""
+	completed, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if completed.CompletedAt == nil || completed.CompletedByPrincipalID == nil || *completed.CompletedByPrincipalID != assignee ||
+		completed.CompletionEvidenceReferenceID == nil || *completed.CompletionEvidenceReferenceID != evidenceID {
+		t.Fatalf("completion audit fields: %+v", completed)
+	}
+	if verifier.request.TaskID != task.ID || verifier.request.PrincipalID != assignee || len(h.Events) != 4 {
+		t.Fatal("evidence request or outbox mismatch")
+	}
+	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("repeated completion: %v", err)
+	}
+}
+
 func TestStartOnboardingPlanRequiresTaskAndPreservesAudit(t *testing.T) {
 	t.Parallel()
 	h := mockdb.New()

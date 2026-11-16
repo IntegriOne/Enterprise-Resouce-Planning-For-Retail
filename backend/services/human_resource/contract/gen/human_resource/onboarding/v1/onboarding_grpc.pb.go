@@ -34,6 +34,7 @@ const (
 	OnboardingService_FindOnboardingPlanByCreatedByPrincipalID_FullMethodName          = "/human_resource.onboarding.v1.OnboardingService/FindOnboardingPlanByCreatedByPrincipalID"
 	OnboardingService_CreateOnboardingTask_FullMethodName                              = "/human_resource.onboarding.v1.OnboardingService/CreateOnboardingTask"
 	OnboardingService_UpdateOnboardingTask_FullMethodName                              = "/human_resource.onboarding.v1.OnboardingService/UpdateOnboardingTask"
+	OnboardingService_CompleteOnboardingTask_FullMethodName                            = "/human_resource.onboarding.v1.OnboardingService/CompleteOnboardingTask"
 	OnboardingService_DeleteOnboardingTask_FullMethodName                              = "/human_resource.onboarding.v1.OnboardingService/DeleteOnboardingTask"
 	OnboardingService_GetOnboardingTaskByID_FullMethodName                             = "/human_resource.onboarding.v1.OnboardingService/GetOnboardingTaskByID"
 	OnboardingService_GetAllOnboardingTasks_FullMethodName                             = "/human_resource.onboarding.v1.OnboardingService/GetAllOnboardingTasks"
@@ -62,6 +63,7 @@ type OnboardingServiceClient interface {
 	FindOnboardingPlanByCreatedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*OnboardingPlansResponse, error)
 	CreateOnboardingTask(ctx context.Context, in *CreateOnboardingTaskRequest, opts ...grpc.CallOption) (*OnboardingTaskResponse, error)
 	UpdateOnboardingTask(ctx context.Context, in *UpdateOnboardingTaskRequest, opts ...grpc.CallOption) (*OnboardingTaskResponse, error)
+	CompleteOnboardingTask(ctx context.Context, in *CompleteOnboardingTaskRequest, opts ...grpc.CallOption) (*OnboardingTaskResponse, error)
 	DeleteOnboardingTask(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetOnboardingTaskByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OnboardingTaskResponse, error)
 	GetAllOnboardingTasks(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*OnboardingTasksResponse, error)
@@ -220,6 +222,16 @@ func (c *onboardingServiceClient) UpdateOnboardingTask(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *onboardingServiceClient) CompleteOnboardingTask(ctx context.Context, in *CompleteOnboardingTaskRequest, opts ...grpc.CallOption) (*OnboardingTaskResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OnboardingTaskResponse)
+	err := c.cc.Invoke(ctx, OnboardingService_CompleteOnboardingTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *onboardingServiceClient) DeleteOnboardingTask(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(v1.EmptyResponse)
@@ -318,6 +330,7 @@ type OnboardingServiceServer interface {
 	FindOnboardingPlanByCreatedByPrincipalID(context.Context, *v1.StringFinderRequest) (*OnboardingPlansResponse, error)
 	CreateOnboardingTask(context.Context, *CreateOnboardingTaskRequest) (*OnboardingTaskResponse, error)
 	UpdateOnboardingTask(context.Context, *UpdateOnboardingTaskRequest) (*OnboardingTaskResponse, error)
+	CompleteOnboardingTask(context.Context, *CompleteOnboardingTaskRequest) (*OnboardingTaskResponse, error)
 	DeleteOnboardingTask(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetOnboardingTaskByID(context.Context, *v1.IDRequest) (*OnboardingTaskResponse, error)
 	GetAllOnboardingTasks(context.Context, *v1.PageRequest) (*OnboardingTasksResponse, error)
@@ -377,6 +390,9 @@ func (UnimplementedOnboardingServiceServer) CreateOnboardingTask(context.Context
 }
 func (UnimplementedOnboardingServiceServer) UpdateOnboardingTask(context.Context, *UpdateOnboardingTaskRequest) (*OnboardingTaskResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateOnboardingTask not implemented")
+}
+func (UnimplementedOnboardingServiceServer) CompleteOnboardingTask(context.Context, *CompleteOnboardingTaskRequest) (*OnboardingTaskResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteOnboardingTask not implemented")
 }
 func (UnimplementedOnboardingServiceServer) DeleteOnboardingTask(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteOnboardingTask not implemented")
@@ -675,6 +691,24 @@ func _OnboardingService_UpdateOnboardingTask_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OnboardingService_CompleteOnboardingTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteOnboardingTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OnboardingServiceServer).CompleteOnboardingTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OnboardingService_CompleteOnboardingTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OnboardingServiceServer).CompleteOnboardingTask(ctx, req.(*CompleteOnboardingTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _OnboardingService_DeleteOnboardingTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(v1.IDRequest)
 	if err := dec(in); err != nil {
@@ -881,6 +915,10 @@ var OnboardingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateOnboardingTask",
 			Handler:    _OnboardingService_UpdateOnboardingTask_Handler,
+		},
+		{
+			MethodName: "CompleteOnboardingTask",
+			Handler:    _OnboardingService_CompleteOnboardingTask_Handler,
 		},
 		{
 			MethodName: "DeleteOnboardingTask",

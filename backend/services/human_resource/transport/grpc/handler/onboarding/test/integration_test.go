@@ -33,6 +33,12 @@ import (
 
 type integrationPolicy struct{}
 
+type integrationEvidenceVerifier struct{}
+
+func (integrationEvidenceVerifier) VerifyOnboardingEvidence(_ context.Context, request service.EvidenceRequest) (service.EvidenceResult, error) {
+	return service.EvidenceResult{VersionID: request.VersionID, Verified: true, Immutable: true}, nil
+}
+
 func (integrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
 	return operation.Actor{
 		PrincipalID: "00000000-0000-4000-8000-000000000001",
@@ -84,6 +90,7 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
 			Policy: integrationPolicy{}, Integrity: security.NewIntegrity(validators)},
 		OnboardingPlan: repos.OnboardingPlan, OnboardingTask: repos.OnboardingTask,
+		Evidence: integrationEvidenceVerifier{},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -287,12 +294,19 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.CompleteOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("complete with pending mandatory task: %v", err)
 	}
-	// Fixture ini mensimulasikan hasil command tugas dari DRM yang belum tersedia; bukan bukti verifikasi DRM.
-	if err := database.WithContext(ctx).Exec(
-		"UPDATE hr_onboarding_tasks SET completed_at = ?, completed_by_principal_id = ?, completion_evidence_reference_id = ? WHERE id = ?",
-		time.Now().UTC(), principal, workerID, startedTaskID,
-	).Error; err != nil {
-		t.Fatalf("seed completed task fixture: %v", err)
+	// Verifier tiruan membuktikan alur HRM; integrasi DRM tetap perlu diuji sendiri.
+	finishedTask, err := client.CompleteOnboardingTask(ctx, &pb.CompleteOnboardingTaskRequest{
+		Id: startedTaskID, EvidenceDocumentVersionReferenceId: workerID,
+	})
+	if err != nil || finishedTask.GetItem().GetCompletedAt() == nil ||
+		finishedTask.GetItem().GetCompletedByPrincipalId() != principal ||
+		finishedTask.GetItem().GetCompletionEvidenceReferenceId() != workerID {
+		t.Fatalf("complete task: %+v, %v", finishedTask, err)
+	}
+	if _, err := client.CompleteOnboardingTask(ctx, &pb.CompleteOnboardingTaskRequest{
+		Id: startedTaskID, EvidenceDocumentVersionReferenceId: workerID,
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat task completion: %v", err)
 	}
 	completed, err := client.CompleteOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID})
 	if err != nil || completed.GetItem().GetStatus() != "completed" || completed.GetItem().GetCompletedAt() == nil ||
@@ -304,5 +318,8 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedPlanID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("start and complete plan outbox count=%d, error=%v", events, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedTaskID).Count(&events).Error; err != nil || events != 2 {
+		t.Fatalf("task create and complete outbox count=%d, error=%v", events, err)
 	}
 }

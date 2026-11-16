@@ -15,6 +15,7 @@ type Dependencies struct {
 	Runtime        operation.Dependencies
 	OnboardingPlan domainrepo.RecordRepository[entity.OnboardingPlan, string]
 	OnboardingTask domainrepo.RecordRepository[entity.OnboardingTask, string]
+	Evidence       EvidenceVerifier
 }
 
 // Service mengoordinasikan operasi domain onboarding.
@@ -22,6 +23,7 @@ type Service struct {
 	onboardingPlan *operation.Resource[entity.OnboardingPlan, string, *entity.OnboardingPlan]
 	onboardingTask *operation.Resource[entity.OnboardingTask, string, *entity.OnboardingTask]
 	tasks          domainrepo.RecordRepository[entity.OnboardingTask, string]
+	evidence       EvidenceVerifier
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
@@ -45,6 +47,7 @@ func NewService(deps Dependencies) (*Service, error) {
 		return nil, err
 	}
 	s.tasks = deps.OnboardingTask
+	s.evidence = deps.Evidence
 	return s, nil
 }
 

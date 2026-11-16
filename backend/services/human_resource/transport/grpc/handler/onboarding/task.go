@@ -31,6 +31,14 @@ func taskResponse(value *entity.OnboardingTask, err error) (*pb.OnboardingTaskRe
 	}
 	return &pb.OnboardingTaskResponse{Item: task(value)}, nil
 }
+
+// CompleteOnboardingTask meneruskan bukti versi dokumen untuk keputusan layanan onboarding.
+func (h *Handler) CompleteOnboardingTask(ctx context.Context, request *pb.CompleteOnboardingTaskRequest) (*pb.OnboardingTaskResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return taskResponse(h.service.CompleteOnboardingTask(ctx, request.GetId(), request.GetEvidenceDocumentVersionReferenceId()))
+}
 func tasks(page operation.Page[entity.OnboardingTask], err error) (*pb.OnboardingTasksResponse, error) {
 	if err != nil {
 		return nil, response.Error(err)

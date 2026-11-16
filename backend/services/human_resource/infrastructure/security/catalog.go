@@ -57,6 +57,7 @@ func PermissionCatalog() map[string]string {
 	permissions["hr_performance_cycles.launch"] = "human_resource.performance_cycles.launch"
 	permissions["hr_onboarding_plans.start"] = "human_resource.onboarding_plans.start"
 	permissions["hr_onboarding_plans.complete"] = "human_resource.onboarding_plans.complete"
+	permissions["hr_onboarding_tasks.complete"] = "human_resource.onboarding_tasks.complete"
 	permissions["hr_talent_assessments.finalize"] = "human_resource.talent_assessments.finalize"
 	return permissions
 }
