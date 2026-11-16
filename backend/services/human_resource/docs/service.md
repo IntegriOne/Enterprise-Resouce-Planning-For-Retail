@@ -48,9 +48,10 @@ CRUD generik bukan jalur approval, settlement, pengikatan akun IAM, finalisasi s
 |---|---|---|
 | `leave.PostLedgerEntry` | Lock entitlement, ledger lengkap, sumber/digest unik, replay/reversal eksak, proyeksi saldo dan outbox atomik | Human hanya sumber HRM; sumber luar membutuhkan workload dan adapter integrity. Sumber yang sama dikembalikan sebagai AlreadyExists/Conflict, tanpa posting ulang. |
 | `payroll.ApprovePayrollRun` | Status calculated/review, larangan self approval, pembacaan seluruh result/line dan rekonsiliasi decimal sebelum evidence approval/outbox | Tidak menghitung tarif pajak/BPJS, membuat hasil kalkulasi, jurnal atau pembayaran. Mandat approver diverifikasi policy/integrity. |
+| `career.ApproveCareerPath` | Lock draft, larangan self approval, validasi keluarga job/versi, pemisahan data audit pembuat/penyetuju dan outbox atomik | Tidak membuka CRUD transisi yang masih memerlukan verifikasi dokumen DRM. |
 | `talent.FinalizeTalentAssessment` | Lock assessment/cycle, rubrik dan skor lengkap, validasi bukti performance melalui service pemilik, evidence finalisasi/outbox | Tidak mengubah skor kalibrasi, assignment, promosi atau grant IAM. |
 
-Ketiga command menolak dataset parsial akibat scope dan membatasi pengumpulan 10.000 record. Mutasi child dari semua jalur harus mengunci parent yang sama melalui adapter integrity sebelum runtime diaktifkan; mock concurrency memakai transaksi yang diserialkan dan belum membuktikan concurrency PostgreSQL.
+Keempat command memeriksa scope sebelum commit. Command yang membaca kumpulan record menolak dataset parsial dan membatasi pengumpulan 10.000 record. Mutasi child dari semua jalur harus mengunci parent yang sama melalui adapter integrity sebelum runtime diaktifkan; mock concurrency memakai transaksi yang diserialkan dan belum membuktikan concurrency PostgreSQL.
 
 ## Bukti pengujian dan pekerjaan tersisa
 
