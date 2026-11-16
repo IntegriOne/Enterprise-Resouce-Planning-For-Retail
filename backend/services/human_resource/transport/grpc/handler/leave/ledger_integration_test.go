@@ -110,7 +110,7 @@ func TestLeaveLedgerRPCWithPostgreSQL(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = conn.Close() })
 	client := pb.NewLeaveServiceClient(conn)
-	start, end, leaveType, opening := "2026-01-01", "2026-12-31", "ANNUAL", "12"
+	start, end, leaveType, opening := "2025-01-01", "2025-12-31", "ANNUAL", "12"
 	policyCode, policyName, jurisdiction, method, effectiveFrom := "ANNUAL-"+workerID, "Annual leave", "ID", "annual_grant", "2025-01-01"
 	version := int32(1)
 	invalidMethod := "statutory_engine"
@@ -256,6 +256,52 @@ func TestLeaveLedgerRPCWithPostgreSQL(t *testing.T) {
 	}}); status.Code(err) != codes.InvalidArgument {
 		t.Fatalf("excess adjustment posting status = %v, want InvalidArgument", status.Code(err))
 	}
+	expiryType, expiryEvent, expiryReason, remaining := "expiry", "expiry-"+id, "PERIOD_END", "-11"
+	if _, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: id, Input: &pb.PostLedgerEntryInput{
+		EntryType: &expiryType, QuantityDelta: &remaining, EffectiveDate: &start,
+		SourceManagement: &source, SourceEventId: &expiryEvent, SourceLineKey: &lineKey,
+		SourceDigest: []byte{13, 14, 15}, ReasonCode: &expiryReason,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("early expiry status = %v, want FailedPrecondition", status.Code(err))
+	}
+	partialExpiry := "-10"
+	if _, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: id, Input: &pb.PostLedgerEntryInput{
+		EntryType: &expiryType, QuantityDelta: &partialExpiry, EffectiveDate: &end,
+		SourceManagement: &source, SourceEventId: &expiryEvent, SourceLineKey: &lineKey,
+		SourceDigest: []byte{13, 14, 15}, ReasonCode: &expiryReason,
+	}}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("partial expiry status = %v, want InvalidArgument", status.Code(err))
+	}
+	expired, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: id, Input: &pb.PostLedgerEntryInput{
+		EntryType: &expiryType, QuantityDelta: &remaining, EffectiveDate: &end,
+		SourceManagement: &source, SourceEventId: &expiryEvent, SourceLineKey: &lineKey,
+		SourceDigest: []byte{13, 14, 15}, ReasonCode: &expiryReason,
+	}})
+	if err != nil || expired.GetItem().GetRevision() != 4 || expired.GetItem().GetClosingBalanceSnapshot() != "0.0000" {
+		t.Fatalf("expire remaining balance: %+v, %v", expired, err)
+	}
+	secondExpiryEvent := "second-expiry-" + id
+	if _, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: id, Input: &pb.PostLedgerEntryInput{
+		EntryType: &expiryType, QuantityDelta: &remaining, EffectiveDate: &end,
+		SourceManagement: &source, SourceEventId: &secondExpiryEvent, SourceLineKey: &lineKey,
+		SourceDigest: []byte{16, 17, 18}, ReasonCode: &expiryReason,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("second expiry status = %v, want FailedPrecondition", status.Code(err))
+	}
+	if _, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: id, Input: &pb.PostLedgerEntryInput{
+		EntryType: &adjustmentType, QuantityDelta: &excessDelta, EffectiveDate: &end,
+		AdjustmentId: &excessID, SourceManagement: &source, SourceEventId: &excessEvent,
+		SourceLineKey: &lineKey, SourceDigest: []byte{10, 11, 12}, ReasonCode: &adjustmentReason,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("adjustment after expiry status = %v, want FailedPrecondition", status.Code(err))
+	}
+	afterExpiryKey := "late-adjustment-" + id
+	if _, err := client.CreateLeaveAdjustment(ctx, &pb.CreateLeaveAdjustmentRequest{Input: &pb.LeaveAdjustmentInput{
+		EntitlementId: &id, QuantityDelta: &excessDelta, ReasonCode: &adjustmentReason,
+		Reason: &explanation, IdempotencyKey: &afterExpiryKey,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("create adjustment after expiry status = %v, want FailedPrecondition", status.Code(err))
+	}
 	if _, err := client.DeleteLeaveEntitlement(ctx, &common.IDRequest{Id: id}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete posted entitlement status = %v, want FailedPrecondition", status.Code(err))
 	}
@@ -266,7 +312,7 @@ func TestLeaveLedgerRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", id).Count(&outboxCount).Error; err != nil {
 		t.Fatal(err)
 	}
-	if ledgerCount != 2 || outboxCount < 3 {
-		t.Fatalf("ledger/outbox count = %d/%d, want 2/at least 3", ledgerCount, outboxCount)
+	if ledgerCount != 3 || outboxCount < 4 {
+		t.Fatalf("ledger/outbox count = %d/%d, want 3/at least 4", ledgerCount, outboxCount)
 	}
 }

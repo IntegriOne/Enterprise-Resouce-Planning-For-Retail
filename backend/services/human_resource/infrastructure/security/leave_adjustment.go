@@ -54,6 +54,16 @@ func (v *leaveAdjustmentValidator) ValidateMutation(ctx context.Context, table s
 	if entitlement == nil || entitlement.Revision < 2 || (previous != nil && previous.EntitlementID != adjustment.EntitlementID) {
 		return hrerrors.ErrReferenceConflict
 	}
+	expired, err := v.ledger.CountWhere(ctx, []domainrepo.Filter{
+		{Column: "entitlement_id", Values: []any{adjustment.EntitlementID}},
+		{Column: "entry_type", Values: []any{"expiry"}},
+	})
+	if err != nil {
+		return err
+	}
+	if expired != 0 {
+		return hrerrors.ErrWorkflowRequired
+	}
 	posted, err := v.ledger.CountWhere(ctx, []domainrepo.Filter{{Column: "adjustment_id", Values: []any{adjustment.ID}}})
 	if err != nil {
 		return err

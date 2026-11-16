@@ -16,7 +16,7 @@ type leaveLedgerValidator struct {
 	ledger       leaveLedgerReader
 }
 
-// ValidateMutation mengizinkan opening serta koreksi yang telah disetujui HRM.
+// ValidateMutation mengizinkan opening, koreksi, dan kedaluwarsa saldo HRM.
 func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
 	if v == nil || table != "hr_leave_ledger_entries" || operation.RequireDependency(v.entitlements) != nil ||
 		operation.RequireDependency(v.policies) != nil || operation.RequireDependency(v.adjustments) != nil ||
@@ -34,7 +34,7 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 		return hrerrors.ErrInvalidInput
 	}
 	if entry.SourceManagement != "hrm" || entry.ReversesEntryID != nil ||
-		(entry.EntryType != "opening" && entry.EntryType != "adjustment") {
+		(entry.EntryType != "opening" && entry.EntryType != "adjustment" && entry.EntryType != "expiry") {
 		return hrerrors.ErrWorkflowRequired
 	}
 	entitlement, err := v.entitlements.FindByIDForUpdate(ctx, entry.EntitlementID)
@@ -60,6 +60,16 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 	if entry.EntrySequence != count+1 || entitlement.Revision != count+1 {
 		return hrerrors.ErrWorkflowRequired
 	}
+	expired, err := v.ledger.CountWhere(ctx, []domainrepo.Filter{
+		{Column: "entitlement_id", Values: []any{entry.EntitlementID}},
+		{Column: "entry_type", Values: []any{"expiry"}},
+	})
+	if err != nil {
+		return err
+	}
+	if expired != 0 {
+		return hrerrors.ErrWorkflowRequired
+	}
 	if entry.EntryType == "opening" {
 		if count != 0 || !emptyLeaveBalance(entitlement) || entry.AdjustmentID != nil {
 			return hrerrors.ErrWorkflowRequired
@@ -83,6 +93,33 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 			if quantity.Cmp(maximum) > 0 {
 				return hrerrors.Invalid("quantity_delta", "opening grant exceeds maximum balance")
 			}
+		}
+		return nil
+	}
+	if entry.EntryType == "expiry" {
+		if count == 0 || entry.AdjustmentID != nil ||
+			entity.CompareDates(entry.EffectiveDate, entitlement.EntitlementPeriodEnd) != 0 ||
+			entity.CompareDates(entry.RecordedAt, entry.EffectiveDate) < 0 {
+			return hrerrors.ErrWorkflowRequired
+		}
+		remaining, err := entitlement.ClosingBalanceSnapshot.Rat()
+		if err != nil {
+			return err
+		}
+		negative, err := entity.DecimalNegate(entitlement.ClosingBalanceSnapshot)
+		if err != nil {
+			return err
+		}
+		expected, err := negative.Rat()
+		if err != nil {
+			return err
+		}
+		quantity, err := entry.QuantityDelta.Rat()
+		if err != nil {
+			return err
+		}
+		if remaining.Sign() <= 0 || quantity.Cmp(expected) != 0 {
+			return hrerrors.Invalid("quantity_delta", "expiry must consume the remaining balance")
 		}
 		return nil
 	}

@@ -37,6 +37,7 @@ func (s *Service) PostLedgerEntry(ctx context.Context, entitlementID string, in 
 		if err != nil {
 			return nil, err
 		}
+		expired := false
 		for _, existing := range entries {
 			if existing.SourceManagement == in.SourceManagement && existing.SourceEventID == in.SourceEventID && existing.SourceLineKey == in.SourceLineKey {
 				if !bytes.Equal(existing.SourceDigest, in.SourceDigest) {
@@ -44,6 +45,12 @@ func (s *Service) PostLedgerEntry(ctx context.Context, entitlementID string, in 
 				}
 				return nil, hrerrors.ErrAlreadyExists
 			}
+			if existing.EntryType == "expiry" {
+				expired = true
+			}
+		}
+		if expired {
+			return nil, hrerrors.ErrWorkflowRequired
 		}
 		id, err := s.leaveLedgerEntry.NewID()
 		if err != nil {

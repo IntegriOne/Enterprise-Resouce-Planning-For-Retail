@@ -117,8 +117,13 @@ func (v *leaveEntitlementValidator) ValidateMutation(ctx context.Context, table 
 	seen := make(map[string]bool)
 	lastRecorded := false
 	for _, entry := range entries {
-		if entry.EntryType != "opening" && entry.EntryType != "adjustment" {
+		if entry.EntryType != "opening" && entry.EntryType != "adjustment" && entry.EntryType != "expiry" {
 			return hrerrors.ErrWorkflowRequired
+		}
+		if entry.EntryType == "expiry" {
+			if entry.EntrySequence != count || entity.CompareDates(entry.EffectiveDate, entitlement.EntitlementPeriodEnd) != 0 {
+				return hrerrors.ErrWorkflowRequired
+			}
 		}
 		if entry.EntrySequence == count && entry.RecordedAt.Truncate(time.Microsecond).Equal(entitlement.CalculatedAt.Truncate(time.Microsecond)) {
 			lastRecorded = true
