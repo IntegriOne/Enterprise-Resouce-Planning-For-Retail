@@ -11,19 +11,21 @@
 
 - [Desain Talent Management](../../../backend/services/human_resource/docs/talent-management.md): rubrik/asesmen/pool/kalibrasi, jalur/aspirasi karier, rekomendasi dan keputusan promosi, riwayat KPI serta kursus multi-kompetensi. Worker tidak diduplikasi. Approval tidak mengubah jabatan; applied wajib bukti assignment/event sesuai worker/target/tanggal. Rubrik terpakai, asesmen final dan keputusan dilindungi dari overwrite.
 
-- Struktur folder pra-development mengikuti lapisan IAM: `domain/{entity,errors,repository,service}`, repository/services per 22 subdomain, kontrak lokal, gRPC privat, adapter owner dan inbox/outbox. [README HRM](../../../backend/services/human_resource/README.md) memetakan 86 tabel tanpa duplikasi; seluruh folder baru masih placeholder, bukan runtime.
+- Struktur folder pra-development mengikuti lapisan IAM: `domain/{entity,errors,repository,service}`, repository/services per 22 subdomain, kontrak lokal, gRPC privat, adapter owner dan inbox/outbox. [README HRM](../../../backend/services/human_resource/README.md) memetakan 86 tabel tanpa duplikasi; lapisan repository telah diimplementasikan pada task berikutnya, lapisan runtime lain masih placeholder.
+
+- Repository GORM 86 tabel, entity/enum bertipe dan 503 finder, CRUD + GetAll(limit, offset)/Count, registry, transaksi context/savepoint dan row lock sudah tersedia. Default limit 20, maksimum 100, negatif ditolak; numeric memakai Decimal teks, NULL pointer/JSON eksplisit, Update snapshot lengkap tanpa upsert. [Kontrak dan bukti](../../../backend/services/human_resource/docs/repository.md). Modul mandiri diverifikasi dengan `GOWORK=off`: fmt/vet/test-race/build lulus. PostgreSQL Docker: seluruh model/kolom, GetAll/Count dan 503 finder pada dua fixture lulus; 27 tabel berisi data per fixture dan 81 percobaan write per fixture dibatalkan. Ini belum positive CRUD fixture seluruh tabel atau E2E.
 
 ## Apa yang belum dikerjakan
 
 - Workflow Talent nyata, mandat panel/approval, eligibility/bobot rubrik, scope/SoD terhadap pekerja, finalisasi performance review, proyeksi KPI, transaksi promosi+outbox serta concurrency/E2E belum diimplementasikan; detail batas ada di dokumen Talent.
-- Runtime HRM/Go, kontrak internal, wiring GraphQL, consumer/outbox relay, otorisasi dan E2E belum dibuat pada folder aktif.
+- Proses runtime HRM, konfigurasi/koneksi DB dan bootstrap, kontrak internal, wiring GraphQL, consumer/outbox relay, otorisasi dan E2E belum dibuat pada folder aktif.
 - Posting ledger dan proyeksi saldo atomik, reverse tepat jumlah, approval lintas owner, validitas temporal lintas objek, SoD dan pembulatan/rule payroll lokal masih wajib pada service.
 - Tarif BPJS/pajak/THR, workflow HR perusahaan, proses clearance dan prioritas fitur belum dianggap keputusan implementasi otomatis dari riset.
 - Temporal/immutable guard di baseline tidak membuktikan keseluruhan business workflow atau performa. Dokumen desain memuat batas klaim dan pekerjaan lanjutan.
 
 ## Apa yang harus dikerjakan selanjutanya
 
-- Implementasikan F1 inti worker/assignment/kontrak/onboarding-offboarding dengan IAM, Foundation dan DRM sesuai kontrak owner; gunakan nama management pada kontrak yang disepakati, bukan otomatis mengikuti perbedaan path historis.
+- Pakai port/registry repository yang sudah ada untuk mengimplementasikan F1 inti worker/assignment/kontrak/onboarding-offboarding dengan IAM, Foundation dan DRM sesuai kontrak owner; gunakan nama management pada kontrak yang disepakati, bukan otomatis mengikuti perbedaan path historis.
 - Pastikan baseline selalu digenerate dengan `bash backend/services/human_resource/db/schema/generate.sh`; uji dengan `bash backend/services/human_resource/db/test/verify_schema.sh`.
 - Payroll/cuti harus mengikuti transaksi domain, data sumber, aturan efektif dan persetujuan owner Finance/IAM; jalankan concurrency tests dan E2E nyata sebelum aktivasi.
 - Kembangkan workforce planning, kompetensi, performance/learning/succession, engagement dan analytics bertahap berdasarkan kebutuhan nyata.

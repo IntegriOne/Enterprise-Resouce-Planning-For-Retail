@@ -1,0 +1,5 @@
+# Implementasi repository seluruh domain HRM
+
+Menambahkan modul Go mandiri, entity/enum dan port, 86 repository GORM pada 22 domain bisnis serta inbox/outbox. Tiap tabel menyediakan CRUD, FindByID, finder kolom bertipe (503), GetAll/SelectList berhalaman, Count dan row lock transaksional. Default limit 20, maksimum 100; negatif ditolak. Snapshot update menjaga nol/false/NULL tanpa upsert. Decimal memakai teks presisi eksak. Transaksi lintas repository memakai context dan savepoint; constraint immutable tetap berlaku.
+
+Verifikasi: generator memeriksa DBML/baseline/pemetaan tabel; fmt/vet/test-race/build lulus. Dua database PostgreSQL sementara: seluruh model/kolom, 86 GetAll/Count dan 503 finder lulus per fixture; masing-masing 27 tabel berisi data dan 81 percobaan write dibatalkan. CRUD bersama, pagination, NULL/false, no-upsert, injeksi, locking, rollback lintas repository/nested dan cancellation lulus. Database dibuang. Bukan E2E; service/otorisasi/transport belum diimplementasikan. Tidak mengubah skema, Gateway, workspace bersama atau pekerjaan management lain.

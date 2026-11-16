@@ -1,8 +1,8 @@
 # Human Resource Management
 
-Status: **struktur folder pra-development**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
+Status: **lapisan entity, port dan repository GORM tersedia**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
 
-Skema dan baseline SQL sudah tersedia. Folder baru berisi `.gitkeep` agar tercatat dalam Git; belum ada runtime Go, kontrak RPC, handler, otorisasi, atau deployment HRM. Struktur mengikuti lapisan service IAM pada checkout aktif, bukan path historis `human_resource_management`.
+Skema, baseline SQL dan repository 86 tabel tersedia dalam modul Go mandiri. Lapisan lain masih placeholder; belum ada proses service, kontrak RPC, handler, otorisasi, atau deployment HRM. Struktur mengikuti lapisan service IAM pada checkout aktif, bukan path historis `human_resource_management`.
 
 ## Struktur lapisan
 
@@ -46,7 +46,7 @@ human_resource/
 └── docs/                       # Desain dan batas implementasi
 ```
 
-Placeholder `<domain>` di diagram berarti folder nyata yang tercantum pada tabel berikut. Unit test nantinya mengikuti package/lapisan terkait. Folder `test/` baru belum berisi pengujian.
+Placeholder `<domain>` di diagram berarti folder nyata yang tercantum pada tabel berikut. Unit test nantinya mengikuti package/lapisan terkait. Folder `test/` masih placeholder. Unit test value object berada di `domain/entity/`.
 
 ## Domain yang disiapkan
 
@@ -93,9 +93,11 @@ Talent Management mencakup `competency`, `performance`, `talent`, `career`, `suc
 
 ## Urutan development
 
-1. Siapkan module/config/DB bootstrap dan kontrak HRM sesuai kebijakan proyek; selaraskan kontrak identitas IAM dan referensi Foundation terlebih dahulu.
+1. Lanjutkan config/DB bootstrap dan kontrak HRM sesuai kebijakan proyek; selaraskan kontrak identitas IAM dan referensi Foundation terlebih dahulu.
 2. Kerjakan `personnel`, job/position pada `workforceplanning`, onboarding/offboarding dan permintaan akses dengan pengujian otorisasi serta scope.
 3. Tambahkan recruitment, cuti, kompensasi/benefit/payroll dan domain Talent secara bertahap sesuai prioritas owner.
 4. Implementasikan integrasi, transaksi outbox/inbox, uji concurrency dan E2E sebelum aktivasi Gateway.
 
 [Desain skema](docs/schema-design.md) · [Talent Management](docs/talent-management.md) · [DBML](db/schema/human_resource_management.dbml) · [Boundary](../../../agents/boundary.md) · [Arsitektur](../../../agents/arsitektur.md)
+
+[Kontrak repository, pagination dan verifikasi](docs/repository.md).
