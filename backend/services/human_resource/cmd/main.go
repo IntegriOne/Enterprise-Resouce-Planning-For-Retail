@@ -52,7 +52,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("configure HRM security policy: %w", err)
 	}
-	dependencies, err := BuildDependencies(startup, cfg, policy, security.NewIntegrity(nil))
+	dependencies, err := BuildDependencies(startup, cfg, policy)
 	if err != nil {
 		return fmt.Errorf("initialize HRM dependencies: %w", err)
 	}
@@ -73,7 +73,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	cancel()
-	logger.Warn("HRM mutation validators are not activated; mutations remain unavailable")
+	logger.Warn("HRM mutation validators are limited to local workforce catalog resources; other mutations remain unavailable")
 	logger.Info("starting private HRM gRPC listener", "address", cfg.GRPCAddress())
 	served := make(chan error, 1)
 	go func() { served <- server.ListenAndServe() }()

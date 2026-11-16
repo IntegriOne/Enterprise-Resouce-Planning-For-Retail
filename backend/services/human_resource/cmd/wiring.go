@@ -11,6 +11,7 @@ import (
 	"github.com/integrione/erp-retail/backend/services/human_resource/config"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	appservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
@@ -24,19 +25,15 @@ type Dependencies struct {
 	pool         *sql.DB
 }
 
-// BuildDependencies mewajibkan adapter keamanan dan integrity yang dipilih composition root.
-// Tidak ada fallback allow-all atau penulisan langsung tabel management lain.
+// BuildDependencies mewajibkan adapter keamanan dan membangun validator integrity dari repository HRM.
+// Resource tanpa validator tetap ditolak tanpa fallback allow-all.
 func BuildDependencies(
 	ctx context.Context,
 	cfg config.Config,
 	policy operation.Policy,
-	integrity operation.Integrity,
 ) (*Dependencies, error) {
 	if err := operation.RequireDependency(policy); err != nil {
 		return nil, fmt.Errorf("policy dependency: %w", err)
-	}
-	if err := operation.RequireDependency(integrity); err != nil {
-		return nil, fmt.Errorf("integrity dependency: %w", err)
 	}
 	handle, err := hrdb.Init(ctx, cfg)
 	if err != nil {
@@ -56,6 +53,11 @@ func BuildDependencies(
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM repositories: %w", err))
 	}
+	validators, err := security.WorkforcePlanningValidators(repos)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM integrity validators: %w", err))
+	}
+	integrity := security.NewIntegrity(validators)
 	services, err := appservice.NewRegistry(repos, operation.Dependencies{Policy: policy, Integrity: integrity})
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM services: %w", err))
