@@ -158,9 +158,36 @@ func (r *Resource[T, K, P]) Get(ctx context.Context, key K) (*T, error) {
 	if err != nil {
 		return nil, err
 	}
-	value, err := r.repo.SelectByID(ctx, key)
+	scope, err := r.deps.Policy.ReadScope(ctx, Access{Domain: r.spec.Domain, Resource: r.spec.Table, Action: "read"})
 	if err != nil {
 		return nil, err
+	}
+	var value *T
+	if scope.All && len(scope.Filters) == 0 {
+		value, err = r.repo.SelectByID(ctx, key)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if scope.All || len(scope.Filters) == 0 || r.spec.KeyFilters == nil {
+			return nil, hrerrors.ErrForbidden
+		}
+		filters := r.spec.KeyFilters(key)
+		if len(filters) == 0 {
+			return nil, hrerrors.ErrForbidden
+		}
+		filters = append(append([]domainrepo.Filter{}, scope.Filters...), filters...)
+		matches, err := r.repo.SelectWhere(ctx, filters, 2, 0)
+		if err != nil {
+			return nil, err
+		}
+		if len(matches) == 0 {
+			return nil, hrerrors.ErrNotFound
+		}
+		if len(matches) != 1 {
+			return nil, hrerrors.ErrConflict
+		}
+		value = &matches[0]
 	}
 	checked, err := r.authorize(ctx, "read", value)
 	if err != nil {

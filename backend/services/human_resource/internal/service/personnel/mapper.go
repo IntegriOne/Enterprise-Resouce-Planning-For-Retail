@@ -9,6 +9,7 @@ import (
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	domainrepo "github.com/integrione/erp-retail/backend/services/human_resource/domain/repository"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
@@ -87,6 +88,7 @@ func specWorker() operation.Specification[entity.Worker, string] {
 		Domain: "personnel", Table: "hr_workers",
 		Key:         func(v *entity.Worker) string { return v.ID },
 		KeyString:   func(key string) string { return fmt.Sprint(key) },
+		KeyFilters:  func(key string) []domainrepo.Filter { return []domainrepo.Filter{{Column: "id", Values: []any{key}}} },
 		ValidateKey: func(key string) error { return entity.ValidateUUID("id", key) },
 		AggregateID: func(v *entity.Worker) string { return v.ID },
 		Initialize: func(v *entity.Worker, actor operation.Actor, now time.Time, id string) {

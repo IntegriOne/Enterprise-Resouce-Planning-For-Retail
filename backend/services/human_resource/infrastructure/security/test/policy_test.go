@@ -140,3 +140,63 @@ func TestPolicyRequiresRecentAuthenticationForSensitiveOperations(t *testing.T) 
 		})
 	}
 }
+
+func TestPolicyWorkerLegalEntityScope(t *testing.T) {
+	t.Parallel()
+	const legalA = "11111111-1111-4111-8111-111111111111"
+	const legalB = "22222222-2222-4222-8222-222222222222"
+	const legalC = "33333333-3333-4333-8333-333333333333"
+	now := time.Now().Unix()
+	reader := &sessionReader{state: &authsession.SessionValidationContext{
+		Gate:     &authsession.SecurityGateRecord{Open: true, RecoveryEpoch: 1},
+		Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session"},
+		Security: &authsession.UserSecurityRecord{UserID: "principal", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1},
+		Snapshot: &authz.AccessSnapshot{
+			PrincipalID: "principal", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
+			SyncedAtUnix: now, FreshUntilUnix: now + 30,
+			Permissions: []authz.PermissionGrant{
+				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
+				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalB}},
+				{Code: "human_resource.jobs.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
+			},
+		},
+	}}
+	policy, err := security.NewPolicy(reader, security.PermissionCatalog())
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := metadata.NewIncomingContext(t.Context(), metadata.Pairs("x-ig-session-token-hash", strings.Repeat("a", 64)))
+	ctx = authcontext.WithCaller(ctx, authcontext.CallerContext{
+		Authenticated: true, PrincipalID: "principal", SessionID: "session", AuthEpoch: 1, PermRevision: 2,
+	})
+	for _, id := range []string{legalA, legalB} {
+		if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": id}}); err != nil {
+			t.Fatalf("worker in legal entity %s denied: %v", id, err)
+		}
+	}
+	for _, access := range []operation.Access{
+		{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": legalC}},
+		{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": "invalid"}},
+		{Resource: "hr_workers", Action: "create", Attributes: map[string]string{"primary_legal_entity_reference_id": legalA}},
+		{Resource: "hr_jobs", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": legalA}},
+	} {
+		if _, err := policy.Authorize(ctx, access); !errors.Is(err, hrerrors.ErrForbidden) {
+			t.Fatalf("unsupported or outside scope %+v: %v", access, err)
+		}
+	}
+	scope, err := policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"})
+	if err != nil || scope.All || len(scope.Filters) != 1 || scope.Filters[0].Column != "primary_legal_entity_reference_id" || len(scope.Filters[0].Values) != 2 {
+		t.Fatalf("worker scope = %+v, error = %v", scope, err)
+	}
+	reader.state.Snapshot.Status = "suspended"
+	if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read"}); !errors.Is(err, hrerrors.ErrUnavailable) {
+		t.Fatalf("suspended scoped worker read = %v, want unavailable", err)
+	}
+	reader.state.Snapshot.Status = "active"
+	reader.state.Snapshot.Permissions = append(reader.state.Snapshot.Permissions,
+		authz.PermissionGrant{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "global"}})
+	scope, err = policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"})
+	if err != nil || !scope.All || len(scope.Filters) != 0 {
+		t.Fatalf("global worker scope = %+v, error = %v", scope, err)
+	}
+}

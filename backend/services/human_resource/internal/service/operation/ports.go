@@ -80,6 +80,7 @@ type Specification[T any, K any] struct {
 	AggregateID   func(*T) string
 	Key           func(*T) K
 	KeyString     func(K) string
+	KeyFilters    func(K) []domainrepo.Filter
 	ValidateKey   func(K) error
 	Initialize    func(*T, Actor, time.Time, string)
 	Touch         func(*T, Actor, time.Time)

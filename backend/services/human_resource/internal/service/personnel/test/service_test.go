@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	domainrepo "github.com/integrione/erp-retail/backend/services/human_resource/domain/repository"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/personnel"
 )
@@ -108,5 +109,33 @@ func TestServiceCancellationAndScope(t *testing.T) {
 	}
 	if len(store.Rows) != 1 || len(h.Events) != 1 {
 		t.Fatal("denied calls changed committed data")
+	}
+}
+
+func TestWorkerScopedGetAndListFilterBeforeReading(t *testing.T) {
+	t.Parallel()
+	h, svc, _ := setup(t)
+	first, err := svc.CreateWorker(t.Context(), input())
+	if err != nil {
+		t.Fatal(err)
+	}
+	secondInput := input()
+	secondInput.WorkerNumber = "OTHER-LEGAL-ENTITY"
+	secondInput.PrimaryLegalEntityReferenceID = "00000000-0000-0000-0000-000000000021"
+	second, err := svc.CreateWorker(t.Context(), secondInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.Scope = operation.Scope{Filters: []domainrepo.Filter{{Column: "primary_legal_entity_reference_id", Values: []any{input().PrimaryLegalEntityReferenceID}}}}
+	if _, err := svc.GetWorkerByID(t.Context(), second.ID); !errors.Is(err, hrerrors.ErrNotFound) {
+		t.Fatalf("outside-scope worker lookup = %v, want not found", err)
+	}
+	worker, err := svc.GetWorkerByID(t.Context(), first.ID)
+	if err != nil || worker == nil || worker.ID != first.ID {
+		t.Fatalf("inside-scope worker lookup = %+v, %v", worker, err)
+	}
+	page, err := svc.GetAllWorkers(t.Context(), 1, 0)
+	if err != nil || page.Total != 1 || len(page.Items) != 1 || page.Items[0].ID != first.ID {
+		t.Fatalf("scoped list = %+v, %v", page, err)
 	}
 }
