@@ -1,0 +1,3 @@
+# Validator kursus dan kompetensi Learning
+
+Menambahkan validator `hr_learning_courses` untuk keunikan kode/versi serta perlindungan definisi dan penghapusan saat masih direferensikan. Referensi provider baru ditolak sampai verifikasi pemilik data tersedia. Validator `hr_learning_course_competencies` mengunci course dan kompetensi, memeriksa status aktif, serta menolak pasangan duplikat. Wiring composition root dan tes unit diperbarui. Tes integrasi gRPC `bufconn` terhadap PostgreSQL `_test` membuktikan create/read/list/update/delete link, perlindungan versi kursus dan outbox. Enam dari 78 resource mutable kini mempunyai validator; 72 masih fail-closed. Grant IAM, scope parsial, dan E2E Gateway belum terbukti.

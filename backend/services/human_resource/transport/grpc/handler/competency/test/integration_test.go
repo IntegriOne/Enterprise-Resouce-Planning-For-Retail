@@ -14,13 +14,16 @@ import (
 
 	common "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/common/v1"
 	pb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/competency/v1"
+	learningpb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/learning/v1"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	competencyservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/competency"
+	learningservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/learning"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
 	competencyhandler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/competency"
+	learninghandler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/learning"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -49,7 +52,7 @@ func (*integrationPolicy) ReadScope(context.Context, operation.Access) (operatio
 	return operation.Scope{All: true}, nil
 }
 
-func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
+func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 	dsn := os.Getenv("HRM_TEST_DATABASE_URL")
 	if dsn == "" {
 		t.Skip("HRM_TEST_DATABASE_URL is not configured")
@@ -84,14 +87,29 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	learningValidators, err := security.LearningValidators(repos)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for resource, validator := range learningValidators {
+		validators[resource] = validator
+	}
 	policy := &integrationPolicy{}
+	runtime := operation.Dependencies{
+		Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
+		Policy: policy, Integrity: security.NewIntegrity(validators),
+	}
 	svc, err := competencyservice.NewService(competencyservice.Dependencies{
-		Runtime: operation.Dependencies{
-			Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-			Policy: policy, Integrity: security.NewIntegrity(validators),
-		},
+		Runtime: runtime,
 		WorkerQualification: repos.WorkerQualification, Competency: repos.Competency,
 		JobCompetency: repos.JobCompetency, WorkerCompetencyAssessment: repos.WorkerCompetencyAssessment,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	learningSvc, err := learningservice.NewService(learningservice.Dependencies{
+		Runtime: runtime, LearningCourse: repos.LearningCourse,
+		LearningEnrollment: repos.LearningEnrollment, LearningCourseCompetency: repos.LearningCourseCompetency,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -99,6 +117,9 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	listener := bufconn.Listen(1 << 20)
 	server := grpc.NewServer()
 	if err := competencyhandler.Register(server, svc); err != nil {
+		t.Fatal(err)
+	}
+	if err := learninghandler.Register(server, learningSvc); err != nil {
 		t.Fatal(err)
 	}
 	served := make(chan error, 1)
@@ -124,6 +145,7 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 		}
 	})
 	client := pb.NewCompetencyServiceClient(connection)
+	learningClient := learningpb.NewLearningServiceClient(connection)
 	ids := operation.UUIDGenerator{}
 	familyID, err := ids.NewID()
 	if err != nil {
@@ -135,6 +157,7 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	}
 	var requirementID string
 	var competencyID string
+	var courseID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
@@ -142,6 +165,9 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 			query string
 			value string
 		}{
+			{"DELETE FROM hr_learning_course_competencies WHERE course_id = ?", courseID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", courseID},
+			{"DELETE FROM hr_learning_courses WHERE id = ?", courseID},
 			{"DELETE FROM hr_job_competencies WHERE id = ?", requirementID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", requirementID},
 			{"DELETE FROM hr_jobs WHERE id = ?", jobID},
@@ -232,6 +258,75 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.CreateJobCompetency(ctx, &pb.CreateJobCompetencyRequest{Input: overlapping}); status.Code(err) != codes.AlreadyExists {
 		t.Fatalf("overlapping job competency requirement: %v", err)
 	}
+	courseCode := "COURSE-" + familyID
+	courseVersion := "1"
+	courseName := "Safety basics"
+	courseType := "safety"
+	deliveryMode := "classroom"
+	course, err := learningClient.CreateLearningCourse(ctx, &learningpb.CreateLearningCourseRequest{Input: &learningpb.LearningCourseInput{
+		CourseCode: &courseCode, CourseVersion: &courseVersion, CourseName: &courseName,
+		CourseType: &courseType, DeliveryMode: &deliveryMode,
+	}})
+	if err != nil || course.GetItem() == nil {
+		t.Fatalf("create learning course through gRPC: %v", err)
+	}
+	courseID = course.Item.Id
+	if courseID == "" {
+		t.Fatal("created course has no identity")
+	}
+	externalCourseCode := "PROVIDER-" + familyID
+	if _, err := learningClient.CreateLearningCourse(ctx, &learningpb.CreateLearningCourseRequest{Input: &learningpb.LearningCourseInput{
+		CourseCode: &externalCourseCode, CourseVersion: &courseVersion, CourseName: &courseName,
+		CourseType: &courseType, DeliveryMode: &deliveryMode, ProviderPartyReferenceId: &familyID,
+	}}); status.Code(err) != codes.Unavailable {
+		t.Fatalf("unverified external course provider: %v", err)
+	}
+	targetLevel := int32(1)
+	link, err := learningClient.CreateLearningCourseCompetency(ctx, &learningpb.CreateLearningCourseCompetencyRequest{Input: &learningpb.LearningCourseCompetencyInput{
+		CourseId: &courseID, CompetencyId: &competencyID, TargetLevel: &targetLevel,
+	}})
+	if err != nil || link.GetItem() == nil {
+		t.Fatalf("create course competency through gRPC: %v", err)
+	}
+	if _, err := learningClient.CreateLearningCourseCompetency(ctx, &learningpb.CreateLearningCourseCompetencyRequest{Input: &learningpb.LearningCourseCompetencyInput{
+		CourseId: &courseID, CompetencyId: &competencyID, TargetLevel: &targetLevel,
+	}}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate course competency: %v", err)
+	}
+	nextVersion := "2"
+	if _, err := learningClient.UpdateLearningCourse(ctx, &learningpb.UpdateLearningCourseRequest{
+		Id: courseID, Input: &learningpb.LearningCourseInput{CourseVersion: &nextVersion},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"course_version"}},
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("referenced course version changed: %v", err)
+	}
+	linkKey := &learningpb.LearningCourseCompetencyKey{CourseId: courseID, CompetencyId: competencyID}
+	readLink, err := learningClient.GetLearningCourseCompetencyByID(ctx, linkKey)
+	if err != nil || readLink.GetItem().GetTargetLevel() != targetLevel {
+		t.Fatalf("read course competency: %v", err)
+	}
+	listedLinks, err := learningClient.GetAllLearningCourseCompetencies(ctx, &common.PageRequest{Limit: 1})
+	if err != nil || listedLinks.GetPage().GetTotal() < 1 || len(listedLinks.GetItems()) != 1 {
+		t.Fatalf("list course competencies: %v", err)
+	}
+	nextLevel := int32(2)
+	updatedLink, err := learningClient.UpdateLearningCourseCompetency(ctx, &learningpb.UpdateLearningCourseCompetencyRequest{
+		Key: linkKey, TargetLevel: &nextLevel,
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"target_level"}},
+	})
+	if err != nil || updatedLink.GetItem().GetTargetLevel() != nextLevel {
+		t.Fatalf("update course competency: %v", err)
+	}
+	if _, err := learningClient.DeleteLearningCourseCompetency(ctx, linkKey); err != nil {
+		t.Fatalf("delete course competency: %v", err)
+	}
+	updatedCourse, err := learningClient.UpdateLearningCourse(ctx, &learningpb.UpdateLearningCourseRequest{
+		Id: courseID, Input: &learningpb.LearningCourseInput{CourseVersion: &nextVersion},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"course_version"}},
+	})
+	if err != nil || updatedCourse.GetItem().GetCourseVersion() != nextVersion {
+		t.Fatalf("update unreferenced course version: %v", err)
+	}
 	if _, err := client.UpdateCompetency(ctx, &pb.UpdateCompetencyRequest{
 		Id: competencyID,
 		Input: &pb.CompetencyInput{ProficiencyScale: &common.JsonDocument{Utf8: []byte(`{"1":"changed"}`)}},
@@ -262,5 +357,11 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	}
 	if events != 1 {
 		t.Fatalf("job competency event count = %d, want 1", events)
+	}
+	if err := db.WithContext(ctx).Raw("SELECT count(*) FROM hr_outbox_events WHERE aggregate_id = ?", courseID).Scan(&events).Error; err != nil {
+		t.Fatal(err)
+	}
+	if events != 5 {
+		t.Fatalf("learning course event count = %d, want 5", events)
 	}
 }
