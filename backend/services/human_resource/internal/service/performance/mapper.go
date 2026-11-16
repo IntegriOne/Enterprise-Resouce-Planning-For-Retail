@@ -395,6 +395,7 @@ func specPerformanceReview() operation.Specification[entity.PerformanceReview, s
 		AggregateID: func(v *entity.PerformanceReview) string { return v.ID },
 		Initialize: func(v *entity.PerformanceReview, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
+			v.ReviewerPrincipalID = actor.PrincipalID
 		},
 		Touch: func(v *entity.PerformanceReview, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.PerformanceReview) map[string]string {

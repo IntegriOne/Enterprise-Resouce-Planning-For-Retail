@@ -33,7 +33,8 @@ func PerformanceValidators(repos *repository.Registry) (map[string]MutationValid
 		operation.RequireDependency(repos.PerformanceReview) != nil ||
 		operation.RequireDependency(repos.Worker) != nil ||
 		operation.RequireDependency(repos.PerformanceGoalUpdate) != nil ||
-		operation.RequireDependency(repos.PerformanceReviewGoalScore) != nil {
+		operation.RequireDependency(repos.PerformanceReviewGoalScore) != nil ||
+		operation.RequireDependency(repos.TalentAssessment) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
@@ -43,6 +44,10 @@ func PerformanceValidators(repos *repository.Registry) (map[string]MutationValid
 		"hr_performance_goals": &performanceGoalValidator{
 			workers: repos.Worker, cycles: repos.PerformanceCycle, goals: repos.PerformanceGoal,
 			updates: repos.PerformanceGoalUpdate, scores: repos.PerformanceReviewGoalScore,
+		},
+		"hr_performance_reviews": &performanceReviewValidator{
+			workers: repos.Worker, cycles: repos.PerformanceCycle, reviews: repos.PerformanceReview,
+			scores: repos.PerformanceReviewGoalScore, assessments: repos.TalentAssessment,
 		},
 	}, nil
 }

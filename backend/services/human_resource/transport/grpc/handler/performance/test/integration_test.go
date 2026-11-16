@@ -19,6 +19,7 @@ import (
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/performance"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
 	handler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/performance"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -92,7 +93,11 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 		t.Fatal(err)
 	}
 	listener := bufconn.Listen(1 << 20)
-	server := grpc.NewServer()
+	server := grpc.NewServer(grpc.UnaryInterceptor(func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, next grpc.UnaryHandler) (any, error) {
+		return next(authcontext.WithCaller(ctx, authcontext.CallerContext{
+			PrincipalID: "00000000-0000-4000-8000-000000000001", Authenticated: true,
+		}), req)
+	}))
 	if err := handler.Register(server, svc); err != nil {
 		t.Fatal(err)
 	}
@@ -122,11 +127,13 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var cycleID, goalID string
+	var cycleID, goalID, reviewID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
 		for _, statement := range []struct{ query, value string }{
+			{"DELETE FROM hr_performance_reviews WHERE id = ?", reviewID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", reviewID},
 			{"DELETE FROM hr_performance_goals WHERE id = ?", goalID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", goalID},
 			{"DELETE FROM hr_performance_cycles WHERE id = ?", cycleID},
@@ -170,8 +177,8 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("update unreferenced draft: %v", err)
 	}
 	if err := database.WithContext(ctx).Exec(
-		"INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, primary_legal_entity_reference_id) VALUES (?, ?, ?, ?, ?, ?)",
-		workerID, "WORKER-"+workerID, workerID, "employee", "active", workerID,
+		"INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, primary_legal_entity_reference_id, iam_principal_reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		workerID, "WORKER-"+workerID, workerID, "employee", "active", workerID, "00000000-0000-4000-8000-000000000001",
 	).Error; err != nil {
 		t.Fatal(err)
 	}
@@ -242,5 +249,54 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", goalID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("goal outbox after deletion: count=%d error=%v", events, err)
+	}
+	reviewerRole := "self"
+	spoofedReviewer := "00000000-0000-4000-8000-000000000009"
+	reviewInput := &pb.PerformanceReviewInput{
+		WorkerId: &workerID, PerformanceCycleId: &cycleID, ReviewerRole: &reviewerRole,
+		ReviewerPrincipalId: &spoofedReviewer,
+	}
+	createdReview, err := client.CreatePerformanceReview(ctx, &pb.CreatePerformanceReviewRequest{Input: reviewInput})
+	if err != nil || createdReview.GetItem().GetId() == "" ||
+		createdReview.GetItem().GetReviewerPrincipalId() != "00000000-0000-4000-8000-000000000001" {
+		t.Fatalf("create self review with server reviewer: %+v, %v", createdReview, err)
+	}
+	reviewID = createdReview.Item.Id
+	if _, err := client.CreatePerformanceReview(ctx, &pb.CreatePerformanceReviewRequest{Input: reviewInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate self review version: %v", err)
+	}
+	if got, err := client.GetPerformanceReviewByID(ctx, &common.IDRequest{Id: reviewID}); err != nil ||
+		got.GetItem().GetReviewerRole() != "self" {
+		t.Fatalf("read self review: %+v, %v", got, err)
+	}
+	if found, err := client.FindPerformanceReviewByWorkerID(ctx, &common.StringFinderRequest{Value: &workerID, Limit: 1}); err != nil ||
+		found.GetPage().GetTotal() != 1 || len(found.GetItems()) != 1 {
+		t.Fatalf("find self review: %+v, %v", found, err)
+	}
+	if page, err := client.GetAllPerformanceReviews(ctx, &common.PageRequest{Limit: 1, Offset: 1}); err != nil ||
+		page.GetPage().GetTotal() != 1 || len(page.GetItems()) != 0 {
+		t.Fatalf("review offset: %+v, %v", page, err)
+	}
+	narrative := "Progress documented"
+	if _, err := client.UpdatePerformanceReview(ctx, &pb.UpdatePerformanceReviewRequest{
+		Id: reviewID, Input: &pb.PerformanceReviewInput{Narrative: &narrative},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"narrative"}},
+	}); err != nil {
+		t.Fatalf("update self review draft: %v", err)
+	}
+	managerRole := "manager"
+	if _, err := client.CreatePerformanceReview(ctx, &pb.CreatePerformanceReviewRequest{Input: &pb.PerformanceReviewInput{
+		WorkerId: &workerID, PerformanceCycleId: &cycleID, ReviewerRole: &managerRole,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("manager review without verified relationship: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", reviewID).Count(&events).Error; err != nil || events != 2 {
+		t.Fatalf("review outbox before deletion: count=%d error=%v", events, err)
+	}
+	if _, err := client.DeletePerformanceReview(ctx, &common.IDRequest{Id: reviewID}); err != nil {
+		t.Fatalf("delete unused self review draft: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", reviewID).Count(&events).Error; err != nil || events != 3 {
+		t.Fatalf("review outbox after deletion: count=%d error=%v", events, err)
 	}
 }
