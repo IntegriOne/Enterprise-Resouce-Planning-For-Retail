@@ -62,9 +62,18 @@ func groupMemberToModel(gm *entity.GroupMember) (groupMemberModel, error) {
 	if err != nil {
 		return groupMemberModel{}, err
 	}
+	var addedBy *string
+	if gm.AddedBy != nil {
+		actor, err := pgstore.ValidateUUIDParam("added_by", *gm.AddedBy)
+		if err != nil {
+			return groupMemberModel{}, err
+		}
+		addedBy = &actor
+	}
 	return groupMemberModel{
 		GroupID:   groupID,
 		UserID:    userID,
+		AddedBy:   addedBy,
 		CreatedAt: pgstore.MustLocalNow(gm.CreatedAt),
 	}, nil
 }

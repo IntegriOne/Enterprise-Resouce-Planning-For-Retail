@@ -1390,11 +1390,12 @@ func (x *ListRolePermissionsResponse) GetPermissions() []*Permission {
 }
 
 type AssignUserRoleRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	RoleId        string                 `protobuf:"bytes,2,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
-	ScopeType     ScopeType              `protobuf:"varint,3,opt,name=scope_type,json=scopeType,proto3,enum=iam.v1.ScopeType" json:"scope_type,omitempty"`
-	ScopeId       *string                `protobuf:"bytes,4,opt,name=scope_id,json=scopeId,proto3,oneof" json:"scope_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	UserId    string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	RoleId    string                 `protobuf:"bytes,2,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
+	ScopeType ScopeType              `protobuf:"varint,3,opt,name=scope_type,json=scopeType,proto3,enum=iam.v1.ScopeType" json:"scope_type,omitempty"`
+	ScopeId   *string                `protobuf:"bytes,4,opt,name=scope_id,json=scopeId,proto3,oneof" json:"scope_id,omitempty"`
+	// Diabaikan pada request; server mengambil pelaku dari konteks internal terverifikasi.
 	GrantedBy     *string                `protobuf:"bytes,5,opt,name=granted_by,json=grantedBy,proto3,oneof" json:"granted_by,omitempty"`
 	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
 	unknownFields protoimpl.UnknownFields

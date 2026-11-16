@@ -173,8 +173,8 @@ func TestRuntimeRPCs_RegisterVerifyCSRFAndInternalProof(t *testing.T) {
 		Email:       "nobody@integrione.local",
 		Username:    "nobody01",
 		Password:    "CustPass#2026!Z",
-	}); status.Code(err) != codes.PermissionDenied {
-		t.Fatalf("expected PermissionDenied without gateway proof, got %v", err)
+	}); status.Code(err) != codes.Unauthenticated {
+		t.Fatalf("expected Unauthenticated without gateway proof, got %v", err)
 	}
 
 	// 2. Panggilan dengan proof HMAC sah dari Gateway diterima.

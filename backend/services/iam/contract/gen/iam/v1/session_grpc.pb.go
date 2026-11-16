@@ -40,10 +40,13 @@ const (
 //
 // SessionService mengelola siklus hidup sesi opaque, verifikasi CSRF, dan evaluasi otorisasi.
 type SessionServiceClient interface {
+	// Hanya pemanggil terautentikasi yang dapat menerbitkan sesi baru untuk akunnya sendiri.
 	IssueSession(ctx context.Context, in *IssueSessionRequest, opts ...grpc.CallOption) (*IssueSessionResponse, error)
 	AuthenticateSession(ctx context.Context, in *AuthenticateSessionRequest, opts ...grpc.CallOption) (*AuthenticateSessionResponse, error)
 	VerifyCsrf(ctx context.Context, in *VerifyCsrfRequest, opts ...grpc.CallOption) (*VerifyCsrfResponse, error)
 	GetSessionCsrf(ctx context.Context, in *GetSessionCsrfRequest, opts ...grpc.CallOption) (*GetSessionCsrfResponse, error)
+	// Deprecated: Do not use.
+	// RPC lama selalu ditolak; gunakan AuthService.VerifySessionMfa untuk memverifikasi kode.
 	MarkSessionMfaVerified(ctx context.Context, in *MarkSessionMfaVerifiedRequest, opts ...grpc.CallOption) (*MarkSessionMfaVerifiedResponse, error)
 	LogoutSession(ctx context.Context, in *LogoutSessionRequest, opts ...grpc.CallOption) (*LogoutSessionResponse, error)
 	RevokeSessionById(ctx context.Context, in *RevokeSessionByIdRequest, opts ...grpc.CallOption) (*RevokeSessionByIdResponse, error)
@@ -103,6 +106,7 @@ func (c *sessionServiceClient) GetSessionCsrf(ctx context.Context, in *GetSessio
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *sessionServiceClient) MarkSessionMfaVerified(ctx context.Context, in *MarkSessionMfaVerifiedRequest, opts ...grpc.CallOption) (*MarkSessionMfaVerifiedResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MarkSessionMfaVerifiedResponse)
@@ -199,10 +203,13 @@ func (c *sessionServiceClient) RefreshUserAccessSnapshot(ctx context.Context, in
 //
 // SessionService mengelola siklus hidup sesi opaque, verifikasi CSRF, dan evaluasi otorisasi.
 type SessionServiceServer interface {
+	// Hanya pemanggil terautentikasi yang dapat menerbitkan sesi baru untuk akunnya sendiri.
 	IssueSession(context.Context, *IssueSessionRequest) (*IssueSessionResponse, error)
 	AuthenticateSession(context.Context, *AuthenticateSessionRequest) (*AuthenticateSessionResponse, error)
 	VerifyCsrf(context.Context, *VerifyCsrfRequest) (*VerifyCsrfResponse, error)
 	GetSessionCsrf(context.Context, *GetSessionCsrfRequest) (*GetSessionCsrfResponse, error)
+	// Deprecated: Do not use.
+	// RPC lama selalu ditolak; gunakan AuthService.VerifySessionMfa untuk memverifikasi kode.
 	MarkSessionMfaVerified(context.Context, *MarkSessionMfaVerifiedRequest) (*MarkSessionMfaVerifiedResponse, error)
 	LogoutSession(context.Context, *LogoutSessionRequest) (*LogoutSessionResponse, error)
 	RevokeSessionById(context.Context, *RevokeSessionByIdRequest) (*RevokeSessionByIdResponse, error)

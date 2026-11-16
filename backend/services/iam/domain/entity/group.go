@@ -82,6 +82,7 @@ func (g *Group) Deactivate(now time.Time) {
 type GroupMember struct {
 	GroupID   string
 	UserID    string
+	AddedBy   *string
 	CreatedAt time.Time
 }
 
@@ -98,4 +99,17 @@ func NewGroupMember(groupID, userID string, now time.Time) (*GroupMember, error)
 		UserID:    strings.TrimSpace(userID),
 		CreatedAt: normalizeLocalTime(now),
 	}, nil
+}
+
+// SetAddedBy mencatat UUID pelaku tepercaya yang menambahkan anggota grup.
+func (gm *GroupMember) SetAddedBy(actorID string) error {
+	if gm == nil {
+		return iamerrors.ErrInvalidInput
+	}
+	if err := ValidateUUID("added_by", actorID); err != nil {
+		return err
+	}
+	actor := strings.TrimSpace(actorID)
+	gm.AddedBy = &actor
+	return nil
 }

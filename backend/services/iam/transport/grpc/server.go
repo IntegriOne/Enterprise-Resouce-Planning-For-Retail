@@ -29,11 +29,10 @@ type Server struct {
 // NewServer menginisialisasi gRPC server baru dengan interceptor standar, health check, dan reflection.
 func NewServer(cfg *config.Config, logger *slog.Logger, extraOpts ...grpc.ServerOption) *Server {
 	var hmacSecret []byte
-	var requireProof bool
+	requireProof := true
 	if cfg != nil {
 		hmacSecret = []byte(strings.TrimSpace(cfg.InternalGatewayHMACSecret))
-		envNorm := strings.ToLower(strings.TrimSpace(cfg.AppEnv))
-		requireProof = envNorm != "" && envNorm != "development" && envNorm != "test" && len(hmacSecret) > 0
+		requireProof = !strings.EqualFold(strings.TrimSpace(cfg.AppEnv), "test")
 	}
 
 	opts := []grpc.ServerOption{

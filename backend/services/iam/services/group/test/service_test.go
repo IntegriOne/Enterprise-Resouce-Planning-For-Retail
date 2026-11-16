@@ -12,6 +12,7 @@ import (
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	"github.com/integrione/erp-retail/backend/services/iam/services/group"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 )
 
 type fixedClock struct{ now time.Time }
@@ -328,22 +329,31 @@ func TestGroupService_LifecycleMembershipAndRoles(t *testing.T) {
 	}
 
 	// Tambah anggota dan peran berscope facility ke grup.
-	if _, err := svc.AddMember(context.Background(), grp.ID, userID); err != nil {
+	actorCtx := authcontext.WithCaller(context.Background(), authcontext.CallerContext{PrincipalID: userID, Authenticated: true})
+	member, err := svc.AddMember(actorCtx, grp.ID, userID)
+	if err != nil {
 		t.Fatalf("AddMember() error = %v", err)
+	}
+	if member.AddedBy == nil || *member.AddedBy != userID {
+		t.Fatalf("AddMember() added_by = %v, want %s", member.AddedBy, userID)
 	}
 	if _, err := svc.AddMember(context.Background(), grp.ID, userID); !errors.Is(err, iamerrors.ErrGroupMemberExists) {
 		t.Fatalf("expected ErrGroupMemberExists, got %v", err)
 	}
 
 	facID, _ := idGen.NewUUID()
-	gr, err := svc.AssignRole(context.Background(), group.AssignGroupRoleInput{
+	gr, err := svc.AssignRole(actorCtx, group.AssignGroupRoleInput{
 		GroupID:   grp.ID,
 		RoleID:    roleID,
 		ScopeType: entity.ScopeTypeFacility,
 		ScopeID:   &facID,
+		GrantedBy: &facID,
 	})
 	if err != nil {
 		t.Fatalf("AssignRole() error = %v", err)
+	}
+	if gr.GrantedBy == nil || *gr.GrantedBy != userID {
+		t.Fatalf("AssignRole() granted_by = %v, want caller %s", gr.GrantedBy, userID)
 	}
 
 	roles, err := svc.ListGroupRoles(context.Background(), grp.ID, false)

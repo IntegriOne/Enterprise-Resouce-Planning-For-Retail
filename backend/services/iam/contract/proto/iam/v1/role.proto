@@ -147,6 +147,7 @@ message AssignUserRoleRequest {
   string role_id = 2;
   ScopeType scope_type = 3;
   optional string scope_id = 4;
+  // Diabaikan pada request; server mengambil pelaku dari konteks internal terverifikasi.
   optional string granted_by = 5;
   google.protobuf.Timestamp expires_at = 6;
 }

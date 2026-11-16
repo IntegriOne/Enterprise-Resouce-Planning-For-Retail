@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
@@ -146,6 +147,30 @@ func (r *Repository) Insert(ctx context.Context, permission *entity.Permission) 
 	return pgstore.MapError(db.Create(&model).Error, nil)
 }
 
+// Update memperbaiki metadata katalog izin berdasarkan UUID tanpa mengubah kode dan sensitivitasnya.
+func (r *Repository) Update(ctx context.Context, permission *entity.Permission) error {
+	if r == nil {
+		return pgstore.CheckDB(nil)
+	}
+	model, err := permissionToModel(permission)
+	if err != nil {
+		return err
+	}
+	db, err := pgstore.DBFromContext(ctx, r.db)
+	if err != nil {
+		return err
+	}
+	res := db.Model(&permissionModel{}).Where("id = ? AND code = ?", model.ID, model.Code).
+		Updates(map[string]any{"resource": model.Resource, "action": model.Action})
+	if res.Error != nil {
+		return pgstore.MapError(res.Error, iamerrors.ErrPermissionNotFound)
+	}
+	if res.RowsAffected == 0 {
+		return iamerrors.ErrPermissionNotFound
+	}
+	return nil
+}
+
 // Delete menghapus definisi izin atomik berdasarkan UUID izin.
 func (r *Repository) Delete(ctx context.Context, id string) error {
 	if r == nil {
@@ -159,12 +184,21 @@ func (r *Repository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	res := db.Where("id = ?", pid).Delete(&permissionModel{})
-	if res.Error != nil {
-		return pgstore.MapError(res.Error, iamerrors.ErrPermissionNotFound)
-	}
-	if res.RowsAffected == 0 {
-		return iamerrors.ErrPermissionNotFound
-	}
-	return nil
+	return pgstore.MapError(db.Transaction(func(tx *gorm.DB) error {
+		var existing permissionModel
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", pid).Take(&existing).Error; err != nil {
+			return pgstore.MapError(err, iamerrors.ErrPermissionNotFound)
+		}
+		var assigned int64
+		if err := tx.Table("role_permissions").Where("permission_id = ?", pid).Limit(1).Count(&assigned).Error; err != nil {
+			return pgstore.MapError(err, nil)
+		}
+		if assigned > 0 {
+			return iamerrors.ErrPermissionInUse
+		}
+		if err := tx.Where("id = ?", pid).Delete(&permissionModel{}).Error; err != nil {
+			return pgstore.MapError(err, iamerrors.ErrPermissionNotFound)
+		}
+		return nil
+	}), nil)
 }

@@ -9,6 +9,7 @@ import (
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/infrastructure/redisstore"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 )
 
 // Service mengelola entitas grup pengguna, keanggotaan anggota grup, dan pewarisan peran grup.
@@ -278,6 +279,11 @@ func (s *Service) AddMember(ctx context.Context, groupID, userID string) (*entit
 		if err != nil {
 			return err
 		}
+		if caller, ok := authcontext.FromContext(txCtx); ok && caller.Authenticated && caller.PrincipalID != "" {
+			if err := member.SetAddedBy(caller.PrincipalID); err != nil {
+				return err
+			}
+		}
 		if err := s.members.Insert(txCtx, member); err != nil {
 			return err
 		}
@@ -389,7 +395,15 @@ func (s *Service) AssignRole(ctx context.Context, in AssignGroupRoleInput) (*ent
 			return iamerrors.ErrGroupRoleExists
 		}
 
-		assignment, err := entity.NewGroupRole(assignmentID, in.GroupID, in.RoleID, scope, in.GrantedBy, in.ExpiresAt, now)
+		var grantedBy *string
+		if caller, ok := authcontext.FromContext(txCtx); ok && caller.Authenticated && caller.PrincipalID != "" {
+			if err := entity.ValidateUUID("principal_id", caller.PrincipalID); err != nil {
+				return err
+			}
+			actor := caller.PrincipalID
+			grantedBy = &actor
+		}
+		assignment, err := entity.NewGroupRole(assignmentID, in.GroupID, in.RoleID, scope, grantedBy, in.ExpiresAt, now)
 		if err != nil {
 			return err
 		}

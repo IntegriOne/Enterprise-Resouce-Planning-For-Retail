@@ -175,7 +175,7 @@ func startBufconnServer(t *testing.T) *bufconnEnv {
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	cfg := &config.Config{
-		AppEnv:          "development",
+		AppEnv:          "test",
 		ServiceName:     "integrione-iam",
 		ShutdownTimeout: 5 * time.Second,
 	}
@@ -295,6 +295,17 @@ func (r *memPermRepo) SelectByRoleID(_ context.Context, roleID string) ([]*entit
 func (r *memPermRepo) Insert(_ context.Context, p *entity.Permission) error {
 	r.s.mu.Lock()
 	defer r.s.mu.Unlock()
+	cp := *p
+	r.s.permissions[p.ID] = &cp
+	return nil
+}
+
+func (r *memPermRepo) Update(_ context.Context, p *entity.Permission) error {
+	r.s.mu.Lock()
+	defer r.s.mu.Unlock()
+	if _, ok := r.s.permissions[p.ID]; !ok {
+		return iamerrors.ErrPermissionNotFound
+	}
 	cp := *p
 	r.s.permissions[p.ID] = &cp
 	return nil

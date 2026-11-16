@@ -43,6 +43,9 @@ func permissionToModel(p *entity.Permission) (permissionModel, error) {
 	if action == "" {
 		return permissionModel{}, iamerrors.NewValidation("action", iamerrors.Code("iam.permission.invalid_action"), "permission action must not be empty")
 	}
+	if _, err := entity.NewPermission(id, code, resource, action, p.Description, p.IsSensitive, p.CreatedAt); err != nil {
+		return permissionModel{}, err
+	}
 	return permissionModel{
 		ID:          id,
 		Code:        code,

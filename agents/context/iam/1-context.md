@@ -2,6 +2,8 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Hardening IAM gRPC 17 November 2026:** kode permission baru wajib sejalan dengan `resource` namespaced dan `action`; bootstrap memperbaiki metadata katalog lama dan menolak drift `is_sensitive`; permission yang masih terpasang pada role tidak dapat dihapus. `assigned_by` dan `group_members.added_by` berasal dari caller internal terverifikasi, bukan payload. Penulisan outbox sesi gagal tertutup; pemilik sesi nonaktif tidak lolos authenticate/CSRF/MFA; kegagalan recovery epoch menghalangi refresh snapshot. RPC `IssueSession` hanya untuk caller terautentikasi dengan `user_id` sama dan tanpa klaim MFA; `MarkSessionMfaVerified` ditolak dan didepresiasi, gunakan `AuthService.VerifySessionMfa`. HMAC internal wajib pada runtime development/production.
+- `go fmt ./...`, `go vet ./...`, dan `go test -race -count=1 ./...` lulus pada modul IAM; `go generate ./...` kontrak serta `docker compose build iam` lulus. Container IAM development sudah direstart sendiri dan sehat; smoke live membuktikan gRPC health `SERVING`, RPC bisnis tanpa HMAC mendapat `Unauthenticated`, dan `/api/graphql` tetap merespons query publik. E2E `TestMutationUserLogin` lulus; matriks Query/Mutation lulus bila `TestQueryPermissions` dikecualikan. Tes itu memakai `resource="users"` lama sehingga gagal setelah katalog memakai `iam.users`; pemilik Gateway perlu memperbarui fixture.
 - **Pemisahan Modul Self-Service (`*self`), Auto-Assignment Saat Pembuatan Akun, & Fail-Closed `UserRoles`:**
   - Mendefinisikan `5` kode permission eksplisit di `backend/shared/authz` & [bootstrap.go](file:///home/muriarfad/Documents/projects/erp-retail/backend/services/iam/services/bootstrap.go): `iam.users.readself`, `iam.users.updateself`, `iam.users.deleteself`, `iam.sessions.readself`, dan `iam.sessions.deleteself`.
   - `CreateUser` ([service.go](file:///home/muriarfad/Documents/projects/erp-retail/backend/services/iam/services/user/service.go)) otomatis menugaskan peran `customer` (untuk `CUSTOMER`, `ScopeSelf{ID: user.ID}`, redirect `"/"`) atau `iam_selfservice` (untuk `EMPLOYEE`, `VENDOR`, `SUPPLIER`, `ScopeSelf{ID: user.ID}`, redirect netral `""`) secara atomik di transaksi DB yang sama sejak status awal `PENDING`.
@@ -17,9 +19,13 @@
 
 ## Apa yang belum dikerjakan
 
+- Validasi kelayakan `scope_id` non-global terhadap owner objek Enterprise Foundation pada jalur assignment IAM/Gateway belum terbukti menyeluruh; IAM saat ini memvalidasi tipe/format UUID dan kepemilikan `self`.
+- Tes E2E `TestQueryPermissions` pada Gateway perlu menyelaraskan filter resource menjadi `iam.users`; audit data permission lama dalam database development masih perlu dilakukan.
 - Konfigurasi deployment produksi (`APP_ENV=production` dan mTLS internal gRPC) pada lingkungan staging/production nyata.
 - Integrasi layanan domain hilir lain (Enterprise Foundation, HRM, Procurement, Commerce) terhadap event/lookup IAM mengikuti fase berikutnya.
 
 ## Apa yang harus dikerjakan selanjutanya
 
-1. Lanjutkan integrasi lintas management sesuai prioritas program di [docs/README.md](file:///home/muriarfad/Documents/projects/erp-retail/docs/README.md) menggunakan principal tunggal IAM, batas RBAC `*self` vs internal staf, dan kontrak gRPC privat yang terverifikasi.
+1. Selaraskan tes filter resource Gateway, ulangi matriks E2E tanpa pengecualian, dan verifikasi metadata permission lama direkonsiliasi setelah bootstrap serta HMAC development bekerja.
+2. Tambahkan validasi target scope lintas owner pada alur pemberian role dengan kontrak pembuktian Enterprise Foundation, tanpa memberi IAM akses langsung ke database owner lain.
+3. Lanjutkan integrasi lintas management sesuai prioritas program di [docs/README.md](file:///home/muriarfad/Documents/projects/erp-retail/docs/README.md) menggunakan principal tunggal IAM, batas RBAC `*self` vs internal staf, dan kontrak gRPC privat yang terverifikasi.

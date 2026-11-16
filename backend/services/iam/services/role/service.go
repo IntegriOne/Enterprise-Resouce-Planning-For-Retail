@@ -10,6 +10,7 @@ import (
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/infrastructure/redisstore"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 )
 
 // Service mengorkestrasi manajemen peran RBAC, ikatan izin, serta penugasan peran berscope ke pengguna.
@@ -427,7 +428,15 @@ func (s *Service) AssignToUser(ctx context.Context, in AssignUserRoleInput) (*en
 			return iamerrors.ErrUserRoleExists
 		}
 
-		assignment, err := entity.NewUserRole(assignmentID, in.UserID, in.RoleID, scope, in.GrantedBy, in.ExpiresAt, s.clock.Now())
+		var grantedBy *string
+		if caller, ok := authcontext.FromContext(txCtx); ok && caller.Authenticated && caller.PrincipalID != "" {
+			if err := entity.ValidateUUID("principal_id", caller.PrincipalID); err != nil {
+				return err
+			}
+			actor := caller.PrincipalID
+			grantedBy = &actor
+		}
+		assignment, err := entity.NewUserRole(assignmentID, in.UserID, in.RoleID, scope, grantedBy, in.ExpiresAt, s.clock.Now())
 		if err != nil {
 			return err
 		}

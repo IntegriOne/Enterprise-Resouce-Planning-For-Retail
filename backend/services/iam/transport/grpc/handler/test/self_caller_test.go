@@ -69,9 +69,20 @@ func TestBootstrapBackfillAndCreateUserBaselineSelfRoles(t *testing.T) {
 	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, config.SystemBootstrapConfig{}, logger); err != nil {
 		t.Fatalf("BootstrapSystemPrincipalAndRBAC() first run error = %v", err)
 	}
+	legacy, err := repos.Permissions.SelectByCode(ctx, "iam.users.read")
+	if err != nil {
+		t.Fatalf("SelectByCode() error = %v", err)
+	}
+	env.store.mu.Lock()
+	env.store.permissions[legacy.ID].Resource = "users"
+	env.store.mu.Unlock()
 	// Jalankan ulang bootstrap untuk memastikan backfill tidak menduplikasi penugasan peran.
 	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, config.SystemBootstrapConfig{}, logger); err != nil {
 		t.Fatalf("BootstrapSystemPrincipalAndRBAC() second run error = %v", err)
+	}
+	repaired, err := repos.Permissions.SelectByCode(ctx, "iam.users.read")
+	if err != nil || repaired.Resource != "iam.users" || repaired.Action != "read" {
+		t.Fatalf("bootstrap permission metadata = (%+v, %v), want iam.users/read", repaired, err)
 	}
 
 	assertUserHasOnlyBaselineSelfRole := func(t *testing.T, userID, wantRoleCode string) {
@@ -126,6 +137,16 @@ func TestBootstrapBackfillAndCreateUserBaselineSelfRoles(t *testing.T) {
 		}
 		assertUserHasOnlyBaselineSelfRole(t, created.ID, tc.wantRole)
 	}
+	sensitive, err := repos.Permissions.SelectByCode(ctx, "iam.users.write")
+	if err != nil {
+		t.Fatal(err)
+	}
+	env.store.mu.Lock()
+	env.store.permissions[sensitive.ID].IsSensitive = false
+	env.store.mu.Unlock()
+	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, config.SystemBootstrapConfig{}, logger); err == nil {
+		t.Fatal("bootstrap must reject a sensitivity mismatch in the existing catalog")
+	}
 }
 
 func TestHandlerEnforceSelfCallerAndSessionGuards(t *testing.T) {
@@ -171,6 +192,10 @@ func TestHandlerEnforceSelfCallerAndSessionGuards(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewAuthHandler() error = %v", err)
 	}
+	sHandler, err := handler.NewSessionHandler(env.registry.Sessions, nil)
+	if err != nil {
+		t.Fatalf("NewSessionHandler() error = %v", err)
+	}
 
 	callerA := authcontext.CallerContext{
 		PrincipalID:   uA.ID,
@@ -179,6 +204,15 @@ func TestHandlerEnforceSelfCallerAndSessionGuards(t *testing.T) {
 		Authenticated: true,
 	}
 	ctxCallerA := authcontext.WithCaller(ctx, callerA)
+	if _, err := sHandler.IssueSession(ctxCallerA, &iamv1.IssueSessionRequest{UserId: uB.ID}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("IssueSession(cross-user) error = %v, want PermissionDenied", err)
+	}
+	if _, err := sHandler.IssueSession(ctxCallerA, &iamv1.IssueSessionRequest{UserId: uA.ID, MfaVerified: true}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("IssueSession(unverified MFA) error = %v, want InvalidArgument", err)
+	}
+	if issued, err := sHandler.IssueSession(ctxCallerA, &iamv1.IssueSessionRequest{UserId: uA.ID}); err != nil || issued.GetIssuedSession().GetSessionToken() == "" {
+		t.Fatalf("IssueSession(self) = (%+v, %v), want issued token", issued, err)
+	}
 
 	assertPermissionDenied := func(t *testing.T, name string, err error) {
 		t.Helper()

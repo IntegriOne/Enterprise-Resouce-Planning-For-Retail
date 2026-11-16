@@ -355,15 +355,18 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 		t.Fatalf("RemoveUserIdentity error = %v", err)
 	}
 
-	// Uji SessionService RPCs: IssueSession, VerifyCsrf, MarkSessionMfaVerified, ResolvePostLoginRedirect.
-	issued, err := sessClient.IssueSession(ctx, &iamv1.IssueSessionRequest{
-		UserId:      uid,
-		MfaVerified: false,
-		IpAddress:   "127.0.0.1",
-		UserAgent:   "unit-test/1.0",
+	// Penerbitan sesi langsung tanpa caller terautentikasi dan peningkatan MFA tanpa kode harus ditolak.
+	if _, err := sessClient.IssueSession(ctx, &iamv1.IssueSessionRequest{UserId: uid}); status.Code(err) != codes.Unauthenticated {
+		t.Fatalf("IssueSession() error = %v, want Unauthenticated", err)
+	}
+	issued, err := authClient.AuthenticatePassword(ctx, &iamv1.AuthenticatePasswordRequest{
+		Identifier: "andi.gudang2",
+		Password:   "SteelKey#2026!W",
+		IpAddress:  "127.0.0.1",
+		UserAgent:  "unit-test/1.0",
 	})
 	if err != nil || issued.GetIssuedSession().GetSessionToken() == "" {
-		t.Fatalf("IssueSession failed: resp=%+v err=%v", issued, err)
+		t.Fatalf("AuthenticatePassword failed: resp=%+v err=%v", issued, err)
 	}
 	sid1 := issued.GetIssuedSession().GetSession().GetId()
 	if _, err := sessClient.VerifyCsrf(ctx, &iamv1.VerifyCsrfRequest{
@@ -372,9 +375,8 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("VerifyCsrf error = %v", err)
 	}
-	marked, err := sessClient.MarkSessionMfaVerified(ctx, &iamv1.MarkSessionMfaVerifiedRequest{SessionId: sid1})
-	if err != nil || !marked.GetSession().GetMfaVerified() || marked.GetCsrfToken() == "" {
-		t.Fatalf("MarkSessionMfaVerified failed: resp=%+v err=%v", marked, err)
+	if _, err := sessClient.MarkSessionMfaVerified(ctx, &iamv1.MarkSessionMfaVerifiedRequest{SessionId: sid1}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("MarkSessionMfaVerified() error = %v, want FailedPrecondition", err)
 	}
 	redir, err := sessClient.ResolvePostLoginRedirect(ctx, &iamv1.ResolvePostLoginRedirectRequest{UserId: uid})
 	if err != nil || redir.GetRedirectPath() != "/warehouse" {
@@ -425,22 +427,14 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 		t.Fatalf("VerifyMfaChallenge failed: resp=%+v err=%v", verifiedChallenge, err)
 	}
 
-	// Buat sesi baru non-MFA dan uji VerifySessionMfa dengan step +1 (masih dalam jendela skew +-1).
-	issuedForMFA, err := sessClient.IssueSession(ctx, &iamv1.IssueSessionRequest{
-		UserId:    uid,
-		IpAddress: "127.0.0.1",
-		UserAgent: "stepup/1.0",
-	})
-	if err != nil {
-		t.Fatalf("IssueSession(for MFA) error = %v", err)
-	}
+	// Uji VerifySessionMfa pada sesi yang diterbitkan sebelum MFA diaktifkan.
 	codeStepPlus1, err := env.totpProv.GenerateCodeAt(totpSec, baseNow.Add(30*time.Second))
 	if err != nil {
 		t.Fatalf("GenerateCodeAt(step+1) error = %v", err)
 	}
 	sessMFAResp, err := authClient.VerifySessionMfa(ctx, &iamv1.VerifySessionMfaRequest{
 		UserId:    uid,
-		SessionId: issuedForMFA.GetIssuedSession().GetSession().GetId(),
+		SessionId: issued.GetIssuedSession().GetSession().GetId(),
 		Code:      codeStepPlus1,
 	})
 	if err != nil || !sessMFAResp.GetSession().GetMfaVerified() || sessMFAResp.GetCsrfToken() == "" {
@@ -514,13 +508,14 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 	if err != nil || reloginResp.GetStatus() != iamv1.AuthStatus_AUTH_STATUS_AUTHENTICATED {
 		t.Fatalf("AuthenticatePassword(after reset) failed: resp=%+v err=%v", reloginResp, err)
 	}
-	extraSess, err := sessClient.IssueSession(ctx, &iamv1.IssueSessionRequest{
-		UserId:    uid,
-		IpAddress: "127.0.0.1",
-		UserAgent: "unit-test/3.0",
+	extraSess, err := authClient.AuthenticatePassword(ctx, &iamv1.AuthenticatePasswordRequest{
+		Identifier: "andi.gudang2",
+		Password:   "ResetKey#2026!W3",
+		IpAddress:  "127.0.0.1",
+		UserAgent:  "unit-test/3.0",
 	})
 	if err != nil {
-		t.Fatalf("IssueSession(extra) error = %v", err)
+		t.Fatalf("AuthenticatePassword(extra) error = %v", err)
 	}
 	if sessList, err := sessClient.ListUserSessions(ctx, &iamv1.ListUserSessionsRequest{UserId: uid, ActiveOnly: true}); err != nil || len(sessList.GetItems()) < 2 {
 		t.Fatalf("ListUserSessions failed: resp=%+v err=%v", sessList, err)

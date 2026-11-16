@@ -26,13 +26,16 @@ func InternalContextUnaryInterceptor(hmacSecret []byte, requireProof bool) grpc.
 			strings.HasPrefix(info.FullMethod, "/grpc.reflection.")) {
 			return handler(ctx, req)
 		}
+		if len(hmacSecret) == 0 && requireProof {
+			return nil, status.Error(codes.Unauthenticated, "internal caller verification is unavailable")
+		}
 		if len(hmacSecret) > 0 {
 			caller, hasAny, err := authcontext.ExtractFromIncomingGRPCContext(ctx, hmacSecret, time.Now())
 			if err != nil {
-				return nil, status.Error(codes.PermissionDenied, "invalid internal caller context")
+				return nil, status.Error(codes.Unauthenticated, "invalid internal caller context")
 			}
 			if requireProof && !hasAny {
-				return nil, status.Error(codes.PermissionDenied, "missing internal caller context")
+				return nil, status.Error(codes.Unauthenticated, "missing internal caller context")
 			}
 			if hasAny {
 				ctx = authcontext.WithCaller(ctx, caller)

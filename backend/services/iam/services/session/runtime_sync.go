@@ -33,9 +33,9 @@ func (s *Service) deriveCSRF(sessionID string, tokenDigest []byte, generation in
 	return plaintext, digest, 1, nil
 }
 
-func (s *Service) recordSessionIssuedInTx(txCtx context.Context, sess *entity.Session) {
+func (s *Service) recordSessionIssuedInTx(txCtx context.Context, sess *entity.Session) error {
 	if s.outboxCoord == nil && s.projector == nil {
-		return
+		return nil
 	}
 	payload := redisstore.OutboxPayload{
 		UserID:          sess.UserID,
@@ -47,7 +47,7 @@ func (s *Service) recordSessionIssuedInTx(txCtx context.Context, sess *entity.Se
 		var err error
 		evID, err = s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventSessionIssued, "session", sess.ID, payload)
 		if err != nil {
-			evID = ""
+			return err
 		}
 	}
 	u, uErr := s.users.SelectByID(txCtx, sess.UserID)
@@ -73,11 +73,12 @@ func (s *Service) recordSessionIssuedInTx(txCtx context.Context, sess *entity.Se
 			_ = s.projector.ProjectSessionIssued(postCtx, u, &sessCopy, 1)
 		}
 	})
+	return nil
 }
 
-func (s *Service) recordSessionUpdatedInTx(txCtx context.Context, sess *entity.Session) {
+func (s *Service) recordSessionUpdatedInTx(txCtx context.Context, sess *entity.Session) error {
 	if s.outboxCoord == nil && s.projector == nil {
-		return
+		return nil
 	}
 	payload := redisstore.OutboxPayload{
 		UserID:    sess.UserID,
@@ -85,7 +86,11 @@ func (s *Service) recordSessionUpdatedInTx(txCtx context.Context, sess *entity.S
 	}
 	var evID string
 	if s.outboxCoord != nil {
-		evID, _ = s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventSessionUpdated, "session", sess.ID, payload)
+		var err error
+		evID, err = s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventSessionUpdated, "session", sess.ID, payload)
+		if err != nil {
+			return err
+		}
 	}
 	u, uErr := s.users.SelectByID(txCtx, sess.UserID)
 	sessCopy := *sess
@@ -110,11 +115,12 @@ func (s *Service) recordSessionUpdatedInTx(txCtx context.Context, sess *entity.S
 			_ = s.projector.ProjectSessionUpdated(postCtx, u, &sessCopy, 1)
 		}
 	})
+	return nil
 }
 
-func (s *Service) recordSessionRevokedInTx(txCtx context.Context, sess *entity.Session) {
+func (s *Service) recordSessionRevokedInTx(txCtx context.Context, sess *entity.Session) error {
 	if s.outboxCoord == nil && s.projector == nil {
-		return
+		return nil
 	}
 	digestCopy := make([]byte, len(sess.TokenDigest()))
 	copy(digestCopy, sess.TokenDigest())
@@ -125,7 +131,11 @@ func (s *Service) recordSessionRevokedInTx(txCtx context.Context, sess *entity.S
 	}
 	var evID string
 	if s.outboxCoord != nil {
-		evID, _ = s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventSessionRevoked, "session", sess.ID, payload)
+		var err error
+		evID, err = s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventSessionRevoked, "session", sess.ID, payload)
+		if err != nil {
+			return err
+		}
 	}
 	u, uErr := s.users.SelectByID(txCtx, sess.UserID)
 	uid := sess.UserID
@@ -147,6 +157,7 @@ func (s *Service) recordSessionRevokedInTx(txCtx context.Context, sess *entity.S
 			_ = s.projector.ProjectSessionRevoked(postCtx, u, digestCopy, 1)
 		}
 	})
+	return nil
 }
 
 func (s *Service) revokeAllSessionsWithOutbox(txCtx context.Context, userID string, reason entity.SessionEndReason) (int64, error) {
@@ -235,6 +246,9 @@ func (s *Service) GetSessionCSRF(ctx context.Context, sessionID string) (*CSRFTo
 		s.recordNaturalExpiryIfApplicable(ctx, sess.ID, err, now)
 		return nil, err
 	}
+	if err := s.ensureSessionOwnerActive(ctx, sess); err != nil {
+		return nil, err
+	}
 
 	keyVer := sess.CSRFKeyVersion
 	if keyVer <= 0 {
@@ -282,9 +296,14 @@ func (s *Service) RefreshAccessSnapshot(ctx context.Context, userID string) (*Re
 	}
 
 	if s.securityRuntime != nil {
-		if recEpoch, err := s.securityRuntime.GetRecoveryEpoch(ctx); err == nil && recEpoch >= 1 {
-			snapshot.RecoveryEpoch = recEpoch
+		recEpoch, err := s.securityRuntime.GetRecoveryEpoch(ctx)
+		if err != nil {
+			return nil, err
 		}
+		if recEpoch < 1 {
+			return nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.security.invalid_recovery_epoch"), "security recovery epoch is unavailable")
+		}
+		snapshot.RecoveryEpoch = recEpoch
 	}
 
 	canAccessIdentity := evaluateIdentityDashboardAccess(u, snapshot, defaultRedirect)

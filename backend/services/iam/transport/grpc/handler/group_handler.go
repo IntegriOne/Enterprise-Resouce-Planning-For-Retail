@@ -204,7 +204,6 @@ func (h *GroupHandler) AssignGroupRole(ctx context.Context, req *iamv1.AssignGro
 		RoleID:    req.GetRoleId(),
 		ScopeType: fromProtoScopeType(req.GetScopeType()),
 		ScopeID:   cloneStringPtr(req.ScopeId),
-		GrantedBy: cloneStringPtr(req.GrantedBy),
 		ExpiresAt: expiresAt,
 	})
 	if err != nil {

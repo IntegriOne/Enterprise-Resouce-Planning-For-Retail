@@ -145,7 +145,7 @@ func BootstrapSystemPrincipalAndRBAC(
 		return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.bootstrap.nil_dependencies"), "bootstrap dependencies are required")
 	}
 
-	permByCode, err := ensureBootstrapPermissions(ctx, reg)
+	permByCode, err := ensureBootstrapPermissions(ctx, repos.Permissions, reg)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func BootstrapSystemPrincipalAndRBAC(
 	return nil
 }
 
-func ensureBootstrapPermissions(ctx context.Context, reg *Registry) (map[string]*entity.Permission, error) {
+func ensureBootstrapPermissions(ctx context.Context, repo domainrepo.PermissionRepository, reg *Registry) (map[string]*entity.Permission, error) {
 	permByCode := make(map[string]*entity.Permission, len(defaultBootstrapPermissions))
 	for _, spec := range defaultBootstrapPermissions {
 		p, err := reg.Permissions.GetByCode(ctx, spec.Code)
@@ -217,6 +217,19 @@ func ensureBootstrapPermissions(ctx context.Context, reg *Registry) (map[string]
 			}
 		} else if err != nil {
 			return nil, err
+		}
+		expected := permissionCreateInput(spec)
+		if p.IsSensitive != expected.IsSensitive {
+			return nil, iamerrors.New(iamerrors.KindConflict, iamerrors.Code("iam.bootstrap.permission_sensitivity_mismatch"), "bootstrap permission sensitivity does not match the approved catalog")
+		}
+		if p.Resource != expected.Resource || p.Action != expected.Action {
+			corrected := *p
+			corrected.Resource = expected.Resource
+			corrected.Action = expected.Action
+			if err := repo.Update(ctx, &corrected); err != nil {
+				return nil, err
+			}
+			p = &corrected
 		}
 		permByCode[spec.Code] = p
 	}
@@ -421,15 +434,12 @@ func findBootstrapUserIDByIdentities(
 }
 
 func permissionCreateInput(spec bootstrapPermissionSpec) permission.CreateInput {
+	separator := strings.LastIndexByte(spec.Code, '.')
 	resource := spec.Domain
 	action := spec.Code
-	parts := strings.Split(spec.Code, ".")
-	if len(parts) >= 3 {
-		resource = parts[1]
-		action = strings.Join(parts[2:], ".")
-	} else if len(parts) == 2 {
-		resource = parts[0]
-		action = parts[1]
+	if separator > 0 && separator < len(spec.Code)-1 {
+		resource = spec.Code[:separator]
+		action = spec.Code[separator+1:]
 	}
 	return permission.CreateInput{
 		Code:        spec.Code,

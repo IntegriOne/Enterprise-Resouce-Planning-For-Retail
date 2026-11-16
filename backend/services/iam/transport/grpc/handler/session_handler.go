@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	iamv1 "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	"github.com/integrione/erp-retail/backend/services/iam/services/session"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 )
 
 // SessionHandler menangani permintaan gRPC siklus hidup sesi opaque, CSRF, dan evaluasi otorisasi.
@@ -35,9 +37,19 @@ func (h *SessionHandler) IssueSession(ctx context.Context, req *iamv1.IssueSessi
 	if req == nil {
 		return nil, nilRequestError(h.errMapper)
 	}
+	caller, ok := authcontext.FromContext(ctx)
+	if !ok || !caller.Authenticated {
+		return nil, h.errMapper.ToStatus(iamerrors.ErrUnauthorized)
+	}
+	if caller.PrincipalID != req.GetUserId() {
+		return nil, h.errMapper.ToStatus(iamerrors.ErrPermissionDenied)
+	}
+	if req.GetMfaVerified() {
+		return nil, h.errMapper.ToStatus(iamerrors.NewValidation("mfa_verified", iamerrors.Code("iam.session.mfa_verification_required"), "mfa verification must use the authentication flow"))
+	}
 	issued, err := h.svc.Issue(ctx, session.IssueInput{
 		UserID:      req.GetUserId(),
-		MFAVerified: req.GetMfaVerified(),
+		MFAVerified: false,
 		IPAddress:   req.GetIpAddress(),
 		UserAgent:   req.GetUserAgent(),
 	})
@@ -76,14 +88,7 @@ func (h *SessionHandler) MarkSessionMfaVerified(ctx context.Context, req *iamv1.
 	if req == nil {
 		return nil, nilRequestError(h.errMapper)
 	}
-	res, err := h.svc.MarkMFAVerified(ctx, req.GetSessionId())
-	if err != nil {
-		return nil, h.errMapper.ToStatus(err)
-	}
-	return &iamv1.MarkSessionMfaVerifiedResponse{
-		Session:   toProtoSession(res.Session),
-		CsrfToken: res.CSRFToken,
-	}, nil
+	return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindConflict, iamerrors.Code("iam.session.mfa_verification_required"), "mfa verification must use the authentication flow"))
 }
 
 // LogoutSession mengakhiri sesi aktif berdasarkan token sesi opaque.

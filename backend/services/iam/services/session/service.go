@@ -121,8 +121,7 @@ func (s *Service) Issue(ctx context.Context, in IssueInput) (*IssuedSession, err
 		if err := s.sessions.Insert(txCtx, sess); err != nil {
 			return err
 		}
-		s.recordSessionIssuedInTx(txCtx, sess)
-		return nil
+		return s.recordSessionIssuedInTx(txCtx, sess)
 	}); err != nil {
 		return nil, err
 	}
@@ -155,6 +154,9 @@ func (s *Service) Authenticate(ctx context.Context, sessionToken string) (*entit
 		s.recordNaturalExpiryIfApplicable(ctx, sess.ID, err, now)
 		return nil, err
 	}
+	if err := s.ensureSessionOwnerActive(ctx, sess); err != nil {
+		return nil, err
+	}
 
 	if err := s.sessions.UpdateActivity(ctx, sess.ID, sess.LastActiveAt, sess.IdleExpiresAt); err != nil {
 		return nil, err
@@ -177,6 +179,9 @@ func (s *Service) VerifyCSRF(ctx context.Context, sessionID, csrfToken string) (
 	}
 	now := s.clock.Now()
 	if err := sess.CheckStatus(now); err != nil {
+		return nil, err
+	}
+	if err := s.ensureSessionOwnerActive(ctx, sess); err != nil {
 		return nil, err
 	}
 	if err := s.VerifyCSRFOnSession(sess, csrfToken); err != nil {
@@ -218,6 +223,9 @@ func (s *Service) MarkMFAVerified(ctx context.Context, sessionID string) (*CSRFT
 	if err := sess.CheckStatus(now); err != nil {
 		return nil, err
 	}
+	if err := s.ensureSessionOwnerActive(ctx, sess); err != nil {
+		return nil, err
+	}
 	if err := sess.MarkMFAVerified(now); err != nil {
 		return nil, err
 	}
@@ -240,8 +248,7 @@ func (s *Service) MarkMFAVerified(ctx context.Context, sessionID string) (*CSRFT
 				return err
 			}
 		}
-		s.recordSessionUpdatedInTx(txCtx, sess)
-		return nil
+		return s.recordSessionUpdatedInTx(txCtx, sess)
 	}); err != nil {
 		return nil, err
 	}
@@ -274,8 +281,7 @@ func (s *Service) Logout(ctx context.Context, sessionToken string) error {
 		if err := s.sessions.UpdateEnded(txCtx, sess.ID, entity.SessionEndLogout, now); err != nil {
 			return err
 		}
-		s.recordSessionRevokedInTx(txCtx, sess)
-		return nil
+		return s.recordSessionRevokedInTx(txCtx, sess)
 	})
 }
 
@@ -303,8 +309,7 @@ func (s *Service) RevokeByID(ctx context.Context, sessionID string, reason entit
 		if err := s.sessions.UpdateEnded(txCtx, sess.ID, reason, now); err != nil {
 			return err
 		}
-		s.recordSessionRevokedInTx(txCtx, sess)
-		return nil
+		return s.recordSessionRevokedInTx(txCtx, sess)
 	})
 }
 
@@ -449,6 +454,23 @@ func parseOptionalIP(raw string) (*netip.Addr, error) {
 func (s *Service) ensureReady() error {
 	if s == nil || s.sessions == nil || s.users == nil || s.tokens == nil {
 		return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.session.service_unavailable"), "session service is not initialized")
+	}
+	return nil
+}
+
+func (s *Service) ensureSessionOwnerActive(ctx context.Context, sess *entity.Session) error {
+	if sess == nil {
+		return iamerrors.ErrUnauthorized
+	}
+	u, err := s.users.SelectByID(ctx, sess.UserID)
+	if err != nil {
+		if errors.Is(err, iamerrors.ErrUserNotFound) {
+			return iamerrors.ErrUnauthorized
+		}
+		return err
+	}
+	if err := u.CanAuthenticate(); err != nil {
+		return iamerrors.ErrUnauthorized
 	}
 	return nil
 }

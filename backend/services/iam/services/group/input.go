@@ -44,6 +44,7 @@ type AssignGroupRoleInput struct {
 	RoleID    string
 	ScopeType entity.ScopeType
 	ScopeID   *string
+	// GrantedBy dipertahankan untuk kompatibilitas pemanggil lama; service memakai principal dari context.
 	GrantedBy *string
 	ExpiresAt *time.Time
 }

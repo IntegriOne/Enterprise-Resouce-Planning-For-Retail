@@ -182,6 +182,7 @@ func (stubPermRepo) SelectByRoleID(context.Context, string) ([]*entity.Permissio
 	return nil, nil
 }
 func (stubPermRepo) Insert(context.Context, *entity.Permission) error { return nil }
+func (stubPermRepo) Update(context.Context, *entity.Permission) error { return nil }
 func (stubPermRepo) Delete(context.Context, string) error             { return nil }
 
 type stubGroupRepo struct{}

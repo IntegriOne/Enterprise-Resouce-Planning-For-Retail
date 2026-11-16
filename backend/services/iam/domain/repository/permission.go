@@ -13,5 +13,6 @@ type PermissionRepository interface {
 	SelectList(ctx context.Context, filter PermissionFilter) (PageResult[*entity.Permission], error)
 	SelectByRoleID(ctx context.Context, roleID string) ([]*entity.Permission, error)
 	Insert(ctx context.Context, permission *entity.Permission) error
+	Update(ctx context.Context, permission *entity.Permission) error
 	Delete(ctx context.Context, id string) error
 }

@@ -19,6 +19,8 @@ var (
 	ErrPermissionNotFound = newSentinel(KindNotFound, "iam.permission.not_found", "permission not found")
 	// ErrPermissionAlreadyExists menandakan kode atau kombinasi resource/action izin sudah terdaftar.
 	ErrPermissionAlreadyExists = newSentinel(KindAlreadyExists, "iam.permission.already_exists", "permission already exists")
+	// ErrPermissionInUse menandakan izin masih terpasang pada peran dan tidak boleh dihapus.
+	ErrPermissionInUse = newSentinel(KindConflict, "iam.permission.in_use", "permission is assigned to a role")
 	// ErrInvalidPermissionCode menandakan format atau panjang kode izin tidak valid.
 	ErrInvalidPermissionCode = newSentinel(KindInvalidInput, "iam.permission.invalid_code", "invalid permission code")
 	// ErrRolePermissionExists menandakan izin sudah terpasang pada peran terkait.

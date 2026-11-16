@@ -95,6 +95,17 @@ func (m *mockPermissionRepo) Insert(_ context.Context, p *entity.Permission) err
 	return nil
 }
 
+func (m *mockPermissionRepo) Update(_ context.Context, p *entity.Permission) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.byID[p.ID]; !ok {
+		return iamerrors.ErrPermissionNotFound
+	}
+	cp := *p
+	m.byID[p.ID] = &cp
+	return nil
+}
+
 func (m *mockPermissionRepo) Delete(_ context.Context, id string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -116,7 +127,7 @@ func TestPermissionService_CreateGetListDelete(t *testing.T) {
 	}
 
 	created, err := svc.Create(context.Background(), permission.CreateInput{
-		Code:        " IAM.Users:Read ",
+		Code:        " IAM.Users.Read ",
 		Resource:    "IAM.Users",
 		Action:      "Read",
 		Description: "Read IAM user directory",
@@ -125,13 +136,13 @@ func TestPermissionService_CreateGetListDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
-	if created.Code != "iam.users:read" || created.Resource != "iam.users" || created.Action != "read" {
+	if created.Code != "iam.users.read" || created.Resource != "iam.users" || created.Action != "read" {
 		t.Fatalf("unexpected normalized permission: %+v", created)
 	}
 
 	// Duplikasi kode izin harus ditolak sebelum penyisipan ganda.
 	if _, err := svc.Create(context.Background(), permission.CreateInput{
-		Code:     "iam.users:read",
+		Code:     "iam.users.read",
 		Resource: "iam.users",
 		Action:   "read",
 	}); !errors.Is(err, iamerrors.ErrPermissionAlreadyExists) {
@@ -143,7 +154,7 @@ func TestPermissionService_CreateGetListDelete(t *testing.T) {
 		t.Fatalf("GetByID() = (%+v, %v)", gotByID, err)
 	}
 
-	gotByCode, err := svc.GetByCode(context.Background(), "IAM.USERS:READ")
+	gotByCode, err := svc.GetByCode(context.Background(), "IAM.USERS.READ")
 	if err != nil || gotByCode.ID != created.ID {
 		t.Fatalf("GetByCode() = (%+v, %v)", gotByCode, err)
 	}

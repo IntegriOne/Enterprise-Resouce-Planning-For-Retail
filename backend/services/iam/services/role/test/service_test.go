@@ -13,6 +13,7 @@ import (
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	"github.com/integrione/erp-retail/backend/services/iam/services/role"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 )
 
 type fixedClock struct{ now time.Time }
@@ -173,6 +174,12 @@ func (p mockPermRepo) Insert(_ context.Context, perm *entity.Permission) error {
 	p.store.perms[perm.ID] = perm
 	return nil
 }
+func (p mockPermRepo) Update(_ context.Context, perm *entity.Permission) error {
+	p.store.mu.Lock()
+	defer p.store.mu.Unlock()
+	p.store.perms[perm.ID] = perm
+	return nil
+}
 func (p mockPermRepo) Delete(_ context.Context, id string) error { return nil }
 
 type mockRolePermRepo struct{ store *mockRoleStore }
@@ -308,7 +315,7 @@ func TestRoleService_LifecyclePermissionsAndUserAssignment(t *testing.T) {
 
 	// Buat izin & user dummy terlebih dahulu.
 	permID, _ := idGen.NewUUID()
-	perm, _ := entity.NewPermission(permID, "iam.roles:write", "iam.roles", "write", "Manage roles", true, now)
+	perm, _ := entity.NewPermission(permID, "iam.roles.write", "iam.roles", "write", "Manage roles", true, now)
 	store.perms[permID] = perm
 
 	userID, _ := idGen.NewUUID()
@@ -352,13 +359,18 @@ func TestRoleService_LifecyclePermissionsAndUserAssignment(t *testing.T) {
 	}
 
 	// Tugaskan peran ke pengguna secara global dan periksa effective roles.
-	assignment, err := svc.AssignToUser(context.Background(), role.AssignUserRoleInput{
+	actorCtx := authcontext.WithCaller(context.Background(), authcontext.CallerContext{PrincipalID: userID, Authenticated: true})
+	assignment, err := svc.AssignToUser(actorCtx, role.AssignUserRoleInput{
 		UserID:    userID,
 		RoleID:    created.ID,
 		ScopeType: entity.ScopeTypeGlobal,
+		GrantedBy: &permID,
 	})
 	if err != nil {
 		t.Fatalf("AssignToUser() error = %v", err)
+	}
+	if assignment.GrantedBy == nil || *assignment.GrantedBy != userID {
+		t.Fatalf("AssignToUser() granted_by = %v, want caller %s", assignment.GrantedBy, userID)
 	}
 	eff, err := svc.ListEffectiveRoles(context.Background(), userID)
 	if err != nil || len(eff) != 1 || eff[0].ID != created.ID {
@@ -472,7 +484,7 @@ func TestRoleService_SystemRoleImmutableMutationsAndBootstrap(t *testing.T) {
 	}
 
 	permID, _ := idGen.NewUUID()
-	perm, _ := entity.NewPermission(permID, "iam.users:read", "iam.users", "read", "Read users", false, now)
+	perm, _ := entity.NewPermission(permID, "iam.users.read", "iam.users", "read", "Read users", false, now)
 	store.perms[permID] = perm
 
 	sysRole, err := svc.Create(context.Background(), role.CreateInput{

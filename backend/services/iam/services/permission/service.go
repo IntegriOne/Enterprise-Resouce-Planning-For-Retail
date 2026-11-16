@@ -50,7 +50,7 @@ func (s *Service) GetByID(ctx context.Context, id string) (*entity.Permission, e
 	return s.repo.SelectByID(ctx, id)
 }
 
-// GetByCode mengambil satu izin berdasarkan kode bernormalisasi (misal "iam.users:read").
+// GetByCode mengambil satu izin berdasarkan kode bernormalisasi (misal "iam.users.read").
 func (s *Service) GetByCode(ctx context.Context, code string) (*entity.Permission, error) {
 	if err := s.ensureReady(); err != nil {
 		return nil, err

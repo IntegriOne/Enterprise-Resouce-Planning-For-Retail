@@ -155,6 +155,9 @@ func NewPermission(id, code, resource, action, description string, isSensitive b
 	if normalizedAction == "" || utf8.RuneCountInString(normalizedAction) > MaxPermissionActionLength {
 		return nil, iamerrors.NewValidation("action", iamerrors.Code("iam.permission.invalid_action"), "permission action must be non-empty and within length bounds")
 	}
+	if !strings.Contains(normalizedResource, ".") || !codePattern.MatchString(normalizedResource) || !codePattern.MatchString(normalizedAction) || strings.Contains(normalizedAction, ".") || normalizedCode != normalizedResource+"."+normalizedAction {
+		return nil, iamerrors.NewValidation("code", iamerrors.Code("iam.permission.inconsistent_code"), "permission code must match resource and action")
+	}
 
 	return &Permission{
 		ID:          strings.TrimSpace(id),

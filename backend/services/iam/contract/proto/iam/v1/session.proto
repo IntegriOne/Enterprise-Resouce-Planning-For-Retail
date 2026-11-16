@@ -37,6 +37,7 @@ message IssuedSession {
 
 message IssueSessionRequest {
   string user_id = 1;
+  // Nilai true ditolak; status MFA hanya ditetapkan setelah verifikasi kode melalui AuthService.
   bool mfa_verified = 2;
   string ip_address = 3;
   string user_agent = 4;
@@ -159,11 +160,15 @@ message RefreshUserAccessSnapshotResponse {
 
 // SessionService mengelola siklus hidup sesi opaque, verifikasi CSRF, dan evaluasi otorisasi.
 service SessionService {
+  // Hanya pemanggil terautentikasi yang dapat menerbitkan sesi baru untuk akunnya sendiri.
   rpc IssueSession(IssueSessionRequest) returns (IssueSessionResponse);
   rpc AuthenticateSession(AuthenticateSessionRequest) returns (AuthenticateSessionResponse);
   rpc VerifyCsrf(VerifyCsrfRequest) returns (VerifyCsrfResponse);
   rpc GetSessionCsrf(GetSessionCsrfRequest) returns (GetSessionCsrfResponse);
-  rpc MarkSessionMfaVerified(MarkSessionMfaVerifiedRequest) returns (MarkSessionMfaVerifiedResponse);
+  // RPC lama selalu ditolak; gunakan AuthService.VerifySessionMfa untuk memverifikasi kode.
+  rpc MarkSessionMfaVerified(MarkSessionMfaVerifiedRequest) returns (MarkSessionMfaVerifiedResponse) {
+    option deprecated = true;
+  }
   rpc LogoutSession(LogoutSessionRequest) returns (LogoutSessionResponse);
   rpc RevokeSessionById(RevokeSessionByIdRequest) returns (RevokeSessionByIdResponse);
   rpc RevokeAllUserSessions(RevokeAllUserSessionsRequest) returns (RevokeAllUserSessionsResponse);

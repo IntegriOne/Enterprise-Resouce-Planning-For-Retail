@@ -21,6 +21,7 @@ type groupMemberModel struct {
 	ID        string    `gorm:"column:id;type:uuid;primaryKey;->"`
 	GroupID   string    `gorm:"column:group_id;type:uuid"`
 	UserID    string    `gorm:"column:user_id;type:uuid"`
+	AddedBy   *string   `gorm:"column:added_by;type:uuid"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 }
 

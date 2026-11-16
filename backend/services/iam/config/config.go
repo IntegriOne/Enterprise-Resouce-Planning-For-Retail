@@ -158,6 +158,9 @@ func (c *Config) ValidateRuntimeStrict(sec SecurityConfig) error {
 	if err := c.Email.Validate(c.IsProduction()); err != nil {
 		return fmt.Errorf("invalid IAM email configuration in %q environment: %w", c.AppEnv, err)
 	}
+	if !strings.EqualFold(strings.TrimSpace(c.AppEnv), "test") && len(strings.TrimSpace(c.InternalGatewayHMACSecret)) < 32 {
+		return fmt.Errorf("IAM_INTERNAL_GATEWAY_HMAC_SECRET (>= 32 bytes) is required in %q environment", c.AppEnv)
+	}
 	if !c.IsProduction() {
 		return nil
 	}
@@ -172,9 +175,6 @@ func (c *Config) ValidateRuntimeStrict(sec SecurityConfig) error {
 	}
 	if !sec.CSRFKeyringConfigured || len(sec.CSRFKeyring) == 0 {
 		return fmt.Errorf("IAM_CSRF_HMAC_KEYRING is required in %q environment", c.AppEnv)
-	}
-	if len(strings.TrimSpace(c.InternalGatewayHMACSecret)) < 32 {
-		return fmt.Errorf("IAM_INTERNAL_GATEWAY_HMAC_SECRET (>= 32 bytes) is required in %q environment", c.AppEnv)
 	}
 	return nil
 }

@@ -68,12 +68,18 @@ func TestPermissionAndRolePermission(t *testing.T) {
 
 	now := time.Date(2026, 11, 14, 10, 0, 0, 0, time.Local)
 
-	perm, err := entity.NewPermission(testPermissionID, " IAM.Role:Grant ", " role ", " GRANT ", "Grant role to principal", true, now)
+	perm, err := entity.NewPermission(testPermissionID, " IAM.Role.Grant ", " iam.role ", " GRANT ", "Grant role to principal", true, now)
 	if err != nil {
 		t.Fatalf("NewPermission() unexpected error: %v", err)
 	}
-	if perm.Code != "iam.role:grant" || perm.Resource != "role" || perm.Action != "grant" {
+	if perm.Code != "iam.role.grant" || perm.Resource != "iam.role" || perm.Action != "grant" {
 		t.Fatalf("normalized permission = %+v", perm)
+	}
+	if _, err := entity.NewPermission(testPermissionID, "iam.role.grant", "finance.invoice", "delete", "", false, now); err == nil {
+		t.Fatal("mismatched permission metadata must be rejected")
+	}
+	if _, err := entity.NewPermission(testPermissionID, "iam.role:grant.read", "iam.role:grant", "read", "", false, now); err == nil {
+		t.Fatal("permission resource with noncanonical separator must be rejected")
 	}
 
 	if _, err := entity.NewPermission(testPermissionID, "invalid code!", "role", "grant", "", false, now); !errors.Is(err, iamerrors.ErrInvalidPermissionCode) {

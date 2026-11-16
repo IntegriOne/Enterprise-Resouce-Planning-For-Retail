@@ -81,6 +81,12 @@ func TestErrorMapper_ToStatus(t *testing.T) {
 			wantCode: codes.FailedPrecondition,
 		},
 		{
+			name:       "assigned permission cannot be deleted",
+			err:        iamerrors.ErrPermissionInUse,
+			wantCode:   codes.FailedPrecondition,
+			wantReason: string(iamerrors.ErrPermissionInUse.Code),
+		},
+		{
 			name:            "email already verified maps to FailedPrecondition with ErrorInfo",
 			err:             iamerrors.ErrEmailAlreadyVerified,
 			wantCode:        codes.FailedPrecondition,

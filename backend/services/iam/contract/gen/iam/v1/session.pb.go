@@ -242,11 +242,12 @@ func (x *IssuedSession) GetCsrfToken() string {
 }
 
 type IssueSessionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	MfaVerified   bool                   `protobuf:"varint,2,opt,name=mfa_verified,json=mfaVerified,proto3" json:"mfa_verified,omitempty"`
-	IpAddress     string                 `protobuf:"bytes,3,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
-	UserAgent     string                 `protobuf:"bytes,4,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	UserId string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// Nilai true ditolak; status MFA hanya ditetapkan setelah verifikasi kode melalui AuthService.
+	MfaVerified   bool   `protobuf:"varint,2,opt,name=mfa_verified,json=mfaVerified,proto3" json:"mfa_verified,omitempty"`
+	IpAddress     string `protobuf:"bytes,3,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
+	UserAgent     string `protobuf:"bytes,4,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1660,14 +1661,14 @@ const file_iam_v1_session_proto_rawDesc = "" +
 	"\bsnapshot\x18\x02 \x01(\v2\x16.iam.v1.AccessSnapshotR\bsnapshot\x12.\n" +
 	"\x13can_access_identity\x18\x03 \x01(\bR\x11canAccessIdentity\x122\n" +
 	"\x15default_redirect_path\x18\x04 \x01(\tR\x13defaultRedirectPath\x124\n" +
-	"\x16allowed_redirect_paths\x18\x05 \x03(\tR\x14allowedRedirectPaths2\xba\t\n" +
+	"\x16allowed_redirect_paths\x18\x05 \x03(\tR\x14allowedRedirectPaths2\xbf\t\n" +
 	"\x0eSessionService\x12I\n" +
 	"\fIssueSession\x12\x1b.iam.v1.IssueSessionRequest\x1a\x1c.iam.v1.IssueSessionResponse\x12^\n" +
 	"\x13AuthenticateSession\x12\".iam.v1.AuthenticateSessionRequest\x1a#.iam.v1.AuthenticateSessionResponse\x12C\n" +
 	"\n" +
 	"VerifyCsrf\x12\x19.iam.v1.VerifyCsrfRequest\x1a\x1a.iam.v1.VerifyCsrfResponse\x12O\n" +
-	"\x0eGetSessionCsrf\x12\x1d.iam.v1.GetSessionCsrfRequest\x1a\x1e.iam.v1.GetSessionCsrfResponse\x12g\n" +
-	"\x16MarkSessionMfaVerified\x12%.iam.v1.MarkSessionMfaVerifiedRequest\x1a&.iam.v1.MarkSessionMfaVerifiedResponse\x12L\n" +
+	"\x0eGetSessionCsrf\x12\x1d.iam.v1.GetSessionCsrfRequest\x1a\x1e.iam.v1.GetSessionCsrfResponse\x12l\n" +
+	"\x16MarkSessionMfaVerified\x12%.iam.v1.MarkSessionMfaVerifiedRequest\x1a&.iam.v1.MarkSessionMfaVerifiedResponse\"\x03\x88\x02\x01\x12L\n" +
 	"\rLogoutSession\x12\x1c.iam.v1.LogoutSessionRequest\x1a\x1d.iam.v1.LogoutSessionResponse\x12X\n" +
 	"\x11RevokeSessionById\x12 .iam.v1.RevokeSessionByIdRequest\x1a!.iam.v1.RevokeSessionByIdResponse\x12d\n" +
 	"\x15RevokeAllUserSessions\x12$.iam.v1.RevokeAllUserSessionsRequest\x1a%.iam.v1.RevokeAllUserSessionsResponse\x12U\n" +

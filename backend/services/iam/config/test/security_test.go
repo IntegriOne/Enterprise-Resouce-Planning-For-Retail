@@ -99,3 +99,14 @@ func TestLoadAndValidateRuntimeStrict_ProductionPolicies(t *testing.T) {
 		t.Fatalf("expected ValidateRuntimeStrict to succeed in configured production, got: %v", err)
 	}
 }
+
+func TestValidateRuntimeStrict_DevelopmentRequiresInternalProofSecret(t *testing.T) {
+	cfg := &config.Config{AppEnv: "development"}
+	if err := cfg.ValidateRuntimeStrict(config.SecurityConfig{}); err == nil {
+		t.Fatal("development runtime must reject missing internal HMAC secret")
+	}
+	cfg.InternalGatewayHMACSecret = "0123456789abcdef0123456789abcdef"
+	if err := cfg.ValidateRuntimeStrict(config.SecurityConfig{}); err != nil {
+		t.Fatalf("development runtime rejected configured internal HMAC secret: %v", err)
+	}
+}
