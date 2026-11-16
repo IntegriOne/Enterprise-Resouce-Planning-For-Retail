@@ -1,0 +1,3 @@
+# Perincian aksi permission HRM
+
+Owner meminta izin CRUD dipisah agar `create`, `update`, dan `delete` dapat ditinjau serta diberikan sendiri. Katalog HRM diperbaiki dari pasangan `read/write` menjadi aksi granular `read/create/update/delete`, dengan `post`, `approve`, dan `finalize` untuk tiga command bisnis yang sudah tersedia. Untuk 84 resource, enam resource riwayat/ledger/hasil hanya baca; 78 lainnya memiliki empat kode CRUD. Jumlah katalog menjadi 321 kode. Template role menggunakan R/C/U; delete memerlukan grant tersendiri, mandat retensi, dan step-up. Tidak ada permission atau grant IAM yang dibuat dan runtime tetap fail-closed.
