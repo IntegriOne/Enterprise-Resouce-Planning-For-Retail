@@ -165,6 +165,7 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 	var courseID string
 	var enrollmentID string
 	var assessmentID string
+	var qualificationID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
@@ -176,6 +177,8 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", enrollmentID},
 			{"DELETE FROM hr_worker_competency_assessments WHERE id = ?", assessmentID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", assessmentID},
+			{"DELETE FROM hr_worker_qualifications WHERE id = ?", qualificationID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", qualificationID},
 			{"DELETE FROM hr_workers WHERE id = ?", workerID},
 			{"DELETE FROM hr_learning_course_competencies WHERE course_id = ?", courseID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", courseID},
@@ -344,6 +347,45 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 		workerID, "WORKER-"+workerID, familyID, "employee", "active", familyID,
 	).Error; err != nil {
 		t.Fatal(err)
+	}
+	qualificationType := "certification"
+	qualificationTitle := "Safety certificate"
+	qualificationInput := &pb.WorkerQualificationInput{
+		WorkerId: &workerID, QualificationType: &qualificationType, Title: &qualificationTitle,
+	}
+	qualificationInput.IssuerPartyReferenceId = &familyID
+	if _, err := client.CreateWorkerQualification(ctx, &pb.CreateWorkerQualificationRequest{Input: qualificationInput}); status.Code(err) != codes.Unavailable {
+		t.Fatalf("unverified qualification issuer: %v", err)
+	}
+	qualificationInput.IssuerPartyReferenceId = nil
+	createdQualification, err := client.CreateWorkerQualification(ctx, &pb.CreateWorkerQualificationRequest{Input: qualificationInput})
+	if err != nil || createdQualification.GetItem().GetId() == "" || createdQualification.GetItem().GetVerificationStatus() != "unverified" {
+		t.Fatalf("create qualification draft: %+v, %v", createdQualification, err)
+	}
+	qualificationID = createdQualification.Item.Id
+	if got, err := client.GetWorkerQualificationByID(ctx, &common.IDRequest{Id: qualificationID}); err != nil || got.GetItem().GetWorkerId() != workerID {
+		t.Fatalf("read qualification draft: %+v, %v", got, err)
+	}
+	if found, err := client.FindWorkerQualificationByWorkerID(ctx, &common.StringFinderRequest{Value: &workerID, Limit: 1}); err != nil ||
+		found.GetPage().GetTotal() != 1 || len(found.GetItems()) != 1 {
+		t.Fatalf("find qualification by worker: %+v, %v", found, err)
+	}
+	verifiedStatus := "verified"
+	if _, err := client.UpdateWorkerQualification(ctx, &pb.UpdateWorkerQualificationRequest{
+		Id: qualificationID, Input: &pb.WorkerQualificationInput{VerificationStatus: &verifiedStatus},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"verification_status"}},
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("verification through generic update: %v", err)
+	}
+	updatedQualificationTitle := "Updated safety certificate"
+	if updated, err := client.UpdateWorkerQualification(ctx, &pb.UpdateWorkerQualificationRequest{
+		Id: qualificationID, Input: &pb.WorkerQualificationInput{Title: &updatedQualificationTitle},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"title"}},
+	}); err != nil || updated.GetItem().GetTitle() != updatedQualificationTitle {
+		t.Fatalf("update qualification draft: %+v, %v", updated, err)
+	}
+	if _, err := client.DeleteWorkerQualification(ctx, &common.IDRequest{Id: qualificationID}); err != nil {
+		t.Fatalf("delete qualification draft: %v", err)
 	}
 	assessmentMethod := "manual_observation"
 	assessmentKey := "competency-assessment-" + workerID

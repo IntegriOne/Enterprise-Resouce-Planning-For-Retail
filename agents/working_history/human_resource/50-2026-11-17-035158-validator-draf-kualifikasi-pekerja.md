@@ -1,0 +1,3 @@
+# Validator draf kualifikasi pekerja
+
+Memasang validator produksi `hr_worker_qualifications` pada wiring kompetensi. CRUD dibatasi pada draf `unverified` milik worker aktif; perubahan status verifikasi, aktor, referensi eksternal, serta pemindahan worker/type ditolak. Operasi baca dan mutasi ditandai sensitif. Tes unit dan gRPC `bufconn` → PostgreSQL sementara `_test` membuktikan jalur positif serta penolakan. `go fmt`, `go vet`, dan seluruh tes race modul HRM lulus. Verifikasi kredensial resmi tetap menunggu kontrak Foundation/DRM dan grant IAM nyata; 46 resource mutasi lain masih fail-closed.

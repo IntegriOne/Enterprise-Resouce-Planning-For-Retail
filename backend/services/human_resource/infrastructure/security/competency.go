@@ -18,7 +18,7 @@ func CompetencyValidators(repos *repository.Registry) (map[string]MutationValida
 		return nil, hrerrors.ErrUnavailable
 	}
 	for _, dependency := range []any{
-		repos.Job, repos.Competency, repos.JobCompetency, repos.WorkerCompetencyAssessment,
+		repos.Worker, repos.WorkerQualification, repos.Job, repos.Competency, repos.JobCompetency, repos.WorkerCompetencyAssessment,
 		repos.DevelopmentAction, repos.LearningCourseCompetency,
 	} {
 		if operation.RequireDependency(dependency) != nil {
@@ -26,6 +26,7 @@ func CompetencyValidators(repos *repository.Registry) (map[string]MutationValida
 		}
 	}
 	return map[string]MutationValidator{
+		"hr_worker_qualifications": &workerQualificationValidator{workers: repos.Worker},
 		"hr_competencies": &competencyValidator{
 			competencies: repos.Competency,
 			references: []competencyReferenceCounter{
