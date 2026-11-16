@@ -129,16 +129,16 @@ func (r *Repository) UpdateActivity(ctx context.Context, sessionID string, lastA
 		idleExp = lastSeen.Add(entity.SessionIdleTimeout)
 	}
 	res := db.Model(&sessionModel{}).
-		Where("id = ? AND ended_at IS NULL", sid).
+		Where("id = ? AND ended_at IS NULL AND idle_expires_at > ? AND absolute_expires_at > ?", sid, lastSeen, lastSeen).
 		Updates(map[string]any{
-			"last_seen_at":    lastSeen,
-			"idle_expires_at": gorm.Expr("LEAST(absolute_expires_at, ?)", idleExp),
+			"last_seen_at":    gorm.Expr("GREATEST(last_seen_at, ?)", lastSeen),
+			"idle_expires_at": gorm.Expr("GREATEST(idle_expires_at, LEAST(absolute_expires_at, ?))", idleExp),
 		})
 	if res.Error != nil {
 		return pgstore.MapError(res.Error, iamerrors.ErrSessionNotFound)
 	}
 	if res.RowsAffected == 0 {
-		return checkMissingOrEndedSession(db, sid)
+		return checkMissingOrExpiredSession(db, sid, lastSeen)
 	}
 	return nil
 }
@@ -162,7 +162,7 @@ func (r *Repository) UpdateMFAVerified(ctx context.Context, sessionID string, ve
 
 	ts := pgstore.MustLocalNow(verifiedAt)
 	res := db.Model(&sessionModel{}).
-		Where("id = ? AND ended_at IS NULL", sid).
+		Where("id = ? AND ended_at IS NULL AND idle_expires_at > ? AND absolute_expires_at > ?", sid, ts, ts).
 		Updates(map[string]any{
 			"mfa_verified":      true,
 			"mfa_verified_at":   ts,
@@ -173,7 +173,7 @@ func (r *Repository) UpdateMFAVerified(ctx context.Context, sessionID string, ve
 		return pgstore.MapError(res.Error, iamerrors.ErrSessionNotFound)
 	}
 	if res.RowsAffected == 0 {
-		return checkMissingOrEndedSession(db, sid)
+		return checkMissingOrExpiredSession(db, sid, ts)
 	}
 	return nil
 }
@@ -267,6 +267,29 @@ func checkMissingOrEndedSession(db *gorm.DB, sid string) error {
 	}
 	if row.EndedAt != nil {
 		return iamerrors.ErrSessionAlreadyEnded
+	}
+	return iamerrors.ErrSessionNotFound
+}
+
+func checkMissingOrExpiredSession(db *gorm.DB, sid string, now time.Time) error {
+	var row struct {
+		EndedAt           *time.Time `gorm:"column:ended_at"`
+		IdleExpiresAt     time.Time  `gorm:"column:idle_expires_at"`
+		AbsoluteExpiresAt time.Time  `gorm:"column:absolute_expires_at"`
+	}
+	if err := db.Model(&sessionModel{}).
+		Select("ended_at", "idle_expires_at", "absolute_expires_at").
+		Where("id = ?", sid).Take(&row).Error; err != nil {
+		return pgstore.MapError(err, iamerrors.ErrSessionNotFound)
+	}
+	if row.EndedAt != nil {
+		return iamerrors.ErrSessionAlreadyEnded
+	}
+	if !now.Before(row.AbsoluteExpiresAt) {
+		return iamerrors.ErrSessionAbsoluteExpired
+	}
+	if !now.Before(row.IdleExpiresAt) {
+		return iamerrors.ErrSessionIdleExpired
 	}
 	return iamerrors.ErrSessionNotFound
 }

@@ -1,0 +1,3 @@
+# Audit seluruh domain dan perbaikan sesi IAM
+
+Audit ulang enam domain IAM mencocokkan 81 RPC dengan domain, repository, service, handler, wiring, dan tes. Ditemukan UPDATE aktivitas/MFA sesi yang masih dapat menulis baris kedaluwarsa setelah pembacaan lama. SQL kini memeriksa idle dan absolute expiry saat UPDATE serta menjaga waktu aktivitas tetap monotonik. Tes PostgreSQL pada database disposable membuktikan sesi aktif, idle expired, absolute expired, dan permintaan lama. Go fmt, vet, race test seluruh modul, dan build lulus. Audit nomor 6 mencatat batas bukti yang masih perlu dituntaskan: validasi scope bisnis ke Foundation, outbox email, konkurensi dan rollback lintas RPC, serta fixture Gateway.
