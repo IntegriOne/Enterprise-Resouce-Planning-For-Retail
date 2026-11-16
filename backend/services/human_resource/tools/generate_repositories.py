@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Generator model/port/repository dari baseline SQL HRM; tanpa perubahan database.
+# Generator model/registry dari baseline SQL HRM; port dan repository konkret dipelihara manual.
 from pathlib import Path
 import re,subprocess
 root=Path(__file__).resolve().parents[1]
@@ -76,29 +76,14 @@ for dom,ts in bydomain.items():
   # Kedua bagian composite key juga mempunyai pencarian berhalaman.
   if len(pks)>1:filters=pks+filters
   t['filters']=filters
-  ct=lambda typ: 'entity.'+typ if typ in enums.values() or typ in ('Decimal','JSON') else '*entity.'+typ[1:] if typ.startswith('*') and typ[1:] in enums.values() else typ
-  interface=f'\n// {n}Repository adalah port persistensi {t["table"]}.\ntype {n}Repository interface {{\n Repository[entity.{n}, {key}]\n'
-  repo=header+f'package {dom}\n\nimport (\n "context"\n\n "gorm.io/gorm"\n\n "{module}/domain/entity"\n domainrepo "{module}/domain/repository"\n "{module}/repository/pgstore"\n)\n\n'
-  repo+=f'// {n}Repository menyediakan kueri bertipe untuk {t["table"]}.\ntype {n}Repository struct {{ *pgstore.Repository[entity.{n}, {key}] }}\n\nvar _ domainrepo.{n}Repository = (*{n}Repository)(nil)\n\n'
-  keyvals=', '.join('key' if len(pks)==1 else 'key.'+c['field'] for c in pks)
-  repo+=f'// New{n}Repository memvalidasi koneksi dan menyiapkan repository.\nfunc New{n}Repository(db *gorm.DB) (*{n}Repository, error) {{\n base, err := pgstore.New[entity.{n}, {key}](db, func(key {key}) []any {{ return []any{{{keyvals}}} }})\n if err != nil {{ return nil, err }}\n return &{n}Repository{{Repository:base}}, nil\n}}\n'
-  for c in filters:
-   typ=ct(c['type']);meth='FindBy'+c['field']
-   interface+=f' {meth}(ctx context.Context, value {typ}, limit, offset int) ([]entity.{n}, error)\n'
-   repo+=f'\n// {meth} mencari kecocokan {c["column"]} dengan paginasi dan urutan primary key.\nfunc (r *{n}Repository) {meth}(ctx context.Context, value {typ}, limit, offset int) ([]entity.{n}, error) {{\n return r.SelectBy(ctx, "{c["column"]}", value, limit, offset)\n}}\n'
-  t['interface']=interface+'}\n'
-  write(Path('repository')/dom/(t['table'].removeprefix('hr_')+'_repository.go'),repo)
- out=header+'package repository\n\nimport (\n "context"\n\n "'+module+'/domain/entity"\n)\n'+''.join(t['interface'] for t in ts)
- write(Path('domain/repository')/(dom+'.go'),out)
 # Registry bertipe untuk seluruh tabel.
 out=header+'package repository\n\nimport (\n "gorm.io/gorm"\n\n domainrepo "'+module+'/domain/repository"\n "'+module+'/repository/pgstore"\n'+''.join(' "'+module+'/repository/'+d+'"\n' for d in sorted(bydomain))+')\n\n// Registry menyatukan dependency persistensi HRM pada satu database.\ntype Registry struct {\n Transactor domainrepo.Transactor\n'+''.join(' '+t['name']+' domainrepo.'+t['name']+'Repository\n' for t in tables)+'}\n\n// New membangun seluruh repository tanpa migrasi atau koneksi lintas management.\nfunc New(db *gorm.DB) (*Registry, error) {\n tx, err := pgstore.NewTransactor(db)\n if err != nil { return nil, err }\n r := &Registry{Transactor:tx}\n'
 for t in tables:out+=f' r.{t["name"]}, err = {t["domain"]}.New{t["name"]}Repository(db)\n if err != nil {{ return nil, err }}\n'
 out+=' return r,nil\n}\n'
 write(Path('repository/registry.go'),out)
 
-from domain_validation import generate, generate_wiring
+from domain_validation import generate
 generate(tables, dbml_tables, sql, enums, write)
-generate_wiring(tables, write)
 
-subprocess.run(['gofmt','-w',str(root/'domain/entity'),str(root/'domain/repository'),str(root/'repository')],check=True)
-print(f'Generated {len(tables)} repositories, {sum(len(t["filters"]) for t in tables)} typed finders')
+subprocess.run(['gofmt','-w',str(root/'domain/entity'),str(root/'repository/registry.go')],check=True)
+print(f'Generated {len(tables)} models and registry; repository ports and implementations are maintained manually')

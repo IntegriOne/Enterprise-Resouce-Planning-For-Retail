@@ -32,36 +32,32 @@ Replay cuti membutuhkan **seluruh** ledger dan approval adjustment terkait; call
 
 ## Wiring nyata
 
-`repository.Registry.Writers()` menghasilkan **86 `record.Writer[Entity,*Entity]`**. Batas generic memastikan validator dan port Insert/Update menerima tipe entity yang persis sama. Constructor menolak dependency nil, termasuk typed nil. Writer memeriksa context, kemudian `Validate()`, baru memanggil repository dengan context transaksi yang sama; error port dikembalikan apa adanya.
+Application service pada `internal/service/<domain>` sekarang mengikat mapper DTO, `Validate()`, guard lifecycle, policy/integrity dan transaksi/outbox ke port repository. Adapter `repository.Registry.Writers()` lama dihapus saat cleanup 16 November 2026 karena tidak dipakai service aktif; helper `record.Writer` tetap diuji sebagai helper domain mandiri, bukan dependency runtime.
 
 ```go
 store, err := repository.New(db)
 if err != nil {
     return err
 }
-writers, err := store.Writers()
+services, err := appservice.NewRegistry(store, runtime)
 if err != nil {
     return err
 }
-worker, err := entity.NewWorker(snapshot)
-if err != nil {
-    return err
-}
-return store.Transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
-    return writers.Worker.Insert(txCtx, worker)
-})
+// runtime harus menyediakan adapter policy dan integrity yang sah.
+worker, err := services.Personnel.CreateWorker(ctx, input)
+// Pemanggil memeriksa err sebelum memakai worker.
 ```
 
-Alur aplikasi selanjutnya: otorisasi → baca/lock lewat port repository → periksa aturan agregat → write melalui writer → outbox → commit. `writers.*.Create` adalah alias Insert; `Update` tetap snapshot lengkap. Read/GetAll/FindBy/Count, locking dan delete memakai port repository yang sudah tersedia. Repository mentah tetap operasi persistence murni dan tidak memanggil aturan bisnis; use case wajib memilih jalur validasi ini untuk write.
+Alur aplikasi: otorisasi → baca/lock lewat port repository → periksa entity/aturan agregat → integrity → write → outbox → recheck → commit. `Update` tetap snapshot lengkap. Read/GetAll/FindBy/Count, locking dan delete memakai port repository yang sudah tersedia. Repository mentah tetap operasi persistence murni dan tidak memanggil aturan bisnis; jalur request wajib melalui application service yang tervalidasi.
 
-Writer tidak mengatur transisi antarstatus atau menjalankan semua validator agregat secara otomatis. Constructor record tidak membuat model menjadi immutable di memori. Perubahan hubungan kerja, penerapan promosi dan saldo cuti tetap memerlukan transaksi lengkap pada `services/`; seluruh assignment/event/outbox harus disimpan bersama. Approval saja tidak mengubah jabatan atau grant.
+Constructor record tidak membuat model menjadi immutable di memori. Perubahan hubungan kerja, penerapan promosi dan saldo cuti memerlukan transaksi lengkap pada `internal/service/`; seluruh assignment/event/outbox harus disimpan bersama. Approval saja tidak mengubah jabatan atau grant. [Kontrak application service dan batas workflow](service.md).
 
 ## Verifikasi
 
 - Unit test di `domain/entity/test/` dan masing-masing `domain/service/<domain>/test/`: field/enum/precision/evidence, persamaan payroll, ledger reversal/approval, rubrik/goal, korelasi hubungan kerja, self-approval dan tanggal promosi.
 - Mock port membuktikan record invalid tidak mencapai repository, error port tidak berubah, typed nil ditolak dan context dibatalkan diteruskan. Tes race writer menjalankan 16 operasi serentak dengan sinkronisasi deterministik.
 - `GOWORK=off go fmt ./...`, `go vet ./...`, `go test -race ./...`, dan `go build ./...` lulus pada modul HRM mandiri.
-- PostgreSQL Docker 18.6, dua database sementara `hrm_repository_*_test`: 86 writer dibangun dan menolak nil sebelum persistensi; semua snapshot yang dimuat dari masing-masing 27 tabel fixture lolos `Validate`; update memakai writer dalam transaksi rollback. Matrix repository sebelumnya (86 GetAll/Count, 503 finder dan 81 percobaan write per fixture), serta 70 kasus penolakan SQL tetap lulus. Database dibuang.
+- Verifikasi historis sebelum cleanup memakai PostgreSQL Docker 18.6, dua database sementara `hrm_repository_*_test`: 86 writer dibangun dan menolak nil sebelum persistensi; snapshot dari masing-masing 27 tabel fixture lolos `Validate`. Adapter tersebut kemudian digantikan application service dan dihapus. Bukti refactor repository terbaru dicatat terpisah dalam dokumentasi repository; hasil historis tidak dianggap bukti adapter yang sudah dihapus masih tersedia.
 - Generator deterministik; assertion bertipe mengikat entity, validator, port dan implementasi repository. Model/schema SQL tidak diubah.
 
-Bukti tersebut belum merupakan positive CRUD semua 86 tabel, pengujian seluruh invariant agregat terhadap concurrency database, atau E2E HRM melalui Gateway. Lapisan `services/`, runtime/config/bootstrap DB, adapter owner, otorisasi, relay inbox/outbox dan API tetap pekerjaan berikutnya.
+Bukti tersebut belum merupakan positive CRUD semua 86 tabel, pengujian seluruh invariant agregat terhadap concurrency database, atau E2E HRM melalui Gateway. Application service sudah tersedia dengan dependency wajib; runtime/config/bootstrap DB, adapter owner/otorisasi, relay inbox/outbox dan API tetap pekerjaan berikutnya.
