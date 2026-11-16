@@ -91,7 +91,7 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 	now := time.Now().Unix()
 	reader := &sessionReader{state: &authsession.SessionValidationContext{
 		Gate:     &authsession.SecurityGateRecord{Open: true, RecoveryEpoch: 1},
-		Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session"},
+		Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", IssuedAtUnix: now},
 		Security: &authsession.UserSecurityRecord{UserID: "principal", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1},
 		Snapshot: &authz.AccessSnapshot{
 			PrincipalID: "principal", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,

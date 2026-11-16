@@ -27,6 +27,8 @@ type Policy struct {
 	permissions map[string]string
 }
 
+const sensitiveReauthWindow = 10 * time.Minute
+
 // NewPolicy menyalin katalog agar perubahan map pemanggil tidak mengubah izin runtime.
 func NewPolicy(sessions SessionReader, permissions map[string]string) (*Policy, error) {
 	if err := operation.RequireDependency(sessions); err != nil {
@@ -109,8 +111,15 @@ func (p *Policy) Authorize(ctx context.Context, access operation.Access) (operat
 		return operation.Actor{}, hrerrors.ErrForbidden
 	}
 	grant, allowed := state.Snapshot.HasPermission(permission)
-	if !allowed || ((grant.IsSensitive || IsSensitiveOperation(access.Resource, access.Action)) && !state.Token.MFAAuthenticated) {
+	if !allowed {
 		return operation.Actor{}, hrerrors.ErrForbidden
+	}
+	if grant.IsSensitive || IsSensitiveOperation(access.Resource, access.Action) {
+		authenticatedAt := time.Unix(state.Token.IssuedAtUnix, 0)
+		age := now.Sub(authenticatedAt)
+		if !state.Token.MFAAuthenticated || state.Token.IssuedAtUnix <= 0 || age < 0 || age > sensitiveReauthWindow {
+			return operation.Actor{}, hrerrors.ErrForbidden
+		}
 	}
 	return operation.Actor{
 		PrincipalID:        caller.PrincipalID,
