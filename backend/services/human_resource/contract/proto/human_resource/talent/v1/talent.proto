@@ -1,0 +1,339 @@
+syntax = "proto3";
+package human_resource.talent.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/talent/v1;talentv1";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+import "human_resource/common/v1/common.proto";
+message TalentFramework {
+ string id = 1;
+ string framework_code = 2;
+ int32 framework_version = 3;
+ string framework_name = 4;
+ string rubric_document_version_reference_id = 5;
+ bytes rubric_digest = 6;
+ google.protobuf.Timestamp effective_from = 7;
+ google.protobuf.Timestamp effective_to = 8;
+ string approved_by_principal_id = 9;
+ google.protobuf.Timestamp approved_at = 10;
+}
+message TalentFrameworkInput {
+ optional string framework_code = 1;
+ optional int32 framework_version = 2;
+ optional string framework_name = 3;
+ optional string rubric_document_version_reference_id = 4;
+ optional bytes rubric_digest = 5;
+ google.protobuf.Timestamp effective_from = 6;
+ google.protobuf.Timestamp effective_to = 7;
+ optional string approved_by_principal_id = 8;
+ google.protobuf.Timestamp approved_at = 9;
+}
+message CreateTalentFrameworkRequest { TalentFrameworkInput input = 1; }
+message UpdateTalentFrameworkRequest { string id = 1; TalentFrameworkInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentFrameworkResponse { TalentFramework value = 1; }
+message TalentFrameworksResponse { repeated TalentFramework items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentDimension {
+ string id = 1;
+ string framework_id = 2;
+ string dimension_code = 3;
+ string dimension_name = 4;
+ string definition = 5;
+ human_resource.common.v1.JsonDocument rating_anchors = 6;
+ string weight_percent = 7;
+ bool is_required = 8;
+}
+message TalentDimensionInput {
+ optional string framework_id = 1;
+ optional string dimension_code = 2;
+ optional string dimension_name = 3;
+ optional string definition = 4;
+ human_resource.common.v1.JsonDocument rating_anchors = 5;
+ optional string weight_percent = 6;
+ optional bool is_required = 7;
+}
+message CreateTalentDimensionRequest { TalentDimensionInput input = 1; }
+message UpdateTalentDimensionRequest { string id = 1; TalentDimensionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentDimensionResponse { TalentDimension value = 1; }
+message TalentDimensionsResponse { repeated TalentDimension items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentReviewCycle {
+ string id = 1;
+ string cycle_code = 2;
+ string framework_id = 3;
+ string legal_entity_reference_id = 4;
+ optional string organization_unit_reference_id = 5;
+ google.protobuf.Timestamp period_start = 6;
+ google.protobuf.Timestamp period_end = 7;
+ string status = 8;
+ string owner_principal_id = 9;
+ google.protobuf.Timestamp closed_at = 10;
+}
+message TalentReviewCycleInput {
+ optional string cycle_code = 1;
+ optional string framework_id = 2;
+ optional string legal_entity_reference_id = 3;
+ optional string organization_unit_reference_id = 4;
+ google.protobuf.Timestamp period_start = 5;
+ google.protobuf.Timestamp period_end = 6;
+ optional string status = 7;
+ optional string owner_principal_id = 8;
+ google.protobuf.Timestamp closed_at = 9;
+}
+message CreateTalentReviewCycleRequest { TalentReviewCycleInput input = 1; }
+message UpdateTalentReviewCycleRequest { string id = 1; TalentReviewCycleInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentReviewCycleResponse { TalentReviewCycle value = 1; }
+message TalentReviewCyclesResponse { repeated TalentReviewCycle items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentAssessment {
+ string id = 1;
+ string worker_id = 2;
+ string talent_review_cycle_id = 3;
+ string framework_id = 4;
+ int32 assessment_version = 5;
+ optional string performance_review_id = 6;
+ string status = 7;
+ string assessed_by_principal_id = 8;
+ google.protobuf.Timestamp assessed_at = 9;
+ string evidence_document_version_reference_id = 10;
+ bytes evidence_digest = 11;
+ optional string segment_code = 12;
+ optional string finalized_by_principal_id = 13;
+ google.protobuf.Timestamp finalized_at = 14;
+}
+message TalentAssessmentInput {
+ optional string worker_id = 1;
+ optional string talent_review_cycle_id = 2;
+ optional string framework_id = 3;
+ optional int32 assessment_version = 4;
+ optional string performance_review_id = 5;
+ optional string status = 6;
+ optional string evidence_document_version_reference_id = 7;
+ optional bytes evidence_digest = 8;
+ optional string segment_code = 9;
+ optional string finalized_by_principal_id = 10;
+ google.protobuf.Timestamp finalized_at = 11;
+}
+message CreateTalentAssessmentRequest { TalentAssessmentInput input = 1; }
+message UpdateTalentAssessmentRequest { string id = 1; TalentAssessmentInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentAssessmentResponse { TalentAssessment value = 1; }
+message TalentAssessmentsResponse { repeated TalentAssessment items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentAssessmentScore {
+ string id = 1;
+ string assessment_id = 2;
+ string framework_id = 3;
+ string dimension_id = 4;
+ int32 score = 5;
+ string evidence_document_version_reference_id = 6;
+ bytes evidence_digest = 7;
+}
+message TalentAssessmentScoreInput {
+ optional string assessment_id = 1;
+ optional string framework_id = 2;
+ optional string dimension_id = 3;
+ optional int32 score = 4;
+ optional string evidence_document_version_reference_id = 5;
+ optional bytes evidence_digest = 6;
+}
+message CreateTalentAssessmentScoreRequest { TalentAssessmentScoreInput input = 1; }
+message UpdateTalentAssessmentScoreRequest { string id = 1; TalentAssessmentScoreInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentAssessmentScoreResponse { TalentAssessmentScore value = 1; }
+message TalentAssessmentScoresResponse { repeated TalentAssessmentScore items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentCalibrationSession {
+ string id = 1;
+ string talent_review_cycle_id = 2;
+ string session_code = 3;
+ string chair_principal_id = 4;
+ google.protobuf.Timestamp scheduled_at = 5;
+ string status = 6;
+ google.protobuf.Timestamp closed_at = 7;
+ optional string minutes_document_version_reference_id = 8;
+}
+message TalentCalibrationSessionInput {
+ optional string talent_review_cycle_id = 1;
+ optional string session_code = 2;
+ optional string chair_principal_id = 3;
+ google.protobuf.Timestamp scheduled_at = 4;
+ optional string status = 5;
+ google.protobuf.Timestamp closed_at = 6;
+ optional string minutes_document_version_reference_id = 7;
+}
+message CreateTalentCalibrationSessionRequest { TalentCalibrationSessionInput input = 1; }
+message UpdateTalentCalibrationSessionRequest { string id = 1; TalentCalibrationSessionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentCalibrationSessionResponse { TalentCalibrationSession value = 1; }
+message TalentCalibrationSessionsResponse { repeated TalentCalibrationSession items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentCalibrationDecision {
+ string id = 1;
+ string session_id = 2;
+ string talent_review_cycle_id = 3;
+ string assessment_id = 4;
+ string dimension_id = 5;
+ int32 original_score = 6;
+ int32 calibrated_score = 7;
+ string rationale_document_version_reference_id = 8;
+ bytes rationale_digest = 9;
+ string decided_by_principal_id = 10;
+ google.protobuf.Timestamp decided_at = 11;
+}
+message TalentCalibrationDecisionInput {
+ optional string session_id = 1;
+ optional string talent_review_cycle_id = 2;
+ optional string assessment_id = 3;
+ optional string dimension_id = 4;
+ optional int32 original_score = 5;
+ optional int32 calibrated_score = 6;
+ optional string rationale_document_version_reference_id = 7;
+ optional bytes rationale_digest = 8;
+}
+message CreateTalentCalibrationDecisionRequest { TalentCalibrationDecisionInput input = 1; }
+message UpdateTalentCalibrationDecisionRequest { string id = 1; TalentCalibrationDecisionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentCalibrationDecisionResponse { TalentCalibrationDecision value = 1; }
+message TalentCalibrationDecisionsResponse { repeated TalentCalibrationDecision items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentPool {
+ string id = 1;
+ string pool_code = 2;
+ int32 pool_version = 3;
+ string pool_name = 4;
+ string legal_entity_reference_id = 5;
+ optional string target_job_id = 6;
+ string eligibility_document_version_reference_id = 7;
+ bytes eligibility_digest = 8;
+ google.protobuf.Timestamp valid_from = 9;
+ google.protobuf.Timestamp valid_to = 10;
+ string owner_principal_id = 11;
+}
+message TalentPoolInput {
+ optional string pool_code = 1;
+ optional int32 pool_version = 2;
+ optional string pool_name = 3;
+ optional string legal_entity_reference_id = 4;
+ optional string target_job_id = 5;
+ optional string eligibility_document_version_reference_id = 6;
+ optional bytes eligibility_digest = 7;
+ google.protobuf.Timestamp valid_from = 8;
+ google.protobuf.Timestamp valid_to = 9;
+ optional string owner_principal_id = 10;
+}
+message CreateTalentPoolRequest { TalentPoolInput input = 1; }
+message UpdateTalentPoolRequest { string id = 1; TalentPoolInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentPoolResponse { TalentPool value = 1; }
+message TalentPoolsResponse { repeated TalentPool items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentPoolMembership {
+ string id = 1;
+ string talent_pool_id = 2;
+ string worker_id = 3;
+ string assessment_id = 4;
+ string nominated_by_principal_id = 5;
+ string status = 6;
+ google.protobuf.Timestamp valid_from = 7;
+ google.protobuf.Timestamp valid_to = 8;
+ optional string approved_by_principal_id = 9;
+ google.protobuf.Timestamp approved_at = 10;
+ optional string exit_reason_code = 11;
+}
+message TalentPoolMembershipInput {
+ optional string talent_pool_id = 1;
+ optional string worker_id = 2;
+ optional string assessment_id = 3;
+ optional string nominated_by_principal_id = 4;
+ optional string status = 5;
+ google.protobuf.Timestamp valid_from = 6;
+ google.protobuf.Timestamp valid_to = 7;
+ optional string approved_by_principal_id = 8;
+ google.protobuf.Timestamp approved_at = 9;
+ optional string exit_reason_code = 10;
+}
+message CreateTalentPoolMembershipRequest { TalentPoolMembershipInput input = 1; }
+message UpdateTalentPoolMembershipRequest { string id = 1; TalentPoolMembershipInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message TalentPoolMembershipResponse { TalentPoolMembership value = 1; }
+message TalentPoolMembershipsResponse { repeated TalentPoolMembership items = 1; human_resource.common.v1.PageInfo page = 2; }
+service TalentService {
+ rpc CreateTalentFramework(CreateTalentFrameworkRequest) returns (TalentFrameworkResponse);
+ rpc UpdateTalentFramework(UpdateTalentFrameworkRequest) returns (TalentFrameworkResponse);
+ rpc DeleteTalentFramework(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentFrameworkByID(human_resource.common.v1.IDRequest) returns (TalentFrameworkResponse);
+ rpc GetAllTalentFrameworks(human_resource.common.v1.PageRequest) returns (TalentFrameworksResponse);
+ rpc FindTalentFrameworkByFrameworkCode(human_resource.common.v1.StringFinderRequest) returns (TalentFrameworksResponse);
+ rpc FindTalentFrameworkByRubricDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentFrameworksResponse);
+ rpc FindTalentFrameworkByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentFrameworksResponse);
+ rpc CreateTalentDimension(CreateTalentDimensionRequest) returns (TalentDimensionResponse);
+ rpc UpdateTalentDimension(UpdateTalentDimensionRequest) returns (TalentDimensionResponse);
+ rpc DeleteTalentDimension(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentDimensionByID(human_resource.common.v1.IDRequest) returns (TalentDimensionResponse);
+ rpc GetAllTalentDimensions(human_resource.common.v1.PageRequest) returns (TalentDimensionsResponse);
+ rpc FindTalentDimensionByFrameworkID(human_resource.common.v1.StringFinderRequest) returns (TalentDimensionsResponse);
+ rpc FindTalentDimensionByDimensionCode(human_resource.common.v1.StringFinderRequest) returns (TalentDimensionsResponse);
+ rpc CreateTalentReviewCycle(CreateTalentReviewCycleRequest) returns (TalentReviewCycleResponse);
+ rpc UpdateTalentReviewCycle(UpdateTalentReviewCycleRequest) returns (TalentReviewCycleResponse);
+ rpc DeleteTalentReviewCycle(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentReviewCycleByID(human_resource.common.v1.IDRequest) returns (TalentReviewCycleResponse);
+ rpc GetAllTalentReviewCycles(human_resource.common.v1.PageRequest) returns (TalentReviewCyclesResponse);
+ rpc FindTalentReviewCycleByCycleCode(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
+ rpc FindTalentReviewCycleByFrameworkID(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
+ rpc FindTalentReviewCycleByLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
+ rpc FindTalentReviewCycleByOrganizationUnitReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
+ rpc FindTalentReviewCycleByStatus(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
+ rpc FindTalentReviewCycleByOwnerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
+ rpc CreateTalentAssessment(CreateTalentAssessmentRequest) returns (TalentAssessmentResponse);
+ rpc UpdateTalentAssessment(UpdateTalentAssessmentRequest) returns (TalentAssessmentResponse);
+ rpc DeleteTalentAssessment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentAssessmentByID(human_resource.common.v1.IDRequest) returns (TalentAssessmentResponse);
+ rpc GetAllTalentAssessments(human_resource.common.v1.PageRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByWorkerID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByTalentReviewCycleID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByFrameworkID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByPerformanceReviewID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByStatus(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByAssessedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentBySegmentCode(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FindTalentAssessmentByFinalizedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc FinalizeTalentAssessment(human_resource.common.v1.IDRequest) returns (TalentAssessmentResponse);
+ rpc CreateTalentAssessmentScore(CreateTalentAssessmentScoreRequest) returns (TalentAssessmentScoreResponse);
+ rpc UpdateTalentAssessmentScore(UpdateTalentAssessmentScoreRequest) returns (TalentAssessmentScoreResponse);
+ rpc DeleteTalentAssessmentScore(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentAssessmentScoreByID(human_resource.common.v1.IDRequest) returns (TalentAssessmentScoreResponse);
+ rpc GetAllTalentAssessmentScores(human_resource.common.v1.PageRequest) returns (TalentAssessmentScoresResponse);
+ rpc FindTalentAssessmentScoreByAssessmentID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentScoresResponse);
+ rpc FindTalentAssessmentScoreByFrameworkID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentScoresResponse);
+ rpc FindTalentAssessmentScoreByDimensionID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentScoresResponse);
+ rpc CreateTalentCalibrationSession(CreateTalentCalibrationSessionRequest) returns (TalentCalibrationSessionResponse);
+ rpc UpdateTalentCalibrationSession(UpdateTalentCalibrationSessionRequest) returns (TalentCalibrationSessionResponse);
+ rpc DeleteTalentCalibrationSession(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentCalibrationSessionByID(human_resource.common.v1.IDRequest) returns (TalentCalibrationSessionResponse);
+ rpc GetAllTalentCalibrationSessions(human_resource.common.v1.PageRequest) returns (TalentCalibrationSessionsResponse);
+ rpc FindTalentCalibrationSessionByTalentReviewCycleID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
+ rpc FindTalentCalibrationSessionBySessionCode(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
+ rpc FindTalentCalibrationSessionByChairPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
+ rpc FindTalentCalibrationSessionByStatus(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
+ rpc FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
+ rpc CreateTalentCalibrationDecision(CreateTalentCalibrationDecisionRequest) returns (TalentCalibrationDecisionResponse);
+ rpc UpdateTalentCalibrationDecision(UpdateTalentCalibrationDecisionRequest) returns (TalentCalibrationDecisionResponse);
+ rpc DeleteTalentCalibrationDecision(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentCalibrationDecisionByID(human_resource.common.v1.IDRequest) returns (TalentCalibrationDecisionResponse);
+ rpc GetAllTalentCalibrationDecisions(human_resource.common.v1.PageRequest) returns (TalentCalibrationDecisionsResponse);
+ rpc FindTalentCalibrationDecisionBySessionID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationDecisionsResponse);
+ rpc FindTalentCalibrationDecisionByTalentReviewCycleID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationDecisionsResponse);
+ rpc FindTalentCalibrationDecisionByAssessmentID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationDecisionsResponse);
+ rpc FindTalentCalibrationDecisionByDimensionID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationDecisionsResponse);
+ rpc FindTalentCalibrationDecisionByRationaleDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationDecisionsResponse);
+ rpc FindTalentCalibrationDecisionByDecidedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationDecisionsResponse);
+ rpc CreateTalentPool(CreateTalentPoolRequest) returns (TalentPoolResponse);
+ rpc UpdateTalentPool(UpdateTalentPoolRequest) returns (TalentPoolResponse);
+ rpc DeleteTalentPool(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentPoolByID(human_resource.common.v1.IDRequest) returns (TalentPoolResponse);
+ rpc GetAllTalentPools(human_resource.common.v1.PageRequest) returns (TalentPoolsResponse);
+ rpc FindTalentPoolByPoolCode(human_resource.common.v1.StringFinderRequest) returns (TalentPoolsResponse);
+ rpc FindTalentPoolByLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolsResponse);
+ rpc FindTalentPoolByTargetJobID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolsResponse);
+ rpc FindTalentPoolByEligibilityDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolsResponse);
+ rpc FindTalentPoolByOwnerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolsResponse);
+ rpc CreateTalentPoolMembership(CreateTalentPoolMembershipRequest) returns (TalentPoolMembershipResponse);
+ rpc UpdateTalentPoolMembership(UpdateTalentPoolMembershipRequest) returns (TalentPoolMembershipResponse);
+ rpc DeleteTalentPoolMembership(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetTalentPoolMembershipByID(human_resource.common.v1.IDRequest) returns (TalentPoolMembershipResponse);
+ rpc GetAllTalentPoolMemberships(human_resource.common.v1.PageRequest) returns (TalentPoolMembershipsResponse);
+ rpc FindTalentPoolMembershipByTalentPoolID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+ rpc FindTalentPoolMembershipByWorkerID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+ rpc FindTalentPoolMembershipByAssessmentID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+ rpc FindTalentPoolMembershipByNominatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+ rpc FindTalentPoolMembershipByStatus(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+ rpc FindTalentPoolMembershipByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+ rpc FindTalentPoolMembershipByExitReasonCode(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+}

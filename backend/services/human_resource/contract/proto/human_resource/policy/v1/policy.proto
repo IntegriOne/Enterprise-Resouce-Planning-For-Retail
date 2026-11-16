@@ -1,0 +1,91 @@
+syntax = "proto3";
+package human_resource.policy.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/policy/v1;policyv1";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service PolicyService {
+  rpc CreatePolicy(CreatePolicyRequest) returns (PolicyResponse);
+  rpc UpdatePolicy(UpdatePolicyRequest) returns (PolicyResponse);
+  rpc DeletePolicy(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPolicyByID(human_resource.common.v1.IDRequest) returns (PolicyResponse);
+  rpc GetAllPolicies(human_resource.common.v1.PageRequest) returns (PoliciesResponse);
+  rpc FindPolicyByPolicyCode(human_resource.common.v1.StringFinderRequest) returns (PoliciesResponse);
+  rpc FindPolicyByCategoryCode(human_resource.common.v1.StringFinderRequest) returns (PoliciesResponse);
+  rpc FindPolicyByLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (PoliciesResponse);
+  rpc FindPolicyByDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PoliciesResponse);
+  rpc FindPolicyByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PoliciesResponse);
+  rpc CreatePolicyAcknowledgement(CreatePolicyAcknowledgementRequest) returns (PolicyAcknowledgementResponse);
+  rpc UpdatePolicyAcknowledgement(UpdatePolicyAcknowledgementRequest) returns (PolicyAcknowledgementResponse);
+  rpc DeletePolicyAcknowledgement(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPolicyAcknowledgementByID(human_resource.common.v1.IDRequest) returns (PolicyAcknowledgementResponse);
+  rpc GetAllPolicyAcknowledgements(human_resource.common.v1.PageRequest) returns (PolicyAcknowledgementsResponse);
+  rpc FindPolicyAcknowledgementByPolicyID(human_resource.common.v1.StringFinderRequest) returns (PolicyAcknowledgementsResponse);
+  rpc FindPolicyAcknowledgementByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PolicyAcknowledgementsResponse);
+  rpc FindPolicyAcknowledgementByAcknowledgedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PolicyAcknowledgementsResponse);
+  rpc FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PolicyAcknowledgementsResponse);
+}
+
+message Policy {
+  string id = 1;
+  string policy_code = 2;
+  int32 policy_version = 3;
+  string policy_name = 4;
+  string category_code = 5;
+  string legal_entity_reference_id = 6;
+  google.protobuf.Timestamp effective_from = 7;
+  google.protobuf.Timestamp effective_to = 8;
+  string document_version_reference_id = 9;
+  bytes content_digest = 10;
+  string approved_by_principal_id = 11;
+  google.protobuf.Timestamp approved_at = 12;
+}
+message PolicyInput {
+  optional string policy_code = 1;
+  optional int32 policy_version = 2;
+  optional string policy_name = 3;
+  optional string category_code = 4;
+  optional string legal_entity_reference_id = 5;
+  google.protobuf.Timestamp effective_from = 6;
+  google.protobuf.Timestamp effective_to = 7;
+  optional string document_version_reference_id = 8;
+  optional bytes content_digest = 9;
+  optional string approved_by_principal_id = 10;
+  google.protobuf.Timestamp approved_at = 11;
+}
+message CreatePolicyRequest { PolicyInput input = 1; }
+message UpdatePolicyRequest {
+  string id = 1;
+  PolicyInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PolicyResponse { Policy value = 1; }
+message PoliciesResponse { repeated Policy items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message PolicyAcknowledgement {
+  string id = 1;
+  string policy_id = 2;
+  string worker_id = 3;
+  google.protobuf.Timestamp assigned_at = 4;
+  google.protobuf.Timestamp due_at = 5;
+  google.protobuf.Timestamp acknowledged_at = 6;
+  optional string acknowledged_by_principal_id = 7;
+  optional string evidence_document_version_reference_id = 8;
+}
+message PolicyAcknowledgementInput {
+  optional string policy_id = 1;
+  optional string worker_id = 2;
+  google.protobuf.Timestamp due_at = 3;
+  google.protobuf.Timestamp acknowledged_at = 4;
+  optional string acknowledged_by_principal_id = 5;
+  optional string evidence_document_version_reference_id = 6;
+}
+message CreatePolicyAcknowledgementRequest { PolicyAcknowledgementInput input = 1; }
+message UpdatePolicyAcknowledgementRequest {
+  string id = 1;
+  PolicyAcknowledgementInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PolicyAcknowledgementResponse { PolicyAcknowledgement value = 1; }
+message PolicyAcknowledgementsResponse { repeated PolicyAcknowledgement items = 1; human_resource.common.v1.PageInfo page = 2; }

@@ -1,0 +1,105 @@
+syntax = "proto3";
+package human_resource.offboarding.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/offboarding/v1;offboardingv1";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service OffboardingService {
+  rpc CreateOffboardingPlan(CreateOffboardingPlanRequest) returns (OffboardingPlanResponse);
+  rpc UpdateOffboardingPlan(UpdateOffboardingPlanRequest) returns (OffboardingPlanResponse);
+  rpc DeleteOffboardingPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetOffboardingPlanByID(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);
+  rpc GetAllOffboardingPlans(human_resource.common.v1.PageRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByWorkerID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByPlanNumber(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByReasonCode(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByStatus(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByExitInterviewDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByFinalPayrollRunID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByFinanceClearanceReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc FindOffboardingPlanByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc CreateOffboardingTask(CreateOffboardingTaskRequest) returns (OffboardingTaskResponse);
+  rpc UpdateOffboardingTask(UpdateOffboardingTaskRequest) returns (OffboardingTaskResponse);
+  rpc DeleteOffboardingTask(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetOffboardingTaskByID(human_resource.common.v1.IDRequest) returns (OffboardingTaskResponse);
+  rpc GetAllOffboardingTasks(human_resource.common.v1.PageRequest) returns (OffboardingTasksResponse);
+  rpc FindOffboardingTaskByOffboardingPlanID(human_resource.common.v1.StringFinderRequest) returns (OffboardingTasksResponse);
+  rpc FindOffboardingTaskByTaskCode(human_resource.common.v1.StringFinderRequest) returns (OffboardingTasksResponse);
+  rpc FindOffboardingTaskByAssignedPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffboardingTasksResponse);
+  rpc FindOffboardingTaskByStatus(human_resource.common.v1.StringFinderRequest) returns (OffboardingTasksResponse);
+  rpc FindOffboardingTaskByOwnerConfirmationReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffboardingTasksResponse);
+  rpc FindOffboardingTaskByWaivedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffboardingTasksResponse);
+}
+message OffboardingPlan {
+  string id = 1;
+  string worker_id = 2;
+  string plan_number = 3;
+  string reason_code = 4;
+  google.protobuf.Timestamp notice_date = 5;
+  google.protobuf.Timestamp last_working_date = 6;
+  google.protobuf.Timestamp termination_effective_date = 7;
+  string status = 8;
+  optional string exit_interview_document_version_reference_id = 9;
+  optional string final_payroll_run_id = 10;
+  optional string finance_clearance_reference_id = 11;
+  optional string approved_by_principal_id = 12;
+  google.protobuf.Timestamp approved_at = 13;
+  google.protobuf.Timestamp completed_at = 14;
+  string created_by_principal_id = 15;
+  google.protobuf.Timestamp created_at = 16;
+}
+message OffboardingPlanInput {
+  optional string worker_id = 1;
+  optional string plan_number = 2;
+  optional string reason_code = 3;
+  google.protobuf.Timestamp notice_date = 4;
+  google.protobuf.Timestamp last_working_date = 5;
+  google.protobuf.Timestamp termination_effective_date = 6;
+  optional string status = 7;
+  optional string exit_interview_document_version_reference_id = 8;
+  optional string final_payroll_run_id = 9;
+  optional string finance_clearance_reference_id = 10;
+  optional string approved_by_principal_id = 11;
+  google.protobuf.Timestamp approved_at = 12;
+  google.protobuf.Timestamp completed_at = 13;
+}
+message CreateOffboardingPlanRequest { OffboardingPlanInput input = 1; }
+message UpdateOffboardingPlanRequest { string id = 1; OffboardingPlanInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message OffboardingPlanResponse { OffboardingPlan value = 1; }
+message OffboardingPlansResponse { repeated OffboardingPlan items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message OffboardingTask {
+  string id = 1;
+  string offboarding_plan_id = 2;
+  string task_code = 3;
+  string task_name = 4;
+  string owner_management = 5;
+  optional string assigned_principal_id = 6;
+  string status = 7;
+  bool is_mandatory = 8;
+  google.protobuf.Timestamp due_at = 9;
+  google.protobuf.Timestamp completed_at = 10;
+  optional string owner_confirmation_reference_id = 11;
+  optional string waiver_reason = 12;
+  optional string waived_by_principal_id = 13;
+}
+message OffboardingTaskInput {
+  optional string offboarding_plan_id = 1;
+  optional string task_code = 2;
+  optional string task_name = 3;
+  optional string owner_management = 4;
+  optional string assigned_principal_id = 5;
+  optional string status = 6;
+  optional bool is_mandatory = 7;
+  google.protobuf.Timestamp due_at = 8;
+  google.protobuf.Timestamp completed_at = 9;
+  optional string owner_confirmation_reference_id = 10;
+  optional string waiver_reason = 11;
+  optional string waived_by_principal_id = 12;
+}
+message CreateOffboardingTaskRequest { OffboardingTaskInput input = 1; }
+message UpdateOffboardingTaskRequest { string id = 1; OffboardingTaskInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message OffboardingTaskResponse { OffboardingTask value = 1; }
+message OffboardingTasksResponse { repeated OffboardingTask items = 1; human_resource.common.v1.PageInfo page = 2; }

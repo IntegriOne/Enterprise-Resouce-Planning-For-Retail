@@ -1,0 +1,577 @@
+syntax = "proto3";
+package human_resource.recruitment.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/recruitment/v1;recruitmentv1";
+
+service RecruitmentService {
+  rpc CreateRequisition(CreateRequisitionRequest) returns (RequisitionResponse);
+  rpc UpdateRequisition(UpdateRequisitionRequest) returns (RequisitionResponse);
+  rpc DeleteRequisition(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetRequisitionByID(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
+  rpc GetAllRequisitions(human_resource.common.v1.PageRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByRequisitionNumber(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByWorkforcePlanLineID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByPositionID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByJobID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByOrganizationUnitReferenceID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByHiringManagerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByRecruiterPrincipalID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByRequisitionType(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByStatus(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByBudgetReferenceID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByWorkLocationReferenceID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc CreateCandidate(CreateCandidateRequest) returns (CandidateResponse);
+  rpc UpdateCandidate(UpdateCandidateRequest) returns (CandidateResponse);
+  rpc DeleteCandidate(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetCandidateByID(human_resource.common.v1.IDRequest) returns (CandidateResponse);
+  rpc GetAllCandidates(human_resource.common.v1.PageRequest) returns (CandidatesResponse);
+  rpc FindCandidateByCandidateNumber(human_resource.common.v1.StringFinderRequest) returns (CandidatesResponse);
+  rpc FindCandidateByPersonPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (CandidatesResponse);
+  rpc FindCandidateByContactReferenceID(human_resource.common.v1.StringFinderRequest) returns (CandidatesResponse);
+  rpc FindCandidateBySourceType(human_resource.common.v1.StringFinderRequest) returns (CandidatesResponse);
+  rpc FindCandidateByCandidateStatus(human_resource.common.v1.StringFinderRequest) returns (CandidatesResponse);
+  rpc FindCandidateByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (CandidatesResponse);
+  rpc CreateApplication(CreateApplicationRequest) returns (ApplicationResponse);
+  rpc UpdateApplication(UpdateApplicationRequest) returns (ApplicationResponse);
+  rpc DeleteApplication(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetApplicationByID(human_resource.common.v1.IDRequest) returns (ApplicationResponse);
+  rpc GetAllApplications(human_resource.common.v1.PageRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByCandidateID(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByRequisitionID(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByApplicationNumber(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByStatus(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByCurrentStageCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByAssignedRecruiterPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByDispositionReasonCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByDecisionByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByHiredWorkerID(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationBySourcePostingID(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc FindApplicationByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (ApplicationsResponse);
+  rpc CreateApplicationStageHistory(CreateApplicationStageHistoryRequest) returns (ApplicationStageHistoryResponse);
+  rpc UpdateApplicationStageHistory(UpdateApplicationStageHistoryRequest) returns (ApplicationStageHistoryResponse);
+  rpc DeleteApplicationStageHistory(human_resource.common.v1.IdentityIDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetApplicationStageHistoryByID(human_resource.common.v1.IdentityIDRequest) returns (ApplicationStageHistoryResponse);
+  rpc GetAllApplicationStageHistories(human_resource.common.v1.PageRequest) returns (ApplicationStageHistoriesResponse);
+  rpc FindApplicationStageHistoryByApplicationID(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
+  rpc FindApplicationStageHistoryByPreviousStatus(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
+  rpc FindApplicationStageHistoryByNewStatus(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
+  rpc FindApplicationStageHistoryByStageCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
+  rpc FindApplicationStageHistoryByChangedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
+  rpc FindApplicationStageHistoryByReasonCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
+  rpc CreateInterview(CreateInterviewRequest) returns (InterviewResponse);
+  rpc UpdateInterview(UpdateInterviewRequest) returns (InterviewResponse);
+  rpc DeleteInterview(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetInterviewByID(human_resource.common.v1.IDRequest) returns (InterviewResponse);
+  rpc GetAllInterviews(human_resource.common.v1.PageRequest) returns (InterviewsResponse);
+  rpc FindInterviewByApplicationID(human_resource.common.v1.StringFinderRequest) returns (InterviewsResponse);
+  rpc FindInterviewByInterviewType(human_resource.common.v1.StringFinderRequest) returns (InterviewsResponse);
+  rpc FindInterviewByLocationReferenceID(human_resource.common.v1.StringFinderRequest) returns (InterviewsResponse);
+  rpc FindInterviewByMeetingReferenceID(human_resource.common.v1.StringFinderRequest) returns (InterviewsResponse);
+  rpc FindInterviewByStatus(human_resource.common.v1.StringFinderRequest) returns (InterviewsResponse);
+  rpc FindInterviewByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (InterviewsResponse);
+  rpc CreateInterviewPanelist(CreateInterviewPanelistRequest) returns (InterviewPanelistResponse);
+  rpc UpdateInterviewPanelist(UpdateInterviewPanelistRequest) returns (InterviewPanelistResponse);
+  rpc DeleteInterviewPanelist(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetInterviewPanelistByID(human_resource.common.v1.IDRequest) returns (InterviewPanelistResponse);
+  rpc GetAllInterviewPanelists(human_resource.common.v1.PageRequest) returns (InterviewPanelistsResponse);
+  rpc FindInterviewPanelistByInterviewID(human_resource.common.v1.StringFinderRequest) returns (InterviewPanelistsResponse);
+  rpc FindInterviewPanelistByInterviewerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (InterviewPanelistsResponse);
+  rpc FindInterviewPanelistByScorecardTemplateReferenceID(human_resource.common.v1.StringFinderRequest) returns (InterviewPanelistsResponse);
+  rpc CreateInterviewFeedback(CreateInterviewFeedbackRequest) returns (InterviewFeedbackResponse);
+  rpc UpdateInterviewFeedback(UpdateInterviewFeedbackRequest) returns (InterviewFeedbackResponse);
+  rpc DeleteInterviewFeedback(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetInterviewFeedbackByID(human_resource.common.v1.IDRequest) returns (InterviewFeedbackResponse);
+  rpc GetAllInterviewFeedbacks(human_resource.common.v1.PageRequest) returns (InterviewFeedbacksResponse);
+  rpc FindInterviewFeedbackByInterviewID(human_resource.common.v1.StringFinderRequest) returns (InterviewFeedbacksResponse);
+  rpc FindInterviewFeedbackByInterviewerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (InterviewFeedbacksResponse);
+  rpc CreateOffer(CreateOfferRequest) returns (OfferResponse);
+  rpc UpdateOffer(UpdateOfferRequest) returns (OfferResponse);
+  rpc DeleteOffer(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetOfferByID(human_resource.common.v1.IDRequest) returns (OfferResponse);
+  rpc GetAllOffers(human_resource.common.v1.PageRequest) returns (OffersResponse);
+  rpc FindOfferByApplicationID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByOfferNumber(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByOfferStatus(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByProposedJobID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByProposedLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByProposedContractType(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByProposedCompensationDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByOfferDocumentReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByOfferDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc FindOfferByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
+  rpc CreateJobPosting(CreateJobPostingRequest) returns (JobPostingResponse);
+  rpc UpdateJobPosting(UpdateJobPostingRequest) returns (JobPostingResponse);
+  rpc DeleteJobPosting(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetJobPostingByID(human_resource.common.v1.IDRequest) returns (JobPostingResponse);
+  rpc GetAllJobPostings(human_resource.common.v1.PageRequest) returns (JobPostingsResponse);
+  rpc FindJobPostingByRequisitionID(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
+  rpc FindJobPostingByChannelCode(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
+  rpc FindJobPostingByContentDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
+  rpc FindJobPostingByStatus(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
+  rpc FindJobPostingByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
+  rpc CreateApplicationAssessment(CreateApplicationAssessmentRequest) returns (ApplicationAssessmentResponse);
+  rpc UpdateApplicationAssessment(UpdateApplicationAssessmentRequest) returns (ApplicationAssessmentResponse);
+  rpc DeleteApplicationAssessment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetApplicationAssessmentByID(human_resource.common.v1.IDRequest) returns (ApplicationAssessmentResponse);
+  rpc GetAllApplicationAssessments(human_resource.common.v1.PageRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByApplicationID(human_resource.common.v1.StringFinderRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByAssessmentCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByAttemptNumber(human_resource.common.v1.Int32FinderRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByRubricDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByStatus(human_resource.common.v1.StringFinderRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByAssessorPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByRecommendationCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationAssessmentsResponse);
+  rpc FindApplicationAssessmentByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (ApplicationAssessmentsResponse);
+}
+
+message Requisition {
+  string id = 1;
+  string requisition_number = 2;
+  optional string workforce_plan_line_id = 3;
+  optional string position_id = 4;
+  string job_id = 5;
+  string organization_unit_reference_id = 6;
+  string hiring_manager_principal_id = 7;
+  optional string recruiter_principal_id = 8;
+  string requisition_type = 9;
+  string status = 10;
+  int32 headcount = 11;
+  optional string target_start_date = 12;
+  optional string budget_reference_id = 13;
+  optional string work_location_reference_id = 14;
+  string employment_category = 15;
+  human_resource.common.v1.JsonDocument minimum_qualifications = 16;
+  human_resource.common.v1.JsonDocument desired_qualifications = 17;
+  google.protobuf.Timestamp approved_at = 18;
+  optional string approved_by_principal_id = 19;
+  google.protobuf.Timestamp opened_at = 20;
+  google.protobuf.Timestamp closed_at = 21;
+  string idempotency_key = 22;
+}
+message RequisitionInput {
+  optional string requisition_number = 1;
+  optional string workforce_plan_line_id = 2;
+  optional string position_id = 3;
+  optional string job_id = 4;
+  optional string organization_unit_reference_id = 5;
+  optional string hiring_manager_principal_id = 6;
+  optional string recruiter_principal_id = 7;
+  optional string requisition_type = 8;
+  optional string status = 9;
+  optional int32 headcount = 10;
+  optional string target_start_date = 11;
+  optional string budget_reference_id = 12;
+  optional string work_location_reference_id = 13;
+  optional string employment_category = 14;
+  human_resource.common.v1.JsonDocument minimum_qualifications = 15;
+  human_resource.common.v1.JsonDocument desired_qualifications = 16;
+  google.protobuf.Timestamp approved_at = 17;
+  optional string approved_by_principal_id = 18;
+  google.protobuf.Timestamp opened_at = 19;
+  google.protobuf.Timestamp closed_at = 20;
+  optional string idempotency_key = 21;
+}
+message CreateRequisitionRequest {
+  RequisitionInput input = 1;
+}
+message UpdateRequisitionRequest {
+  string id = 1;
+  RequisitionInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message RequisitionResponse {
+  Requisition item = 1;
+}
+message RequisitionsResponse {
+  repeated Requisition items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message Candidate {
+  string id = 1;
+  string candidate_number = 2;
+  optional string person_party_reference_id = 3;
+  optional string preferred_name = 4;
+  optional string contact_reference_id = 5;
+  optional string source_type = 6;
+  optional string source_reference = 7;
+  string privacy_notice_version = 8;
+  google.protobuf.Timestamp notice_acknowledged_at = 9;
+  optional string data_retention_until = 10;
+  string candidate_status = 11;
+  google.protobuf.Timestamp created_at = 12;
+  optional string created_by_principal_id = 13;
+}
+message CandidateInput {
+  optional string candidate_number = 1;
+  optional string person_party_reference_id = 2;
+  optional string preferred_name = 3;
+  optional string contact_reference_id = 4;
+  optional string source_type = 5;
+  optional string source_reference = 6;
+  optional string privacy_notice_version = 7;
+  google.protobuf.Timestamp notice_acknowledged_at = 8;
+  optional string data_retention_until = 9;
+  optional string candidate_status = 10;
+}
+message CreateCandidateRequest {
+  CandidateInput input = 1;
+}
+message UpdateCandidateRequest {
+  string id = 1;
+  CandidateInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message CandidateResponse {
+  Candidate item = 1;
+}
+message CandidatesResponse {
+  repeated Candidate items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message Application {
+  string id = 1;
+  string candidate_id = 2;
+  string requisition_id = 3;
+  string application_number = 4;
+  string status = 5;
+  google.protobuf.Timestamp applied_at = 6;
+  optional string current_stage_code = 7;
+  optional string assigned_recruiter_principal_id = 8;
+  optional string screening_score = 9;
+  optional string scorecard_version = 10;
+  optional string disposition_reason_code = 11;
+  google.protobuf.Timestamp decision_at = 12;
+  optional string decision_by_principal_id = 13;
+  optional string hired_worker_id = 14;
+  optional string source_posting_id = 15;
+  string idempotency_key = 16;
+}
+message ApplicationInput {
+  optional string candidate_id = 1;
+  optional string requisition_id = 2;
+  optional string application_number = 3;
+  optional string status = 4;
+  optional string current_stage_code = 5;
+  optional string assigned_recruiter_principal_id = 6;
+  optional string screening_score = 7;
+  optional string scorecard_version = 8;
+  optional string disposition_reason_code = 9;
+  google.protobuf.Timestamp decision_at = 10;
+  optional string decision_by_principal_id = 11;
+  optional string hired_worker_id = 12;
+  optional string source_posting_id = 13;
+  optional string idempotency_key = 14;
+}
+message CreateApplicationRequest {
+  ApplicationInput input = 1;
+}
+message UpdateApplicationRequest {
+  string id = 1;
+  ApplicationInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message ApplicationResponse {
+  Application item = 1;
+}
+message ApplicationsResponse {
+  repeated Application items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message ApplicationStageHistory {
+  int64 id = 1;
+  string application_id = 2;
+  optional string previous_status = 3;
+  string new_status = 4;
+  optional string stage_code = 5;
+  google.protobuf.Timestamp changed_at = 6;
+  optional string changed_by_principal_id = 7;
+  optional string reason_code = 8;
+}
+message ApplicationStageHistoryInput {
+  optional string application_id = 1;
+  optional string previous_status = 2;
+  optional string new_status = 3;
+  optional string stage_code = 4;
+  optional string changed_by_principal_id = 5;
+  optional string reason_code = 6;
+}
+message CreateApplicationStageHistoryRequest {
+  ApplicationStageHistoryInput input = 1;
+}
+message UpdateApplicationStageHistoryRequest {
+  int64 id = 1;
+  ApplicationStageHistoryInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message ApplicationStageHistoryResponse {
+  ApplicationStageHistory item = 1;
+}
+message ApplicationStageHistoriesResponse {
+  repeated ApplicationStageHistory items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message Interview {
+  string id = 1;
+  string application_id = 2;
+  int32 interview_round = 3;
+  string interview_type = 4;
+  google.protobuf.Timestamp scheduled_start = 5;
+  google.protobuf.Timestamp scheduled_end = 6;
+  optional string location_reference_id = 7;
+  optional string meeting_reference_id = 8;
+  string status = 9;
+  optional string candidate_timezone = 10;
+  optional string created_by_principal_id = 11;
+}
+message InterviewInput {
+  optional string application_id = 1;
+  optional int32 interview_round = 2;
+  optional string interview_type = 3;
+  google.protobuf.Timestamp scheduled_start = 4;
+  google.protobuf.Timestamp scheduled_end = 5;
+  optional string location_reference_id = 6;
+  optional string meeting_reference_id = 7;
+  optional string status = 8;
+  optional string candidate_timezone = 9;
+}
+message CreateInterviewRequest {
+  InterviewInput input = 1;
+}
+message UpdateInterviewRequest {
+  string id = 1;
+  InterviewInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message InterviewResponse {
+  Interview item = 1;
+}
+message InterviewsResponse {
+  repeated Interview items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message InterviewPanelist {
+  string id = 1;
+  string interview_id = 2;
+  string interviewer_principal_id = 3;
+  optional string interviewer_role = 4;
+  optional string scorecard_template_reference_id = 5;
+  google.protobuf.Timestamp feedback_due_at = 6;
+}
+message InterviewPanelistInput {
+  optional string interview_id = 1;
+  optional string interviewer_principal_id = 2;
+  optional string interviewer_role = 3;
+  optional string scorecard_template_reference_id = 4;
+  google.protobuf.Timestamp feedback_due_at = 5;
+}
+message CreateInterviewPanelistRequest {
+  InterviewPanelistInput input = 1;
+}
+message UpdateInterviewPanelistRequest {
+  string id = 1;
+  InterviewPanelistInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message InterviewPanelistResponse {
+  InterviewPanelist item = 1;
+}
+message InterviewPanelistsResponse {
+  repeated InterviewPanelist items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message InterviewFeedback {
+  string id = 1;
+  string interview_id = 2;
+  string interviewer_principal_id = 3;
+  int32 feedback_version = 4;
+  google.protobuf.Timestamp submitted_at = 5;
+  string overall_recommendation = 6;
+  human_resource.common.v1.JsonDocument competency_scores = 7;
+  optional string evidence_notes = 8;
+  bytes content_digest = 9;
+  string visibility_class = 10;
+}
+message InterviewFeedbackInput {
+  optional string interview_id = 1;
+  optional string interviewer_principal_id = 2;
+  optional int32 feedback_version = 3;
+  optional string overall_recommendation = 4;
+  human_resource.common.v1.JsonDocument competency_scores = 5;
+  optional string evidence_notes = 6;
+  optional bytes content_digest = 7;
+  optional string visibility_class = 8;
+}
+message CreateInterviewFeedbackRequest {
+  InterviewFeedbackInput input = 1;
+}
+message UpdateInterviewFeedbackRequest {
+  string id = 1;
+  InterviewFeedbackInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message InterviewFeedbackResponse {
+  InterviewFeedback item = 1;
+}
+message InterviewFeedbacksResponse {
+  repeated InterviewFeedback items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message Offer {
+  string id = 1;
+  string application_id = 2;
+  string offer_number = 3;
+  int32 offer_version = 4;
+  string offer_status = 5;
+  string proposed_job_id = 6;
+  string proposed_legal_entity_reference_id = 7;
+  optional string proposed_start_date = 8;
+  string proposed_contract_type = 9;
+  optional string proposed_compensation_document_version_reference_id = 10;
+  optional string currency_code = 11;
+  optional string offer_document_reference_id = 12;
+  optional string offer_document_version_reference_id = 13;
+  bytes offer_content_digest = 14;
+  google.protobuf.Timestamp issued_at = 15;
+  google.protobuf.Timestamp expires_at = 16;
+  optional string candidate_response = 17;
+  google.protobuf.Timestamp responded_at = 18;
+  optional string approved_by_principal_id = 19;
+  google.protobuf.Timestamp approved_at = 20;
+}
+message OfferInput {
+  optional string application_id = 1;
+  optional string offer_number = 2;
+  optional int32 offer_version = 3;
+  optional string offer_status = 4;
+  optional string proposed_job_id = 5;
+  optional string proposed_legal_entity_reference_id = 6;
+  optional string proposed_start_date = 7;
+  optional string proposed_contract_type = 8;
+  optional string proposed_compensation_document_version_reference_id = 9;
+  optional string currency_code = 10;
+  optional string offer_document_reference_id = 11;
+  optional string offer_document_version_reference_id = 12;
+  optional bytes offer_content_digest = 13;
+  google.protobuf.Timestamp issued_at = 14;
+  google.protobuf.Timestamp expires_at = 15;
+  optional string candidate_response = 16;
+  google.protobuf.Timestamp responded_at = 17;
+  optional string approved_by_principal_id = 18;
+  google.protobuf.Timestamp approved_at = 19;
+}
+message CreateOfferRequest {
+  OfferInput input = 1;
+}
+message UpdateOfferRequest {
+  string id = 1;
+  OfferInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message OfferResponse {
+  Offer item = 1;
+}
+message OffersResponse {
+  repeated Offer items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message JobPosting {
+  string id = 1;
+  string requisition_id = 2;
+  string channel_code = 3;
+  int32 posting_version = 4;
+  optional string external_posting_reference = 5;
+  string content_document_version_reference_id = 6;
+  bytes content_digest = 7;
+  string status = 8;
+  google.protobuf.Timestamp published_at = 9;
+  google.protobuf.Timestamp closes_at = 10;
+  string created_by_principal_id = 11;
+}
+message JobPostingInput {
+  optional string requisition_id = 1;
+  optional string channel_code = 2;
+  optional int32 posting_version = 3;
+  optional string external_posting_reference = 4;
+  optional string content_document_version_reference_id = 5;
+  optional bytes content_digest = 6;
+  optional string status = 7;
+  google.protobuf.Timestamp published_at = 8;
+  google.protobuf.Timestamp closes_at = 9;
+}
+message CreateJobPostingRequest {
+  JobPostingInput input = 1;
+}
+message UpdateJobPostingRequest {
+  string id = 1;
+  JobPostingInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message JobPostingResponse {
+  JobPosting item = 1;
+}
+message JobPostingsResponse {
+  repeated JobPosting items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message ApplicationAssessment {
+  string id = 1;
+  string application_id = 2;
+  string assessment_code = 3;
+  int32 attempt_number = 4;
+  string rubric_document_version_reference_id = 5;
+  bytes rubric_digest = 6;
+  string status = 7;
+  optional string assessor_principal_id = 8;
+  google.protobuf.Timestamp scheduled_at = 9;
+  google.protobuf.Timestamp completed_at = 10;
+  optional string normalized_score = 11;
+  optional string recommendation_code = 12;
+  optional string evidence_document_version_reference_id = 13;
+  bytes evidence_digest = 14;
+}
+message ApplicationAssessmentInput {
+  optional string application_id = 1;
+  optional string assessment_code = 2;
+  optional int32 attempt_number = 3;
+  optional string rubric_document_version_reference_id = 4;
+  optional bytes rubric_digest = 5;
+  optional string status = 6;
+  optional string assessor_principal_id = 7;
+  google.protobuf.Timestamp scheduled_at = 8;
+  google.protobuf.Timestamp completed_at = 9;
+  optional string normalized_score = 10;
+  optional string recommendation_code = 11;
+  optional string evidence_document_version_reference_id = 12;
+  optional bytes evidence_digest = 13;
+}
+message CreateApplicationAssessmentRequest {
+  ApplicationAssessmentInput input = 1;
+}
+message UpdateApplicationAssessmentRequest {
+  string id = 1;
+  ApplicationAssessmentInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message ApplicationAssessmentResponse {
+  ApplicationAssessment item = 1;
+}
+message ApplicationAssessmentsResponse {
+  repeated ApplicationAssessment items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}

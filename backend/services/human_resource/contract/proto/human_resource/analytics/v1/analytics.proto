@@ -1,0 +1,89 @@
+syntax = "proto3";
+package human_resource.analytics.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/analytics/v1;analyticsv1";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service AnalyticsService {
+  rpc CreateHumanCapitalMetricDefinition(CreateHumanCapitalMetricDefinitionRequest) returns (HumanCapitalMetricDefinitionResponse);
+  rpc UpdateHumanCapitalMetricDefinition(UpdateHumanCapitalMetricDefinitionRequest) returns (HumanCapitalMetricDefinitionResponse);
+  rpc DeleteHumanCapitalMetricDefinition(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetHumanCapitalMetricDefinitionByID(human_resource.common.v1.IDRequest) returns (HumanCapitalMetricDefinitionResponse);
+  rpc GetAllHumanCapitalMetricDefinitions(human_resource.common.v1.PageRequest) returns (HumanCapitalMetricDefinitionsResponse);
+  rpc FindHumanCapitalMetricDefinitionByMetricCode(human_resource.common.v1.StringFinderRequest) returns (HumanCapitalMetricDefinitionsResponse);
+  rpc FindHumanCapitalMetricDefinitionByUnitCode(human_resource.common.v1.StringFinderRequest) returns (HumanCapitalMetricDefinitionsResponse);
+  rpc CreateHumanCapitalMetricSnapshot(CreateHumanCapitalMetricSnapshotRequest) returns (HumanCapitalMetricSnapshotResponse);
+  rpc UpdateHumanCapitalMetricSnapshot(UpdateHumanCapitalMetricSnapshotRequest) returns (HumanCapitalMetricSnapshotResponse);
+  rpc DeleteHumanCapitalMetricSnapshot(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetHumanCapitalMetricSnapshotByID(human_resource.common.v1.IDRequest) returns (HumanCapitalMetricSnapshotResponse);
+  rpc GetAllHumanCapitalMetricSnapshots(human_resource.common.v1.PageRequest) returns (HumanCapitalMetricSnapshotsResponse);
+  rpc FindHumanCapitalMetricSnapshotByMetricDefinitionID(human_resource.common.v1.StringFinderRequest) returns (HumanCapitalMetricSnapshotsResponse);
+  rpc FindHumanCapitalMetricSnapshotByOrganizationUnitReferenceID(human_resource.common.v1.StringFinderRequest) returns (HumanCapitalMetricSnapshotsResponse);
+  rpc FindHumanCapitalMetricSnapshotByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (HumanCapitalMetricSnapshotsResponse);
+  rpc FindHumanCapitalMetricSnapshotByDataQualityStatus(human_resource.common.v1.StringFinderRequest) returns (HumanCapitalMetricSnapshotsResponse);
+}
+message HumanCapitalMetricDefinition {
+  string id = 1;
+  string metric_code = 2;
+  string metric_version = 3;
+  string metric_name = 4;
+  string metric_domain = 5;
+  optional string numerator_definition = 6;
+  optional string denominator_definition = 7;
+  human_resource.common.v1.JsonDocument inclusion_exclusion_rules = 8;
+  optional string unit_code = 9;
+  optional string standard_reference = 10;
+}
+message HumanCapitalMetricDefinitionInput {
+  optional string metric_code = 1;
+  optional string metric_version = 2;
+  optional string metric_name = 3;
+  optional string metric_domain = 4;
+  optional string numerator_definition = 5;
+  optional string denominator_definition = 6;
+  human_resource.common.v1.JsonDocument inclusion_exclusion_rules = 7;
+  optional string unit_code = 8;
+  optional string standard_reference = 9;
+}
+message CreateHumanCapitalMetricDefinitionRequest { HumanCapitalMetricDefinitionInput input = 1; }
+message UpdateHumanCapitalMetricDefinitionRequest { string id = 1; HumanCapitalMetricDefinitionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message HumanCapitalMetricDefinitionResponse { HumanCapitalMetricDefinition value = 1; }
+message HumanCapitalMetricDefinitionsResponse { repeated HumanCapitalMetricDefinition items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message HumanCapitalMetricSnapshot {
+  string id = 1;
+  string metric_definition_id = 2;
+  google.protobuf.Timestamp period_start = 3;
+  google.protobuf.Timestamp period_end = 4;
+  optional string organization_unit_reference_id = 5;
+  optional string jurisdiction_code = 6;
+  optional string value_numeric = 7;
+  optional string value_text = 8;
+  optional int64 population_count = 9;
+  string data_quality_status = 10;
+  int32 snapshot_version = 11;
+  string methodology_version = 12;
+  string confidentiality_class = 13;
+  google.protobuf.Timestamp calculated_at = 14;
+  bytes source_digest = 15;
+}
+message HumanCapitalMetricSnapshotInput {
+  optional string metric_definition_id = 1;
+  google.protobuf.Timestamp period_start = 2;
+  google.protobuf.Timestamp period_end = 3;
+  optional string organization_unit_reference_id = 4;
+  optional string jurisdiction_code = 5;
+  optional string value_numeric = 6;
+  optional string value_text = 7;
+  optional int64 population_count = 8;
+  optional string data_quality_status = 9;
+  optional int32 snapshot_version = 10;
+  optional string methodology_version = 11;
+  optional string confidentiality_class = 12;
+  optional bytes source_digest = 13;
+}
+message CreateHumanCapitalMetricSnapshotRequest { HumanCapitalMetricSnapshotInput input = 1; }
+message UpdateHumanCapitalMetricSnapshotRequest { string id = 1; HumanCapitalMetricSnapshotInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message HumanCapitalMetricSnapshotResponse { HumanCapitalMetricSnapshot value = 1; }
+message HumanCapitalMetricSnapshotsResponse { repeated HumanCapitalMetricSnapshot items = 1; human_resource.common.v1.PageInfo page = 2; }

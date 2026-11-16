@@ -1,0 +1,553 @@
+syntax = "proto3";
+package human_resource.payroll.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/payroll/v1;payrollv1";
+
+service PayrollService {
+  rpc CreatePayrollProfile(CreatePayrollProfileRequest) returns (PayrollProfileResponse);
+  rpc UpdatePayrollProfile(UpdatePayrollProfileRequest) returns (PayrollProfileResponse);
+  rpc DeletePayrollProfile(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollProfileByID(human_resource.common.v1.IDRequest) returns (PayrollProfileResponse);
+  rpc GetAllPayrollProfiles(human_resource.common.v1.PageRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByPayrollCountryCode(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByPayrollJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByPayrollGroupID(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByEmployingLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByTaxProfileReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByBankAccountTokenReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByTaxStatusCode(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc FindPayrollProfileByWithholdingElectionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollProfilesResponse);
+  rpc CreatePayComponent(CreatePayComponentRequest) returns (PayComponentResponse);
+  rpc UpdatePayComponent(UpdatePayComponentRequest) returns (PayComponentResponse);
+  rpc DeletePayComponent(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayComponentByID(human_resource.common.v1.IDRequest) returns (PayComponentResponse);
+  rpc GetAllPayComponents(human_resource.common.v1.PageRequest) returns (PayComponentsResponse);
+  rpc FindPayComponentByComponentCode(human_resource.common.v1.StringFinderRequest) returns (PayComponentsResponse);
+  rpc FindPayComponentByComponentType(human_resource.common.v1.StringFinderRequest) returns (PayComponentsResponse);
+  rpc FindPayComponentByTaxTreatmentCode(human_resource.common.v1.StringFinderRequest) returns (PayComponentsResponse);
+  rpc FindPayComponentByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (PayComponentsResponse);
+  rpc FindPayComponentByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (PayComponentsResponse);
+  rpc FindPayComponentByRuleSetID(human_resource.common.v1.StringFinderRequest) returns (PayComponentsResponse);
+  rpc FindPayComponentByFormulaReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayComponentsResponse);
+  rpc CreatePayrollPeriod(CreatePayrollPeriodRequest) returns (PayrollPeriodResponse);
+  rpc UpdatePayrollPeriod(UpdatePayrollPeriodRequest) returns (PayrollPeriodResponse);
+  rpc DeletePayrollPeriod(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollPeriodByID(human_resource.common.v1.IDRequest) returns (PayrollPeriodResponse);
+  rpc GetAllPayrollPeriods(human_resource.common.v1.PageRequest) returns (PayrollPeriodsResponse);
+  rpc FindPayrollPeriodByPayrollGroupID(human_resource.common.v1.StringFinderRequest) returns (PayrollPeriodsResponse);
+  rpc FindPayrollPeriodByEmployingLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollPeriodsResponse);
+  rpc FindPayrollPeriodByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (PayrollPeriodsResponse);
+  rpc FindPayrollPeriodByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (PayrollPeriodsResponse);
+  rpc FindPayrollPeriodByPeriodCode(human_resource.common.v1.StringFinderRequest) returns (PayrollPeriodsResponse);
+  rpc FindPayrollPeriodByPeriodStatus(human_resource.common.v1.StringFinderRequest) returns (PayrollPeriodsResponse);
+  rpc FindPayrollPeriodByCalendarReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollPeriodsResponse);
+  rpc CreatePayrollRun(CreatePayrollRunRequest) returns (PayrollRunResponse);
+  rpc UpdatePayrollRun(UpdatePayrollRunRequest) returns (PayrollRunResponse);
+  rpc DeletePayrollRun(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollRunByID(human_resource.common.v1.IDRequest) returns (PayrollRunResponse);
+  rpc GetAllPayrollRuns(human_resource.common.v1.PageRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByPayrollPeriodID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByPayrollGroupID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByEmployingLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByRuleSetID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByOriginalRunID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByRunNumber(human_resource.common.v1.Int32FinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByRunType(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByStatus(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByInputSnapshotReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByFinanceJournalReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByPaymentBatchReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByFinanceSettlementEventReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByStartedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FindPayrollRunByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc ApprovePayrollRun(human_resource.common.v1.IDRequest) returns (PayrollRunResponse);
+  rpc CreatePayrollResult(CreatePayrollResultRequest) returns (PayrollResultResponse);
+  rpc UpdatePayrollResult(UpdatePayrollResultRequest) returns (PayrollResultResponse);
+  rpc DeletePayrollResult(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollResultByID(human_resource.common.v1.IDRequest) returns (PayrollResultResponse);
+  rpc GetAllPayrollResults(human_resource.common.v1.PageRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByPayrollRunID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByPayrollGroupID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByPayrollProfileReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByResultStatus(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByPaymentReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc FindPayrollResultByPayslipDocumentReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultsResponse);
+  rpc CreatePayrollResultLine(CreatePayrollResultLineRequest) returns (PayrollResultLineResponse);
+  rpc UpdatePayrollResultLine(UpdatePayrollResultLineRequest) returns (PayrollResultLineResponse);
+  rpc DeletePayrollResultLine(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollResultLineByID(human_resource.common.v1.IDRequest) returns (PayrollResultLineResponse);
+  rpc GetAllPayrollResultLines(human_resource.common.v1.PageRequest) returns (PayrollResultLinesResponse);
+  rpc FindPayrollResultLineByPayrollResultID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultLinesResponse);
+  rpc FindPayrollResultLineByComponentID(human_resource.common.v1.StringFinderRequest) returns (PayrollResultLinesResponse);
+  rpc CreatePayrollAdjustment(CreatePayrollAdjustmentRequest) returns (PayrollAdjustmentResponse);
+  rpc UpdatePayrollAdjustment(UpdatePayrollAdjustmentRequest) returns (PayrollAdjustmentResponse);
+  rpc DeletePayrollAdjustment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollAdjustmentByID(human_resource.common.v1.IDRequest) returns (PayrollAdjustmentResponse);
+  rpc GetAllPayrollAdjustments(human_resource.common.v1.PageRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByPayrollPeriodID(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByComponentID(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByAdjustmentType(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByRequestedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc FindPayrollAdjustmentByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (PayrollAdjustmentsResponse);
+  rpc CreatePayrollGroup(CreatePayrollGroupRequest) returns (PayrollGroupResponse);
+  rpc UpdatePayrollGroup(UpdatePayrollGroupRequest) returns (PayrollGroupResponse);
+  rpc DeletePayrollGroup(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollGroupByID(human_resource.common.v1.IDRequest) returns (PayrollGroupResponse);
+  rpc GetAllPayrollGroups(human_resource.common.v1.PageRequest) returns (PayrollGroupsResponse);
+  rpc FindPayrollGroupByGroupCode(human_resource.common.v1.StringFinderRequest) returns (PayrollGroupsResponse);
+  rpc FindPayrollGroupByEmployingLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollGroupsResponse);
+  rpc FindPayrollGroupByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (PayrollGroupsResponse);
+  rpc FindPayrollGroupByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (PayrollGroupsResponse);
+  rpc CreatePayrollRuleSet(CreatePayrollRuleSetRequest) returns (PayrollRuleSetResponse);
+  rpc UpdatePayrollRuleSet(UpdatePayrollRuleSetRequest) returns (PayrollRuleSetResponse);
+  rpc DeletePayrollRuleSet(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPayrollRuleSetByID(human_resource.common.v1.IDRequest) returns (PayrollRuleSetResponse);
+  rpc GetAllPayrollRuleSets(human_resource.common.v1.PageRequest) returns (PayrollRuleSetsResponse);
+  rpc FindPayrollRuleSetByRuleCode(human_resource.common.v1.StringFinderRequest) returns (PayrollRuleSetsResponse);
+  rpc FindPayrollRuleSetByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (PayrollRuleSetsResponse);
+  rpc FindPayrollRuleSetByArtifactDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRuleSetsResponse);
+  rpc FindPayrollRuleSetByLegalBasisDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRuleSetsResponse);
+  rpc FindPayrollRuleSetByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PayrollRuleSetsResponse);
+}
+
+message PayrollProfile {
+  string id = 1;
+  string worker_id = 2;
+  string payroll_country_code = 3;
+  string payroll_jurisdiction_code = 4;
+  string payroll_group_id = 5;
+  string employing_legal_entity_reference_id = 6;
+  string currency_code = 7;
+  optional string tax_profile_reference_id = 8;
+  optional string bank_account_token_reference_id = 9;
+  optional string tax_status_code = 10;
+  optional string withholding_election_reference_id = 11;
+  string effective_from = 12;
+  optional string effective_to = 13;
+  bool is_active = 14;
+}
+message PayrollProfileInput {
+  optional string worker_id = 1;
+  optional string payroll_country_code = 2;
+  optional string payroll_jurisdiction_code = 3;
+  optional string payroll_group_id = 4;
+  optional string employing_legal_entity_reference_id = 5;
+  optional string currency_code = 6;
+  optional string tax_profile_reference_id = 7;
+  optional string bank_account_token_reference_id = 8;
+  optional string tax_status_code = 9;
+  optional string withholding_election_reference_id = 10;
+  optional string effective_from = 11;
+  optional string effective_to = 12;
+  optional bool is_active = 13;
+}
+message CreatePayrollProfileRequest {
+  PayrollProfileInput input = 1;
+}
+message UpdatePayrollProfileRequest {
+  string id = 1;
+  PayrollProfileInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollProfileResponse {
+  PayrollProfile item = 1;
+}
+message PayrollProfilesResponse {
+  repeated PayrollProfile items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayComponent {
+  string id = 1;
+  string component_code = 2;
+  int32 component_version = 3;
+  string component_name = 4;
+  string component_type = 5;
+  string calculation_method = 6;
+  optional string tax_treatment_code = 7;
+  string jurisdiction_code = 8;
+  optional string currency_code = 9;
+  optional string rule_set_id = 10;
+  optional string formula_reference_id = 11;
+  optional bool taxable = 12;
+  optional bool pensionable = 13;
+  string effective_from = 14;
+  optional string effective_to = 15;
+  bool is_active = 16;
+}
+message PayComponentInput {
+  optional string component_code = 1;
+  optional int32 component_version = 2;
+  optional string component_name = 3;
+  optional string component_type = 4;
+  optional string calculation_method = 5;
+  optional string tax_treatment_code = 6;
+  optional string jurisdiction_code = 7;
+  optional string currency_code = 8;
+  optional string rule_set_id = 9;
+  optional string formula_reference_id = 10;
+  optional bool taxable = 11;
+  optional bool pensionable = 12;
+  optional string effective_from = 13;
+  optional string effective_to = 14;
+  optional bool is_active = 15;
+}
+message CreatePayComponentRequest {
+  PayComponentInput input = 1;
+}
+message UpdatePayComponentRequest {
+  string id = 1;
+  PayComponentInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayComponentResponse {
+  PayComponent item = 1;
+}
+message PayComponentsResponse {
+  repeated PayComponent items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayrollPeriod {
+  string id = 1;
+  string payroll_group_id = 2;
+  string employing_legal_entity_reference_id = 3;
+  string currency_code = 4;
+  string jurisdiction_code = 5;
+  string period_code = 6;
+  string period_start = 7;
+  string period_end = 8;
+  string pay_date = 9;
+  string period_status = 10;
+  optional string calendar_reference_id = 11;
+}
+message PayrollPeriodInput {
+  optional string payroll_group_id = 1;
+  optional string employing_legal_entity_reference_id = 2;
+  optional string currency_code = 3;
+  optional string jurisdiction_code = 4;
+  optional string period_code = 5;
+  optional string period_start = 6;
+  optional string period_end = 7;
+  optional string pay_date = 8;
+  optional string period_status = 9;
+  optional string calendar_reference_id = 10;
+}
+message CreatePayrollPeriodRequest {
+  PayrollPeriodInput input = 1;
+}
+message UpdatePayrollPeriodRequest {
+  string id = 1;
+  PayrollPeriodInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollPeriodResponse {
+  PayrollPeriod item = 1;
+}
+message PayrollPeriodsResponse {
+  repeated PayrollPeriod items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayrollRun {
+  string id = 1;
+  string payroll_period_id = 2;
+  string payroll_group_id = 3;
+  string employing_legal_entity_reference_id = 4;
+  string currency_code = 5;
+  string rule_set_id = 6;
+  optional string original_run_id = 7;
+  string settlement_direction = 8;
+  int32 run_number = 9;
+  string run_type = 10;
+  string status = 11;
+  string jurisdiction_code = 12;
+  string rule_engine_name = 13;
+  string rule_engine_version = 14;
+  string input_snapshot_reference_id = 15;
+  bytes input_digest = 16;
+  bytes output_digest = 17;
+  google.protobuf.Timestamp calculated_at = 18;
+  optional string approved_by_principal_id = 19;
+  google.protobuf.Timestamp approved_at = 20;
+  optional string finance_journal_reference_id = 21;
+  optional string payment_batch_reference_id = 22;
+  optional string finance_settlement_event_reference_id = 23;
+  google.protobuf.Timestamp finance_settled_at = 24;
+  string started_by_principal_id = 25;
+  google.protobuf.Timestamp created_at = 26;
+  string idempotency_key = 27;
+}
+message PayrollRunInput {
+  optional string payroll_period_id = 1;
+  optional string payroll_group_id = 2;
+  optional string employing_legal_entity_reference_id = 3;
+  optional string currency_code = 4;
+  optional string rule_set_id = 5;
+  optional string original_run_id = 6;
+  optional string settlement_direction = 7;
+  optional int32 run_number = 8;
+  optional string run_type = 9;
+  optional string status = 10;
+  optional string jurisdiction_code = 11;
+  optional string rule_engine_name = 12;
+  optional string rule_engine_version = 13;
+  optional string input_snapshot_reference_id = 14;
+  optional bytes input_digest = 15;
+  optional bytes output_digest = 16;
+  google.protobuf.Timestamp calculated_at = 17;
+  optional string approved_by_principal_id = 18;
+  google.protobuf.Timestamp approved_at = 19;
+  optional string finance_journal_reference_id = 20;
+  optional string payment_batch_reference_id = 21;
+  optional string finance_settlement_event_reference_id = 22;
+  google.protobuf.Timestamp finance_settled_at = 23;
+  optional string idempotency_key = 24;
+}
+message CreatePayrollRunRequest {
+  PayrollRunInput input = 1;
+}
+message UpdatePayrollRunRequest {
+  string id = 1;
+  PayrollRunInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollRunResponse {
+  PayrollRun item = 1;
+}
+message PayrollRunsResponse {
+  repeated PayrollRun items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayrollResult {
+  string id = 1;
+  string payroll_run_id = 2;
+  string payroll_group_id = 3;
+  string worker_id = 4;
+  string payroll_profile_reference_id = 5;
+  string currency_code = 6;
+  string gross_amount = 7;
+  string reimbursement_amount = 8;
+  string total_deductions = 9;
+  string employer_cost_amount = 10;
+  string net_pay_amount = 11;
+  string result_status = 12;
+  optional string payment_reference_id = 13;
+  optional string payslip_document_reference_id = 14;
+  bytes calculation_digest = 15;
+  google.protobuf.Timestamp created_at = 16;
+}
+message PayrollResultInput {
+  optional string payroll_run_id = 1;
+  optional string payroll_group_id = 2;
+  optional string worker_id = 3;
+  optional string payroll_profile_reference_id = 4;
+  optional string currency_code = 5;
+  optional string gross_amount = 6;
+  optional string reimbursement_amount = 7;
+  optional string total_deductions = 8;
+  optional string employer_cost_amount = 9;
+  optional string net_pay_amount = 10;
+  optional string result_status = 11;
+  optional string payment_reference_id = 12;
+  optional string payslip_document_reference_id = 13;
+  optional bytes calculation_digest = 14;
+}
+message CreatePayrollResultRequest {
+  PayrollResultInput input = 1;
+}
+message UpdatePayrollResultRequest {
+  string id = 1;
+  PayrollResultInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollResultResponse {
+  PayrollResult item = 1;
+}
+message PayrollResultsResponse {
+  repeated PayrollResult items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayrollResultLine {
+  string id = 1;
+  string payroll_result_id = 2;
+  string component_id = 3;
+  string component_code_snapshot = 4;
+  string component_name_snapshot = 5;
+  string component_type_snapshot = 6;
+  string amount = 7;
+  optional string quantity = 8;
+  optional string rate = 9;
+  optional string taxable_base = 10;
+  optional string calculation_reference = 11;
+  int32 line_sequence = 12;
+}
+message PayrollResultLineInput {
+  optional string payroll_result_id = 1;
+  optional string component_id = 2;
+  optional string component_code_snapshot = 3;
+  optional string component_name_snapshot = 4;
+  optional string component_type_snapshot = 5;
+  optional string amount = 6;
+  optional string quantity = 7;
+  optional string rate = 8;
+  optional string taxable_base = 9;
+  optional string calculation_reference = 10;
+  optional int32 line_sequence = 11;
+}
+message CreatePayrollResultLineRequest {
+  PayrollResultLineInput input = 1;
+}
+message UpdatePayrollResultLineRequest {
+  string id = 1;
+  PayrollResultLineInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollResultLineResponse {
+  PayrollResultLine item = 1;
+}
+message PayrollResultLinesResponse {
+  repeated PayrollResultLine items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayrollAdjustment {
+  string id = 1;
+  string worker_id = 2;
+  string payroll_period_id = 3;
+  string component_id = 4;
+  string adjustment_type = 5;
+  string amount = 6;
+  string currency_code = 7;
+  string reason = 8;
+  optional string source_reference = 9;
+  string requested_by_principal_id = 10;
+  optional string approved_by_principal_id = 11;
+  google.protobuf.Timestamp approved_at = 12;
+  string idempotency_key = 13;
+  google.protobuf.Timestamp created_at = 14;
+}
+message PayrollAdjustmentInput {
+  optional string worker_id = 1;
+  optional string payroll_period_id = 2;
+  optional string component_id = 3;
+  optional string adjustment_type = 4;
+  optional string amount = 5;
+  optional string currency_code = 6;
+  optional string reason = 7;
+  optional string source_reference = 8;
+  optional string approved_by_principal_id = 9;
+  google.protobuf.Timestamp approved_at = 10;
+  optional string idempotency_key = 11;
+}
+message CreatePayrollAdjustmentRequest {
+  PayrollAdjustmentInput input = 1;
+}
+message UpdatePayrollAdjustmentRequest {
+  string id = 1;
+  PayrollAdjustmentInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollAdjustmentResponse {
+  PayrollAdjustment item = 1;
+}
+message PayrollAdjustmentsResponse {
+  repeated PayrollAdjustment items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayrollGroup {
+  string id = 1;
+  string group_code = 2;
+  string group_name = 3;
+  string employing_legal_entity_reference_id = 4;
+  string jurisdiction_code = 5;
+  string currency_code = 6;
+  int32 currency_scale = 7;
+  string pay_frequency = 8;
+  string timezone = 9;
+  bool is_active = 10;
+}
+message PayrollGroupInput {
+  optional string group_code = 1;
+  optional string group_name = 2;
+  optional string employing_legal_entity_reference_id = 3;
+  optional string jurisdiction_code = 4;
+  optional string currency_code = 5;
+  optional int32 currency_scale = 6;
+  optional string pay_frequency = 7;
+  optional string timezone = 8;
+  optional bool is_active = 9;
+}
+message CreatePayrollGroupRequest {
+  PayrollGroupInput input = 1;
+}
+message UpdatePayrollGroupRequest {
+  string id = 1;
+  PayrollGroupInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollGroupResponse {
+  PayrollGroup item = 1;
+}
+message PayrollGroupsResponse {
+  repeated PayrollGroup items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message PayrollRuleSet {
+  string id = 1;
+  string rule_code = 2;
+  string rule_version = 3;
+  string jurisdiction_code = 4;
+  string effective_from = 5;
+  optional string effective_to = 6;
+  string artifact_document_version_reference_id = 7;
+  bytes artifact_digest = 8;
+  string legal_basis_document_version_reference_id = 9;
+  string approved_by_principal_id = 10;
+  google.protobuf.Timestamp approved_at = 11;
+}
+message PayrollRuleSetInput {
+  optional string rule_code = 1;
+  optional string rule_version = 2;
+  optional string jurisdiction_code = 3;
+  optional string effective_from = 4;
+  optional string effective_to = 5;
+  optional string artifact_document_version_reference_id = 6;
+  optional bytes artifact_digest = 7;
+  optional string legal_basis_document_version_reference_id = 8;
+  optional string approved_by_principal_id = 9;
+  google.protobuf.Timestamp approved_at = 10;
+}
+message CreatePayrollRuleSetRequest {
+  PayrollRuleSetInput input = 1;
+}
+message UpdatePayrollRuleSetRequest {
+  string id = 1;
+  PayrollRuleSetInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PayrollRuleSetResponse {
+  PayrollRuleSet item = 1;
+}
+message PayrollRuleSetsResponse {
+  repeated PayrollRuleSet items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}

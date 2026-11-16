@@ -1,0 +1,126 @@
+syntax = "proto3";
+package human_resource.employeerelations.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/employeerelations/v1;employeerelationsv1";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+import "human_resource/common/v1/common.proto";
+message EmployeeRelationsCase {
+ string id = 1;
+ string case_number = 2;
+ string case_type = 3;
+ string status = 4;
+ optional string subject_worker_id = 5;
+ optional string reporting_party_reference_id = 6;
+ optional string assigned_investigator_principal_id = 7;
+ google.protobuf.Timestamp opened_at = 8;
+ google.protobuf.Timestamp due_at = 9;
+ google.protobuf.Timestamp resolved_at = 10;
+ optional string outcome_code = 11;
+ string restricted_summary_reference_id = 12;
+ string confidentiality_class = 13;
+ optional string legal_hold_reference_id = 14;
+ string idempotency_key = 15;
+}
+message EmployeeRelationsCaseInput {
+ optional string case_number = 1;
+ optional string case_type = 2;
+ optional string status = 3;
+ optional string subject_worker_id = 4;
+ optional string reporting_party_reference_id = 5;
+ optional string assigned_investigator_principal_id = 6;
+ google.protobuf.Timestamp due_at = 7;
+ google.protobuf.Timestamp resolved_at = 8;
+ optional string outcome_code = 9;
+ optional string restricted_summary_reference_id = 10;
+ optional string confidentiality_class = 11;
+ optional string legal_hold_reference_id = 12;
+ optional string idempotency_key = 13;
+}
+message CreateEmployeeRelationsCaseRequest { EmployeeRelationsCaseInput input = 1; }
+message UpdateEmployeeRelationsCaseRequest { string id = 1; EmployeeRelationsCaseInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message EmployeeRelationsCaseResponse { EmployeeRelationsCase value = 1; }
+message EmployeeRelationsCasesResponse { repeated EmployeeRelationsCase items = 1; human_resource.common.v1.PageInfo page = 2; }
+message EmployeeRelationsEvent {
+ int64 id = 1;
+ string case_id = 2;
+ string event_type = 3;
+ google.protobuf.Timestamp occurred_at = 4;
+ optional string actor_principal_id = 5;
+ bytes event_digest = 6;
+ optional string event_reference_id = 7;
+}
+message EmployeeRelationsEventInput {
+ optional string case_id = 1;
+ optional string event_type = 2;
+ optional bytes event_digest = 3;
+ optional string event_reference_id = 4;
+}
+message CreateEmployeeRelationsEventRequest { EmployeeRelationsEventInput input = 1; }
+message UpdateEmployeeRelationsEventRequest { int64 id = 1; EmployeeRelationsEventInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message EmployeeRelationsEventResponse { EmployeeRelationsEvent value = 1; }
+message EmployeeRelationsEventsResponse { repeated EmployeeRelationsEvent items = 1; human_resource.common.v1.PageInfo page = 2; }
+message CollectiveAgreement {
+ string id = 1;
+ string agreement_code = 2;
+ int32 agreement_version = 3;
+ string legal_entity_reference_id = 4;
+ string representative_party_reference_id = 5;
+ string jurisdiction_code = 6;
+ google.protobuf.Timestamp effective_from = 7;
+ google.protobuf.Timestamp effective_to = 8;
+ google.protobuf.Timestamp signed_at = 9;
+ string document_version_reference_id = 10;
+ bytes content_digest = 11;
+}
+message CollectiveAgreementInput {
+ optional string agreement_code = 1;
+ optional int32 agreement_version = 2;
+ optional string legal_entity_reference_id = 3;
+ optional string representative_party_reference_id = 4;
+ optional string jurisdiction_code = 5;
+ google.protobuf.Timestamp effective_from = 6;
+ google.protobuf.Timestamp effective_to = 7;
+ google.protobuf.Timestamp signed_at = 8;
+ optional string document_version_reference_id = 9;
+ optional bytes content_digest = 10;
+}
+message CreateCollectiveAgreementRequest { CollectiveAgreementInput input = 1; }
+message UpdateCollectiveAgreementRequest { string id = 1; CollectiveAgreementInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message CollectiveAgreementResponse { CollectiveAgreement value = 1; }
+message CollectiveAgreementsResponse { repeated CollectiveAgreement items = 1; human_resource.common.v1.PageInfo page = 2; }
+service EmployeeRelationsService {
+ rpc CreateEmployeeRelationsCase(CreateEmployeeRelationsCaseRequest) returns (EmployeeRelationsCaseResponse);
+ rpc UpdateEmployeeRelationsCase(UpdateEmployeeRelationsCaseRequest) returns (EmployeeRelationsCaseResponse);
+ rpc DeleteEmployeeRelationsCase(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetEmployeeRelationsCaseByID(human_resource.common.v1.IDRequest) returns (EmployeeRelationsCaseResponse);
+ rpc GetAllEmployeeRelationsCases(human_resource.common.v1.PageRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByCaseNumber(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByCaseType(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByStatus(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseBySubjectWorkerID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByReportingPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByAssignedInvestigatorPrincipalID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByOutcomeCode(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByRestrictedSummaryReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByLegalHoldReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc FindEmployeeRelationsCaseByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsCasesResponse);
+ rpc CreateEmployeeRelationsEvent(CreateEmployeeRelationsEventRequest) returns (EmployeeRelationsEventResponse);
+ rpc UpdateEmployeeRelationsEvent(UpdateEmployeeRelationsEventRequest) returns (EmployeeRelationsEventResponse);
+ rpc DeleteEmployeeRelationsEvent(human_resource.common.v1.IdentityIDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetEmployeeRelationsEventByID(human_resource.common.v1.IdentityIDRequest) returns (EmployeeRelationsEventResponse);
+ rpc GetAllEmployeeRelationsEvents(human_resource.common.v1.PageRequest) returns (EmployeeRelationsEventsResponse);
+ rpc FindEmployeeRelationsEventByCaseID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsEventsResponse);
+ rpc FindEmployeeRelationsEventByEventType(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsEventsResponse);
+ rpc FindEmployeeRelationsEventByActorPrincipalID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsEventsResponse);
+ rpc FindEmployeeRelationsEventByEventReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmployeeRelationsEventsResponse);
+ rpc CreateCollectiveAgreement(CreateCollectiveAgreementRequest) returns (CollectiveAgreementResponse);
+ rpc UpdateCollectiveAgreement(UpdateCollectiveAgreementRequest) returns (CollectiveAgreementResponse);
+ rpc DeleteCollectiveAgreement(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetCollectiveAgreementByID(human_resource.common.v1.IDRequest) returns (CollectiveAgreementResponse);
+ rpc GetAllCollectiveAgreements(human_resource.common.v1.PageRequest) returns (CollectiveAgreementsResponse);
+ rpc FindCollectiveAgreementByAgreementCode(human_resource.common.v1.StringFinderRequest) returns (CollectiveAgreementsResponse);
+ rpc FindCollectiveAgreementByLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (CollectiveAgreementsResponse);
+ rpc FindCollectiveAgreementByRepresentativePartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (CollectiveAgreementsResponse);
+ rpc FindCollectiveAgreementByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (CollectiveAgreementsResponse);
+ rpc FindCollectiveAgreementByDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (CollectiveAgreementsResponse);
+}

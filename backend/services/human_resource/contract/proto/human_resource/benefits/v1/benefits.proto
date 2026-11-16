@@ -1,0 +1,98 @@
+syntax = "proto3";
+package human_resource.benefits.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/benefits/v1;benefitsv1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service BenefitsService {
+  rpc CreateBenefitPlan(CreateBenefitPlanRequest) returns (BenefitPlanResponse);
+  rpc UpdateBenefitPlan(UpdateBenefitPlanRequest) returns (BenefitPlanResponse);
+  rpc DeleteBenefitPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetBenefitPlanByID(human_resource.common.v1.IDRequest) returns (BenefitPlanResponse);
+  rpc GetAllBenefitPlans(human_resource.common.v1.PageRequest) returns (BenefitPlansResponse);
+  rpc FindBenefitPlanByPlanCode(human_resource.common.v1.StringFinderRequest) returns (BenefitPlansResponse);
+  rpc FindBenefitPlanByBenefitType(human_resource.common.v1.StringFinderRequest) returns (BenefitPlansResponse);
+  rpc FindBenefitPlanByProviderPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (BenefitPlansResponse);
+  rpc FindBenefitPlanByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (BenefitPlansResponse);
+  rpc FindBenefitPlanByEmployeeContributionRuleReferenceID(human_resource.common.v1.StringFinderRequest) returns (BenefitPlansResponse);
+  rpc FindBenefitPlanByEmployerContributionRuleReferenceID(human_resource.common.v1.StringFinderRequest) returns (BenefitPlansResponse);
+  rpc CreateBenefitEnrollment(CreateBenefitEnrollmentRequest) returns (BenefitEnrollmentResponse);
+  rpc UpdateBenefitEnrollment(UpdateBenefitEnrollmentRequest) returns (BenefitEnrollmentResponse);
+  rpc DeleteBenefitEnrollment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetBenefitEnrollmentByID(human_resource.common.v1.IDRequest) returns (BenefitEnrollmentResponse);
+  rpc GetAllBenefitEnrollments(human_resource.common.v1.PageRequest) returns (BenefitEnrollmentsResponse);
+  rpc FindBenefitEnrollmentByWorkerID(human_resource.common.v1.StringFinderRequest) returns (BenefitEnrollmentsResponse);
+  rpc FindBenefitEnrollmentByBenefitPlanID(human_resource.common.v1.StringFinderRequest) returns (BenefitEnrollmentsResponse);
+  rpc FindBenefitEnrollmentByEnrollmentStatus(human_resource.common.v1.StringFinderRequest) returns (BenefitEnrollmentsResponse);
+  rpc FindBenefitEnrollmentByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (BenefitEnrollmentsResponse);
+}
+
+message BenefitPlan {
+  string id = 1;
+  string plan_code = 2;
+  int32 plan_version = 3;
+  string plan_name = 4;
+  string benefit_type = 5;
+  optional string provider_party_reference_id = 6;
+  string jurisdiction_code = 7;
+  human_resource.common.v1.JsonDocument eligibility_rule = 8;
+  optional string employee_contribution_rule_reference_id = 9;
+  optional string employer_contribution_rule_reference_id = 10;
+  string valid_from = 11;
+  optional string valid_to = 12;
+  bool is_active = 13;
+}
+message BenefitPlanInput {
+  optional string plan_code = 1;
+  optional int32 plan_version = 2;
+  optional string plan_name = 3;
+  optional string benefit_type = 4;
+  optional string provider_party_reference_id = 5;
+  optional string jurisdiction_code = 6;
+  human_resource.common.v1.JsonDocument eligibility_rule = 7;
+  optional string employee_contribution_rule_reference_id = 8;
+  optional string employer_contribution_rule_reference_id = 9;
+  optional string valid_from = 10;
+  optional string valid_to = 11;
+  optional bool is_active = 12;
+}
+message CreateBenefitPlanRequest { BenefitPlanInput input = 1; }
+message UpdateBenefitPlanRequest { string id = 1; BenefitPlanInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message BenefitPlanResponse { BenefitPlan item = 1; }
+message BenefitPlansResponse { repeated BenefitPlan items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message BenefitEnrollment {
+  string id = 1;
+  string worker_id = 2;
+  string benefit_plan_id = 3;
+  string enrollment_status = 4;
+  string effective_from = 5;
+  optional string effective_to = 6;
+  optional string enrollment_reference = 7;
+  optional string provider_member_reference = 8;
+  optional string employee_contribution_amount = 9;
+  optional string employer_contribution_amount = 10;
+  optional string currency_code = 11;
+  google.protobuf.Timestamp elected_at = 12;
+  google.protobuf.Timestamp verified_at = 13;
+}
+message BenefitEnrollmentInput {
+  optional string worker_id = 1;
+  optional string benefit_plan_id = 2;
+  optional string enrollment_status = 3;
+  optional string effective_from = 4;
+  optional string effective_to = 5;
+  optional string enrollment_reference = 6;
+  optional string provider_member_reference = 7;
+  optional string employee_contribution_amount = 8;
+  optional string employer_contribution_amount = 9;
+  optional string currency_code = 10;
+  google.protobuf.Timestamp elected_at = 11;
+  google.protobuf.Timestamp verified_at = 12;
+}
+message CreateBenefitEnrollmentRequest { BenefitEnrollmentInput input = 1; }
+message UpdateBenefitEnrollmentRequest { string id = 1; BenefitEnrollmentInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message BenefitEnrollmentResponse { BenefitEnrollment item = 1; }
+message BenefitEnrollmentsResponse { repeated BenefitEnrollment items = 1; human_resource.common.v1.PageInfo page = 2; }

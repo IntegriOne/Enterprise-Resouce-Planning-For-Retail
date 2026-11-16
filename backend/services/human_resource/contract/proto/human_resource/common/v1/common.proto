@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package human_resource.common.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/common/v1;commonv1";
+
+// PageInfo menerangkan halaman setelah scope server diterapkan.
+message PageInfo {
+  int64 total = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+// PageRequest memakai default dan batas maksimum service HRM.
+message PageRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message IDRequest { string id = 1; }
+message IdentityIDRequest { int64 id = 1; }
+message EmptyResponse {}
+
+// JsonDocument menjaga angka JSON tepat tanpa konversi floating point.
+// Pesan absen berarti SQL NULL; isi utf8 "null" berarti nilai JSON null.
+message JsonDocument { bytes utf8 = 1; }
+
+// Value absen berarti SQL NULL hanya untuk finder kolom nullable.
+message StringFinderRequest {
+  optional string value = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message Int64FinderRequest {
+  optional int64 value = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message Int32FinderRequest {
+  optional int32 value = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}

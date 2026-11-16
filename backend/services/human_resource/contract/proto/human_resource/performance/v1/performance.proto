@@ -1,0 +1,227 @@
+syntax = "proto3";
+package human_resource.performance.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/performance/v1;performancev1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service PerformanceService {
+  rpc CreatePerformanceCycle(CreatePerformanceCycleRequest) returns (PerformanceCycleResponse);
+  rpc UpdatePerformanceCycle(UpdatePerformanceCycleRequest) returns (PerformanceCycleResponse);
+  rpc DeletePerformanceCycle(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPerformanceCycleByID(human_resource.common.v1.IDRequest) returns (PerformanceCycleResponse);
+  rpc GetAllPerformanceCycles(human_resource.common.v1.PageRequest) returns (PerformanceCyclesResponse);
+  rpc FindPerformanceCycleByCycleCode(human_resource.common.v1.StringFinderRequest) returns (PerformanceCyclesResponse);
+  rpc FindPerformanceCycleByCycleType(human_resource.common.v1.StringFinderRequest) returns (PerformanceCyclesResponse);
+  rpc FindPerformanceCycleByStatus(human_resource.common.v1.StringFinderRequest) returns (PerformanceCyclesResponse);
+  rpc FindPerformanceCycleByLaunchedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceCyclesResponse);
+  rpc CreatePerformanceGoal(CreatePerformanceGoalRequest) returns (PerformanceGoalResponse);
+  rpc UpdatePerformanceGoal(UpdatePerformanceGoalRequest) returns (PerformanceGoalResponse);
+  rpc DeletePerformanceGoal(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPerformanceGoalByID(human_resource.common.v1.IDRequest) returns (PerformanceGoalResponse);
+  rpc GetAllPerformanceGoals(human_resource.common.v1.PageRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByPerformanceCycleID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByParentGoalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByGoalCode(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByGoalType(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByUnitCode(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByGoalStatus(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc FindPerformanceGoalByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc CreatePerformanceReview(CreatePerformanceReviewRequest) returns (PerformanceReviewResponse);
+  rpc UpdatePerformanceReview(UpdatePerformanceReviewRequest) returns (PerformanceReviewResponse);
+  rpc DeletePerformanceReview(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPerformanceReviewByID(human_resource.common.v1.IDRequest) returns (PerformanceReviewResponse);
+  rpc GetAllPerformanceReviews(human_resource.common.v1.PageRequest) returns (PerformanceReviewsResponse);
+  rpc FindPerformanceReviewByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
+  rpc FindPerformanceReviewByPerformanceCycleID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
+  rpc FindPerformanceReviewByReviewerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
+  rpc FindPerformanceReviewByOverallRatingCode(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
+  rpc FindPerformanceReviewByDevelopmentPlanID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
+  rpc CreatePerformanceGoalUpdate(CreatePerformanceGoalUpdateRequest) returns (PerformanceGoalUpdateResponse);
+  rpc UpdatePerformanceGoalUpdate(UpdatePerformanceGoalUpdateRequest) returns (PerformanceGoalUpdateResponse);
+  rpc DeletePerformanceGoalUpdate(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPerformanceGoalUpdateByID(human_resource.common.v1.IDRequest) returns (PerformanceGoalUpdateResponse);
+  rpc GetAllPerformanceGoalUpdates(human_resource.common.v1.PageRequest) returns (PerformanceGoalUpdatesResponse);
+  rpc FindPerformanceGoalUpdateByGoalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalUpdatesResponse);
+  rpc FindPerformanceGoalUpdateByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalUpdatesResponse);
+  rpc FindPerformanceGoalUpdateByRecordedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalUpdatesResponse);
+  rpc FindPerformanceGoalUpdateBySupersedesUpdateID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalUpdatesResponse);
+  rpc FindPerformanceGoalUpdateByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalUpdatesResponse);
+  rpc CreatePerformanceReviewGoalScore(CreatePerformanceReviewGoalScoreRequest) returns (PerformanceReviewGoalScoreResponse);
+  rpc UpdatePerformanceReviewGoalScore(UpdatePerformanceReviewGoalScoreRequest) returns (PerformanceReviewGoalScoreResponse);
+  rpc DeletePerformanceReviewGoalScore(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPerformanceReviewGoalScoreByID(human_resource.common.v1.IDRequest) returns (PerformanceReviewGoalScoreResponse);
+  rpc GetAllPerformanceReviewGoalScores(human_resource.common.v1.PageRequest) returns (PerformanceReviewGoalScoresResponse);
+  rpc FindPerformanceReviewGoalScoreByPerformanceReviewID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewGoalScoresResponse);
+  rpc FindPerformanceReviewGoalScoreByGoalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewGoalScoresResponse);
+  rpc FindPerformanceReviewGoalScoreByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewGoalScoresResponse);
+  rpc FindPerformanceReviewGoalScoreByPerformanceCycleID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewGoalScoresResponse);
+  rpc FindPerformanceReviewGoalScoreByRubricDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewGoalScoresResponse);
+  rpc FindPerformanceReviewGoalScoreByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewGoalScoresResponse);
+}
+
+message PerformanceCycle {
+  string id = 1;
+  string cycle_code = 2;
+  string cycle_name = 3;
+  string cycle_type = 4;
+  string status = 5;
+  string period_start = 6;
+  string period_end = 7;
+  google.protobuf.Timestamp self_review_due_at = 8;
+  google.protobuf.Timestamp manager_review_due_at = 9;
+  google.protobuf.Timestamp calibration_due_at = 10;
+  google.protobuf.Timestamp launched_at = 11;
+  optional string launched_by_principal_id = 12;
+  human_resource.common.v1.JsonDocument configuration = 13;
+}
+message PerformanceCycleInput {
+  optional string cycle_code = 1;
+  optional string cycle_name = 2;
+  optional string cycle_type = 3;
+  optional string status = 4;
+  optional string period_start = 5;
+  optional string period_end = 6;
+  google.protobuf.Timestamp self_review_due_at = 7;
+  google.protobuf.Timestamp manager_review_due_at = 8;
+  google.protobuf.Timestamp calibration_due_at = 9;
+  google.protobuf.Timestamp launched_at = 10;
+  optional string launched_by_principal_id = 11;
+  human_resource.common.v1.JsonDocument configuration = 12;
+}
+message CreatePerformanceCycleRequest { PerformanceCycleInput input = 1; }
+message UpdatePerformanceCycleRequest { string id = 1; PerformanceCycleInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message PerformanceCycleResponse { PerformanceCycle item = 1; }
+message PerformanceCyclesResponse { repeated PerformanceCycle items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message PerformanceGoal {
+  string id = 1;
+  string worker_id = 2;
+  string performance_cycle_id = 3;
+  optional string parent_goal_id = 4;
+  optional string goal_code = 5;
+  string goal_title = 6;
+  optional string goal_description = 7;
+  string goal_type = 8;
+  human_resource.common.v1.JsonDocument measure_definition = 9;
+  optional string target_value = 10;
+  optional string actual_value = 11;
+  optional string unit_code = 12;
+  optional string weight_percent = 13;
+  optional string due_date = 14;
+  string goal_status = 15;
+  optional string approved_by_principal_id = 16;
+  google.protobuf.Timestamp approved_at = 17;
+}
+message PerformanceGoalInput {
+  optional string worker_id = 1;
+  optional string performance_cycle_id = 2;
+  optional string parent_goal_id = 3;
+  optional string goal_code = 4;
+  optional string goal_title = 5;
+  optional string goal_description = 6;
+  optional string goal_type = 7;
+  human_resource.common.v1.JsonDocument measure_definition = 8;
+  optional string target_value = 9;
+  optional string actual_value = 10;
+  optional string unit_code = 11;
+  optional string weight_percent = 12;
+  optional string due_date = 13;
+  optional string goal_status = 14;
+  optional string approved_by_principal_id = 15;
+  google.protobuf.Timestamp approved_at = 16;
+}
+message CreatePerformanceGoalRequest { PerformanceGoalInput input = 1; }
+message UpdatePerformanceGoalRequest { string id = 1; PerformanceGoalInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message PerformanceGoalResponse { PerformanceGoal item = 1; }
+message PerformanceGoalsResponse { repeated PerformanceGoal items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message PerformanceReview {
+  string id = 1;
+  string worker_id = 2;
+  string performance_cycle_id = 3;
+  string reviewer_principal_id = 4;
+  string reviewer_role = 5;
+  int32 review_version = 6;
+  optional string overall_rating_code = 7;
+  human_resource.common.v1.JsonDocument competency_assessment = 8;
+  optional string narrative = 9;
+  optional string development_plan_id = 10;
+  google.protobuf.Timestamp submitted_at = 11;
+  google.protobuf.Timestamp finalized_at = 12;
+  string visibility_class = 13;
+  bytes content_digest = 14;
+}
+message PerformanceReviewInput {
+  optional string worker_id = 1;
+  optional string performance_cycle_id = 2;
+  optional string reviewer_principal_id = 3;
+  optional string reviewer_role = 4;
+  optional int32 review_version = 5;
+  optional string overall_rating_code = 6;
+  human_resource.common.v1.JsonDocument competency_assessment = 7;
+  optional string narrative = 8;
+  optional string development_plan_id = 9;
+  google.protobuf.Timestamp submitted_at = 10;
+  google.protobuf.Timestamp finalized_at = 11;
+  optional string visibility_class = 12;
+  optional bytes content_digest = 13;
+}
+message CreatePerformanceReviewRequest { PerformanceReviewInput input = 1; }
+message UpdatePerformanceReviewRequest { string id = 1; PerformanceReviewInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message PerformanceReviewResponse { PerformanceReview item = 1; }
+message PerformanceReviewsResponse { repeated PerformanceReview items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message PerformanceGoalUpdate {
+  string id = 1;
+  string goal_id = 2;
+  google.protobuf.Timestamp observed_at = 3;
+  string actual_value = 4;
+  string evidence_document_version_reference_id = 5;
+  bytes evidence_digest = 6;
+  string recorded_by_principal_id = 7;
+  google.protobuf.Timestamp recorded_at = 8;
+  optional string supersedes_update_id = 9;
+  string idempotency_key = 10;
+}
+message PerformanceGoalUpdateInput {
+  optional string goal_id = 1;
+  google.protobuf.Timestamp observed_at = 2;
+  optional string actual_value = 3;
+  optional string evidence_document_version_reference_id = 4;
+  optional bytes evidence_digest = 5;
+  optional string supersedes_update_id = 6;
+  optional string idempotency_key = 7;
+}
+message CreatePerformanceGoalUpdateRequest { PerformanceGoalUpdateInput input = 1; }
+message UpdatePerformanceGoalUpdateRequest { string id = 1; PerformanceGoalUpdateInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message PerformanceGoalUpdateResponse { PerformanceGoalUpdate item = 1; }
+message PerformanceGoalUpdatesResponse { repeated PerformanceGoalUpdate items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message PerformanceReviewGoalScore {
+  string id = 1;
+  string performance_review_id = 2;
+  string goal_id = 3;
+  string worker_id = 4;
+  string performance_cycle_id = 5;
+  int32 rating = 6;
+  string weight_percent_snapshot = 7;
+  string rubric_document_version_reference_id = 8;
+  string evidence_document_version_reference_id = 9;
+}
+message PerformanceReviewGoalScoreInput {
+  optional string performance_review_id = 1;
+  optional string goal_id = 2;
+  optional string worker_id = 3;
+  optional string performance_cycle_id = 4;
+  optional int32 rating = 5;
+  optional string weight_percent_snapshot = 6;
+  optional string rubric_document_version_reference_id = 7;
+  optional string evidence_document_version_reference_id = 8;
+}
+message CreatePerformanceReviewGoalScoreRequest { PerformanceReviewGoalScoreInput input = 1; }
+message UpdatePerformanceReviewGoalScoreRequest { string id = 1; PerformanceReviewGoalScoreInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message PerformanceReviewGoalScoreResponse { PerformanceReviewGoalScore item = 1; }
+message PerformanceReviewGoalScoresResponse { repeated PerformanceReviewGoalScore items = 1; human_resource.common.v1.PageInfo page = 2; }

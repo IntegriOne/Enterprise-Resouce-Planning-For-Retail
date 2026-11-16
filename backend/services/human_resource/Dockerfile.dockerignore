@@ -1,0 +1,17 @@
+**
+!shared/
+!shared/**
+!services/
+!services/human_resource/
+!services/human_resource/**
+**/.git
+**/.env
+**/.env.*
+**/.local
+**/*.key
+**/*.pem
+**/test
+**/*_test.go
+**/bin
+**/tmp
+**/coverage.out

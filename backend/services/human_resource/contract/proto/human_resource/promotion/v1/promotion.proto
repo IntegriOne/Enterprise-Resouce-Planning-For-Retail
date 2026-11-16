@@ -1,0 +1,101 @@
+syntax = "proto3";
+package human_resource.promotion.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/promotion/v1;promotionv1";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+import "human_resource/common/v1/common.proto";
+
+message PromotionRecommendation {
+  string id = 1;
+  string recommendation_number = 2;
+  string worker_id = 3;
+  string source_assignment_id = 4;
+  string target_position_id = 5;
+  string assessment_id = 6;
+  optional string supersedes_recommendation_id = 7;
+  google.protobuf.Timestamp recommended_effective_date = 8;
+  string rationale_document_version_reference_id = 9;
+  bytes rationale_digest = 10;
+  string recommended_by_principal_id = 11;
+  google.protobuf.Timestamp recommended_at = 12;
+  string status = 13;
+  optional string approval_decision_id = 14;
+  optional string applied_assignment_id = 15;
+  optional int64 applied_lifecycle_event_id = 16;
+  google.protobuf.Timestamp applied_at = 17;
+  string idempotency_key = 18;
+}
+message PromotionRecommendationInput {
+  optional string recommendation_number = 1;
+  optional string worker_id = 2;
+  optional string source_assignment_id = 3;
+  optional string target_position_id = 4;
+  optional string assessment_id = 5;
+  optional string supersedes_recommendation_id = 6;
+  google.protobuf.Timestamp recommended_effective_date = 7;
+  optional string rationale_document_version_reference_id = 8;
+  optional bytes rationale_digest = 9;
+  optional string status = 10;
+  optional string approval_decision_id = 11;
+  optional string applied_assignment_id = 12;
+  optional int64 applied_lifecycle_event_id = 13;
+  google.protobuf.Timestamp applied_at = 14;
+  optional string idempotency_key = 15;
+}
+message CreatePromotionRecommendationRequest { PromotionRecommendationInput input = 1; }
+message UpdatePromotionRecommendationRequest { string id = 1; PromotionRecommendationInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message PromotionRecommendationResponse { PromotionRecommendation value = 1; }
+message PromotionRecommendationsResponse { repeated PromotionRecommendation items = 1; human_resource.common.v1.PageInfo page = 2; }
+message PromotionDecision {
+  string id = 1;
+  string recommendation_id = 2;
+  int32 step_number = 3;
+  string decision = 4;
+  string decided_by_principal_id = 5;
+  google.protobuf.Timestamp decided_at = 6;
+  string rationale_document_version_reference_id = 7;
+  bytes rationale_digest = 8;
+  string idempotency_key = 9;
+}
+message PromotionDecisionInput {
+  optional string recommendation_id = 1;
+  optional int32 step_number = 2;
+  optional string decision = 3;
+  optional string rationale_document_version_reference_id = 4;
+  optional bytes rationale_digest = 5;
+  optional string idempotency_key = 6;
+}
+message CreatePromotionDecisionRequest { PromotionDecisionInput input = 1; }
+message UpdatePromotionDecisionRequest { string id = 1; PromotionDecisionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message PromotionDecisionResponse { PromotionDecision value = 1; }
+message PromotionDecisionsResponse { repeated PromotionDecision items = 1; human_resource.common.v1.PageInfo page = 2; }
+service PromotionService {
+  rpc CreatePromotionRecommendation(CreatePromotionRecommendationRequest) returns (PromotionRecommendationResponse);
+  rpc UpdatePromotionRecommendation(UpdatePromotionRecommendationRequest) returns (PromotionRecommendationResponse);
+  rpc DeletePromotionRecommendation(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPromotionRecommendationByID(human_resource.common.v1.IDRequest) returns (PromotionRecommendationResponse);
+  rpc GetAllPromotionRecommendations(human_resource.common.v1.PageRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByRecommendationNumber(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationBySourceAssignmentID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByTargetPositionID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByAssessmentID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationBySupersedesRecommendationID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByRationaleDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByRecommendedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByStatus(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByApprovalDecisionID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByAppliedAssignmentID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByAppliedLifecycleEventID(human_resource.common.v1.Int64FinderRequest) returns (PromotionRecommendationsResponse);
+  rpc FindPromotionRecommendationByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc CreatePromotionDecision(CreatePromotionDecisionRequest) returns (PromotionDecisionResponse);
+  rpc UpdatePromotionDecision(UpdatePromotionDecisionRequest) returns (PromotionDecisionResponse);
+  rpc DeletePromotionDecision(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPromotionDecisionByID(human_resource.common.v1.IDRequest) returns (PromotionDecisionResponse);
+  rpc GetAllPromotionDecisions(human_resource.common.v1.PageRequest) returns (PromotionDecisionsResponse);
+  rpc FindPromotionDecisionByRecommendationID(human_resource.common.v1.StringFinderRequest) returns (PromotionDecisionsResponse);
+  rpc FindPromotionDecisionByStepNumber(human_resource.common.v1.Int32FinderRequest) returns (PromotionDecisionsResponse);
+  rpc FindPromotionDecisionByDecidedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PromotionDecisionsResponse);
+  rpc FindPromotionDecisionByRationaleDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PromotionDecisionsResponse);
+  rpc FindPromotionDecisionByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (PromotionDecisionsResponse);
+}

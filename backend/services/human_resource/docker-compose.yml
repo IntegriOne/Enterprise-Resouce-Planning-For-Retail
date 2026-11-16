@@ -1,0 +1,39 @@
+services:
+  human-resource:
+    build:
+      context: ../..
+      dockerfile: services/human_resource/Dockerfile
+    image: integrione-retail-human-resource:dev
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      TZ: Asia/Jakarta
+      APP_ENV: development
+      HRM_GRPC_HOST: 0.0.0.0
+      HRM_GRPC_PORT: "9003"
+      HRM_DB_HOST: postgres
+      HRM_DB_PORT: "5432"
+      HRM_DB_SSLMODE: disable
+    ports:
+      - "127.0.0.1:9003:9003"
+    volumes:
+      - ./.local/certs:/etc/integrione/hrm-certs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/grpc-healthcheck"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5

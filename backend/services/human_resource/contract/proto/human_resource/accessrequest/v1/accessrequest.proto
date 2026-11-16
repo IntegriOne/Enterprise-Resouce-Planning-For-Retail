@@ -1,0 +1,66 @@
+syntax = "proto3";
+package human_resource.accessrequest.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/accessrequest/v1;accessrequestv1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service AccessRequestService {
+  rpc CreateAccessRequest(CreateAccessRequestRequest) returns (AccessRequestResponse);
+  rpc UpdateAccessRequest(UpdateAccessRequestRequest) returns (AccessRequestResponse);
+  rpc DeleteAccessRequest(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetAccessRequestByID(human_resource.common.v1.IDRequest) returns (AccessRequestResponse);
+  rpc GetAllAccessRequests(human_resource.common.v1.PageRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByWorkerID(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByLifecycleEventID(human_resource.common.v1.Int64FinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByRequestedScopeType(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByRequestedScopeReferenceID(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByApprovedCatalogReferenceID(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByIAMRequestReferenceID(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByIAMDecisionEventReferenceID(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByStatus(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByRequestedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+  rpc FindAccessRequestByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (AccessRequestsResponse);
+}
+
+message AccessRequest {
+  string id = 1;
+  string worker_id = 2;
+  int64 lifecycle_event_id = 3;
+  string request_kind = 4;
+  string requested_scope_type = 5;
+  string requested_scope_reference_id = 6;
+  optional string approved_catalog_reference_id = 7;
+  optional string iam_request_reference_id = 8;
+  optional string iam_decision_event_reference_id = 9;
+  string status = 10;
+  string requested_by_principal_id = 11;
+  google.protobuf.Timestamp requested_at = 12;
+  google.protobuf.Timestamp last_reconciled_at = 13;
+  string idempotency_key = 14;
+}
+message AccessRequestInput {
+  optional string worker_id = 1;
+  optional int64 lifecycle_event_id = 2;
+  optional string request_kind = 3;
+  optional string requested_scope_type = 4;
+  optional string requested_scope_reference_id = 5;
+  optional string approved_catalog_reference_id = 6;
+  optional string iam_request_reference_id = 7;
+  optional string iam_decision_event_reference_id = 8;
+  optional string status = 9;
+  google.protobuf.Timestamp last_reconciled_at = 10;
+  optional string idempotency_key = 11;
+}
+message CreateAccessRequestRequest { AccessRequestInput input = 1; }
+message UpdateAccessRequestRequest {
+  string id = 1;
+  AccessRequestInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message AccessRequestResponse { AccessRequest value = 1; }
+message AccessRequestsResponse {
+  repeated AccessRequest items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}

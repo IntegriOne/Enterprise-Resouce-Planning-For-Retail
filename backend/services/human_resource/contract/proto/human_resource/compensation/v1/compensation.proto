@@ -1,0 +1,113 @@
+syntax = "proto3";
+package human_resource.compensation.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/compensation/v1;compensationv1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service CompensationService {
+  rpc CreateCompensationBand(CreateCompensationBandRequest) returns (CompensationBandResponse);
+  rpc UpdateCompensationBand(UpdateCompensationBandRequest) returns (CompensationBandResponse);
+  rpc DeleteCompensationBand(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetCompensationBandByID(human_resource.common.v1.IDRequest) returns (CompensationBandResponse);
+  rpc GetAllCompensationBands(human_resource.common.v1.PageRequest) returns (CompensationBandsResponse);
+  rpc FindCompensationBandByBandCode(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
+  rpc FindCompensationBandByJobLevelCode(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
+  rpc FindCompensationBandByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
+  rpc FindCompensationBandByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
+  rpc FindCompensationBandByApprovalReferenceID(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
+  rpc CreateCompensationRecord(CreateCompensationRecordRequest) returns (CompensationRecordResponse);
+  rpc UpdateCompensationRecord(UpdateCompensationRecordRequest) returns (CompensationRecordResponse);
+  rpc DeleteCompensationRecord(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetCompensationRecordByID(human_resource.common.v1.IDRequest) returns (CompensationRecordResponse);
+  rpc GetAllCompensationRecords(human_resource.common.v1.PageRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByWorkerID(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByAssignmentID(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByComponentID(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByCompensationBandID(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByCompensationType(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByStatus(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByReasonCode(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+  rpc FindCompensationRecordBySourceChangeReferenceID(human_resource.common.v1.StringFinderRequest) returns (CompensationRecordsResponse);
+}
+
+message CompensationBand {
+  string id = 1;
+  string band_code = 2;
+  int32 band_version = 3;
+  string job_level_code = 4;
+  string jurisdiction_code = 5;
+  string currency_code = 6;
+  string pay_frequency = 7;
+  string minimum_amount = 8;
+  string midpoint_amount = 9;
+  string maximum_amount = 10;
+  string valid_from = 11;
+  optional string valid_to = 12;
+  optional string approval_reference_id = 13;
+}
+message CompensationBandInput {
+  optional string band_code = 1;
+  optional int32 band_version = 2;
+  optional string job_level_code = 3;
+  optional string jurisdiction_code = 4;
+  optional string currency_code = 5;
+  optional string pay_frequency = 6;
+  optional string minimum_amount = 7;
+  optional string midpoint_amount = 8;
+  optional string maximum_amount = 9;
+  optional string valid_from = 10;
+  optional string valid_to = 11;
+  optional string approval_reference_id = 12;
+}
+message CreateCompensationBandRequest { CompensationBandInput input = 1; }
+message UpdateCompensationBandRequest { string id = 1; CompensationBandInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message CompensationBandResponse { CompensationBand item = 1; }
+message CompensationBandsResponse { repeated CompensationBand items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message CompensationRecord {
+  string id = 1;
+  string worker_id = 2;
+  string assignment_id = 3;
+  string component_id = 4;
+  string component_code_snapshot = 5;
+  optional string compensation_band_id = 6;
+  string compensation_type = 7;
+  string amount = 8;
+  string currency_code = 9;
+  string pay_frequency = 10;
+  string effective_from = 11;
+  optional string effective_to = 12;
+  string status = 13;
+  optional string reason_code = 14;
+  optional string approved_by_principal_id = 15;
+  google.protobuf.Timestamp approved_at = 16;
+  optional string source_change_reference_id = 17;
+  string access_class = 18;
+}
+message CompensationRecordInput {
+  optional string worker_id = 1;
+  optional string assignment_id = 2;
+  optional string component_id = 3;
+  optional string component_code_snapshot = 4;
+  optional string compensation_band_id = 5;
+  optional string compensation_type = 6;
+  optional string amount = 7;
+  optional string currency_code = 8;
+  optional string pay_frequency = 9;
+  optional string effective_from = 10;
+  optional string effective_to = 11;
+  optional string status = 12;
+  optional string reason_code = 13;
+  optional string approved_by_principal_id = 14;
+  google.protobuf.Timestamp approved_at = 15;
+  optional string source_change_reference_id = 16;
+  optional string access_class = 17;
+}
+message CreateCompensationRecordRequest { CompensationRecordInput input = 1; }
+message UpdateCompensationRecordRequest { string id = 1; CompensationRecordInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message CompensationRecordResponse { CompensationRecord item = 1; }
+message CompensationRecordsResponse { repeated CompensationRecord items = 1; human_resource.common.v1.PageInfo page = 2; }

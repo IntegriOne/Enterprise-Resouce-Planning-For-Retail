@@ -1,0 +1,97 @@
+syntax = "proto3";
+package human_resource.onboarding.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/onboarding/v1;onboardingv1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service OnboardingService {
+  rpc CreateOnboardingPlan(CreateOnboardingPlanRequest) returns (OnboardingPlanResponse);
+  rpc UpdateOnboardingPlan(UpdateOnboardingPlanRequest) returns (OnboardingPlanResponse);
+  rpc DeleteOnboardingPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetOnboardingPlanByID(human_resource.common.v1.IDRequest) returns (OnboardingPlanResponse);
+  rpc GetAllOnboardingPlans(human_resource.common.v1.PageRequest) returns (OnboardingPlansResponse);
+  rpc FindOnboardingPlanByWorkerID(human_resource.common.v1.StringFinderRequest) returns (OnboardingPlansResponse);
+  rpc FindOnboardingPlanByPlanCode(human_resource.common.v1.StringFinderRequest) returns (OnboardingPlansResponse);
+  rpc FindOnboardingPlanByStatus(human_resource.common.v1.StringFinderRequest) returns (OnboardingPlansResponse);
+  rpc FindOnboardingPlanByTemplateReferenceID(human_resource.common.v1.StringFinderRequest) returns (OnboardingPlansResponse);
+  rpc FindOnboardingPlanByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OnboardingPlansResponse);
+  rpc CreateOnboardingTask(CreateOnboardingTaskRequest) returns (OnboardingTaskResponse);
+  rpc UpdateOnboardingTask(UpdateOnboardingTaskRequest) returns (OnboardingTaskResponse);
+  rpc DeleteOnboardingTask(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetOnboardingTaskByID(human_resource.common.v1.IDRequest) returns (OnboardingTaskResponse);
+  rpc GetAllOnboardingTasks(human_resource.common.v1.PageRequest) returns (OnboardingTasksResponse);
+  rpc FindOnboardingTaskByOnboardingPlanID(human_resource.common.v1.StringFinderRequest) returns (OnboardingTasksResponse);
+  rpc FindOnboardingTaskByTaskCode(human_resource.common.v1.StringFinderRequest) returns (OnboardingTasksResponse);
+  rpc FindOnboardingTaskByTaskOwnerType(human_resource.common.v1.StringFinderRequest) returns (OnboardingTasksResponse);
+  rpc FindOnboardingTaskByAssignedPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OnboardingTasksResponse);
+  rpc FindOnboardingTaskByCompletionEvidenceReferenceID(human_resource.common.v1.StringFinderRequest) returns (OnboardingTasksResponse);
+}
+
+message OnboardingPlan {
+  string id = 1;
+  string worker_id = 2;
+  string plan_code = 3;
+  int32 plan_version = 4;
+  string start_date = 5;
+  optional string target_completion_date = 6;
+  string status = 7;
+  optional string template_reference_id = 8;
+  optional string created_by_principal_id = 9;
+}
+message OnboardingPlanInput {
+  optional string worker_id = 1;
+  optional string plan_code = 2;
+  optional int32 plan_version = 3;
+  optional string start_date = 4;
+  optional string target_completion_date = 5;
+  optional string status = 6;
+  optional string template_reference_id = 7;
+}
+message CreateOnboardingPlanRequest { OnboardingPlanInput input = 1; }
+message UpdateOnboardingPlanRequest {
+  string id = 1;
+  OnboardingPlanInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message OnboardingPlanResponse { OnboardingPlan item = 1; }
+message OnboardingPlansResponse {
+  repeated OnboardingPlan items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message OnboardingTask {
+  string id = 1;
+  string onboarding_plan_id = 2;
+  string task_code = 3;
+  string task_name = 4;
+  string task_owner_type = 5;
+  optional string assigned_principal_id = 6;
+  google.protobuf.Timestamp due_at = 7;
+  google.protobuf.Timestamp completed_at = 8;
+  optional string completion_evidence_reference_id = 9;
+  bool is_mandatory = 10;
+}
+message OnboardingTaskInput {
+  optional string onboarding_plan_id = 1;
+  optional string task_code = 2;
+  optional string task_name = 3;
+  optional string task_owner_type = 4;
+  optional string assigned_principal_id = 5;
+  google.protobuf.Timestamp due_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+  optional string completion_evidence_reference_id = 8;
+  optional bool is_mandatory = 9;
+}
+message CreateOnboardingTaskRequest { OnboardingTaskInput input = 1; }
+message UpdateOnboardingTaskRequest {
+  string id = 1;
+  OnboardingTaskInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message OnboardingTaskResponse { OnboardingTask item = 1; }
+message OnboardingTasksResponse {
+  repeated OnboardingTask items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}

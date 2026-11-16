@@ -1,0 +1,252 @@
+syntax = "proto3";
+package human_resource.leave.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/leave/v1;leavev1";
+
+service LeaveService {
+  rpc CreateLeavePolicy(CreateLeavePolicyRequest) returns (LeavePolicyResponse);
+  rpc UpdateLeavePolicy(UpdateLeavePolicyRequest) returns (LeavePolicyResponse);
+  rpc DeleteLeavePolicy(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetLeavePolicyByID(human_resource.common.v1.IDRequest) returns (LeavePolicyResponse);
+  rpc GetAllLeavePolicies(human_resource.common.v1.PageRequest) returns (LeavePoliciesResponse);
+  rpc FindLeavePolicyByPolicyCode(human_resource.common.v1.StringFinderRequest) returns (LeavePoliciesResponse);
+  rpc FindLeavePolicyByLeaveTypeCode(human_resource.common.v1.StringFinderRequest) returns (LeavePoliciesResponse);
+  rpc FindLeavePolicyByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (LeavePoliciesResponse);
+  rpc CreateLeaveEntitlement(CreateLeaveEntitlementRequest) returns (LeaveEntitlementResponse);
+  rpc UpdateLeaveEntitlement(UpdateLeaveEntitlementRequest) returns (LeaveEntitlementResponse);
+  rpc DeleteLeaveEntitlement(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetLeaveEntitlementByID(human_resource.common.v1.IDRequest) returns (LeaveEntitlementResponse);
+  rpc GetAllLeaveEntitlements(human_resource.common.v1.PageRequest) returns (LeaveEntitlementsResponse);
+  rpc FindLeaveEntitlementByWorkerID(human_resource.common.v1.StringFinderRequest) returns (LeaveEntitlementsResponse);
+  rpc FindLeaveEntitlementByLeavePolicyID(human_resource.common.v1.StringFinderRequest) returns (LeaveEntitlementsResponse);
+  rpc FindLeaveEntitlementByUOMCode(human_resource.common.v1.StringFinderRequest) returns (LeaveEntitlementsResponse);
+  rpc FindLeaveEntitlementBySourceWorkforceSnapshotReferenceID(human_resource.common.v1.StringFinderRequest) returns (LeaveEntitlementsResponse);
+  rpc CreateLeaveAdjustment(CreateLeaveAdjustmentRequest) returns (LeaveAdjustmentResponse);
+  rpc UpdateLeaveAdjustment(UpdateLeaveAdjustmentRequest) returns (LeaveAdjustmentResponse);
+  rpc DeleteLeaveAdjustment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetLeaveAdjustmentByID(human_resource.common.v1.IDRequest) returns (LeaveAdjustmentResponse);
+  rpc GetAllLeaveAdjustments(human_resource.common.v1.PageRequest) returns (LeaveAdjustmentsResponse);
+  rpc FindLeaveAdjustmentByEntitlementID(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
+  rpc FindLeaveAdjustmentByReasonCode(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
+  rpc FindLeaveAdjustmentByRequestedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
+  rpc FindLeaveAdjustmentByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
+  rpc FindLeaveAdjustmentByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
+  rpc CreateLeaveLedgerEntry(CreateLeaveLedgerEntryRequest) returns (LeaveLedgerEntryResponse);
+  rpc UpdateLeaveLedgerEntry(UpdateLeaveLedgerEntryRequest) returns (LeaveLedgerEntryResponse);
+  rpc DeleteLeaveLedgerEntry(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetLeaveLedgerEntryByID(human_resource.common.v1.IDRequest) returns (LeaveLedgerEntryResponse);
+  rpc GetAllLeaveLedgerEntries(human_resource.common.v1.PageRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryByEntitlementID(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryByEntryType(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryByAdjustmentID(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryByReversesEntryID(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryBySourceManagement(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryBySourceEventID(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryByReasonCode(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc FindLeaveLedgerEntryByActorPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc PostLedgerEntry(PostLedgerEntryRequest) returns (LeaveEntitlementResponse);
+}
+
+message LeavePolicy {
+  string id = 1;
+  string policy_code = 2;
+  int32 policy_version = 3;
+  string policy_name = 4;
+  string leave_type_code = 5;
+  string jurisdiction_code = 6;
+  string accrual_method = 7;
+  optional string annual_entitlement = 8;
+  optional string carryover_limit = 9;
+  optional string max_balance = 10;
+  optional int32 minimum_service_days = 11;
+  string effective_from = 12;
+  optional string effective_to = 13;
+  bool is_paid = 14;
+  bool is_active = 15;
+}
+message LeavePolicyInput {
+  optional string policy_code = 1;
+  optional int32 policy_version = 2;
+  optional string policy_name = 3;
+  optional string leave_type_code = 4;
+  optional string jurisdiction_code = 5;
+  optional string accrual_method = 6;
+  optional string annual_entitlement = 7;
+  optional string carryover_limit = 8;
+  optional string max_balance = 9;
+  optional int32 minimum_service_days = 10;
+  optional string effective_from = 11;
+  optional string effective_to = 12;
+  optional bool is_paid = 13;
+  optional bool is_active = 14;
+}
+message CreateLeavePolicyRequest {
+  LeavePolicyInput input = 1;
+}
+message UpdateLeavePolicyRequest {
+  string id = 1;
+  LeavePolicyInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message LeavePolicyResponse {
+  LeavePolicy item = 1;
+}
+message LeavePoliciesResponse {
+  repeated LeavePolicy items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message LeaveEntitlement {
+  string id = 1;
+  string worker_id = 2;
+  string leave_policy_id = 3;
+  string leave_type_code_snapshot = 4;
+  string entitlement_period_start = 5;
+  string entitlement_period_end = 6;
+  string opening_balance = 7;
+  string accrued_quantity = 8;
+  string used_quantity_snapshot = 9;
+  string adjusted_quantity = 10;
+  string closing_balance_snapshot = 11;
+  string uom_code = 12;
+  int64 revision = 13;
+  google.protobuf.Timestamp calculated_at = 14;
+  optional string source_workforce_snapshot_reference_id = 15;
+}
+message LeaveEntitlementInput {
+  optional string worker_id = 1;
+  optional string leave_policy_id = 2;
+  optional string leave_type_code_snapshot = 3;
+  optional string entitlement_period_start = 4;
+  optional string entitlement_period_end = 5;
+  optional string opening_balance = 6;
+  optional string accrued_quantity = 7;
+  optional string used_quantity_snapshot = 8;
+  optional string adjusted_quantity = 9;
+  optional string closing_balance_snapshot = 10;
+  optional string uom_code = 11;
+  optional int64 revision = 12;
+  optional string source_workforce_snapshot_reference_id = 13;
+}
+message CreateLeaveEntitlementRequest {
+  LeaveEntitlementInput input = 1;
+}
+message UpdateLeaveEntitlementRequest {
+  string id = 1;
+  LeaveEntitlementInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message LeaveEntitlementResponse {
+  LeaveEntitlement item = 1;
+}
+message LeaveEntitlementsResponse {
+  repeated LeaveEntitlement items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message LeaveAdjustment {
+  string id = 1;
+  string entitlement_id = 2;
+  string quantity_delta = 3;
+  string reason_code = 4;
+  string reason = 5;
+  string requested_by_principal_id = 6;
+  optional string approved_by_principal_id = 7;
+  google.protobuf.Timestamp approved_at = 8;
+  google.protobuf.Timestamp created_at = 9;
+  string idempotency_key = 10;
+}
+message LeaveAdjustmentInput {
+  optional string entitlement_id = 1;
+  optional string quantity_delta = 2;
+  optional string reason_code = 3;
+  optional string reason = 4;
+  optional string approved_by_principal_id = 5;
+  google.protobuf.Timestamp approved_at = 6;
+  optional string idempotency_key = 7;
+}
+message CreateLeaveAdjustmentRequest {
+  LeaveAdjustmentInput input = 1;
+}
+message UpdateLeaveAdjustmentRequest {
+  string id = 1;
+  LeaveAdjustmentInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message LeaveAdjustmentResponse {
+  LeaveAdjustment item = 1;
+}
+message LeaveAdjustmentsResponse {
+  repeated LeaveAdjustment items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message LeaveLedgerEntry {
+  string id = 1;
+  string entitlement_id = 2;
+  int64 entry_sequence = 3;
+  string entry_type = 4;
+  string quantity_delta = 5;
+  string effective_date = 6;
+  optional string adjustment_id = 7;
+  optional string reverses_entry_id = 8;
+  string source_management = 9;
+  string source_event_id = 10;
+  string source_line_key = 11;
+  bytes source_digest = 12;
+  string reason_code = 13;
+  string actor_principal_id = 14;
+  google.protobuf.Timestamp recorded_at = 15;
+}
+message LeaveLedgerEntryInput {
+  optional string entitlement_id = 1;
+  optional int64 entry_sequence = 2;
+  optional string entry_type = 3;
+  optional string quantity_delta = 4;
+  optional string effective_date = 5;
+  optional string adjustment_id = 6;
+  optional string reverses_entry_id = 7;
+  optional string source_management = 8;
+  optional string source_event_id = 9;
+  optional string source_line_key = 10;
+  optional bytes source_digest = 11;
+  optional string reason_code = 12;
+}
+message CreateLeaveLedgerEntryRequest {
+  LeaveLedgerEntryInput input = 1;
+}
+message UpdateLeaveLedgerEntryRequest {
+  string id = 1;
+  LeaveLedgerEntryInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message LeaveLedgerEntryResponse {
+  LeaveLedgerEntry item = 1;
+}
+message LeaveLedgerEntriesResponse {
+  repeated LeaveLedgerEntry items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+// PostLedgerEntryInput tidak menerima urutan ledger atau identitas pelaku dari klien.
+message PostLedgerEntryInput {
+  reserved 1, 2;
+  reserved "entitlement_id", "entry_sequence";
+  optional string entry_type = 3;
+  optional string quantity_delta = 4;
+  optional string effective_date = 5;
+  optional string adjustment_id = 6;
+  optional string reverses_entry_id = 7;
+  optional string source_management = 8;
+  optional string source_event_id = 9;
+  optional string source_line_key = 10;
+  optional bytes source_digest = 11;
+  optional string reason_code = 12;
+}
+message PostLedgerEntryRequest {
+  string entitlement_id = 1;
+  PostLedgerEntryInput input = 2;
+}

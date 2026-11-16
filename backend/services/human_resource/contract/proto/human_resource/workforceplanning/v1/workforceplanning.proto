@@ -1,0 +1,252 @@
+syntax = "proto3";
+
+package human_resource.workforceplanning.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/workforceplanning/v1;workforceplanningv1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service WorkforcePlanningService {
+  rpc CreateJobFamily(CreateJobFamilyRequest) returns (JobFamilyResponse);
+  rpc UpdateJobFamily(UpdateJobFamilyRequest) returns (JobFamilyResponse);
+  rpc DeleteJobFamily(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetJobFamilyByID(human_resource.common.v1.IDRequest) returns (JobFamilyResponse);
+  rpc GetAllJobFamilies(human_resource.common.v1.PageRequest) returns (JobFamiliesResponse);
+  rpc FindJobFamilyByFamilyCode(human_resource.common.v1.StringFinderRequest) returns (JobFamiliesResponse);
+  rpc CreateJob(CreateJobRequest) returns (JobResponse);
+  rpc UpdateJob(UpdateJobRequest) returns (JobResponse);
+  rpc DeleteJob(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetJobByID(human_resource.common.v1.IDRequest) returns (JobResponse);
+  rpc GetAllJobs(human_resource.common.v1.PageRequest) returns (JobsResponse);
+  rpc FindJobByJobFamilyID(human_resource.common.v1.StringFinderRequest) returns (JobsResponse);
+  rpc FindJobByJobCode(human_resource.common.v1.StringFinderRequest) returns (JobsResponse);
+  rpc FindJobByJobLevelCode(human_resource.common.v1.StringFinderRequest) returns (JobsResponse);
+  rpc CreatePosition(CreatePositionRequest) returns (PositionResponse);
+  rpc UpdatePosition(UpdatePositionRequest) returns (PositionResponse);
+  rpc DeletePosition(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetPositionByID(human_resource.common.v1.IDRequest) returns (PositionResponse);
+  rpc GetAllPositions(human_resource.common.v1.PageRequest) returns (PositionsResponse);
+  rpc FindPositionByPositionCode(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc FindPositionByJobID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc FindPositionByOrganizationUnitReferenceID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc FindPositionByLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc FindPositionByReportsToPositionID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc FindPositionByPositionStatus(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc FindPositionByWorkLocationReferenceID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc FindPositionByCostCenterReferenceID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc CreateWorkforcePlan(CreateWorkforcePlanRequest) returns (WorkforcePlanResponse);
+  rpc UpdateWorkforcePlan(UpdateWorkforcePlanRequest) returns (WorkforcePlanResponse);
+  rpc DeleteWorkforcePlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetWorkforcePlanByID(human_resource.common.v1.IDRequest) returns (WorkforcePlanResponse);
+  rpc GetAllWorkforcePlans(human_resource.common.v1.PageRequest) returns (WorkforcePlansResponse);
+  rpc FindWorkforcePlanByPlanCode(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlansResponse);
+  rpc FindWorkforcePlanByLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlansResponse);
+  rpc FindWorkforcePlanByScenarioCode(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlansResponse);
+  rpc FindWorkforcePlanByStatus(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlansResponse);
+  rpc FindWorkforcePlanByFinanceBudgetReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlansResponse);
+  rpc FindWorkforcePlanByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlansResponse);
+  rpc FindWorkforcePlanByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlansResponse);
+  rpc CreateWorkforcePlanLine(CreateWorkforcePlanLineRequest) returns (WorkforcePlanLineResponse);
+  rpc UpdateWorkforcePlanLine(UpdateWorkforcePlanLineRequest) returns (WorkforcePlanLineResponse);
+  rpc DeleteWorkforcePlanLine(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetWorkforcePlanLineByID(human_resource.common.v1.IDRequest) returns (WorkforcePlanLineResponse);
+  rpc GetAllWorkforcePlanLines(human_resource.common.v1.PageRequest) returns (WorkforcePlanLinesResponse);
+  rpc FindWorkforcePlanLineByWorkforcePlanID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlanLinesResponse);
+  rpc FindWorkforcePlanLineByLineNumber(human_resource.common.v1.Int32FinderRequest) returns (WorkforcePlanLinesResponse);
+  rpc FindWorkforcePlanLineByOrganizationUnitReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlanLinesResponse);
+  rpc FindWorkforcePlanLineByJobID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlanLinesResponse);
+  rpc FindWorkforcePlanLineByWorkLocationReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlanLinesResponse);
+  rpc FindWorkforcePlanLineByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlanLinesResponse);
+  rpc FindWorkforcePlanLineByActionCode(human_resource.common.v1.StringFinderRequest) returns (WorkforcePlanLinesResponse);
+}
+
+message JobFamily {
+  string id = 1;
+  string family_code = 2;
+  string family_name = 3;
+  optional string description = 4;
+  string job_domain = 5;
+  bool is_active = 6;
+}
+message JobFamilyInput {
+  optional string family_code = 1;
+  optional string family_name = 2;
+  optional string description = 3;
+  optional string job_domain = 4;
+  optional bool is_active = 5;
+}
+message CreateJobFamilyRequest { JobFamilyInput input = 1; }
+message UpdateJobFamilyRequest {
+  string id = 1;
+  JobFamilyInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message JobFamilyResponse { JobFamily item = 1; }
+message JobFamiliesResponse {
+  repeated JobFamily items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message Job {
+  string id = 1;
+  string job_family_id = 2;
+  string job_code = 3;
+  string job_title = 4;
+  optional string job_level_code = 5;
+  optional string job_description = 6;
+  human_resource.common.v1.JsonDocument responsibilities = 7;
+  human_resource.common.v1.JsonDocument qualification_requirements = 8;
+  string valid_from = 9;
+  optional string valid_to = 10;
+  bool is_active = 11;
+}
+message JobInput {
+  optional string job_family_id = 1;
+  optional string job_code = 2;
+  optional string job_title = 3;
+  optional string job_level_code = 4;
+  optional string job_description = 5;
+  human_resource.common.v1.JsonDocument responsibilities = 6;
+  human_resource.common.v1.JsonDocument qualification_requirements = 7;
+  optional string valid_from = 8;
+  optional string valid_to = 9;
+  optional bool is_active = 10;
+}
+message CreateJobRequest { JobInput input = 1; }
+message UpdateJobRequest {
+  string id = 1;
+  JobInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message JobResponse { Job item = 1; }
+message JobsResponse {
+  repeated Job items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message Position {
+  string id = 1;
+  string position_code = 2;
+  string position_title = 3;
+  string job_id = 4;
+  string organization_unit_reference_id = 5;
+  string legal_entity_reference_id = 6;
+  optional string reports_to_position_id = 7;
+  string position_status = 8;
+  string headcount_authorized = 9;
+  optional string work_location_reference_id = 10;
+  optional string cost_center_reference_id = 11;
+  string valid_from = 12;
+  optional string valid_to = 13;
+}
+message PositionInput {
+  optional string position_code = 1;
+  optional string position_title = 2;
+  optional string job_id = 3;
+  optional string organization_unit_reference_id = 4;
+  optional string legal_entity_reference_id = 5;
+  optional string reports_to_position_id = 6;
+  optional string position_status = 7;
+  optional string headcount_authorized = 8;
+  optional string work_location_reference_id = 9;
+  optional string cost_center_reference_id = 10;
+  optional string valid_from = 11;
+  optional string valid_to = 12;
+}
+message CreatePositionRequest { PositionInput input = 1; }
+message UpdatePositionRequest {
+  string id = 1;
+  PositionInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message PositionResponse { Position item = 1; }
+message PositionsResponse {
+  repeated Position items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message WorkforcePlan {
+  string id = 1;
+  string plan_code = 2;
+  int32 plan_version = 3;
+  string legal_entity_reference_id = 4;
+  string period_start = 5;
+  string period_end = 6;
+  string scenario_code = 7;
+  string status = 8;
+  optional string finance_budget_reference_id = 9;
+  string created_by_principal_id = 10;
+  google.protobuf.Timestamp created_at = 11;
+  optional string approved_by_principal_id = 12;
+  google.protobuf.Timestamp approved_at = 13;
+}
+message WorkforcePlanInput {
+  optional string plan_code = 1;
+  optional int32 plan_version = 2;
+  optional string legal_entity_reference_id = 3;
+  optional string period_start = 4;
+  optional string period_end = 5;
+  optional string scenario_code = 6;
+  optional string status = 7;
+  optional string finance_budget_reference_id = 8;
+  optional string approved_by_principal_id = 9;
+  google.protobuf.Timestamp approved_at = 10;
+}
+message CreateWorkforcePlanRequest { WorkforcePlanInput input = 1; }
+message UpdateWorkforcePlanRequest {
+  string id = 1;
+  WorkforcePlanInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message WorkforcePlanResponse { WorkforcePlan item = 1; }
+message WorkforcePlansResponse {
+  repeated WorkforcePlan items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message WorkforcePlanLine {
+  string id = 1;
+  string workforce_plan_id = 2;
+  int32 line_number = 3;
+  string organization_unit_reference_id = 4;
+  string job_id = 5;
+  optional string work_location_reference_id = 6;
+  string worker_category = 7;
+  string current_fte = 8;
+  string required_fte = 9;
+  optional string estimated_cost = 10;
+  optional string currency_code = 11;
+  string needed_from = 12;
+  optional string needed_until = 13;
+  string action_code = 14;
+  string rationale = 15;
+}
+message WorkforcePlanLineInput {
+  optional string workforce_plan_id = 1;
+  optional int32 line_number = 2;
+  optional string organization_unit_reference_id = 3;
+  optional string job_id = 4;
+  optional string work_location_reference_id = 5;
+  optional string worker_category = 6;
+  optional string current_fte = 7;
+  optional string required_fte = 8;
+  optional string estimated_cost = 9;
+  optional string currency_code = 10;
+  optional string needed_from = 11;
+  optional string needed_until = 12;
+  optional string action_code = 13;
+  optional string rationale = 14;
+}
+message CreateWorkforcePlanLineRequest { WorkforcePlanLineInput input = 1; }
+message UpdateWorkforcePlanLineRequest {
+  string id = 1;
+  WorkforcePlanLineInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message WorkforcePlanLineResponse { WorkforcePlanLine item = 1; }
+message WorkforcePlanLinesResponse {
+  repeated WorkforcePlanLine items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}

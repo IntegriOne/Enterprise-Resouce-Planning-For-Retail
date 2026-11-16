@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package human_resource.succession.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/succession/v1;successionv1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service SuccessionService {
+  rpc CreateSuccessionPlan(CreateSuccessionPlanRequest) returns (SuccessionPlanResponse);
+  rpc UpdateSuccessionPlan(UpdateSuccessionPlanRequest) returns (SuccessionPlanResponse);
+  rpc DeleteSuccessionPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetSuccessionPlanByID(human_resource.common.v1.IDRequest) returns (SuccessionPlanResponse);
+  rpc GetAllSuccessionPlans(human_resource.common.v1.PageRequest) returns (SuccessionPlansResponse);
+  rpc FindSuccessionPlanByPositionID(human_resource.common.v1.StringFinderRequest) returns (SuccessionPlansResponse);
+  rpc FindSuccessionPlanByPlanCode(human_resource.common.v1.StringFinderRequest) returns (SuccessionPlansResponse);
+  rpc FindSuccessionPlanByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (SuccessionPlansResponse);
+  rpc CreateSuccessionCandidate(CreateSuccessionCandidateRequest) returns (SuccessionCandidateResponse);
+  rpc UpdateSuccessionCandidate(UpdateSuccessionCandidateRequest) returns (SuccessionCandidateResponse);
+  rpc DeleteSuccessionCandidate(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetSuccessionCandidateByID(human_resource.common.v1.IDRequest) returns (SuccessionCandidateResponse);
+  rpc GetAllSuccessionCandidates(human_resource.common.v1.PageRequest) returns (SuccessionCandidatesResponse);
+  rpc FindSuccessionCandidateBySuccessionPlanID(human_resource.common.v1.StringFinderRequest) returns (SuccessionCandidatesResponse);
+  rpc FindSuccessionCandidateByCandidateWorkerID(human_resource.common.v1.StringFinderRequest) returns (SuccessionCandidatesResponse);
+  rpc FindSuccessionCandidateByReadinessCode(human_resource.common.v1.StringFinderRequest) returns (SuccessionCandidatesResponse);
+  rpc FindSuccessionCandidateByTalentAssessmentID(human_resource.common.v1.StringFinderRequest) returns (SuccessionCandidatesResponse);
+  rpc FindSuccessionCandidateByDevelopmentPlanID(human_resource.common.v1.StringFinderRequest) returns (SuccessionCandidatesResponse);
+}
+
+message SuccessionPlan {
+  string id = 1;
+  string position_id = 2;
+  string plan_code = 3;
+  int32 plan_version = 4;
+  google.protobuf.Timestamp review_date = 5;
+  string confidentiality_class = 6;
+  optional string approved_by_principal_id = 7;
+  google.protobuf.Timestamp approved_at = 8;
+  optional string succession_risk = 9;
+}
+
+// FieldMask pada update membedakan absen dengan NULL; nilai create mengikuti default service.
+message SuccessionPlanInput {
+  optional string position_id = 1;
+  optional string plan_code = 2;
+  optional int32 plan_version = 3;
+  google.protobuf.Timestamp review_date = 4;
+  optional string confidentiality_class = 5;
+  optional string approved_by_principal_id = 6;
+  google.protobuf.Timestamp approved_at = 7;
+  optional string succession_risk = 8;
+}
+
+message CreateSuccessionPlanRequest { SuccessionPlanInput input = 1; }
+message UpdateSuccessionPlanRequest {
+  string id = 1;
+  SuccessionPlanInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message SuccessionPlanResponse { SuccessionPlan value = 1; }
+message SuccessionPlansResponse {
+  repeated SuccessionPlan items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message SuccessionCandidate {
+  string id = 1;
+  string succession_plan_id = 2;
+  string candidate_worker_id = 3;
+  string readiness_code = 4;
+  google.protobuf.Timestamp readiness_assessed_at = 5;
+  optional string readiness_rationale = 6;
+  optional string talent_assessment_id = 7;
+  optional string development_plan_id = 8;
+  optional string risk_of_loss = 9;
+}
+message SuccessionCandidateInput {
+  optional string succession_plan_id = 1;
+  optional string candidate_worker_id = 2;
+  optional string readiness_code = 3;
+  google.protobuf.Timestamp readiness_assessed_at = 4;
+  optional string readiness_rationale = 5;
+  optional string talent_assessment_id = 6;
+  optional string development_plan_id = 7;
+  optional string risk_of_loss = 8;
+}
+message CreateSuccessionCandidateRequest { SuccessionCandidateInput input = 1; }
+message UpdateSuccessionCandidateRequest {
+  string id = 1;
+  SuccessionCandidateInput input = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+message SuccessionCandidateResponse { SuccessionCandidate value = 1; }
+message SuccessionCandidatesResponse {
+  repeated SuccessionCandidate items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}

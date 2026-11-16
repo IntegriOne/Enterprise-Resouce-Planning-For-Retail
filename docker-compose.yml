@@ -3,5 +3,6 @@
 name: integrione-retail
 include:
   - path: ./backend/docker-compose.yml
+  - path: ./backend/services/human_resource/docker-compose.yml
   - path: ./frontend/docker-compose.yml
   - path: ./proxy/docker-compose.yml

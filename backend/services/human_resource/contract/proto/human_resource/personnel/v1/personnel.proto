@@ -1,0 +1,279 @@
+syntax = "proto3";
+package human_resource.personnel.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/personnel/v1;personnelv1";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service PersonnelService {
+  rpc CreateWorker(CreateWorkerRequest) returns (WorkerResponse);
+  rpc UpdateWorker(UpdateWorkerRequest) returns (WorkerResponse);
+  rpc DeleteWorker(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetWorkerByID(human_resource.common.v1.IDRequest) returns (WorkerResponse);
+  rpc GetAllWorkers(human_resource.common.v1.PageRequest) returns (WorkersResponse);
+  rpc FindWorkerByWorkerNumber(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc FindWorkerByPersonPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc FindWorkerByStatus(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc FindWorkerByTerminationReasonCode(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc FindWorkerByPrimaryLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc FindWorkerByPrimaryAssignmentID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc FindWorkerByIAMPrincipalReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc FindWorkerByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc CreateEmploymentContract(CreateEmploymentContractRequest) returns (EmploymentContractResponse);
+  rpc UpdateEmploymentContract(UpdateEmploymentContractRequest) returns (EmploymentContractResponse);
+  rpc DeleteEmploymentContract(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetEmploymentContractByID(human_resource.common.v1.IDRequest) returns (EmploymentContractResponse);
+  rpc GetAllEmploymentContracts(human_resource.common.v1.PageRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByWorkerID(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByContractNumber(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByContractType(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByContractStatus(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByEmployingLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractBySignedDocumentReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractBySignedDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByWorkCountryCode(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByGoverningJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc FindEmploymentContractByCollectiveAgreementID(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
+  rpc CreateWorkerAssignment(CreateWorkerAssignmentRequest) returns (WorkerAssignmentResponse);
+  rpc UpdateWorkerAssignment(UpdateWorkerAssignmentRequest) returns (WorkerAssignmentResponse);
+  rpc DeleteWorkerAssignment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetWorkerAssignmentByID(human_resource.common.v1.IDRequest) returns (WorkerAssignmentResponse);
+  rpc GetAllWorkerAssignments(human_resource.common.v1.PageRequest) returns (WorkerAssignmentsResponse);
+  rpc FindWorkerAssignmentByWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
+  rpc FindWorkerAssignmentByPositionID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
+  rpc FindWorkerAssignmentByManagerWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
+  rpc FindWorkerAssignmentByAssignmentType(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
+  rpc FindWorkerAssignmentByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
+  rpc CreateWorkerLifecycleEvent(CreateWorkerLifecycleEventRequest) returns (WorkerLifecycleEventResponse);
+  rpc UpdateWorkerLifecycleEvent(UpdateWorkerLifecycleEventRequest) returns (WorkerLifecycleEventResponse);
+  rpc DeleteWorkerLifecycleEvent(human_resource.common.v1.IdentityIDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetWorkerLifecycleEventByID(human_resource.common.v1.IdentityIDRequest) returns (WorkerLifecycleEventResponse);
+  rpc GetAllWorkerLifecycleEvents(human_resource.common.v1.PageRequest) returns (WorkerLifecycleEventsResponse);
+  rpc FindWorkerLifecycleEventByWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerLifecycleEventsResponse);
+  rpc FindWorkerLifecycleEventByEventType(human_resource.common.v1.StringFinderRequest) returns (WorkerLifecycleEventsResponse);
+  rpc FindWorkerLifecycleEventByPreviousStatus(human_resource.common.v1.StringFinderRequest) returns (WorkerLifecycleEventsResponse);
+  rpc FindWorkerLifecycleEventByNewStatus(human_resource.common.v1.StringFinderRequest) returns (WorkerLifecycleEventsResponse);
+  rpc FindWorkerLifecycleEventByActorPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerLifecycleEventsResponse);
+  rpc FindWorkerLifecycleEventByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (WorkerLifecycleEventsResponse);
+  rpc CreateWorkerDocument(CreateWorkerDocumentRequest) returns (WorkerDocumentResponse);
+  rpc UpdateWorkerDocument(UpdateWorkerDocumentRequest) returns (WorkerDocumentResponse);
+  rpc DeleteWorkerDocument(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetWorkerDocumentByID(human_resource.common.v1.IDRequest) returns (WorkerDocumentResponse);
+  rpc GetAllWorkerDocuments(human_resource.common.v1.PageRequest) returns (WorkerDocumentsResponse);
+  rpc FindWorkerDocumentByWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerDocumentsResponse);
+  rpc FindWorkerDocumentByDocumentType(human_resource.common.v1.StringFinderRequest) returns (WorkerDocumentsResponse);
+  rpc FindWorkerDocumentByDocumentReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkerDocumentsResponse);
+  rpc FindWorkerDocumentByDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkerDocumentsResponse);
+  rpc FindWorkerDocumentByIssuingCountryCode(human_resource.common.v1.StringFinderRequest) returns (WorkerDocumentsResponse);
+  rpc FindWorkerDocumentByVerificationStatus(human_resource.common.v1.StringFinderRequest) returns (WorkerDocumentsResponse);
+  rpc FindWorkerDocumentByVerifiedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerDocumentsResponse);
+  rpc CreateEmergencyContact(CreateEmergencyContactRequest) returns (EmergencyContactResponse);
+  rpc UpdateEmergencyContact(UpdateEmergencyContactRequest) returns (EmergencyContactResponse);
+  rpc DeleteEmergencyContact(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetEmergencyContactByID(human_resource.common.v1.IDRequest) returns (EmergencyContactResponse);
+  rpc GetAllEmergencyContacts(human_resource.common.v1.PageRequest) returns (EmergencyContactsResponse);
+  rpc FindEmergencyContactByWorkerID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
+  rpc FindEmergencyContactByContactPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
+  rpc FindEmergencyContactByRelationshipCode(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
+}
+
+message Worker {
+  string id = 1;
+  string worker_number = 2;
+  string person_party_reference_id = 3;
+  string worker_category = 4;
+  string status = 5;
+  optional string hire_date = 6;
+  optional string service_start_date = 7;
+  optional string termination_date = 8;
+  optional string termination_reason_code = 9;
+  string primary_legal_entity_reference_id = 10;
+  optional string primary_assignment_id = 11;
+  optional string iam_principal_reference_id = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+  optional string created_by_principal_id = 15;
+}
+message WorkerInput {
+  optional string worker_number = 1;
+  optional string person_party_reference_id = 2;
+  optional string worker_category = 3;
+  optional string status = 4;
+  optional string hire_date = 5;
+  optional string service_start_date = 6;
+  optional string termination_date = 7;
+  optional string termination_reason_code = 8;
+  optional string primary_legal_entity_reference_id = 9;
+  optional string primary_assignment_id = 10;
+  optional string iam_principal_reference_id = 11;
+}
+message CreateWorkerRequest { WorkerInput input = 1; }
+message UpdateWorkerRequest { string id = 1; WorkerInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message WorkerResponse { Worker item = 1; }
+message WorkersResponse { repeated Worker items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message EmploymentContract {
+  string id = 1;
+  string worker_id = 2;
+  string contract_number = 3;
+  string contract_type = 4;
+  string contract_status = 5;
+  string employing_legal_entity_reference_id = 6;
+  string effective_from = 7;
+  optional string effective_to = 8;
+  google.protobuf.Timestamp signed_at = 9;
+  optional string signed_document_reference_id = 10;
+  optional string signed_document_version_reference_id = 11;
+  optional bytes signed_content_digest = 12;
+  optional string probation_end_date = 13;
+  optional int32 notice_period_days = 14;
+  string work_country_code = 15;
+  string governing_jurisdiction_code = 16;
+  optional string collective_agreement_id = 17;
+  google.protobuf.Timestamp created_at = 18;
+}
+message EmploymentContractInput {
+  optional string worker_id = 1;
+  optional string contract_number = 2;
+  optional string contract_type = 3;
+  optional string contract_status = 4;
+  optional string employing_legal_entity_reference_id = 5;
+  optional string effective_from = 6;
+  optional string effective_to = 7;
+  google.protobuf.Timestamp signed_at = 8;
+  optional string signed_document_reference_id = 9;
+  optional string signed_document_version_reference_id = 10;
+  optional bytes signed_content_digest = 11;
+  optional string probation_end_date = 12;
+  optional int32 notice_period_days = 13;
+  optional string work_country_code = 14;
+  optional string governing_jurisdiction_code = 15;
+  optional string collective_agreement_id = 16;
+}
+message CreateEmploymentContractRequest { EmploymentContractInput input = 1; }
+message UpdateEmploymentContractRequest { string id = 1; EmploymentContractInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message EmploymentContractResponse { EmploymentContract item = 1; }
+message EmploymentContractsResponse { repeated EmploymentContract items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message WorkerAssignment {
+  string id = 1;
+  string worker_id = 2;
+  string position_id = 3;
+  optional string manager_worker_id = 4;
+  string assignment_type = 5;
+  optional string employment_status_snapshot = 6;
+  string fte_percent = 7;
+  string valid_from = 8;
+  optional string valid_to = 9;
+  optional string assignment_reason = 10;
+  optional string approved_by_principal_id = 11;
+  google.protobuf.Timestamp approved_at = 12;
+}
+message WorkerAssignmentInput {
+  optional string worker_id = 1;
+  optional string position_id = 2;
+  optional string manager_worker_id = 3;
+  optional string assignment_type = 4;
+  optional string employment_status_snapshot = 5;
+  optional string fte_percent = 6;
+  optional string valid_from = 7;
+  optional string valid_to = 8;
+  optional string assignment_reason = 9;
+  optional string approved_by_principal_id = 10;
+  google.protobuf.Timestamp approved_at = 11;
+}
+message CreateWorkerAssignmentRequest { WorkerAssignmentInput input = 1; }
+message UpdateWorkerAssignmentRequest { string id = 1; WorkerAssignmentInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message WorkerAssignmentResponse { WorkerAssignment item = 1; }
+message WorkerAssignmentsResponse { repeated WorkerAssignment items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message WorkerLifecycleEvent {
+  int64 id = 1;
+  string worker_id = 2;
+  string event_type = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+  string effective_date = 5;
+  optional string previous_status = 6;
+  optional string new_status = 7;
+  optional string source_reference = 8;
+  optional string actor_principal_id = 9;
+  human_resource.common.v1.JsonDocument event_payload = 10;
+  string idempotency_key = 11;
+}
+message WorkerLifecycleEventInput {
+  optional string worker_id = 1;
+  optional string event_type = 2;
+  google.protobuf.Timestamp occurred_at = 3;
+  optional string effective_date = 4;
+  optional string previous_status = 5;
+  optional string new_status = 6;
+  optional string source_reference = 7;
+  human_resource.common.v1.JsonDocument event_payload = 8;
+  optional string idempotency_key = 9;
+}
+message CreateWorkerLifecycleEventRequest { WorkerLifecycleEventInput input = 1; }
+message UpdateWorkerLifecycleEventRequest { int64 id = 1; WorkerLifecycleEventInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message WorkerLifecycleEventResponse { WorkerLifecycleEvent item = 1; }
+message WorkerLifecycleEventsResponse { repeated WorkerLifecycleEvent items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message WorkerDocument {
+  string id = 1;
+  string worker_id = 2;
+  string document_type = 3;
+  string document_reference_id = 4;
+  string document_version_reference_id = 5;
+  optional bytes content_digest = 6;
+  optional bytes document_number_digest = 7;
+  optional string issuing_country_code = 8;
+  optional string issued_on = 9;
+  optional string expires_on = 10;
+  string verification_status = 11;
+  optional string verified_by_principal_id = 12;
+  google.protobuf.Timestamp verified_at = 13;
+  string retention_class = 14;
+  string access_class = 15;
+  google.protobuf.Timestamp created_at = 16;
+}
+message WorkerDocumentInput {
+  optional string worker_id = 1;
+  optional string document_type = 2;
+  optional string document_reference_id = 3;
+  optional string document_version_reference_id = 4;
+  optional bytes content_digest = 5;
+  optional bytes document_number_digest = 6;
+  optional string issuing_country_code = 7;
+  optional string issued_on = 8;
+  optional string expires_on = 9;
+  optional string verification_status = 10;
+  optional string verified_by_principal_id = 11;
+  google.protobuf.Timestamp verified_at = 12;
+  optional string retention_class = 13;
+  optional string access_class = 14;
+}
+message CreateWorkerDocumentRequest { WorkerDocumentInput input = 1; }
+message UpdateWorkerDocumentRequest { string id = 1; WorkerDocumentInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message WorkerDocumentResponse { WorkerDocument item = 1; }
+message WorkerDocumentsResponse { repeated WorkerDocument items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message EmergencyContact {
+  string id = 1;
+  string worker_id = 2;
+  string contact_party_reference_id = 3;
+  string relationship_code = 4;
+  int32 priority_order = 5;
+  google.protobuf.Timestamp authorization_confirmed_at = 6;
+  bool is_active = 7;
+}
+message EmergencyContactInput {
+  optional string worker_id = 1;
+  optional string contact_party_reference_id = 2;
+  optional string relationship_code = 3;
+  optional int32 priority_order = 4;
+  google.protobuf.Timestamp authorization_confirmed_at = 5;
+  optional bool is_active = 6;
+}
+message CreateEmergencyContactRequest { EmergencyContactInput input = 1; }
+message UpdateEmergencyContactRequest { string id = 1; EmergencyContactInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message EmergencyContactResponse { EmergencyContact item = 1; }
+message EmergencyContactsResponse { repeated EmergencyContact items = 1; human_resource.common.v1.PageInfo page = 2; }

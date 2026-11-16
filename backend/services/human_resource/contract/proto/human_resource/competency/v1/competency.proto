@@ -1,0 +1,97 @@
+syntax = "proto3";
+package human_resource.competency.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/competency/v1;competencyv1";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service CompetencyService {
+ rpc CreateWorkerQualification(CreateWorkerQualificationRequest) returns (WorkerQualificationResponse);
+ rpc UpdateWorkerQualification(UpdateWorkerQualificationRequest) returns (WorkerQualificationResponse);
+ rpc DeleteWorkerQualification(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetWorkerQualificationByID(human_resource.common.v1.IDRequest) returns (WorkerQualificationResponse);
+ rpc GetAllWorkerQualifications(human_resource.common.v1.PageRequest) returns (WorkerQualificationsResponse);
+ rpc FindWorkerQualificationByWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerQualificationsResponse);
+ rpc FindWorkerQualificationByQualificationType(human_resource.common.v1.StringFinderRequest) returns (WorkerQualificationsResponse);
+ rpc FindWorkerQualificationByQualificationCode(human_resource.common.v1.StringFinderRequest) returns (WorkerQualificationsResponse);
+ rpc FindWorkerQualificationByIssuerPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkerQualificationsResponse);
+ rpc FindWorkerQualificationByCredentialReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkerQualificationsResponse);
+ rpc FindWorkerQualificationByVerificationStatus(human_resource.common.v1.StringFinderRequest) returns (WorkerQualificationsResponse);
+ rpc FindWorkerQualificationByVerifiedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerQualificationsResponse);
+ rpc CreateCompetency(CreateCompetencyRequest) returns (CompetencyResponse);
+ rpc UpdateCompetency(UpdateCompetencyRequest) returns (CompetencyResponse);
+ rpc DeleteCompetency(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetCompetencyByID(human_resource.common.v1.IDRequest) returns (CompetencyResponse);
+ rpc GetAllCompetencies(human_resource.common.v1.PageRequest) returns (CompetenciesResponse);
+ rpc FindCompetencyByCompetencyCode(human_resource.common.v1.StringFinderRequest) returns (CompetenciesResponse);
+ rpc FindCompetencyByCategoryCode(human_resource.common.v1.StringFinderRequest) returns (CompetenciesResponse);
+ rpc CreateJobCompetency(CreateJobCompetencyRequest) returns (JobCompetencyResponse);
+ rpc UpdateJobCompetency(UpdateJobCompetencyRequest) returns (JobCompetencyResponse);
+ rpc DeleteJobCompetency(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetJobCompetencyByID(human_resource.common.v1.IDRequest) returns (JobCompetencyResponse);
+ rpc GetAllJobCompetencies(human_resource.common.v1.PageRequest) returns (JobCompetenciesResponse);
+ rpc FindJobCompetencyByJobID(human_resource.common.v1.StringFinderRequest) returns (JobCompetenciesResponse);
+ rpc FindJobCompetencyByCompetencyID(human_resource.common.v1.StringFinderRequest) returns (JobCompetenciesResponse);
+ rpc CreateWorkerCompetencyAssessment(CreateWorkerCompetencyAssessmentRequest) returns (WorkerCompetencyAssessmentResponse);
+ rpc UpdateWorkerCompetencyAssessment(UpdateWorkerCompetencyAssessmentRequest) returns (WorkerCompetencyAssessmentResponse);
+ rpc DeleteWorkerCompetencyAssessment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetWorkerCompetencyAssessmentByID(human_resource.common.v1.IDRequest) returns (WorkerCompetencyAssessmentResponse);
+ rpc GetAllWorkerCompetencyAssessments(human_resource.common.v1.PageRequest) returns (WorkerCompetencyAssessmentsResponse);
+ rpc FindWorkerCompetencyAssessmentByWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerCompetencyAssessmentsResponse);
+ rpc FindWorkerCompetencyAssessmentByCompetencyID(human_resource.common.v1.StringFinderRequest) returns (WorkerCompetencyAssessmentsResponse);
+ rpc FindWorkerCompetencyAssessmentByAssessedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerCompetencyAssessmentsResponse);
+ rpc FindWorkerCompetencyAssessmentByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkerCompetencyAssessmentsResponse);
+ rpc FindWorkerCompetencyAssessmentByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (WorkerCompetencyAssessmentsResponse);
+}
+message WorkerQualification {
+ string id=1; string worker_id=2; string qualification_type=3; optional string qualification_code=4;
+ string title=5; optional string issuer_party_reference_id=6; optional string credential_reference_id=7;
+ optional string obtained_on=8; optional string expires_on=9; string verification_status=10;
+ optional string verified_by_principal_id=11; google.protobuf.Timestamp verified_at=12;
+}
+message WorkerQualificationInput {
+ optional string worker_id=1; optional string qualification_type=2; optional string qualification_code=3;
+ optional string title=4; optional string issuer_party_reference_id=5; optional string credential_reference_id=6;
+ optional string obtained_on=7; optional string expires_on=8; optional string verification_status=9;
+ optional string verified_by_principal_id=10; google.protobuf.Timestamp verified_at=11;
+}
+message CreateWorkerQualificationRequest {WorkerQualificationInput input=1;}
+message UpdateWorkerQualificationRequest {string id=1;WorkerQualificationInput input=2;google.protobuf.FieldMask update_mask=3;}
+message WorkerQualificationResponse {WorkerQualification item=1;}
+message WorkerQualificationsResponse {repeated WorkerQualification items=1;human_resource.common.v1.PageInfo page=2;}
+message Competency {
+ string id=1;string competency_code=2;int32 competency_version=3;string competency_name=4;string category_code=5;
+ human_resource.common.v1.JsonDocument proficiency_scale=6;bool is_active=7;
+}
+message CompetencyInput {
+ optional string competency_code=1;optional int32 competency_version=2;optional string competency_name=3;
+ optional string category_code=4;human_resource.common.v1.JsonDocument proficiency_scale=5;optional bool is_active=6;
+}
+message CreateCompetencyRequest {CompetencyInput input=1;}
+message UpdateCompetencyRequest {string id=1;CompetencyInput input=2;google.protobuf.FieldMask update_mask=3;}
+message CompetencyResponse {Competency item=1;}
+message CompetenciesResponse {repeated Competency items=1;human_resource.common.v1.PageInfo page=2;}
+message JobCompetency {
+ string id=1;string job_id=2;string competency_id=3;int32 required_level=4;bool is_mandatory=5;string effective_from=6;optional string effective_to=7;
+}
+message JobCompetencyInput {
+ optional string job_id=1;optional string competency_id=2;optional int32 required_level=3;optional bool is_mandatory=4;optional string effective_from=5;optional string effective_to=6;
+}
+message CreateJobCompetencyRequest {JobCompetencyInput input=1;}
+message UpdateJobCompetencyRequest {string id=1;JobCompetencyInput input=2;google.protobuf.FieldMask update_mask=3;}
+message JobCompetencyResponse {JobCompetency item=1;}
+message JobCompetenciesResponse {repeated JobCompetency items=1;human_resource.common.v1.PageInfo page=2;}
+message WorkerCompetencyAssessment {
+ string id=1;string worker_id=2;string competency_id=3;int32 assessed_level=4;string assessment_method=5;
+ google.protobuf.Timestamp assessed_at=6;string assessed_by_principal_id=7;optional string expires_on=8;
+ optional string evidence_document_version_reference_id=9;optional bytes evidence_digest=10;string idempotency_key=11;
+}
+message WorkerCompetencyAssessmentInput {
+ optional string worker_id=1;optional string competency_id=2;optional int32 assessed_level=3;optional string assessment_method=4;
+ google.protobuf.Timestamp assessed_at=5;optional string expires_on=6;optional string evidence_document_version_reference_id=7;
+ optional bytes evidence_digest=8;optional string idempotency_key=9;
+}
+message CreateWorkerCompetencyAssessmentRequest {WorkerCompetencyAssessmentInput input=1;}
+message UpdateWorkerCompetencyAssessmentRequest {string id=1;WorkerCompetencyAssessmentInput input=2;google.protobuf.FieldMask update_mask=3;}
+message WorkerCompetencyAssessmentResponse {WorkerCompetencyAssessment item=1;}
+message WorkerCompetencyAssessmentsResponse {repeated WorkerCompetencyAssessment items=1;human_resource.common.v1.PageInfo page=2;}

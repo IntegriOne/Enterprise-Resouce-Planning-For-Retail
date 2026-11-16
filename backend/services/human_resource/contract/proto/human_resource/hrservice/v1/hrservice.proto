@@ -1,0 +1,86 @@
+syntax = "proto3";
+package human_resource.hrservice.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/hrservice/v1;hrservicev1";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service HRService {
+  rpc CreateServiceRequest(CreateServiceRequestRequest) returns (ServiceRequestResponse);
+  rpc UpdateServiceRequest(UpdateServiceRequestRequest) returns (ServiceRequestResponse);
+  rpc DeleteServiceRequest(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetServiceRequestByID(human_resource.common.v1.IDRequest) returns (ServiceRequestResponse);
+  rpc GetAllServiceRequests(human_resource.common.v1.PageRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByRequestNumber(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByWorkerID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByRequestType(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByRequestedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByAssignedPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByStatus(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByRestrictedDetailsDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByResolutionDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc FindServiceRequestByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestsResponse);
+  rpc CreateServiceRequestEvent(CreateServiceRequestEventRequest) returns (ServiceRequestEventResponse);
+  rpc UpdateServiceRequestEvent(UpdateServiceRequestEventRequest) returns (ServiceRequestEventResponse);
+  rpc DeleteServiceRequestEvent(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetServiceRequestEventByID(human_resource.common.v1.IDRequest) returns (ServiceRequestEventResponse);
+  rpc GetAllServiceRequestEvents(human_resource.common.v1.PageRequest) returns (ServiceRequestEventsResponse);
+  rpc FindServiceRequestEventByServiceRequestID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestEventsResponse);
+  rpc FindServiceRequestEventByEventType(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestEventsResponse);
+  rpc FindServiceRequestEventByActorPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestEventsResponse);
+  rpc FindServiceRequestEventByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestEventsResponse);
+  rpc FindServiceRequestEventByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (ServiceRequestEventsResponse);
+}
+message ServiceRequest {
+  string id = 1;
+  string request_number = 2;
+  string worker_id = 3;
+  string request_type = 4;
+  string requested_by_principal_id = 5;
+  optional string assigned_principal_id = 6;
+  string status = 7;
+  string restricted_details_document_version_reference_id = 8;
+  google.protobuf.Timestamp opened_at = 9;
+  google.protobuf.Timestamp due_at = 10;
+  google.protobuf.Timestamp resolved_at = 11;
+  optional string resolution_document_version_reference_id = 12;
+  string idempotency_key = 13;
+}
+message ServiceRequestInput {
+  optional string request_number = 1;
+  optional string worker_id = 2;
+  optional string request_type = 3;
+  optional string assigned_principal_id = 4;
+  optional string status = 5;
+  optional string restricted_details_document_version_reference_id = 6;
+  google.protobuf.Timestamp due_at = 7;
+  google.protobuf.Timestamp resolved_at = 8;
+  optional string resolution_document_version_reference_id = 9;
+  optional string idempotency_key = 10;
+}
+message CreateServiceRequestRequest { ServiceRequestInput input = 1; }
+message UpdateServiceRequestRequest { string id = 1; ServiceRequestInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message ServiceRequestResponse { ServiceRequest value = 1; }
+message ServiceRequestsResponse { repeated ServiceRequest items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message ServiceRequestEvent {
+  string id = 1;
+  string service_request_id = 2;
+  string event_type = 3;
+  optional string decision = 4;
+  string actor_principal_id = 5;
+  google.protobuf.Timestamp occurred_at = 6;
+  optional string evidence_document_version_reference_id = 7;
+  string idempotency_key = 8;
+}
+message ServiceRequestEventInput {
+  optional string service_request_id = 1;
+  optional string event_type = 2;
+  optional string decision = 3;
+  optional string evidence_document_version_reference_id = 4;
+  optional string idempotency_key = 5;
+}
+message CreateServiceRequestEventRequest { ServiceRequestEventInput input = 1; }
+message UpdateServiceRequestEventRequest { string id = 1; ServiceRequestEventInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message ServiceRequestEventResponse { ServiceRequestEvent value = 1; }
+message ServiceRequestEventsResponse { repeated ServiceRequestEvent items = 1; human_resource.common.v1.PageInfo page = 2; }

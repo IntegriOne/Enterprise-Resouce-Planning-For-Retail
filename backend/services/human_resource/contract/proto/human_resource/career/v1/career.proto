@@ -1,0 +1,191 @@
+syntax = "proto3";
+package human_resource.career.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/career/v1;careerv1";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+import "human_resource/common/v1/common.proto";
+message DevelopmentPlan {
+ string id = 1;
+ string worker_id = 2;
+ string plan_code = 3;
+ int32 plan_version = 4;
+ optional string target_job_id = 5;
+ google.protobuf.Timestamp start_date = 6;
+ google.protobuf.Timestamp target_date = 7;
+ string status = 8;
+ optional string mentor_worker_id = 9;
+ optional string approved_by_principal_id = 10;
+ google.protobuf.Timestamp approved_at = 11;
+}
+message DevelopmentPlanInput {
+ optional string worker_id = 1;
+ optional string plan_code = 2;
+ optional int32 plan_version = 3;
+ optional string target_job_id = 4;
+ google.protobuf.Timestamp start_date = 5;
+ google.protobuf.Timestamp target_date = 6;
+ optional string status = 7;
+ optional string mentor_worker_id = 8;
+ optional string approved_by_principal_id = 9;
+ google.protobuf.Timestamp approved_at = 10;
+}
+message CreateDevelopmentPlanRequest { DevelopmentPlanInput input = 1; }
+message UpdateDevelopmentPlanRequest { string id = 1; DevelopmentPlanInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message DevelopmentPlanResponse { DevelopmentPlan value = 1; }
+message DevelopmentPlansResponse { repeated DevelopmentPlan items = 1; human_resource.common.v1.PageInfo page = 2; }
+message DevelopmentAction {
+ string id = 1;
+ string development_plan_id = 2;
+ int32 action_number = 3;
+ optional string competency_id = 4;
+ optional string course_id = 5;
+ string action_type = 6;
+ string objective = 7;
+ optional int32 target_level = 8;
+ google.protobuf.Timestamp due_date = 9;
+ google.protobuf.Timestamp completed_at = 10;
+ optional string evidence_document_version_reference_id = 11;
+}
+message DevelopmentActionInput {
+ optional string development_plan_id = 1;
+ optional int32 action_number = 2;
+ optional string competency_id = 3;
+ optional string course_id = 4;
+ optional string action_type = 5;
+ optional string objective = 6;
+ optional int32 target_level = 7;
+ google.protobuf.Timestamp due_date = 8;
+ google.protobuf.Timestamp completed_at = 9;
+ optional string evidence_document_version_reference_id = 10;
+}
+message CreateDevelopmentActionRequest { DevelopmentActionInput input = 1; }
+message UpdateDevelopmentActionRequest { string id = 1; DevelopmentActionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message DevelopmentActionResponse { DevelopmentAction value = 1; }
+message DevelopmentActionsResponse { repeated DevelopmentAction items = 1; human_resource.common.v1.PageInfo page = 2; }
+message CareerPath {
+ string id = 1;
+ string path_code = 2;
+ int32 path_version = 3;
+ string path_name = 4;
+ string job_family_id = 5;
+ google.protobuf.Timestamp valid_from = 6;
+ google.protobuf.Timestamp valid_to = 7;
+ string approved_by_principal_id = 8;
+ google.protobuf.Timestamp approved_at = 9;
+}
+message CareerPathInput {
+ optional string path_code = 1;
+ optional int32 path_version = 2;
+ optional string path_name = 3;
+ optional string job_family_id = 4;
+ google.protobuf.Timestamp valid_from = 5;
+ google.protobuf.Timestamp valid_to = 6;
+ optional string approved_by_principal_id = 7;
+ google.protobuf.Timestamp approved_at = 8;
+}
+message CreateCareerPathRequest { CareerPathInput input = 1; }
+message UpdateCareerPathRequest { string id = 1; CareerPathInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message CareerPathResponse { CareerPath value = 1; }
+message CareerPathsResponse { repeated CareerPath items = 1; human_resource.common.v1.PageInfo page = 2; }
+message CareerPathTransition {
+ string id = 1;
+ string career_path_id = 2;
+ string from_job_id = 3;
+ string to_job_id = 4;
+ string movement_type = 5;
+ int32 minimum_tenure_months = 6;
+ string requirements_document_version_reference_id = 7;
+ bytes requirements_digest = 8;
+}
+message CareerPathTransitionInput {
+ optional string career_path_id = 1;
+ optional string from_job_id = 2;
+ optional string to_job_id = 3;
+ optional string movement_type = 4;
+ optional int32 minimum_tenure_months = 5;
+ optional string requirements_document_version_reference_id = 6;
+ optional bytes requirements_digest = 7;
+}
+message CreateCareerPathTransitionRequest { CareerPathTransitionInput input = 1; }
+message UpdateCareerPathTransitionRequest { string id = 1; CareerPathTransitionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message CareerPathTransitionResponse { CareerPathTransition value = 1; }
+message CareerPathTransitionsResponse { repeated CareerPathTransition items = 1; human_resource.common.v1.PageInfo page = 2; }
+message WorkerCareerAspiration {
+ string id = 1;
+ string worker_id = 2;
+ string target_job_id = 3;
+ optional string career_path_transition_id = 4;
+ int32 preference_rank = 5;
+ google.protobuf.Timestamp recorded_at = 6;
+ string recorded_by_principal_id = 7;
+ google.protobuf.Timestamp target_date = 8;
+ string mobility_preference = 9;
+ optional string preferred_location_reference_id = 10;
+ google.protobuf.Timestamp withdrawn_at = 11;
+}
+message WorkerCareerAspirationInput {
+ optional string worker_id = 1;
+ optional string target_job_id = 2;
+ optional string career_path_transition_id = 3;
+ optional int32 preference_rank = 4;
+ google.protobuf.Timestamp target_date = 5;
+ optional string mobility_preference = 6;
+ optional string preferred_location_reference_id = 7;
+ google.protobuf.Timestamp withdrawn_at = 8;
+}
+message CreateWorkerCareerAspirationRequest { WorkerCareerAspirationInput input = 1; }
+message UpdateWorkerCareerAspirationRequest { string id = 1; WorkerCareerAspirationInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message WorkerCareerAspirationResponse { WorkerCareerAspiration value = 1; }
+message WorkerCareerAspirationsResponse { repeated WorkerCareerAspiration items = 1; human_resource.common.v1.PageInfo page = 2; }
+service CareerService {
+ rpc CreateDevelopmentPlan(CreateDevelopmentPlanRequest) returns (DevelopmentPlanResponse);
+ rpc UpdateDevelopmentPlan(UpdateDevelopmentPlanRequest) returns (DevelopmentPlanResponse);
+ rpc DeleteDevelopmentPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetDevelopmentPlanByID(human_resource.common.v1.IDRequest) returns (DevelopmentPlanResponse);
+ rpc GetAllDevelopmentPlans(human_resource.common.v1.PageRequest) returns (DevelopmentPlansResponse);
+ rpc FindDevelopmentPlanByWorkerID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
+ rpc FindDevelopmentPlanByPlanCode(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
+ rpc FindDevelopmentPlanByTargetJobID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
+ rpc FindDevelopmentPlanByStatus(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
+ rpc FindDevelopmentPlanByMentorWorkerID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
+ rpc FindDevelopmentPlanByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
+ rpc CreateDevelopmentAction(CreateDevelopmentActionRequest) returns (DevelopmentActionResponse);
+ rpc UpdateDevelopmentAction(UpdateDevelopmentActionRequest) returns (DevelopmentActionResponse);
+ rpc DeleteDevelopmentAction(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetDevelopmentActionByID(human_resource.common.v1.IDRequest) returns (DevelopmentActionResponse);
+ rpc GetAllDevelopmentActions(human_resource.common.v1.PageRequest) returns (DevelopmentActionsResponse);
+ rpc FindDevelopmentActionByDevelopmentPlanID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentActionsResponse);
+ rpc FindDevelopmentActionByActionNumber(human_resource.common.v1.Int32FinderRequest) returns (DevelopmentActionsResponse);
+ rpc FindDevelopmentActionByCompetencyID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentActionsResponse);
+ rpc FindDevelopmentActionByCourseID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentActionsResponse);
+ rpc FindDevelopmentActionByActionType(human_resource.common.v1.StringFinderRequest) returns (DevelopmentActionsResponse);
+ rpc FindDevelopmentActionByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentActionsResponse);
+ rpc CreateCareerPath(CreateCareerPathRequest) returns (CareerPathResponse);
+ rpc UpdateCareerPath(UpdateCareerPathRequest) returns (CareerPathResponse);
+ rpc DeleteCareerPath(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetCareerPathByID(human_resource.common.v1.IDRequest) returns (CareerPathResponse);
+ rpc GetAllCareerPaths(human_resource.common.v1.PageRequest) returns (CareerPathsResponse);
+ rpc FindCareerPathByPathCode(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
+ rpc FindCareerPathByJobFamilyID(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
+ rpc FindCareerPathByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
+ rpc CreateCareerPathTransition(CreateCareerPathTransitionRequest) returns (CareerPathTransitionResponse);
+ rpc UpdateCareerPathTransition(UpdateCareerPathTransitionRequest) returns (CareerPathTransitionResponse);
+ rpc DeleteCareerPathTransition(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetCareerPathTransitionByID(human_resource.common.v1.IDRequest) returns (CareerPathTransitionResponse);
+ rpc GetAllCareerPathTransitions(human_resource.common.v1.PageRequest) returns (CareerPathTransitionsResponse);
+ rpc FindCareerPathTransitionByCareerPathID(human_resource.common.v1.StringFinderRequest) returns (CareerPathTransitionsResponse);
+ rpc FindCareerPathTransitionByFromJobID(human_resource.common.v1.StringFinderRequest) returns (CareerPathTransitionsResponse);
+ rpc FindCareerPathTransitionByToJobID(human_resource.common.v1.StringFinderRequest) returns (CareerPathTransitionsResponse);
+ rpc FindCareerPathTransitionByMovementType(human_resource.common.v1.StringFinderRequest) returns (CareerPathTransitionsResponse);
+ rpc FindCareerPathTransitionByRequirementsDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (CareerPathTransitionsResponse);
+ rpc CreateWorkerCareerAspiration(CreateWorkerCareerAspirationRequest) returns (WorkerCareerAspirationResponse);
+ rpc UpdateWorkerCareerAspiration(UpdateWorkerCareerAspirationRequest) returns (WorkerCareerAspirationResponse);
+ rpc DeleteWorkerCareerAspiration(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetWorkerCareerAspirationByID(human_resource.common.v1.IDRequest) returns (WorkerCareerAspirationResponse);
+ rpc GetAllWorkerCareerAspirations(human_resource.common.v1.PageRequest) returns (WorkerCareerAspirationsResponse);
+ rpc FindWorkerCareerAspirationByWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerCareerAspirationsResponse);
+ rpc FindWorkerCareerAspirationByTargetJobID(human_resource.common.v1.StringFinderRequest) returns (WorkerCareerAspirationsResponse);
+ rpc FindWorkerCareerAspirationByCareerPathTransitionID(human_resource.common.v1.StringFinderRequest) returns (WorkerCareerAspirationsResponse);
+ rpc FindWorkerCareerAspirationByRecordedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerCareerAspirationsResponse);
+ rpc FindWorkerCareerAspirationByPreferredLocationReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkerCareerAspirationsResponse);
+}

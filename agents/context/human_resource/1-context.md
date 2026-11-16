@@ -29,10 +29,13 @@
 
 - Audit/repair 16 November 2026 menutup ledger di luar periode entitlement, framework sumber kalibrasi yang berbeda, dan revoke/cancellation saat query count list. Dependency 84 resource memakai `domain/repository.RecordRepository[T,K]` minimum tujuh operasi; registry memasukkan repository langsung seperti pola injection IAM, tanpa callback binding/reflection komposisi. Helper operasi bersama tetap ada; port lengkap CRUD/finder tetap kompatibel. Constructor/import dirapikan; fmt/vet/race/build/goimports dan lint default lulus. [Audit dan batas](../../audit/human_resource/7-2026-11-16-160214-audit-repair-domain-repository-service.md). Adapter produksi, runtime/gRPC dan E2E tetap belum selesai.
 
+- Transport gRPC privat 22 domain/84 resource dengan CRUD, GetAll berhalaman, finder, dan tiga command khusus sekarang terdaftar eksplisit. DTO typed, FieldMask, decimal string, JSON bytes presisi, status error aman, interceptor HMAC dan mTLS ada. Docker development HRM berhasil healthy; migrasi baseline 000001 idempoten setelah restart. [Audit](../../audit/human_resource/8-2026-11-16-164507-audit-grpc-hrm-terhadap-panduan.md) dan [E2E terbatas](../../e2e/human_resource/1-grpc-health-query-and-security-denials.md) memisahkan bukti transport dari bisnis.
+- Katalog role/permission [draf review](../../roles-permissions/human_resource/1-roles-permissions.md) belum disetujui/diaktifkan. Policy runtime menolak resource tanpa mapping, dan Integrity runtime menolak write tanpa validator. Tidak ada grant IAM atau route GraphQL HRM baru; service dapat sehat secara transport tetapi operasi bisnis belum siap.
+
 ## Apa yang belum dikerjakan
 
 - Mandat panel/approval, eligibility perusahaan, scope/SoD terverifikasi IAM, persistensi kalibrasi/finalisasi performance/proyeksi KPI dan transaksi promosi+outbox belum diimplementasikan. Finalisasi asesmen talent sudah tersedia pada service dengan dependency wajib; belum ada adapter produksi maupun E2E/concurrency PostgreSQL.
-- Proses runtime HRM, konfigurasi/koneksi DB dan bootstrap, kontrak internal, wiring GraphQL, consumer/outbox relay, otorisasi dan E2E belum dibuat pada folder aktif.
+- Wiring GraphQL HRM, consumer/outbox relay, otorisasi bisnis dan E2E positif lintas Gateway/IAM/DB masih belum selesai. Runtime dan kontrak gRPC privat tersedia tetapi business access tetap fail-closed.
 - Posting ledger/proyeksi dan approval payroll sudah terkoordinasi service, tetapi approval lintas owner, validitas temporal master, mandat SoD nyata dan pembulatan/rule payroll lokal belum memiliki adapter/runtime. Replay/reversal dan rekonsiliasi domain diuji dengan mock, belum workflow E2E.
 - Tarif BPJS/pajak/THR, workflow HR perusahaan, proses clearance dan prioritas fitur belum dianggap keputusan implementasi otomatis dari riset.
 - Temporal/immutable guard di baseline tidak membuktikan keseluruhan business workflow atau performa. Dokumen desain memuat batas klaim dan pekerjaan lanjutan.

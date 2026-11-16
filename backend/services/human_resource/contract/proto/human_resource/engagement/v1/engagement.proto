@@ -1,0 +1,83 @@
+syntax = "proto3";
+package human_resource.engagement.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/engagement/v1;engagementv1";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service EngagementService {
+  rpc CreateEngagementSurvey(CreateEngagementSurveyRequest) returns (EngagementSurveyResponse);
+  rpc UpdateEngagementSurvey(UpdateEngagementSurveyRequest) returns (EngagementSurveyResponse);
+  rpc DeleteEngagementSurvey(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetEngagementSurveyByID(human_resource.common.v1.IDRequest) returns (EngagementSurveyResponse);
+  rpc GetAllEngagementSurveys(human_resource.common.v1.PageRequest) returns (EngagementSurveysResponse);
+  rpc FindEngagementSurveyBySurveyCode(human_resource.common.v1.StringFinderRequest) returns (EngagementSurveysResponse);
+  rpc FindEngagementSurveyByLegalEntityReferenceID(human_resource.common.v1.StringFinderRequest) returns (EngagementSurveysResponse);
+  rpc FindEngagementSurveyByTopicCode(human_resource.common.v1.StringFinderRequest) returns (EngagementSurveysResponse);
+  rpc FindEngagementSurveyByQuestionnaireDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (EngagementSurveysResponse);
+  rpc CreateEngagementSurveyResult(CreateEngagementSurveyResultRequest) returns (EngagementSurveyResultResponse);
+  rpc UpdateEngagementSurveyResult(UpdateEngagementSurveyResultRequest) returns (EngagementSurveyResultResponse);
+  rpc DeleteEngagementSurveyResult(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+  rpc GetEngagementSurveyResultByID(human_resource.common.v1.IDRequest) returns (EngagementSurveyResultResponse);
+  rpc GetAllEngagementSurveyResults(human_resource.common.v1.PageRequest) returns (EngagementSurveyResultsResponse);
+  rpc FindEngagementSurveyResultBySurveyID(human_resource.common.v1.StringFinderRequest) returns (EngagementSurveyResultsResponse);
+  rpc FindEngagementSurveyResultByOrganizationUnitReferenceID(human_resource.common.v1.StringFinderRequest) returns (EngagementSurveyResultsResponse);
+  rpc FindEngagementSurveyResultByQuestionCode(human_resource.common.v1.StringFinderRequest) returns (EngagementSurveyResultsResponse);
+}
+message EngagementSurvey {
+  string id = 1;
+  string survey_code = 2;
+  int32 survey_version = 3;
+  string legal_entity_reference_id = 4;
+  string topic_code = 5;
+  google.protobuf.Timestamp opens_at = 6;
+  google.protobuf.Timestamp closes_at = 7;
+  string questionnaire_document_version_reference_id = 8;
+  bytes questionnaire_digest = 9;
+  int32 minimum_reporting_population = 10;
+}
+message EngagementSurveyInput {
+  optional string survey_code = 1;
+  optional int32 survey_version = 2;
+  optional string legal_entity_reference_id = 3;
+  optional string topic_code = 4;
+  google.protobuf.Timestamp opens_at = 5;
+  google.protobuf.Timestamp closes_at = 6;
+  optional string questionnaire_document_version_reference_id = 7;
+  optional bytes questionnaire_digest = 8;
+  optional int32 minimum_reporting_population = 9;
+}
+message CreateEngagementSurveyRequest { EngagementSurveyInput input = 1; }
+message UpdateEngagementSurveyRequest { string id = 1; EngagementSurveyInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message EngagementSurveyResponse { EngagementSurvey value = 1; }
+message EngagementSurveysResponse { repeated EngagementSurvey items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+// Decimal ditransmisikan sebagai string agar angka survei tidak kehilangan presisi.
+message EngagementSurveyResult {
+  string id = 1;
+  string survey_id = 2;
+  optional string organization_unit_reference_id = 3;
+  string question_code = 4;
+  int32 result_version = 5;
+  int32 respondent_count = 6;
+  string score_value = 7;
+  string scale_minimum = 8;
+  string scale_maximum = 9;
+  bytes source_digest = 10;
+  google.protobuf.Timestamp calculated_at = 11;
+}
+message EngagementSurveyResultInput {
+  optional string survey_id = 1;
+  optional string organization_unit_reference_id = 2;
+  optional string question_code = 3;
+  optional int32 result_version = 4;
+  optional int32 respondent_count = 5;
+  optional string score_value = 6;
+  optional string scale_minimum = 7;
+  optional string scale_maximum = 8;
+  optional bytes source_digest = 9;
+}
+message CreateEngagementSurveyResultRequest { EngagementSurveyResultInput input = 1; }
+message UpdateEngagementSurveyResultRequest { string id = 1; EngagementSurveyResultInput input = 2; google.protobuf.FieldMask update_mask = 3; }
+message EngagementSurveyResultResponse { EngagementSurveyResult value = 1; }
+message EngagementSurveyResultsResponse { repeated EngagementSurveyResult items = 1; human_resource.common.v1.PageInfo page = 2; }

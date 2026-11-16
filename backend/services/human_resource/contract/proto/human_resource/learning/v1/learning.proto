@@ -1,0 +1,71 @@
+syntax = "proto3";
+package human_resource.learning.v1;
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/learning/v1;learningv1";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "human_resource/common/v1/common.proto";
+
+service LearningService {
+ rpc CreateLearningCourse(CreateLearningCourseRequest) returns (LearningCourseResponse);
+ rpc UpdateLearningCourse(UpdateLearningCourseRequest) returns (LearningCourseResponse);
+ rpc DeleteLearningCourse(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetLearningCourseByID(human_resource.common.v1.IDRequest) returns (LearningCourseResponse);
+ rpc GetAllLearningCourses(human_resource.common.v1.PageRequest) returns (LearningCoursesResponse);
+ rpc FindLearningCourseByCourseCode(human_resource.common.v1.StringFinderRequest) returns (LearningCoursesResponse);
+ rpc FindLearningCourseByCourseType(human_resource.common.v1.StringFinderRequest) returns (LearningCoursesResponse);
+ rpc FindLearningCourseByProviderPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (LearningCoursesResponse);
+ rpc CreateLearningEnrollment(CreateLearningEnrollmentRequest) returns (LearningEnrollmentResponse);
+ rpc UpdateLearningEnrollment(UpdateLearningEnrollmentRequest) returns (LearningEnrollmentResponse);
+ rpc DeleteLearningEnrollment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetLearningEnrollmentByID(human_resource.common.v1.IDRequest) returns (LearningEnrollmentResponse);
+ rpc GetAllLearningEnrollments(human_resource.common.v1.PageRequest) returns (LearningEnrollmentsResponse);
+ rpc FindLearningEnrollmentByWorkerID(human_resource.common.v1.StringFinderRequest) returns (LearningEnrollmentsResponse);
+ rpc FindLearningEnrollmentByCourseID(human_resource.common.v1.StringFinderRequest) returns (LearningEnrollmentsResponse);
+ rpc FindLearningEnrollmentByEnrollmentStatus(human_resource.common.v1.StringFinderRequest) returns (LearningEnrollmentsResponse);
+ rpc FindLearningEnrollmentByAssignedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LearningEnrollmentsResponse);
+ rpc FindLearningEnrollmentByCredentialReferenceID(human_resource.common.v1.StringFinderRequest) returns (LearningEnrollmentsResponse);
+ rpc FindLearningEnrollmentByFundingReferenceID(human_resource.common.v1.StringFinderRequest) returns (LearningEnrollmentsResponse);
+ rpc FindLearningEnrollmentByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (LearningEnrollmentsResponse);
+ rpc CreateLearningCourseCompetency(CreateLearningCourseCompetencyRequest) returns (LearningCourseCompetencyResponse);
+ rpc UpdateLearningCourseCompetency(UpdateLearningCourseCompetencyRequest) returns (LearningCourseCompetencyResponse);
+ rpc DeleteLearningCourseCompetency(LearningCourseCompetencyKey) returns (human_resource.common.v1.EmptyResponse);
+ rpc GetLearningCourseCompetencyByID(LearningCourseCompetencyKey) returns (LearningCourseCompetencyResponse);
+ rpc GetAllLearningCourseCompetencies(human_resource.common.v1.PageRequest) returns (LearningCourseCompetenciesResponse);
+ rpc FindLearningCourseCompetencyByCourseID(human_resource.common.v1.StringFinderRequest) returns (LearningCourseCompetenciesResponse);
+ rpc FindLearningCourseCompetencyByCompetencyID(human_resource.common.v1.StringFinderRequest) returns (LearningCourseCompetenciesResponse);
+}
+message LearningCourse {
+ string id=1;string course_code=2;string course_version=3;string course_name=4;string course_type=5;
+ optional string provider_party_reference_id=6;string delivery_mode=7;optional string duration_hours=8;
+ bool credential_awarded=9;optional int32 expiry_months=10;optional string valid_from=11;optional string valid_to=12;bool is_active=13;
+}
+message LearningCourseInput {
+ optional string course_code=1;optional string course_version=2;optional string course_name=3;optional string course_type=4;
+ optional string provider_party_reference_id=5;optional string delivery_mode=6;optional string duration_hours=7;
+ optional bool credential_awarded=8;optional int32 expiry_months=9;optional string valid_from=10;optional string valid_to=11;optional bool is_active=12;
+}
+message CreateLearningCourseRequest {LearningCourseInput input=1;}
+message UpdateLearningCourseRequest {string id=1;LearningCourseInput input=2;google.protobuf.FieldMask update_mask=3;}
+message LearningCourseResponse {LearningCourse item=1;}
+message LearningCoursesResponse {repeated LearningCourse items=1;human_resource.common.v1.PageInfo page=2;}
+message LearningEnrollment {
+ string id=1;string worker_id=2;string course_id=3;string enrollment_status=4;optional string assigned_by_principal_id=5;
+ google.protobuf.Timestamp assigned_at=6;google.protobuf.Timestamp due_at=7;google.protobuf.Timestamp started_at=8;google.protobuf.Timestamp completed_at=9;
+ optional string score=10;optional string credential_reference_id=11;optional string funding_reference_id=12;string idempotency_key=13;
+}
+message LearningEnrollmentInput {
+ optional string worker_id=1;optional string course_id=2;optional string enrollment_status=3;optional string assigned_by_principal_id=4;
+ google.protobuf.Timestamp due_at=5;google.protobuf.Timestamp started_at=6;google.protobuf.Timestamp completed_at=7;
+ optional string score=8;optional string credential_reference_id=9;optional string funding_reference_id=10;optional string idempotency_key=11;
+}
+message CreateLearningEnrollmentRequest {LearningEnrollmentInput input=1;}
+message UpdateLearningEnrollmentRequest {string id=1;LearningEnrollmentInput input=2;google.protobuf.FieldMask update_mask=3;}
+message LearningEnrollmentResponse {LearningEnrollment item=1;}
+message LearningEnrollmentsResponse {repeated LearningEnrollment items=1;human_resource.common.v1.PageInfo page=2;}
+message LearningCourseCompetency {string course_id=1;string competency_id=2;int32 target_level=3;}
+message LearningCourseCompetencyKey {string course_id=1;string competency_id=2;}
+message LearningCourseCompetencyInput {optional string course_id=1;optional string competency_id=2;optional int32 target_level=3;}
+message CreateLearningCourseCompetencyRequest {LearningCourseCompetencyInput input=1;}
+message UpdateLearningCourseCompetencyRequest {LearningCourseCompetencyKey key=1;optional int32 target_level=2;google.protobuf.FieldMask update_mask=3;}
+message LearningCourseCompetencyResponse {LearningCourseCompetency item=1;}
+message LearningCourseCompetenciesResponse {repeated LearningCourseCompetency items=1;human_resource.common.v1.PageInfo page=2;}
