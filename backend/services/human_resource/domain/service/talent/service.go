@@ -2,8 +2,6 @@
 package service
 
 import (
-	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -48,14 +46,8 @@ func ValidateFinalization(input FinalizationInput) error {
 		if duplicate || codes[dimension.DimensionCode] || !strings.EqualFold(dimension.FrameworkID, f.ID) {
 			return hrerrors.Invalid("dimensions", "framework dimensions must be unique and consistent")
 		}
-		var anchors map[string]string
-		if err := json.Unmarshal(dimension.RatingAnchors, &anchors); err != nil {
-			return hrerrors.Invalid("rating_anchors", "must define string evidence for levels one to five")
-		}
-		for level := 1; level <= 5; level++ {
-			if strings.TrimSpace(anchors[fmt.Sprint(level)]) == "" {
-				return hrerrors.Invalid("rating_anchors", "all five rating anchors are required")
-			}
+		if err := ValidateDimensionAnchors(dimension.RatingAnchors); err != nil {
+			return err
 		}
 		dimensions[key] = dimension
 		codes[dimension.DimensionCode] = true

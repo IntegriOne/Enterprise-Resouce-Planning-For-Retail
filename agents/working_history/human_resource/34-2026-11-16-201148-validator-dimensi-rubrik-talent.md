@@ -1,0 +1,3 @@
+# Validator dimensi rubrik Talent
+
+Dimensi Talent kini dapat dimutasi pada framework HRM yang sudah ada dan belum dipakai siklus review. Validasi mengunci framework, memeriksa kode unik serta jangkar level 1–5, dan membekukan dimensi sesudah siklus dibuat. Parser finalisasi asesmen memakai pemeriksaan jangkar yang sama. Tes unit dan gRPC `bufconn` → PostgreSQL `_test` meliputi CRUD, finder berhalaman, duplikasi, dan penolakan perubahan rubrik terpakai. Fmt, vet, race test, build, dan Docker healthy lulus. Framework dalam tes merupakan fixture SQL; verifikasi DRM, grant IAM dan E2E Gateway belum tersedia. Cakupan validator produksi naik menjadi 15/78 resource mutasi.
