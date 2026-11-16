@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 )
@@ -63,7 +64,7 @@ func (c *Coordinator) RecordInTx(
 	payload OutboxPayload,
 ) (string, error) {
 	if c == nil || c.runtimeRepo == nil || c.idGen == nil {
-		return "", nil
+		return "", iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.coordinator_unavailable"), "outbox coordinator is unavailable")
 	}
 	evID, err := c.idGen.NewUUID()
 	if err != nil {

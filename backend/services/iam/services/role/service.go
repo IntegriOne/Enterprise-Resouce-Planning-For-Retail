@@ -49,6 +49,12 @@ func NewService(deps Dependencies) (*Service, error) {
 	if deps.UserRoles == nil {
 		return nil, iamerrors.NewValidation("user_roles", iamerrors.Code("iam.service.nil_user_role_repo"), "user role repository is required")
 	}
+	if deps.SecurityRuntime == nil {
+		return nil, iamerrors.NewValidation("security_runtime", iamerrors.Code("iam.service.nil_security_runtime_repo"), "security runtime repository is required")
+	}
+	if deps.OutboxCoord == nil {
+		return nil, iamerrors.NewValidation("outbox_coordinator", iamerrors.Code("iam.service.nil_outbox_coordinator"), "outbox coordinator is required")
+	}
 	if deps.IDGen == nil {
 		return nil, iamerrors.NewValidation("id_gen", iamerrors.Code("iam.service.nil_id_generator"), "id generator is required")
 	}
@@ -464,21 +470,14 @@ func (s *Service) RevokeUserRole(ctx context.Context, assignmentID string) error
 		return err
 	}
 	return s.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
-		var userID string
-		if s.securityRuntime != nil {
-			resolved, err := s.securityRuntime.ResolveUserRoleUserID(txCtx, assignmentID)
-			if err != nil {
-				return err
-			}
-			userID = resolved
+		userID, err := s.securityRuntime.ResolveUserRoleUserID(txCtx, assignmentID)
+		if err != nil {
+			return err
 		}
 		if err := s.userRoles.DeleteByID(txCtx, assignmentID); err != nil {
 			return err
 		}
-		if userID != "" {
-			return s.bumpAndRecordUserPermissionsInTx(txCtx, userID)
-		}
-		return nil
+		return s.bumpAndRecordUserPermissionsInTx(txCtx, userID)
 	})
 }
 

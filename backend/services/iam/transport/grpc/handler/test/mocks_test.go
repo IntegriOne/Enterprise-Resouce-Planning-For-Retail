@@ -20,6 +20,7 @@ import (
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
+	"github.com/integrione/erp-retail/backend/services/iam/infrastructure/redisstore"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/totp"
 	"github.com/integrione/erp-retail/backend/services/iam/services"
@@ -65,6 +66,92 @@ type memStore struct {
 	recoveryCodes   map[string]*entity.UserRecoveryCode
 	tokens          map[string]*entity.UserToken
 	sessions        map[string]*entity.Session
+}
+
+type memSecurityRuntime struct {
+	store *memStore
+}
+
+func newMemCoordinator(store *memStore, idGen domainservice.IDGenerator, clock domainservice.Clock) *redisstore.Coordinator {
+	return redisstore.NewCoordinator(memSecurityRuntime{store: store}, nil, idGen, clock, nil)
+}
+
+func (m memSecurityRuntime) GetRecoveryEpoch(context.Context) (int64, error)       { return 1, nil }
+func (m memSecurityRuntime) IncrementRecoveryEpoch(context.Context) (int64, error) { return 2, nil }
+func (m memSecurityRuntime) Insert(context.Context, *entity.OutboxEvent) error     { return nil }
+func (m memSecurityRuntime) SelectDuePending(context.Context, time.Time, int) ([]*entity.OutboxEvent, error) {
+	return nil, nil
+}
+func (m memSecurityRuntime) MarkEffective(context.Context, string, time.Time) error { return nil }
+func (m memSecurityRuntime) MarkRetry(context.Context, string, int, time.Time, string) error {
+	return nil
+}
+func (m memSecurityRuntime) MarkFailed(context.Context, string, string) error { return nil }
+func (m memSecurityRuntime) CountPending(context.Context) (int64, error)      { return 0, nil }
+func (m memSecurityRuntime) CountFailed(context.Context) (int64, error)       { return 0, nil }
+func (m memSecurityRuntime) SelectActiveSessionDigestsByUserID(context.Context, string) ([][]byte, error) {
+	return nil, nil
+}
+func (m memSecurityRuntime) SelectActiveSessionsForRecovery(context.Context, time.Time, int) ([]*entity.Session, error) {
+	return nil, nil
+}
+func (m memSecurityRuntime) UpdateSessionSecurityMetadata(context.Context, string, int64, int, []byte) error {
+	return nil
+}
+
+func (m memSecurityRuntime) BumpPermRevisionForRole(_ context.Context, roleID string) ([]string, error) {
+	m.store.mu.RLock()
+	defer m.store.mu.RUnlock()
+	var userIDs []string
+	for _, assignment := range m.store.userRoles {
+		if assignment.RoleID == roleID {
+			userIDs = append(userIDs, assignment.UserID)
+		}
+	}
+	return userIDs, nil
+}
+
+func (m memSecurityRuntime) BumpPermRevisionForGroup(_ context.Context, groupID string) ([]string, error) {
+	m.store.mu.RLock()
+	defer m.store.mu.RUnlock()
+	var userIDs []string
+	for _, member := range m.store.groupMembers {
+		if member.GroupID == groupID {
+			userIDs = append(userIDs, member.UserID)
+		}
+	}
+	return userIDs, nil
+}
+
+func (m memSecurityRuntime) IncrementUserSecurityCounters(_ context.Context, userID string, _, _ bool) (int64, int64, error) {
+	m.store.mu.Lock()
+	defer m.store.mu.Unlock()
+	user, ok := m.store.users[userID]
+	if !ok {
+		return 0, 0, iamerrors.ErrUserNotFound
+	}
+	user.PermRevision++
+	return user.AuthEpoch, user.PermRevision, nil
+}
+
+func (m memSecurityRuntime) ResolveUserRoleUserID(_ context.Context, assignmentID string) (string, error) {
+	m.store.mu.RLock()
+	defer m.store.mu.RUnlock()
+	assignment, ok := m.store.userRoles[assignmentID]
+	if !ok {
+		return "", iamerrors.ErrUserRoleNotFound
+	}
+	return assignment.UserID, nil
+}
+
+func (m memSecurityRuntime) ResolveGroupRoleGroupID(_ context.Context, assignmentID string) (string, error) {
+	m.store.mu.RLock()
+	defer m.store.mu.RUnlock()
+	assignment, ok := m.store.groupRoles[assignmentID]
+	if !ok {
+		return "", iamerrors.ErrGroupRoleNotFound
+	}
+	return assignment.GroupID, nil
 }
 
 func newMemStore() *memStore {
@@ -122,6 +209,8 @@ func startBufconnServer(t *testing.T) *bufconnEnv {
 		Permissions:     &memPermRepo{store},
 		Users:           &memUserRepo{store},
 		UserRoles:       &memUserRoleRepo{store},
+		SecurityRuntime: memSecurityRuntime{store: store},
+		OutboxCoord:     newMemCoordinator(store, idGen, clock),
 		Clock:           clock,
 		IDGen:           idGen,
 		Redirect:        redirect,
@@ -130,14 +219,16 @@ func startBufconnServer(t *testing.T) *bufconnEnv {
 		t.Fatalf("role.NewService() error = %v", err)
 	}
 	groupSvc, err := group.NewService(group.Dependencies{
-		Transactor:   tx,
-		Groups:       &memGroupRepo{store},
-		GroupMembers: &memGroupMemberRepo{store},
-		GroupRoles:   &memGroupRoleRepo{store},
-		Roles:        &memRoleRepo{store},
-		Users:        &memUserRepo{store},
-		Clock:        clock,
-		IDGen:        idGen,
+		Transactor:      tx,
+		Groups:          &memGroupRepo{store},
+		GroupMembers:    &memGroupMemberRepo{store},
+		GroupRoles:      &memGroupRoleRepo{store},
+		Roles:           &memRoleRepo{store},
+		Users:           &memUserRepo{store},
+		SecurityRuntime: memSecurityRuntime{store: store},
+		OutboxCoord:     newMemCoordinator(store, idGen, clock),
+		Clock:           clock,
+		IDGen:           idGen,
 	})
 	if err != nil {
 		t.Fatalf("group.NewService() error = %v", err)

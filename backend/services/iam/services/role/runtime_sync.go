@@ -9,32 +9,17 @@ import (
 )
 
 func (s *Service) bumpAndRecordRoleSecurityInTx(txCtx context.Context, roleID string) error {
-	if s.securityRuntime == nil && s.outboxCoord == nil && s.projector == nil {
-		return nil
+	affected, err := s.securityRuntime.BumpPermRevisionForRole(txCtx, roleID)
+	if err != nil {
+		return err
 	}
-	var affected []string
-	if s.securityRuntime != nil {
-		ids, err := s.securityRuntime.BumpPermRevisionForRole(txCtx, roleID)
-		if err != nil {
-			return err
-		}
-		affected = ids
-	}
-	if s.outboxCoord == nil && s.projector == nil {
-		return nil
-	}
-
 	payload := redisstore.OutboxPayload{
 		AffectedUserIDs: affected,
 		InvalidateAuthz: true,
 	}
-	var evID string
-	if s.outboxCoord != nil {
-		var err error
-		evID, err = s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventRolePermissionsChanged, "role", roleID, payload)
-		if err != nil {
-			return err
-		}
+	evID, err := s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventRolePermissionsChanged, "role", roleID, payload)
+	if err != nil {
+		return err
 	}
 
 	pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
@@ -53,35 +38,22 @@ func (s *Service) bumpAndRecordRoleSecurityInTx(txCtx context.Context, roleID st
 			}
 			return nil
 		}
-		if s.outboxCoord != nil {
-			s.outboxCoord.CompleteAfterCommit(postCtx, evID, projectAffected)
-			return
-		}
-		_ = projectAffected(1)
+		s.outboxCoord.CompleteAfterCommit(postCtx, evID, projectAffected)
 	})
 	return nil
 }
 
 func (s *Service) bumpAndRecordUserPermissionsInTx(txCtx context.Context, userID string) error {
-	if s.securityRuntime != nil {
-		if _, _, err := s.securityRuntime.IncrementUserSecurityCounters(txCtx, userID, false, true); err != nil {
-			return err
-		}
-	}
-	if s.outboxCoord == nil && s.projector == nil {
-		return nil
+	if _, _, err := s.securityRuntime.IncrementUserSecurityCounters(txCtx, userID, false, true); err != nil {
+		return err
 	}
 	payload := redisstore.OutboxPayload{
 		UserID:          userID,
 		InvalidateAuthz: true,
 	}
-	var evID string
-	if s.outboxCoord != nil {
-		var err error
-		evID, err = s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventUserPermissionsChanged, "user", userID, payload)
-		if err != nil {
-			return err
-		}
+	evID, err := s.outboxCoord.RecordInTx(txCtx, entity.OutboxEventUserPermissionsChanged, "user", userID, payload)
+	if err != nil {
+		return err
 	}
 
 	pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
@@ -89,18 +61,12 @@ func (s *Service) bumpAndRecordUserPermissionsInTx(txCtx context.Context, userID
 		if err != nil {
 			return
 		}
-		if s.outboxCoord != nil {
-			s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
-				if s.projector == nil {
-					return nil
-				}
-				return s.projector.ProjectUserSecurityChanged(postCtx, u, recEpoch, true)
-			})
-			return
-		}
-		if s.projector != nil && s.projector.IsEnabled() {
-			_ = s.projector.ProjectUserSecurityChanged(postCtx, u, 1, true)
-		}
+		s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
+			if s.projector == nil {
+				return nil
+			}
+			return s.projector.ProjectUserSecurityChanged(postCtx, u, recEpoch, true)
+		})
 	})
 	return nil
 }

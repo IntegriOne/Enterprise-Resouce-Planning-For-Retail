@@ -11,6 +11,7 @@ import (
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
+	"github.com/integrione/erp-retail/backend/services/iam/infrastructure/redisstore"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	"github.com/integrione/erp-retail/backend/services/iam/services/role"
 	"github.com/integrione/erp-retail/backend/shared/authcontext"
@@ -39,6 +40,49 @@ type mockRoleStore struct {
 	rolePerm map[string]map[string]*entity.RolePermission
 	users    map[string]*entity.User
 	userRole map[string]*entity.UserRole
+}
+
+type mockSecurityRuntime struct {
+	domainrepo.SecurityRuntimeRepository
+	store *mockRoleStore
+}
+
+func (m mockSecurityRuntime) Insert(context.Context, *entity.OutboxEvent) error      { return nil }
+func (m mockSecurityRuntime) MarkEffective(context.Context, string, time.Time) error { return nil }
+
+func newMockCoordinator(store *mockRoleStore, idGen domainservice.IDGenerator, clock domainservice.Clock) *redisstore.Coordinator {
+	return redisstore.NewCoordinator(mockSecurityRuntime{store: store}, nil, idGen, clock, nil)
+}
+
+func (m mockSecurityRuntime) BumpPermRevisionForRole(_ context.Context, roleID string) ([]string, error) {
+	m.store.mu.Lock()
+	defer m.store.mu.Unlock()
+	var userIDs []string
+	for _, assignment := range m.store.userRole {
+		if assignment.RoleID == roleID {
+			userIDs = append(userIDs, assignment.UserID)
+		}
+	}
+	return userIDs, nil
+}
+
+func (m mockSecurityRuntime) IncrementUserSecurityCounters(_ context.Context, userID string, _, _ bool) (int64, int64, error) {
+	m.store.mu.Lock()
+	defer m.store.mu.Unlock()
+	if _, ok := m.store.users[userID]; !ok {
+		return 0, 0, iamerrors.ErrUserNotFound
+	}
+	return 1, 1, nil
+}
+
+func (m mockSecurityRuntime) ResolveUserRoleUserID(_ context.Context, assignmentID string) (string, error) {
+	m.store.mu.Lock()
+	defer m.store.mu.Unlock()
+	assignment, ok := m.store.userRole[assignmentID]
+	if !ok {
+		return "", iamerrors.ErrUserRoleNotFound
+	}
+	return assignment.UserID, nil
 }
 
 func newMockRoleStore() *mockRoleStore {
@@ -305,6 +349,8 @@ func TestRoleService_LifecyclePermissionsAndUserAssignment(t *testing.T) {
 		Permissions:     mockPermRepo{store: store},
 		Users:           mockUserRepo{store: store},
 		UserRoles:       mockUserRoleRepo{store: store},
+		SecurityRuntime: mockSecurityRuntime{store: store},
+		OutboxCoord:     newMockCoordinator(store, idGen, fixedClock{now: now}),
 		Clock:           fixedClock{now: now},
 		IDGen:           idGen,
 		Redirect:        resolver,
@@ -429,6 +475,8 @@ func TestRoleService_SystemRoleProtectedAgainstDeactivateAndDelete(t *testing.T)
 		Permissions:     mockPermRepo{store: store},
 		Users:           mockUserRepo{store: store},
 		UserRoles:       mockUserRoleRepo{store: store},
+		SecurityRuntime: mockSecurityRuntime{store: store},
+		OutboxCoord:     newMockCoordinator(store, idGen, fixedClock{now: now}),
 		Clock:           fixedClock{now: now},
 		IDGen:           idGen,
 		Redirect:        resolver,
@@ -475,6 +523,8 @@ func TestRoleService_SystemRoleImmutableMutationsAndBootstrap(t *testing.T) {
 		Permissions:     mockPermRepo{store: store},
 		Users:           mockUserRepo{store: store},
 		UserRoles:       mockUserRoleRepo{store: store},
+		SecurityRuntime: mockSecurityRuntime{store: store},
+		OutboxCoord:     newMockCoordinator(store, idGen, fixedClock{now: now}),
 		Clock:           fixedClock{now: now},
 		IDGen:           idGen,
 		Redirect:        resolver,
@@ -522,5 +572,35 @@ func TestRoleService_SystemRoleImmutableMutationsAndBootstrap(t *testing.T) {
 	}
 	if err := svc.Delete(context.Background(), sysRole.ID); !errors.Is(err, iamerrors.ErrSystemRoleImmutable) {
 		t.Fatalf("expected ErrSystemRoleImmutable on Delete, got %v", err)
+	}
+}
+
+func TestRoleService_RejectsMissingSecurityRuntime(t *testing.T) {
+	t.Parallel()
+	store := newMockRoleStore()
+	_, err := role.NewService(role.Dependencies{
+		Transactor:      &passthroughTx{},
+		Roles:           store,
+		RolePermissions: mockRolePermRepo{store: store},
+		Permissions:     mockPermRepo{store: store},
+		Users:           mockUserRepo{store: store},
+		UserRoles:       mockUserRoleRepo{store: store},
+		IDGen:           crypto.NewUUIDGenerator(),
+	})
+	if err == nil {
+		t.Fatal("expected error without security runtime repository")
+	}
+	_, err = role.NewService(role.Dependencies{
+		Transactor:      &passthroughTx{},
+		Roles:           store,
+		RolePermissions: mockRolePermRepo{store: store},
+		Permissions:     mockPermRepo{store: store},
+		Users:           mockUserRepo{store: store},
+		UserRoles:       mockUserRoleRepo{store: store},
+		SecurityRuntime: mockSecurityRuntime{store: store},
+		IDGen:           crypto.NewUUIDGenerator(),
+	})
+	if err == nil {
+		t.Fatal("expected error without outbox coordinator")
 	}
 }

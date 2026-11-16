@@ -68,6 +68,7 @@ func buildMemRepoRegistry(store *memStore) *iamrepo.Registry {
 		Groups:            &memGroupRepo{store},
 		GroupMembers:      &memGroupMemberRepo{store},
 		GroupRoles:        &memGroupRoleRepo{store},
+		SecurityRuntime:   memSecurityRuntime{store: store},
 	}
 }
 

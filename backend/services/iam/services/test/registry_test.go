@@ -221,6 +221,10 @@ func (stubGroupRoleRepo) CheckExists(context.Context, string, string, entity.Sco
 func (stubGroupRoleRepo) Insert(context.Context, *entity.GroupRole) error { return nil }
 func (stubGroupRoleRepo) DeleteByID(context.Context, string) error        { return nil }
 
+type stubSecurityRuntime struct {
+	domainrepo.SecurityRuntimeRepository
+}
+
 func fullStubRepoRegistry() *iamrepo.Registry {
 	return &iamrepo.Registry{
 		Transactor:        stubTx{},
@@ -238,6 +242,7 @@ func fullStubRepoRegistry() *iamrepo.Registry {
 		Groups:            stubGroupRepo{},
 		GroupMembers:      stubGroupMemberRepo{},
 		GroupRoles:        stubGroupRoleRepo{},
+		SecurityRuntime:   stubSecurityRuntime{},
 	}
 }
 

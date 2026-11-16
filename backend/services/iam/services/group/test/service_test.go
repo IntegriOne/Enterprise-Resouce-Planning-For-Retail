@@ -10,6 +10,7 @@ import (
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
+	"github.com/integrione/erp-retail/backend/services/iam/infrastructure/redisstore"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	"github.com/integrione/erp-retail/backend/services/iam/services/group"
 	"github.com/integrione/erp-retail/backend/shared/authcontext"
@@ -32,6 +33,43 @@ type mockGroupStore struct {
 	groupRoles map[string]*entity.GroupRole
 	roles      map[string]*entity.Role
 	users      map[string]*entity.User
+}
+
+type mockSecurityRuntime struct {
+	domainrepo.SecurityRuntimeRepository
+	store *mockGroupStore
+}
+
+func (m mockSecurityRuntime) Insert(context.Context, *entity.OutboxEvent) error      { return nil }
+func (m mockSecurityRuntime) MarkEffective(context.Context, string, time.Time) error { return nil }
+
+func (m mockSecurityRuntime) BumpPermRevisionForGroup(_ context.Context, groupID string) ([]string, error) {
+	m.store.mu.Lock()
+	defer m.store.mu.Unlock()
+	var userIDs []string
+	for userID := range m.store.members[groupID] {
+		userIDs = append(userIDs, userID)
+	}
+	return userIDs, nil
+}
+
+func (m mockSecurityRuntime) IncrementUserSecurityCounters(_ context.Context, userID string, _, _ bool) (int64, int64, error) {
+	m.store.mu.Lock()
+	defer m.store.mu.Unlock()
+	if _, ok := m.store.users[userID]; !ok {
+		return 0, 0, iamerrors.ErrUserNotFound
+	}
+	return 1, 1, nil
+}
+
+func (m mockSecurityRuntime) ResolveGroupRoleGroupID(_ context.Context, assignmentID string) (string, error) {
+	m.store.mu.Lock()
+	defer m.store.mu.Unlock()
+	assignment, ok := m.store.groupRoles[assignmentID]
+	if !ok {
+		return "", iamerrors.ErrGroupRoleNotFound
+	}
+	return assignment.GroupID, nil
 }
 
 func newMockGroupStore() *mockGroupStore {
@@ -288,14 +326,18 @@ func TestGroupService_LifecycleMembershipAndRoles(t *testing.T) {
 	store := newMockGroupStore()
 
 	svc, err := group.NewService(group.Dependencies{
-		Transactor:   passthroughTx{},
-		Groups:       store,
-		GroupMembers: mockMemberRepo{store: store},
-		GroupRoles:   mockGroupRoleRepo{store: store},
-		Roles:        mockRoleRepo{store: store},
-		Users:        mockUserRepo{store: store},
-		Clock:        fixedClock{now: now},
-		IDGen:        idGen,
+		Transactor:      passthroughTx{},
+		Groups:          store,
+		GroupMembers:    mockMemberRepo{store: store},
+		GroupRoles:      mockGroupRoleRepo{store: store},
+		Roles:           mockRoleRepo{store: store},
+		Users:           mockUserRepo{store: store},
+		SecurityRuntime: mockSecurityRuntime{store: store},
+		OutboxCoord: redisstore.NewCoordinator(
+			mockSecurityRuntime{store: store}, nil, idGen, fixedClock{now: now}, nil,
+		),
+		Clock: fixedClock{now: now},
+		IDGen: idGen,
 	})
 	if err != nil {
 		t.Fatalf("NewService() error = %v", err)
@@ -391,5 +433,35 @@ func TestGroupService_LifecycleMembershipAndRoles(t *testing.T) {
 	}
 	if err := svc.Delete(context.Background(), grp.ID); err != nil {
 		t.Fatalf("Delete() error = %v", err)
+	}
+}
+
+func TestGroupService_RejectsMissingSecurityRuntime(t *testing.T) {
+	t.Parallel()
+	store := newMockGroupStore()
+	_, err := group.NewService(group.Dependencies{
+		Transactor:   passthroughTx{},
+		Groups:       store,
+		GroupMembers: mockMemberRepo{store: store},
+		GroupRoles:   mockGroupRoleRepo{store: store},
+		Roles:        mockRoleRepo{store: store},
+		Users:        mockUserRepo{store: store},
+		IDGen:        crypto.NewUUIDGenerator(),
+	})
+	if err == nil {
+		t.Fatal("expected error without security runtime repository")
+	}
+	_, err = group.NewService(group.Dependencies{
+		Transactor:      passthroughTx{},
+		Groups:          store,
+		GroupMembers:    mockMemberRepo{store: store},
+		GroupRoles:      mockGroupRoleRepo{store: store},
+		Roles:           mockRoleRepo{store: store},
+		Users:           mockUserRepo{store: store},
+		SecurityRuntime: mockSecurityRuntime{store: store},
+		IDGen:           crypto.NewUUIDGenerator(),
+	})
+	if err == nil {
+		t.Fatal("expected error without outbox coordinator")
 	}
 }

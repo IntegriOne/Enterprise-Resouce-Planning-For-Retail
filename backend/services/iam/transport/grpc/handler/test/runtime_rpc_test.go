@@ -66,6 +66,8 @@ func buildHandlerTestRegistry(t *testing.T) (*services.Registry, *memStore) {
 		Permissions:     &memPermRepo{store},
 		Users:           &memUserRepo{store},
 		UserRoles:       &memUserRoleRepo{store},
+		SecurityRuntime: memSecurityRuntime{store: store},
+		OutboxCoord:     newMemCoordinator(store, idGen, clock),
 		Clock:           clock,
 		IDGen:           idGen,
 		Redirect:        redirect,
@@ -74,14 +76,16 @@ func buildHandlerTestRegistry(t *testing.T) (*services.Registry, *memStore) {
 		t.Fatalf("role.NewService() error = %v", err)
 	}
 	groupSvc, err := group.NewService(group.Dependencies{
-		Transactor:   tx,
-		Groups:       &memGroupRepo{store},
-		GroupMembers: &memGroupMemberRepo{store},
-		GroupRoles:   &memGroupRoleRepo{store},
-		Roles:        &memRoleRepo{store},
-		Users:        &memUserRepo{store},
-		Clock:        clock,
-		IDGen:        idGen,
+		Transactor:      tx,
+		Groups:          &memGroupRepo{store},
+		GroupMembers:    &memGroupMemberRepo{store},
+		GroupRoles:      &memGroupRoleRepo{store},
+		Roles:           &memRoleRepo{store},
+		Users:           &memUserRepo{store},
+		SecurityRuntime: memSecurityRuntime{store: store},
+		OutboxCoord:     newMemCoordinator(store, idGen, clock),
+		Clock:           clock,
+		IDGen:           idGen,
 	})
 	if err != nil {
 		t.Fatalf("group.NewService() error = %v", err)

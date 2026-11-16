@@ -1,0 +1,3 @@
+# Audit semua alur dan rollback RBAC IAM
+
+Audit ulang enam service gRPC/81 RPC terhadap domain, repository, service, handler, error, dan transaksi. Service role/group kini menolak dependency `SecurityRuntime` atau koordinator outbox yang tidak tersedia. Pencabutan assignment langsung dan grup selalu menyelesaikan pemilik assignment serta menaikkan revisi dan mencatat outbox dalam transaksi. Mock bufconn diselaraskan; tes integrasi PostgreSQL sementara membuktikan rollback ketika insert outbox gagal dan commit sukses menghasilkan dua event. Go fmt, vet, build, race test, dan build Docker IAM lulus. Kesenjangan yang masih terbuka: verifikasi scope non-global ke Enterprise Foundation, outbox email, pagination enam daftar relasi, serta E2E seluruh cabang PostgreSQL/Redis.
