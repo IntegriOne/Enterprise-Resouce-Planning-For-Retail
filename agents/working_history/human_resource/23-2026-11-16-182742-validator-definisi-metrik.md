@@ -1,0 +1,3 @@
+# Validator definisi metrik Human Capital
+
+Validator produksi HRM untuk `hr_human_capital_metric_definitions` memeriksa keunikan kode/versi dan membekukan update/delete bila snapshot sudah merujuk definisi. Wiring `cmd` memakai repository HRM yang sama. Tes unit, `go vet`, build, dan seluruh tes modul dengan race detector lulus. Tes integrasi gRPC `bufconn` ke PostgreSQL sementara membuktikan CRUD/finder, konflik versi, perlindungan snapshot, serta tiga outbox event. Docker HRM dibangun ulang dan sehat. Cakupan validator menjadi 8/78; 70 resource mutasi masih fail-closed. Policy tes tiruan; grant IAM, scope parsial, dan Gateway belum terbukti.
