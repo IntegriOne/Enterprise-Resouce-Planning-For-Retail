@@ -284,7 +284,25 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.StartOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("repeat start: %v", err)
 	}
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedPlanID).Count(&events).Error; err != nil || events != 2 {
-		t.Fatalf("start plan outbox count=%d, error=%v", events, err)
+	if _, err := client.CompleteOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("complete with pending mandatory task: %v", err)
+	}
+	// Fixture ini mensimulasikan hasil command tugas dari DRM yang belum tersedia; bukan bukti verifikasi DRM.
+	if err := database.WithContext(ctx).Exec(
+		"UPDATE hr_onboarding_tasks SET completed_at = ?, completed_by_principal_id = ?, completion_evidence_reference_id = ? WHERE id = ?",
+		time.Now().UTC(), principal, workerID, startedTaskID,
+	).Error; err != nil {
+		t.Fatalf("seed completed task fixture: %v", err)
+	}
+	completed, err := client.CompleteOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID})
+	if err != nil || completed.GetItem().GetStatus() != "completed" || completed.GetItem().GetCompletedAt() == nil ||
+		completed.GetItem().GetCompletedByPrincipalId() != principal {
+		t.Fatalf("complete plan after mandatory task: %+v, %v", completed, err)
+	}
+	if _, err := client.CompleteOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat completion: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedPlanID).Count(&events).Error; err != nil || events != 3 {
+		t.Fatalf("start and complete plan outbox count=%d, error=%v", events, err)
 	}
 }

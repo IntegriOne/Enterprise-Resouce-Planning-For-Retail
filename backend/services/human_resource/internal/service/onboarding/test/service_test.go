@@ -56,6 +56,61 @@ func TestStartOnboardingPlanRequiresTaskAndPreservesAudit(t *testing.T) {
 	}
 }
 
+func TestCompleteOnboardingPlanRequiresFinishedMandatoryTasks(t *testing.T) {
+	t.Parallel()
+	h := mockdb.New()
+	plans := mockdb.NewStore[entity.OnboardingPlan, string](h, func(v *entity.OnboardingPlan) string { return v.ID })
+	tasks := mockdb.NewStore[entity.OnboardingTask, string](h, func(v *entity.OnboardingTask) string { return v.ID })
+	svc, err := service.NewService(service.Dependencies{Runtime: h.Runtime(), OnboardingPlan: plans, OnboardingTask: tasks})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := t.Context()
+	plan, err := svc.CreateOnboardingPlan(ctx, input())
+	if err != nil {
+		t.Fatal(err)
+	}
+	task, err := svc.CreateOnboardingTask(ctx, service.CreateOnboardingTaskInput{
+		OnboardingPlanID: plan.ID, TaskCode: "ORIENTATION", TaskName: "Orientation", TaskOwnerType: "worker",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.CompleteOnboardingPlan(ctx, plan.ID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("complete draft plan: %v", err)
+	}
+	if _, err := svc.StartOnboardingPlan(ctx, plan.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.CompleteOnboardingPlan(ctx, plan.ID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("complete with pending mandatory task: %v", err)
+	}
+	if len(h.Events) != 3 {
+		t.Fatal("rejected completion must not create an outbox event")
+	}
+	finished := tasks.Rows[task.ID]
+	now := mockdb.Now()
+	actor := h.Actor.PrincipalID
+	evidence := mockdb.ID(30)
+	finished.CompletedAt = &now
+	finished.CompletedByPrincipalID = &actor
+	finished.CompletionEvidenceReferenceID = &evidence
+	tasks.Rows[task.ID] = finished
+	completed, err := svc.CompleteOnboardingPlan(ctx, plan.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if completed.Status != "completed" || completed.CompletedAt == nil || completed.CompletedByPrincipalID == nil {
+		t.Fatalf("completed plan audit fields: %+v", completed)
+	}
+	if _, err := svc.CompleteOnboardingPlan(ctx, plan.ID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("repeat completion: %v", err)
+	}
+	if len(h.Events) != 4 || plans.Rows[plan.ID].Status != "completed" {
+		t.Fatal("completion must persist once with an outbox event")
+	}
+}
+
 func TestServiceCRUDAndPagination(t *testing.T) {
 	t.Parallel()
 	h, svc, store := setup(t)

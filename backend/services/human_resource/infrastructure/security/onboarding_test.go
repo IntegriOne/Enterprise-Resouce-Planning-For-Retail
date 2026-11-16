@@ -39,9 +39,10 @@ func (s *onboardingPlanStub) SelectWhere(_ context.Context, filters []domainrepo
 }
 
 type onboardingTaskStub struct {
-	rows  []entity.OnboardingTask
-	count int64
-	err   error
+	rows    []entity.OnboardingTask
+	count   int64
+	pending int64
+	err     error
 }
 
 func (s *onboardingTaskStub) SelectWhere(_ context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.OnboardingTask, error) {
@@ -53,6 +54,10 @@ func (s *onboardingTaskStub) SelectWhere(_ context.Context, filters []domainrepo
 }
 
 func (s *onboardingTaskStub) CountWhere(_ context.Context, filters []domainrepo.Filter) (int64, error) {
+	if len(filters) == 3 && filters[0].Column == "onboarding_plan_id" &&
+		filters[1].Column == "is_mandatory" && filters[2].Column == "completed_at" {
+		return s.pending, s.err
+	}
 	if len(filters) != 1 || filters[0].Column != "onboarding_plan_id" {
 		return 0, hrerrors.ErrInvalidInput
 	}
@@ -126,6 +131,37 @@ func TestOnboardingPlanValidatorKeepsDraftAndWorkerReferences(t *testing.T) {
 	changed.TemplateReferenceID = &principal
 	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", nil, &changed); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("unverified template reference: %v", err)
+	}
+}
+
+func TestOnboardingPlanValidatorRequiresCompletedMandatoryTasks(t *testing.T) {
+	t.Parallel()
+	now := time.Date(2027, 1, 11, 12, 0, 0, 0, time.UTC)
+	principal := "00000000-0000-4000-8000-000000000001"
+	worker := &onboardingWorkerStub{value: &entity.Worker{Status: entity.WorkerStatusPreboarding}}
+	tasks := &onboardingTaskStub{count: 2, pending: 1}
+	validator := &onboardingPlanValidator{workers: worker, plans: &onboardingPlanStub{}, tasks: tasks}
+	started := &entity.OnboardingPlan{ID: "plan-1", WorkerID: "worker-1", PlanCode: "FIRST-WEEK", PlanVersion: 1,
+		StartDate: now.Add(-24 * time.Hour), Status: "in_progress", StartedAt: &now, StartedByPrincipalID: &principal}
+	completed := *started
+	completed.Status = "completed"
+	finishedAt := now.Add(time.Hour)
+	completed.CompletedAt = &finishedAt
+	completed.CompletedByPrincipalID = &principal
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", started, &completed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("pending mandatory task: %v", err)
+	}
+	tasks.pending = 0
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", started, &completed); err != nil {
+		t.Fatalf("all mandatory tasks completed: %v", err)
+	}
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", started, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete started plan: %v", err)
+	}
+	forged := completed
+	forged.PlanCode = "FORGED"
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", started, &forged); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("completion changed plan fields: %v", err)
 	}
 }
 

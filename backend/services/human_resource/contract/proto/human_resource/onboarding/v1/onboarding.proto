@@ -10,6 +10,7 @@ service OnboardingService {
   rpc CreateOnboardingPlan(CreateOnboardingPlanRequest) returns (OnboardingPlanResponse);
   rpc UpdateOnboardingPlan(UpdateOnboardingPlanRequest) returns (OnboardingPlanResponse);
   rpc StartOnboardingPlan(human_resource.common.v1.IDRequest) returns (OnboardingPlanResponse);
+  rpc CompleteOnboardingPlan(human_resource.common.v1.IDRequest) returns (OnboardingPlanResponse);
   rpc DeleteOnboardingPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetOnboardingPlanByID(human_resource.common.v1.IDRequest) returns (OnboardingPlanResponse);
   rpc GetAllOnboardingPlans(human_resource.common.v1.PageRequest) returns (OnboardingPlansResponse);

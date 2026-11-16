@@ -32,6 +32,12 @@ func (h *Handler) StartOnboardingPlan(ctx context.Context, request *common.IDReq
 	}
 	return planResponse(h.service.StartOnboardingPlan(ctx, request.Id))
 }
+func (h *Handler) CompleteOnboardingPlan(ctx context.Context, request *common.IDRequest) (*pb.OnboardingPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return planResponse(h.service.CompleteOnboardingPlan(ctx, request.Id))
+}
 func planResponse(value *entity.OnboardingPlan, err error) (*pb.OnboardingPlanResponse, error) {
 	if err != nil {
 		return nil, response.Error(err)

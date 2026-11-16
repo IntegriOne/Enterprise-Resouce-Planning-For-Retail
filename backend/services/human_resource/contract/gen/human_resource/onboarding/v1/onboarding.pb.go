@@ -991,11 +991,12 @@ const file_human_resource_onboarding_v1_onboarding_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2,.human_resource.onboarding.v1.OnboardingTaskR\x04item\"\x95\x01\n" +
 	"\x17OnboardingTasksResponse\x12B\n" +
 	"\x05items\x18\x01 \x03(\v2,.human_resource.onboarding.v1.OnboardingTaskR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xd7\x15\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xcc\x16\n" +
 	"\x11OnboardingService\x12\x87\x01\n" +
 	"\x14CreateOnboardingPlan\x129.human_resource.onboarding.v1.CreateOnboardingPlanRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12\x87\x01\n" +
 	"\x14UpdateOnboardingPlan\x129.human_resource.onboarding.v1.UpdateOnboardingPlanRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12p\n" +
-	"\x13StartOnboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12d\n" +
+	"\x13StartOnboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12s\n" +
+	"\x16CompleteOnboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12d\n" +
 	"\x14DeleteOnboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12r\n" +
 	"\x15GetOnboardingPlanByID\x12#.human_resource.common.v1.IDRequest\x1a4.human_resource.onboarding.v1.OnboardingPlanResponse\x12u\n" +
 	"\x15GetAllOnboardingPlans\x12%.human_resource.common.v1.PageRequest\x1a5.human_resource.onboarding.v1.OnboardingPlansResponse\x12\x84\x01\n" +
@@ -1071,47 +1072,49 @@ var file_human_resource_onboarding_v1_onboarding_proto_depIdxs = []int32{
 	2,  // 18: human_resource.onboarding.v1.OnboardingService.CreateOnboardingPlan:input_type -> human_resource.onboarding.v1.CreateOnboardingPlanRequest
 	3,  // 19: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingPlan:input_type -> human_resource.onboarding.v1.UpdateOnboardingPlanRequest
 	15, // 20: human_resource.onboarding.v1.OnboardingService.StartOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 21: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 22: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 23: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:input_type -> human_resource.common.v1.PageRequest
-	17, // 24: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 25: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 26: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 27: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 28: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 29: human_resource.onboarding.v1.OnboardingService.CreateOnboardingTask:input_type -> human_resource.onboarding.v1.CreateOnboardingTaskRequest
-	9,  // 30: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingTask:input_type -> human_resource.onboarding.v1.UpdateOnboardingTaskRequest
-	15, // 31: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:input_type -> human_resource.common.v1.IDRequest
-	15, // 32: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 33: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:input_type -> human_resource.common.v1.PageRequest
-	17, // 34: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 35: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 36: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 37: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 38: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 39: human_resource.onboarding.v1.OnboardingService.CreateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	4,  // 40: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	4,  // 41: human_resource.onboarding.v1.OnboardingService.StartOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	18, // 42: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 43: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
-	5,  // 44: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 45: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 46: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 47: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 48: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	5,  // 49: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
-	10, // 50: human_resource.onboarding.v1.OnboardingService.CreateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
-	10, // 51: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
-	18, // 52: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 53: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
-	11, // 54: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 55: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 56: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 57: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 58: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	11, // 59: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
-	39, // [39:60] is the sub-list for method output_type
-	18, // [18:39] is the sub-list for method input_type
+	15, // 21: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	15, // 22: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	15, // 23: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
+	16, // 24: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:input_type -> human_resource.common.v1.PageRequest
+	17, // 25: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 26: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 27: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 28: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 29: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	8,  // 30: human_resource.onboarding.v1.OnboardingService.CreateOnboardingTask:input_type -> human_resource.onboarding.v1.CreateOnboardingTaskRequest
+	9,  // 31: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingTask:input_type -> human_resource.onboarding.v1.UpdateOnboardingTaskRequest
+	15, // 32: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:input_type -> human_resource.common.v1.IDRequest
+	15, // 33: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
+	16, // 34: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:input_type -> human_resource.common.v1.PageRequest
+	17, // 35: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 36: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 37: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 38: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 39: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 40: human_resource.onboarding.v1.OnboardingService.CreateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	4,  // 41: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	4,  // 42: human_resource.onboarding.v1.OnboardingService.StartOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	4,  // 43: human_resource.onboarding.v1.OnboardingService.CompleteOnboardingPlan:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	18, // 44: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 45: human_resource.onboarding.v1.OnboardingService.GetOnboardingPlanByID:output_type -> human_resource.onboarding.v1.OnboardingPlanResponse
+	5,  // 46: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingPlans:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 47: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByWorkerID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 48: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByPlanCode:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 49: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByStatus:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 50: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByTemplateReferenceID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	5,  // 51: human_resource.onboarding.v1.OnboardingService.FindOnboardingPlanByCreatedByPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingPlansResponse
+	10, // 52: human_resource.onboarding.v1.OnboardingService.CreateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
+	10, // 53: human_resource.onboarding.v1.OnboardingService.UpdateOnboardingTask:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
+	18, // 54: human_resource.onboarding.v1.OnboardingService.DeleteOnboardingTask:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 55: human_resource.onboarding.v1.OnboardingService.GetOnboardingTaskByID:output_type -> human_resource.onboarding.v1.OnboardingTaskResponse
+	11, // 56: human_resource.onboarding.v1.OnboardingService.GetAllOnboardingTasks:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	11, // 57: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByOnboardingPlanID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	11, // 58: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskCode:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	11, // 59: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByTaskOwnerType:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	11, // 60: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByAssignedPrincipalID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	11, // 61: human_resource.onboarding.v1.OnboardingService.FindOnboardingTaskByCompletionEvidenceReferenceID:output_type -> human_resource.onboarding.v1.OnboardingTasksResponse
+	40, // [40:62] is the sub-list for method output_type
+	18, // [18:40] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
