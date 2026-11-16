@@ -231,6 +231,12 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"status"}}}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("open requisition through CRUD status = %v, want FailedPrecondition", status.Code(err))
 	}
+	openedAt := timestamppb.New(time.Now())
+	if _, err := client.UpdateRequisition(ctx, &pb.UpdateRequisitionRequest{Id: draftID,
+		Input:      &pb.RequisitionInput{OpenedAt: openedAt},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"opened_at"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("open requisition through CRUD timestamp = %v, want FailedPrecondition", status.Code(err))
+	}
 	updatedHeadcount := int32(2)
 	updatedDraft, err := client.UpdateRequisition(ctx, &pb.UpdateRequisitionRequest{Id: draftID,
 		Input:      &pb.RequisitionInput{Headcount: &updatedHeadcount},
@@ -257,6 +263,14 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		NOW() - INTERVAL '2 hours', ?, NOW() - INTERVAL '1 hour', 'REQ-DRAFT-1')`,
 		requisitionID, jobID, familyID, familyID, familyID).Error; err != nil {
 		t.Fatal(err)
+	}
+	if _, err := client.UpdateRequisition(ctx, &pb.UpdateRequisitionRequest{Id: requisitionID,
+		Input:      &pb.RequisitionInput{Headcount: &updatedHeadcount},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"headcount"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("edit open requisition through CRUD = %v", err)
+	}
+	if _, err := client.DeleteRequisition(ctx, &common.IDRequest{Id: requisitionID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete open requisition through CRUD = %v", err)
 	}
 	applicationNumber := "APP-DRAFT-1"
 	idempotencyKey := "APP-DRAFT-1"

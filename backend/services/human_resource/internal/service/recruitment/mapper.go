@@ -193,6 +193,9 @@ func specRequisition() operation.Specification[entity.Requisition, string] {
 			return a
 		},
 		Guard: func(action string, old, next *entity.Requisition) error {
+			if action != "create" && old.Status != "draft" {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if action == "update" && !reflect.DeepEqual(old.Status, next.Status) {
 				return hrerrors.ErrWorkflowRequired
 			}
@@ -211,17 +214,17 @@ func specRequisition() operation.Specification[entity.Requisition, string] {
 			if action == "update" && !reflect.DeepEqual(old.ApprovedByPrincipalID, next.ApprovedByPrincipalID) {
 				return hrerrors.ErrWorkflowRequired
 			}
+			if action == "create" && next.OpenedAt != nil {
+				return hrerrors.ErrWorkflowRequired
+			}
+			if action == "update" && !reflect.DeepEqual(old.OpenedAt, next.OpenedAt) {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if action == "create" && next.ClosedAt != nil {
 				return hrerrors.ErrWorkflowRequired
 			}
 			if action == "update" && !reflect.DeepEqual(old.ClosedAt, next.ClosedAt) {
 				return hrerrors.ErrWorkflowRequired
-			}
-			if action != "create" {
-				switch string(old.Status) {
-				case "approved", "posted", "paid", "finalized", "applied", "closed", "archived", "terminated", "deceased", "completed", "accepted", "issued", "signed", "hired", "processed", "rejected", "cancelled", "withdrawn", "superseded":
-					return hrerrors.ErrWorkflowRequired
-				}
 			}
 			return nil
 		},
