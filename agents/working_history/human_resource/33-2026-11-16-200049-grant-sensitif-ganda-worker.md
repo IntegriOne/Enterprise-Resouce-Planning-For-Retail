@@ -1,0 +1,3 @@
+# Grant sensitif ganda worker
+
+Policy HRM kini menganggap flag sensitif sebagai sifat kode permission di seluruh grant. Grant legal entity yang tidak sensitif tidak dapat melewati MFA jika grant lain dengan kode sama sensitif. Pemilihan grant worker memeriksa seluruh kandidat legal entity yang sesuai, dan filter list/count tetap hanya mencakup grant sah. Unit test baru membuktikan penolakan tanpa MFA serta akses setelah MFA pada grant ganda. Fmt, vet, seluruh unit/race test dan build modul HRM lulus; Docker human-resource healthy. Snapshot IAM nyata serta E2E Gateway belum diuji; mutasi personel tetap fail-closed karena referensi Foundation/DRM belum memiliki adapter produksi.

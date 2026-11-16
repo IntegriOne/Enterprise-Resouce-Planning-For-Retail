@@ -188,6 +188,30 @@ func TestPolicyWorkerLegalEntityScope(t *testing.T) {
 	if err != nil || scope.All || len(scope.Filters) != 1 || scope.Filters[0].Column != "primary_legal_entity_reference_id" || len(scope.Filters[0].Values) != 2 {
 		t.Fatalf("worker scope = %+v, error = %v", scope, err)
 	}
+	reader.state.Snapshot.Permissions[0].IsSensitive = true
+	if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": legalA}}); !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("sensitive grant without MFA must deny legal entity A: %v", err)
+	}
+	if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": legalB}}); !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("sensitive permission code must also deny legal entity B without MFA: %v", err)
+	}
+	if _, err := policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"}); !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("sensitive permission code must deny list without MFA: %v", err)
+	}
+	reader.state.Snapshot.Permissions = append(reader.state.Snapshot.Permissions,
+		authz.PermissionGrant{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}})
+	if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": legalA}}); !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("duplicate non-sensitive grant must not bypass MFA: %v", err)
+	}
+	reader.state.Token.MFAAuthenticated = true
+	reader.state.Token.IssuedAtUnix = now
+	if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": legalA}}); err != nil {
+		t.Fatalf("valid MFA must allow legal entity A: %v", err)
+	}
+	scope, err = policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"})
+	if err != nil || len(scope.Filters) != 1 || len(scope.Filters[0].Values) != 2 {
+		t.Fatalf("valid MFA must include both legal entities: %+v, error = %v", scope, err)
+	}
 	reader.state.Snapshot.Status = "suspended"
 	if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read"}); !errors.Is(err, hrerrors.ErrUnavailable) {
 		t.Fatalf("suspended scoped worker read = %v, want unavailable", err)
@@ -195,6 +219,11 @@ func TestPolicyWorkerLegalEntityScope(t *testing.T) {
 	reader.state.Snapshot.Status = "active"
 	reader.state.Snapshot.Permissions = append(reader.state.Snapshot.Permissions,
 		authz.PermissionGrant{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "global"}})
+	reader.state.Token.MFAAuthenticated = false
+	if _, err := policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"}); !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("global non-sensitive duplicate must not bypass code-level MFA: %v", err)
+	}
+	reader.state.Token.MFAAuthenticated = true
 	scope, err = policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"})
 	if err != nil || !scope.All || len(scope.Filters) != 0 {
 		t.Fatalf("global worker scope = %+v, error = %v", scope, err)

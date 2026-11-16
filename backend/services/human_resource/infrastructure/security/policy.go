@@ -117,14 +117,15 @@ func (p *Policy) authorize(ctx context.Context, access operation.Access) (operat
 	if !exists {
 		return operation.Actor{}, nil, hrerrors.ErrForbidden
 	}
+	sensitive := permissionSensitive(state.Snapshot, permission)
 	grant, allowed := state.Snapshot.HasPermission(permission)
 	if !allowed && access.Resource == "hr_workers" && (access.Action == "read" || access.Action == "list") {
-		grant, allowed = workerScopedGrant(state.Snapshot, permission, access.Attributes)
+		grant, allowed = workerScopedGrant(state.Snapshot, permission, access, state.Token, now, sensitive)
 	}
 	if !allowed {
 		return operation.Actor{}, nil, hrerrors.ErrForbidden
 	}
-	if !grantUsable(grant, state.Token, access, now) {
+	if !grantUsable(grant, state.Token, access, now, sensitive) {
 		return operation.Actor{}, nil, hrerrors.ErrForbidden
 	}
 	return operation.Actor{
@@ -143,7 +144,9 @@ func (p *Policy) ReadScope(ctx context.Context, access operation.Access) (operat
 		return operation.Scope{}, err
 	}
 	permission := p.permissions[access.Resource+"."+access.Action]
-	if grant, ok := state.Snapshot.HasPermission(permission); ok && grantUsable(grant, state.Token, access, time.Now()) {
+	sensitive := permissionSensitive(state.Snapshot, permission)
+	now := time.Now()
+	if grant, ok := state.Snapshot.HasPermission(permission); ok && grantUsable(grant, state.Token, access, now, sensitive) {
 		return operation.Scope{All: true}, nil
 	}
 	if access.Resource != "hr_workers" || (access.Action != "read" && access.Action != "list") {
@@ -154,7 +157,7 @@ func (p *Policy) ReadScope(ctx context.Context, access operation.Access) (operat
 	for _, grant := range state.Snapshot.Permissions {
 		id := strings.ToLower(strings.TrimSpace(grant.Scope.ID))
 		if !strings.EqualFold(grant.Code, permission) || grant.Scope.Type != "legal_entity" ||
-			entity.ValidateUUID("scope_id", id) != nil || !grantUsable(grant, state.Token, access, time.Now()) || seen[id] {
+			entity.ValidateUUID("scope_id", id) != nil || !grantUsable(grant, state.Token, access, now, sensitive) || seen[id] {
 			continue
 		}
 		if len(ids) >= 1000 {
@@ -169,27 +172,38 @@ func (p *Policy) ReadScope(ctx context.Context, access operation.Access) (operat
 	return operation.Scope{Filters: []domainrepo.Filter{{Column: "primary_legal_entity_reference_id", Values: ids}}}, nil
 }
 
-func workerScopedGrant(snapshot *authz.AccessSnapshot, permission string, attributes map[string]string) (authz.PermissionGrant, bool) {
-	if snapshot == nil {
+func workerScopedGrant(snapshot *authz.AccessSnapshot, permission string, access operation.Access, token *authsession.SessionTokenRecord, now time.Time, sensitive bool) (authz.PermissionGrant, bool) {
+	if snapshot == nil || !strings.EqualFold(snapshot.Status, authz.StatusActive) {
 		return authz.PermissionGrant{}, false
 	}
-	if id, present := attributes["primary_legal_entity_reference_id"]; present {
+	id, present := access.Attributes["primary_legal_entity_reference_id"]
+	if present {
 		if entity.ValidateUUID("primary_legal_entity_reference_id", id) != nil {
 			return authz.PermissionGrant{}, false
 		}
-		return snapshot.HasScopedPermission(permission, authz.ScopeGrant{Type: "legal_entity", ID: id})
 	}
 	for _, grant := range snapshot.Permissions {
-		if strings.EqualFold(grant.Code, permission) && grant.Scope.Type == "legal_entity" &&
-			entity.ValidateUUID("scope_id", grant.Scope.ID) == nil {
-			return snapshot.HasScopedPermission(permission, authz.ScopeGrant{Type: "legal_entity", ID: grant.Scope.ID})
+		if !strings.EqualFold(grant.Code, permission) || grant.Scope.Type != "legal_entity" ||
+			entity.ValidateUUID("scope_id", grant.Scope.ID) != nil ||
+			(present && !strings.EqualFold(grant.Scope.ID, id)) || !grantUsable(grant, token, access, now, sensitive) {
+			continue
 		}
+		return grant, true
 	}
 	return authz.PermissionGrant{}, false
 }
 
-func grantUsable(grant authz.PermissionGrant, token *authsession.SessionTokenRecord, access operation.Access, now time.Time) bool {
-	if !grant.IsSensitive && !IsSensitiveOperation(access.Resource, access.Action) {
+func permissionSensitive(snapshot *authz.AccessSnapshot, permission string) bool {
+	for _, grant := range snapshot.Permissions {
+		if strings.EqualFold(grant.Code, permission) && grant.IsSensitive {
+			return true
+		}
+	}
+	return false
+}
+
+func grantUsable(grant authz.PermissionGrant, token *authsession.SessionTokenRecord, access operation.Access, now time.Time, sensitive bool) bool {
+	if !sensitive && !grant.IsSensitive && !IsSensitiveOperation(access.Resource, access.Action) {
 		return true
 	}
 	if token == nil || !token.MFAAuthenticated || token.IssuedAtUnix <= 0 {
