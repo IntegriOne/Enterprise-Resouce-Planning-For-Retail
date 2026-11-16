@@ -13,24 +13,36 @@ import (
 
 type performanceCycleReader interface {
 	FindByCycleCode(context.Context, string, int, int) ([]entity.PerformanceCycle, error)
+	FindByIDForUpdate(context.Context, string) (*entity.PerformanceCycle, error)
+}
+
+type performanceReferenceCounter interface {
+	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 }
 
 type performanceCycleValidator struct {
 	cycles  performanceCycleReader
-	goals   positionCounter
-	reviews positionCounter
+	goals   performanceReferenceCounter
+	reviews performanceReferenceCounter
 }
 
 // PerformanceValidators memasang pemeriksaan draft siklus kinerja.
 func PerformanceValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
 	if repos == nil || operation.RequireDependency(repos.PerformanceCycle) != nil ||
 		operation.RequireDependency(repos.PerformanceGoal) != nil ||
-		operation.RequireDependency(repos.PerformanceReview) != nil {
+		operation.RequireDependency(repos.PerformanceReview) != nil ||
+		operation.RequireDependency(repos.Worker) != nil ||
+		operation.RequireDependency(repos.PerformanceGoalUpdate) != nil ||
+		operation.RequireDependency(repos.PerformanceReviewGoalScore) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
 		"hr_performance_cycles": &performanceCycleValidator{
 			cycles: repos.PerformanceCycle, goals: repos.PerformanceGoal, reviews: repos.PerformanceReview,
+		},
+		"hr_performance_goals": &performanceGoalValidator{
+			workers: repos.Worker, cycles: repos.PerformanceCycle, goals: repos.PerformanceGoal,
+			updates: repos.PerformanceGoalUpdate, scores: repos.PerformanceReviewGoalScore,
 		},
 	}, nil
 }
@@ -65,7 +77,20 @@ func (v *performanceCycleValidator) ValidateMutation(ctx context.Context, table 
 	if !ok || cycle == nil || (previous != nil && previous.ID != cycle.ID) {
 		return hrerrors.ErrInvalidInput
 	}
-	if cycle.Status != entity.PerformanceCycleStatusDraft || cycle.LaunchedAt != nil || cycle.LaunchedByPrincipalID != nil {
+	launching := previous != nil && cycle.Status == entity.PerformanceCycleStatusOpen
+	if launching {
+		if previous.LaunchedAt != nil || previous.LaunchedByPrincipalID != nil ||
+			cycle.LaunchedAt == nil || cycle.LaunchedByPrincipalID == nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		unchanged := *cycle
+		unchanged.Status = previous.Status
+		unchanged.LaunchedAt = previous.LaunchedAt
+		unchanged.LaunchedByPrincipalID = previous.LaunchedByPrincipalID
+		if !reflect.DeepEqual(previous, &unchanged) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else if cycle.Status != entity.PerformanceCycleStatusDraft || cycle.LaunchedAt != nil || cycle.LaunchedByPrincipalID != nil {
 		return hrerrors.ErrWorkflowRequired
 	}
 	matches, err := v.cycles.FindByCycleCode(ctx, cycle.CycleCode, 2, 0)
@@ -77,7 +102,7 @@ func (v *performanceCycleValidator) ValidateMutation(ctx context.Context, table 
 			return hrerrors.ErrAlreadyExists
 		}
 	}
-	if previous != nil && !reflect.DeepEqual(previous, cycle) {
+	if previous != nil && !launching && !reflect.DeepEqual(previous, cycle) {
 		return v.rejectIfReferenced(ctx, cycle.ID)
 	}
 	return nil

@@ -63,7 +63,11 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pool.Close() })
+	t.Cleanup(func() {
+		if err := pool.Close(); err != nil {
+			t.Errorf("close HRM test database pool: %v", err)
+		}
+	})
 	if err := hrdb.RunMigrationsUp(ctx, pool); err != nil {
 		t.Fatal(err)
 	}
@@ -107,23 +111,24 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close() })
+	t.Cleanup(func() {
+		if err := connection.Close(); err != nil {
+			t.Errorf("close HRM test gRPC connection: %v", err)
+		}
+	})
 	client := pb.NewPerformanceServiceClient(connection)
 	ids := operation.UUIDGenerator{}
 	workerID, err := ids.NewID()
 	if err != nil {
 		t.Fatal(err)
 	}
-	goalID, err := ids.NewID()
-	if err != nil {
-		t.Fatal(err)
-	}
-	var cycleID string
+	var cycleID, goalID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
 		for _, statement := range []struct{ query, value string }{
 			{"DELETE FROM hr_performance_goals WHERE id = ?", goalID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", goalID},
 			{"DELETE FROM hr_performance_cycles WHERE id = ?", cycleID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", cycleID},
 			{"DELETE FROM hr_workers WHERE id = ?", workerID},
@@ -170,11 +175,51 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 	).Error; err != nil {
 		t.Fatal(err)
 	}
-	if err := database.WithContext(ctx).Exec(
-		"INSERT INTO hr_performance_goals (id, worker_id, performance_cycle_id, goal_title, goal_type) VALUES (?, ?, ?, ?, ?)",
-		goalID, workerID, cycleID, "Service quality", "business",
-	).Error; err != nil {
-		t.Fatal(err)
+	goalTitle, goalType, goalCode := "Service quality", "business", "quality-1"
+	goalInput := &pb.PerformanceGoalInput{
+		WorkerId: &workerID, PerformanceCycleId: &cycleID, GoalTitle: &goalTitle,
+		GoalType: &goalType, GoalCode: &goalCode,
+	}
+	if _, err := client.CreatePerformanceGoal(ctx, &pb.CreatePerformanceGoalRequest{Input: goalInput}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("goal before cycle launch: %v", err)
+	}
+	launched, err := client.LaunchPerformanceCycle(ctx, &common.IDRequest{Id: cycleID})
+	if err != nil || launched.GetItem().GetStatus() != "open" || launched.GetItem().GetLaunchedAt() == nil ||
+		launched.GetItem().GetLaunchedByPrincipalId() == "" {
+		t.Fatalf("launch draft cycle: %v", err)
+	}
+	if _, err := client.LaunchPerformanceCycle(ctx, &common.IDRequest{Id: cycleID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat launch: %v", err)
+	}
+	goalCreated, err := client.CreatePerformanceGoal(ctx, &pb.CreatePerformanceGoalRequest{Input: goalInput})
+	if err != nil || goalCreated.GetItem().GetId() == "" || goalCreated.GetItem().GetGoalStatus() != "draft" {
+		t.Fatalf("create goal in open cycle: %v", err)
+	}
+	goalID = goalCreated.Item.Id
+	readGoal, err := client.GetPerformanceGoalByID(ctx, &common.IDRequest{Id: goalID})
+	if err != nil || readGoal.GetItem().GetGoalCode() != goalCode {
+		t.Fatalf("read persisted goal: %v", err)
+	}
+	foundGoals, err := client.FindPerformanceGoalByWorkerID(ctx, &common.StringFinderRequest{Value: &workerID, Limit: 1})
+	if err != nil || len(foundGoals.GetItems()) != 1 || foundGoals.GetPage().GetTotal() != 1 {
+		t.Fatalf("paged worker goal finder: %v", err)
+	}
+	updatedGoalTitle := "Service quality revised"
+	if _, err := client.UpdatePerformanceGoal(ctx, &pb.UpdatePerformanceGoalRequest{
+		Id: goalID, Input: &pb.PerformanceGoalInput{GoalTitle: &updatedGoalTitle},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"goal_title"}},
+	}); err != nil {
+		t.Fatalf("update unreferenced draft goal: %v", err)
+	}
+	if _, err := client.CreatePerformanceGoal(ctx, &pb.CreatePerformanceGoalRequest{Input: goalInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate worker/cycle/goal code: %v", err)
+	}
+	actualValue := "1.00"
+	if _, err := client.CreatePerformanceGoal(ctx, &pb.CreatePerformanceGoalRequest{Input: &pb.PerformanceGoalInput{
+		WorkerId: &workerID, PerformanceCycleId: &cycleID, GoalTitle: &goalTitle,
+		GoalType: &goalType, ActualValue: &actualValue,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("client supplied actual value: %v", err)
 	}
 	if _, err := client.UpdatePerformanceCycle(ctx, &pb.UpdatePerformanceCycleRequest{
 		Id: cycleID, Input: &pb.PerformanceCycleInput{CycleName: &name},
@@ -186,7 +231,16 @@ func TestPerformanceCycleRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("delete referenced cycle: %v", err)
 	}
 	var events int64
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", cycleID).Count(&events).Error; err != nil || events != 2 {
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", cycleID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("outbox after rejected mutations: count=%d error=%v", events, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", goalID).Count(&events).Error; err != nil || events != 2 {
+		t.Fatalf("goal outbox after rejected mutations: count=%d error=%v", events, err)
+	}
+	if _, err := client.DeletePerformanceGoal(ctx, &common.IDRequest{Id: goalID}); err != nil {
+		t.Fatalf("delete unreferenced draft goal: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", goalID).Count(&events).Error; err != nil || events != 3 {
+		t.Fatalf("goal outbox after deletion: count=%d error=%v", events, err)
 	}
 }

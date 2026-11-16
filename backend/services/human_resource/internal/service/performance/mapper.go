@@ -276,11 +276,14 @@ func specPerformanceGoal() operation.Specification[entity.PerformanceGoal, strin
 			if action == "update" && !reflect.DeepEqual(old.ApprovedAt, next.ApprovedAt) {
 				return hrerrors.ErrWorkflowRequired
 			}
-			if action != "create" {
-				switch string(old.GoalStatus) {
-				case "approved", "posted", "paid", "finalized", "applied", "closed", "archived", "terminated", "deceased", "completed", "accepted", "issued", "signed", "hired", "processed", "rejected", "cancelled", "withdrawn", "superseded":
-					return hrerrors.ErrWorkflowRequired
-				}
+			if action != "create" && old.GoalStatus != "draft" {
+				return hrerrors.ErrWorkflowRequired
+			}
+			if action == "create" && next.ActualValue != nil {
+				return hrerrors.ErrWorkflowRequired
+			}
+			if action == "update" && !reflect.DeepEqual(old.ActualValue, next.ActualValue) {
+				return hrerrors.ErrWorkflowRequired
 			}
 			return nil
 		},

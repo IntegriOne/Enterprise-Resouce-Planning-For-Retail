@@ -37,7 +37,7 @@ func PermissionCatalog() map[string]string {
 		"payroll_results":           true,
 		"worker_lifecycle_events":   true,
 	}
-	permissions := make(map[string]string, 84*5+4)
+	permissions := make(map[string]string, 84*5+5)
 	for _, resource := range resources {
 		operation := "hr_" + resource
 		code := "human_resource." + resource + ".read"
@@ -53,13 +53,14 @@ func PermissionCatalog() map[string]string {
 	permissions["hr_leave_entitlements.post_leave_entry"] = "human_resource.leave_entitlements.post"
 	permissions["hr_payroll_runs.approve"] = "human_resource.payroll_runs.approve"
 	permissions["hr_career_paths.approve"] = "human_resource.career_paths.approve"
+	permissions["hr_performance_cycles.launch"] = "human_resource.performance_cycles.launch"
 	permissions["hr_talent_assessments.finalize"] = "human_resource.talent_assessments.finalize"
 	return permissions
 }
 
 // IsSensitiveOperation menetapkan batas minimal step-up yang tidak bergantung pada flag katalog IAM.
 func IsSensitiveOperation(resource, action string) bool {
-	if action == "delete" || action == "approve" || action == "post_leave_entry" || action == "finalize" {
+	if action == "delete" || action == "approve" || action == "post_leave_entry" || action == "finalize" || action == "launch" {
 		return true
 	}
 	if action == "read" || action == "list" {

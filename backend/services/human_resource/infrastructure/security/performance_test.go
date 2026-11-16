@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -12,10 +13,15 @@ import (
 
 type performanceCycleStub struct {
 	matches []entity.PerformanceCycle
+	cycle   *entity.PerformanceCycle
 }
 
 func (s *performanceCycleStub) FindByCycleCode(_ context.Context, _ string, _, _ int) ([]entity.PerformanceCycle, error) {
 	return s.matches, nil
+}
+
+func (s *performanceCycleStub) FindByIDForUpdate(_ context.Context, _ string) (*entity.PerformanceCycle, error) {
+	return s.cycle, nil
 }
 
 type cycleReferenceStub struct {
@@ -68,7 +74,18 @@ func TestPerformanceCycleValidatorProtectsDraftAndReferences(t *testing.T) {
 	open := *cycle
 	open.Status = entity.PerformanceCycleStatusOpen
 	if err := validator.ValidateMutation(t.Context(), "hr_performance_cycles", cycle, &open); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
-		t.Fatalf("CRUD launch: %v", err)
+		t.Fatalf("launch without server audit: %v", err)
+	}
+	launchedAt := time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC)
+	actor := "00000000-0000-4000-8000-000000000001"
+	open.LaunchedAt = &launchedAt
+	open.LaunchedByPrincipalID = &actor
+	if err := validator.ValidateMutation(t.Context(), "hr_performance_cycles", cycle, &open); err != nil {
+		t.Fatalf("launch draft: %v", err)
+	}
+	open.CycleName = "Changed during launch"
+	if err := validator.ValidateMutation(t.Context(), "hr_performance_cycles", cycle, &open); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("launch with business edit: %v", err)
 	}
 	if err := validator.ValidateMutation(t.Context(), "hr_performance_cycles", &open, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("delete open cycle: %v", err)

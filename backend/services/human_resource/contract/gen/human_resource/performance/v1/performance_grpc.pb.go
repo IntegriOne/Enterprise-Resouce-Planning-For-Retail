@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	PerformanceService_CreatePerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/CreatePerformanceCycle"
+	PerformanceService_LaunchPerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/LaunchPerformanceCycle"
 	PerformanceService_UpdatePerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/UpdatePerformanceCycle"
 	PerformanceService_DeletePerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/DeletePerformanceCycle"
 	PerformanceService_GetPerformanceCycleByID_FullMethodName                                            = "/human_resource.performance.v1.PerformanceService/GetPerformanceCycleByID"
@@ -80,6 +81,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PerformanceServiceClient interface {
 	CreatePerformanceCycle(ctx context.Context, in *CreatePerformanceCycleRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
+	LaunchPerformanceCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
 	UpdatePerformanceCycle(ctx context.Context, in *UpdatePerformanceCycleRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
 	DeletePerformanceCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetPerformanceCycleByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
@@ -146,6 +148,16 @@ func (c *performanceServiceClient) CreatePerformanceCycle(ctx context.Context, i
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PerformanceCycleResponse)
 	err := c.cc.Invoke(ctx, PerformanceService_CreatePerformanceCycle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *performanceServiceClient) LaunchPerformanceCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceCycleResponse)
+	err := c.cc.Invoke(ctx, PerformanceService_LaunchPerformanceCycle_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -677,6 +689,7 @@ func (c *performanceServiceClient) FindPerformanceReviewGoalScoreByEvidenceDocum
 // for forward compatibility.
 type PerformanceServiceServer interface {
 	CreatePerformanceCycle(context.Context, *CreatePerformanceCycleRequest) (*PerformanceCycleResponse, error)
+	LaunchPerformanceCycle(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error)
 	UpdatePerformanceCycle(context.Context, *UpdatePerformanceCycleRequest) (*PerformanceCycleResponse, error)
 	DeletePerformanceCycle(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetPerformanceCycleByID(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error)
@@ -741,6 +754,9 @@ type UnimplementedPerformanceServiceServer struct{}
 
 func (UnimplementedPerformanceServiceServer) CreatePerformanceCycle(context.Context, *CreatePerformanceCycleRequest) (*PerformanceCycleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreatePerformanceCycle not implemented")
+}
+func (UnimplementedPerformanceServiceServer) LaunchPerformanceCycle(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LaunchPerformanceCycle not implemented")
 }
 func (UnimplementedPerformanceServiceServer) UpdatePerformanceCycle(context.Context, *UpdatePerformanceCycleRequest) (*PerformanceCycleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdatePerformanceCycle not implemented")
@@ -933,6 +949,24 @@ func _PerformanceService_CreatePerformanceCycle_Handler(srv interface{}, ctx con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PerformanceServiceServer).CreatePerformanceCycle(ctx, req.(*CreatePerformanceCycleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PerformanceService_LaunchPerformanceCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerformanceServiceServer).LaunchPerformanceCycle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PerformanceService_LaunchPerformanceCycle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerformanceServiceServer).LaunchPerformanceCycle(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1883,6 +1917,10 @@ var PerformanceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePerformanceCycle",
 			Handler:    _PerformanceService_CreatePerformanceCycle_Handler,
+		},
+		{
+			MethodName: "LaunchPerformanceCycle",
+			Handler:    _PerformanceService_LaunchPerformanceCycle_Handler,
 		},
 		{
 			MethodName: "UpdatePerformanceCycle",

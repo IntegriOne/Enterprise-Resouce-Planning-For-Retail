@@ -8,6 +8,7 @@ import "human_resource/common/v1/common.proto";
 
 service PerformanceService {
   rpc CreatePerformanceCycle(CreatePerformanceCycleRequest) returns (PerformanceCycleResponse);
+  rpc LaunchPerformanceCycle(human_resource.common.v1.IDRequest) returns (PerformanceCycleResponse);
   rpc UpdatePerformanceCycle(UpdatePerformanceCycleRequest) returns (PerformanceCycleResponse);
   rpc DeletePerformanceCycle(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetPerformanceCycleByID(human_resource.common.v1.IDRequest) returns (PerformanceCycleResponse);

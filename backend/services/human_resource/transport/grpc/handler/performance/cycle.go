@@ -86,6 +86,12 @@ func (h *Handler) CreatePerformanceCycle(ctx context.Context, req *pb.CreatePerf
 	}
 	return cycleResponse(h.service.CreatePerformanceCycle(ctx, service.CreatePerformanceCycleInput{CycleCode: in.GetCycleCode(), CycleName: in.GetCycleName(), CycleType: in.GetCycleType(), Status: enumPtr[entity.PerformanceCycleStatus](in.Status), PeriodStart: start, PeriodEnd: end, SelfReviewDueAt: self, ManagerReviewDueAt: manager, CalibrationDueAt: calibration, LaunchedAt: launched, LaunchedByPrincipalID: in.LaunchedByPrincipalId, Configuration: configuration}))
 }
+func (h *Handler) LaunchPerformanceCycle(ctx context.Context, req *common.IDRequest) (*pb.PerformanceCycleResponse, error) {
+	if req == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return cycleResponse(h.service.LaunchPerformanceCycle(ctx, req.Id))
+}
 func (h *Handler) UpdatePerformanceCycle(ctx context.Context, req *pb.UpdatePerformanceCycleRequest) (*pb.PerformanceCycleResponse, error) {
 	if req == nil || req.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

@@ -17,8 +17,8 @@ import (
 func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 	t.Parallel()
 	catalog := security.PermissionCatalog()
-	if len(catalog) != 406 {
-		t.Fatalf("operation mapping count = %d, want 406", len(catalog))
+	if len(catalog) != 407 {
+		t.Fatalf("operation mapping count = %d, want 407", len(catalog))
 	}
 	codes := make(map[string]struct{}, len(catalog))
 	for operation, code := range catalog {
@@ -27,8 +27,8 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		}
 		codes[code] = struct{}{}
 	}
-	if len(codes) != 322 {
-		t.Fatalf("permission count = %d, want 322", len(codes))
+	if len(codes) != 323 {
+		t.Fatalf("permission count = %d, want 323", len(codes))
 	}
 	for operation, want := range map[string]string{
 		"hr_workers.list":                        "human_resource.workers.read",
@@ -38,6 +38,7 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		"hr_leave_entitlements.post_leave_entry": "human_resource.leave_entitlements.post",
 		"hr_payroll_runs.approve":                "human_resource.payroll_runs.approve",
 		"hr_career_paths.approve":                "human_resource.career_paths.approve",
+		"hr_performance_cycles.launch":           "human_resource.performance_cycles.launch",
 		"hr_talent_assessments.finalize":         "human_resource.talent_assessments.finalize",
 		"hr_payroll_result_lines.read":           "human_resource.payroll_result_lines.read",
 		"hr_application_stage_history.list":      "human_resource.application_stage_history.read",
@@ -69,6 +70,7 @@ func TestSensitiveOperationsRequireIndependentStepUp(t *testing.T) {
 		{"hr_workers", "delete", true},
 		{"hr_payroll_runs", "approve", true},
 		{"hr_career_paths", "approve", true},
+		{"hr_performance_cycles", "launch", true},
 		{"hr_leave_entitlements", "post_leave_entry", true},
 		{"hr_talent_assessments", "finalize", true},
 		{"hr_compensation_records", "read", true},
@@ -98,6 +100,7 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "global"}},
 				{Code: "human_resource.workers.delete", Scope: authz.ScopeGrant{Type: "global"}},
 				{Code: "human_resource.payroll_runs.approve", Scope: authz.ScopeGrant{Type: "global"}},
+				{Code: "human_resource.performance_cycles.launch", Scope: authz.ScopeGrant{Type: "global"}},
 			},
 		},
 	}}
@@ -118,6 +121,7 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 		{Resource: "hr_workers", Action: "create"},
 		{Resource: "hr_workers", Action: "delete"},
 		{Resource: "hr_payroll_runs", Action: "approve"},
+		{Resource: "hr_performance_cycles", Action: "launch"},
 	} {
 		if _, err := policy.Authorize(ctx, access); err == nil {
 			t.Errorf("operation %s.%s was allowed without permission or MFA", access.Resource, access.Action)
@@ -127,6 +131,7 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 	for _, access := range []operation.Access{
 		{Resource: "hr_workers", Action: "delete"},
 		{Resource: "hr_payroll_runs", Action: "approve"},
+		{Resource: "hr_performance_cycles", Action: "launch"},
 	} {
 		if _, err := policy.Authorize(ctx, access); err != nil {
 			t.Errorf("operation %s.%s was denied after MFA: %v", access.Resource, access.Action, err)
