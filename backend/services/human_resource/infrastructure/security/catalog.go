@@ -68,7 +68,7 @@ func IsSensitiveOperation(resource, action string) bool {
 		return true
 	}
 	if action == "read" || action == "list" {
-		return strings.HasPrefix(resource, "hr_compensation_") || resource == "hr_payroll_results" ||
+		return strings.HasPrefix(resource, "hr_compensation_") || resource == "hr_employment_contracts" || resource == "hr_payroll_results" ||
 			resource == "hr_payroll_result_lines" || resource == "hr_payroll_profiles" ||
 			resource == "hr_payroll_adjustments" || resource == "hr_worker_competency_assessments" ||
 			resource == "hr_worker_qualifications" ||
@@ -80,6 +80,7 @@ func IsSensitiveOperation(resource, action string) bool {
 		return true
 	}
 	return strings.HasPrefix(resource, "hr_compensation_") || strings.HasPrefix(resource, "hr_payroll_") ||
+		resource == "hr_employment_contracts" ||
 		resource == "hr_promotion_decisions" || resource == "hr_worker_competency_assessments" ||
 		resource == "hr_worker_qualifications" ||
 		resource == "hr_performance_reviews" || resource == "hr_succession_plans" ||
