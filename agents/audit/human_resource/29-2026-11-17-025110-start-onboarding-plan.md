@@ -13,4 +13,4 @@ Baseline `000001` menambahkan metadata mulai/selesai plan dan pelaku penyelesaia
 
 ## Batas
 
-Command penyelesaian tugas/rencana, validasi versi bukti DRM, relasi PIC selain worker, grant IAM nyata, serta E2E positif lewat Gateway belum tersedia. Tes integrasi memakai policy tiruan, sehingga belum membuktikan otorisasi lintas management pada runtime.
+Command penyelesaian tugas/rencana, validasi versi bukti DRM, relasi PIC selain worker, grant IAM nyata, serta E2E positif lewat Gateway belum tersedia. Direktori runtime `backend/services/document_records_management/` tidak ada pada checkout ini, sehingga UUID bukti dari klien belum dapat dibuktikan ke owner DRM dan penyelesaian tugas harus tetap fail-closed. Tes integrasi memakai policy tiruan, sehingga belum membuktikan otorisasi lintas management pada runtime.
