@@ -39,6 +39,7 @@ service RecruitmentService {
   rpc FindCandidateByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (CandidatesResponse);
   rpc CreateApplication(CreateApplicationRequest) returns (ApplicationResponse);
   rpc UpdateApplication(UpdateApplicationRequest) returns (ApplicationResponse);
+  rpc StartApplicationScreening(human_resource.common.v1.IDRequest) returns (ApplicationResponse);
   rpc DeleteApplication(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetApplicationByID(human_resource.common.v1.IDRequest) returns (ApplicationResponse);
   rpc GetAllApplications(human_resource.common.v1.PageRequest) returns (ApplicationsResponse);

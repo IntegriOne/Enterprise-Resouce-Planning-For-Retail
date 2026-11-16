@@ -2,7 +2,9 @@ package security
 
 import (
 	"context"
+	"reflect"
 	"strings"
+	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -42,15 +44,37 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if before != nil || after == nil {
+	if after == nil {
 		return hrerrors.ErrWorkflowRequired
 	}
 	application, ok := after.(*entity.Application)
 	if !ok || application == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	if application.Status != entity.ApplicationStatusReceived || application.CurrentStageCode != nil ||
-		application.AssignedRecruiterPrincipalID != nil || application.ScreeningScore != nil ||
+	screening := before != nil
+	if screening {
+		previous, ok := before.(*entity.Application)
+		if !ok || previous == nil {
+			return hrerrors.ErrInvalidInput
+		}
+		if previous.Status != entity.ApplicationStatusReceived || previous.CurrentStageCode != nil ||
+			previous.AssignedRecruiterPrincipalID != nil || application.Status != entity.ApplicationStatusScreening ||
+			application.CurrentStageCode == nil || *application.CurrentStageCode != "screening" ||
+			application.AssignedRecruiterPrincipalID == nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		expected := *previous
+		expected.Status = entity.ApplicationStatusScreening
+		expected.CurrentStageCode = application.CurrentStageCode
+		expected.AssignedRecruiterPrincipalID = application.AssignedRecruiterPrincipalID
+		if !reflect.DeepEqual(&expected, application) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else if application.Status != entity.ApplicationStatusReceived || application.CurrentStageCode != nil ||
+		application.AssignedRecruiterPrincipalID != nil {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if application.ScreeningScore != nil ||
 		application.ScorecardVersion != nil || application.DispositionReasonCode != nil ||
 		application.DecisionAt != nil || application.DecisionByPrincipalID != nil ||
 		application.HiredWorkerID != nil {
@@ -68,7 +92,8 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 		return hrerrors.ErrWorkflowRequired
 	}
 	if candidate.NoticeAcknowledgedAt.After(application.AppliedAt) ||
-		entity.CompareDates(*candidate.DataRetentionUntil, application.AppliedAt) <= 0 {
+		entity.CompareDates(*candidate.DataRetentionUntil, application.AppliedAt) <= 0 ||
+		(screening && entity.CompareDates(*candidate.DataRetentionUntil, time.Now()) <= 0) {
 		return hrerrors.ErrWorkflowRequired
 	}
 	requisition, err := v.requisitions.FindByIDForUpdate(ctx, application.RequisitionID)
@@ -79,6 +104,7 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 		requisition.OpenedAt == nil || requisition.ApprovedByPrincipalID == nil ||
 		requisition.ApprovedAt.After(*requisition.OpenedAt) ||
 		requisition.OpenedAt.After(application.AppliedAt) ||
+		(screening && requisition.ClosedAt != nil) ||
 		(requisition.ClosedAt != nil && !application.AppliedAt.Before(*requisition.ClosedAt)) {
 		return hrerrors.ErrWorkflowRequired
 	}

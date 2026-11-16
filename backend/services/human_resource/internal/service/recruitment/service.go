@@ -31,6 +31,7 @@ type Service struct {
 	candidate               *operation.Resource[entity.Candidate, string, *entity.Candidate]
 	application             *operation.Resource[entity.Application, string, *entity.Application]
 	applicationStageHistory *operation.Resource[entity.ApplicationStageHistory, int64, *entity.ApplicationStageHistory]
+	stageHistoryWriter      domainrepo.RecordRepository[entity.ApplicationStageHistory, int64]
 	interview               *operation.Resource[entity.Interview, string, *entity.Interview]
 	interviewPanelist       *operation.Resource[entity.InterviewPanelist, string, *entity.InterviewPanelist]
 	interviewFeedback       *operation.Resource[entity.InterviewFeedback, string, *entity.InterviewFeedback]
@@ -79,6 +80,7 @@ func NewService(deps Dependencies) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	s.stageHistoryWriter = deps.ApplicationStageHistory
 	s.interview, err = operation.NewResource[entity.Interview, string, *entity.Interview](
 		deps.Interview,
 		deps.Runtime,

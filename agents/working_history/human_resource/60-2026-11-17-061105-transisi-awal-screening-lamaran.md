@@ -1,0 +1,3 @@
+# Transisi awal screening lamaran
+
+Membaca konteks HRM dan membatasi perubahan pada HRM. Menambah command/RPC `StartApplicationScreening`, permission sensitif `.start_screening`, validasi transisi `received` → `screening`, penetapan recruiter dari actor, riwayat tahap, dan outbox atomik. CRUD status tetap tertutup. Tes gRPC–PostgreSQL disposable membuktikan jalur sah, rollback saat kandidat ditarik, dan penolakan retry; race/vet/build serta Docker healthy lulus. Katalog aktif kini 328 kode tanpa grant IAM. Pembukaan requisition, tahap lanjut dan E2E IAM/Gateway masih diperlukan. Rincian ada pada audit HRM nomor 44.

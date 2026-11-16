@@ -75,6 +75,12 @@ func (h *Handler) UpdateApplication(ctx context.Context, r *pb.UpdateApplication
 func (h *Handler) DeleteApplication(ctx context.Context, r *common.IDRequest) (*common.EmptyResponse, error) {
 	return deleteRecord(ctx, r, h.service.DeleteApplication)
 }
+func (h *Handler) StartApplicationScreening(ctx context.Context, r *common.IDRequest) (*pb.ApplicationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return applicationResponse(h.service.StartApplicationScreening(ctx, r.Id))
+}
 func (h *Handler) GetApplicationByID(ctx context.Context, r *common.IDRequest) (*pb.ApplicationResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

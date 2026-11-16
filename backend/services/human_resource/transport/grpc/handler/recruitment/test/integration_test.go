@@ -224,13 +224,41 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("screening via CRUD: %v", err)
 	}
+	if err := database.WithContext(ctx).Table("hr_candidates").Where("id = ?", linkedCandidate.GetItem().GetId()).Update("candidate_status", "withdrawn").Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.StartApplicationScreening(ctx, &common.IDRequest{Id: applicationID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("screening of withdrawn candidate status = %v, want FailedPrecondition", status.Code(err))
+	}
+	var stageCount int64
+	if err := database.WithContext(ctx).Table("hr_application_stage_history").Where("application_id = ?", applicationID).Count(&stageCount).Error; err != nil || stageCount != 0 {
+		t.Fatalf("rejected screening left %d history rows: %v", stageCount, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_candidates").Where("id = ?", linkedCandidate.GetItem().GetId()).Update("candidate_status", "active").Error; err != nil {
+		t.Fatal(err)
+	}
+	screening, err := client.StartApplicationScreening(ctx, &common.IDRequest{Id: applicationID})
+	if err != nil || screening.GetItem().GetStatus() != "screening" ||
+		screening.GetItem().GetCurrentStageCode() != "screening" ||
+		screening.GetItem().GetAssignedRecruiterPrincipalId() != "00000000-0000-4000-8000-000000000001" {
+		t.Fatalf("start application screening: %+v, %v", screening, err)
+	}
+	history, err := client.FindApplicationStageHistoryByApplicationID(ctx, &common.StringFinderRequest{Value: &applicationID, Limit: 10})
+	if err != nil || len(history.GetItems()) != 1 || history.GetItems()[0].GetPreviousStatus() != "received" ||
+		history.GetItems()[0].GetNewStatus() != "screening" || history.GetItems()[0].GetStageCode() != "screening" ||
+		history.GetItems()[0].GetChangedByPrincipalId() != "00000000-0000-4000-8000-000000000001" {
+		t.Fatalf("application stage history: %+v, %v", history, err)
+	}
+	if _, err := client.StartApplicationScreening(ctx, &common.IDRequest{Id: applicationID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeated screening status = %v, want FailedPrecondition", status.Code(err))
+	}
 	if _, err := client.DeleteApplication(ctx, &common.IDRequest{Id: applicationID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete application without retention workflow: %v", err)
 	}
 	if _, err := client.DeleteCandidate(ctx, &common.IDRequest{Id: linkedCandidate.GetItem().GetId()}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete linked candidate: %v", err)
 	}
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", applicationID).Count(&outboxCount).Error; err != nil || outboxCount != 1 {
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", applicationID).Count(&outboxCount).Error; err != nil || outboxCount != 2 {
 		t.Fatalf("application outbox count = %d, err = %v", outboxCount, err)
 	}
 	interviewType, timezone := "screening", "Asia/Jakarta"
