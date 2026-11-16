@@ -130,6 +130,35 @@ Setiap sel tindakan adalah **kode permission tersendiri** dengan awalan `human_r
 
 `approve` untuk `payroll_runs` dan `career_paths`, `launch` untuk `performance_cycles`, `post` untuk `leave_entitlements`, dan `finalize` untuk `talent_assessments` tidak dapat diganti oleh izin `update`. Kebutuhan approval lain seperti offer, workforce plan, cuti, kalibrasi, dan promosi belum mempunyai RPC command khusus pada kontrak saat ini. Bila command tersebut dikembangkan, setiap tindakan bisnis harus mendapat permission tersendiri serta pemeriksaan state, pemisahan tugas, scope objek, dan recheck dekat commit. Jangan menafsirkan keberadaan kolom status atau `approved_by` sebagai izin untuk menyetujui lewat CRUD generik.
 
+### Kode tindakan workflow yang direncanakan
+
+Daftar ini menetapkan **nama permission yang akan dipakai ketika command-nya diimplementasikan**. Semua kode di bawah masih berstatus **rancangan**: tidak ada dalam `PermissionCatalog()` runtime, tidak boleh diprovisikan sebagai grant IAM, dan belum menambah jumlah 323 kode aktif. Setiap command memerlukan RPC tersendiri, validasi transisi status, mandat actor, pemeriksaan scope objek, audit, transaksi, outbox bila ada efek lintas modul, serta pengujian negatif sebelum diaktifkan. Nama `approve` berlaku untuk keputusan HRM atas objek HRM; keputusan grant akses tetap milik IAM dan pembayaran/jurnal tetap milik Finance.
+
+| Domain | Kode permission rancangan | Keputusan atau efek yang harus dijaga |
+| --- | --- | --- |
+| workforceplanning | `human_resource.workforce_plans.submit`, `human_resource.workforce_plans.approve`, `human_resource.workforce_plans.supersede`, `human_resource.workforce_plans.cancel` | Pengusul dan penyetuju terpisah; persetujuan memerlukan bukti anggaran Finance; versi lama tidak boleh ditimpa. |
+| personnel | `human_resource.workers.link_principal`, `human_resource.workers.activate`, `human_resource.workers.suspend`, `human_resource.workers.terminate` | Link principal IAM diverifikasi, satu principal satu worker aktif; status kerja dan event lifecycle berasal dari command; grant/revoke akses tetap IAM. |
+| personnel | `human_resource.worker_assignments.transfer` | Mutasi penempatan dan primary assignment atomik; validasi posisi, unit dan legal entity dari Foundation; perubahan akses hanya diajukan ke IAM. |
+| recruitment | `human_resource.requisitions.submit`, `human_resource.requisitions.approve`, `human_resource.requisitions.open`, `human_resource.requisitions.close` | Hiring manager, budget dan headcount diverifikasi; pembuat tidak menyetujui usulannya sendiri. |
+| recruitment | `human_resource.offers.approve`, `human_resource.offers.issue`, `human_resource.offers.withdraw` | Persetujuan kompensasi mendahului penerbitan; versi dan digest dokumen DRM terikat; respons kandidat tidak boleh diisi atas nama kandidat oleh staf HR. |
+| onboarding | `human_resource.onboarding_plans.start`, `human_resource.onboarding_plans.complete` | Worker dan tugas wajib konsisten; menyelesaikan onboarding tidak otomatis memberi role IAM. |
+| offboarding | `human_resource.offboarding_plans.start`, `human_resource.offboarding_plans.complete` | Clearance dan tanggal efektif diperiksa; penutupan hubungan kerja dan pencabutan akses memakai proses pemilik masing-masing. |
+| payroll | `human_resource.payroll_runs.calculate` | Snapshot sumber, periode, rule dan idempotensi terikat; kalkulator tidak bisa menyetujui hasilnya sendiri. |
+| leave | `human_resource.leave_adjustments.approve`, `human_resource.leave_adjustments.reject` | Penyetuju independen dari pengusul; persetujuan tidak langsung mengubah saldo tanpa posting ledger terotorisasi. |
+| performance | `human_resource.performance_goals.approve`, `human_resource.performance_reviews.submit`, `human_resource.performance_reviews.finalize`, `human_resource.performance_cycles.close` | Reviewer/manager dan worker terkait diverifikasi; evidence serta bobot disahkan; review final immutable dan siklus ditutup setelah semua kewajiban selesai. |
+| learning | `human_resource.learning_enrollments.complete` | Kehadiran, bukti dan hasil pelatihan diverifikasi; kompetensi tidak dinaikkan otomatis. |
+| succession | `human_resource.succession_plans.approve` | Mandat panel dan konflik kepentingan diperiksa; kandidat tidak memperoleh jabatan lewat persetujuan rencana. |
+| employeerelations | `human_resource.employee_relations_cases.resolve` | Pihak berwenang, retensi dan bukti penyelesaian diperiksa; narasi kasus tetap dibatasi. |
+| career | `human_resource.development_plans.approve` | Coach/manager dan worker terkait diperiksa; persetujuan rencana tidak mengubah posisi resmi. |
+| policy | `human_resource.policies.publish`, `human_resource.policy_acknowledgements.acknowledge` | Versi dokumen efektif dibekukan; acknowledgement hanya oleh worker bersangkutan. |
+| hrservice | `human_resource.service_requests.assign`, `human_resource.service_requests.resolve` | PIC dan scope kasus diverifikasi; penutupan mencatat keputusan serta actor. |
+| engagement | `human_resource.engagement_surveys.publish`, `human_resource.engagement_surveys.close` | Audiens dan anonimitas dijaga; hasil individual tidak dibuka oleh izin agregat. |
+| accessrequest | `human_resource.access_requests.submit`, `human_resource.access_requests.recommend` | HRM hanya mengajukan atau memberi rekomendasi; keputusan dan grant hanya di IAM. Tidak ada `human_resource.access_requests.approve`. |
+| talent | `human_resource.talent_review_cycles.launch`, `human_resource.talent_review_cycles.close`, `human_resource.talent_calibration_sessions.close` | Mandat panel, asesmen final, bukti rapat dan konflik kepentingan diperiksa; kalibrasi tidak menimpa skor awal. |
+| promotion | `human_resource.promotion_recommendations.submit`, `human_resource.promotion_recommendations.apply`, `human_resource.promotion_decisions.decide` | Penyetuju berbeda dari pengusul/worker; `apply` mengubah assignment serta event lifecycle secara atomik setelah semua tahap keputusan sah. |
+
+`decide` pada keputusan promosi mencakup hasil approve/reject/return sebagai nilai command yang tervalidasi; bila kebijakan kelak membutuhkan pemberian hak berbeda per hasil, pecah menjadi permission berbeda sebelum aktivasi.
+
 ## Arti tindakan dan pengecualian
 
 | Tindakan | Operasi aplikasi | Batas |
