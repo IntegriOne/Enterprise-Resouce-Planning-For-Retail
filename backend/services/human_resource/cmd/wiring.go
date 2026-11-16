@@ -89,6 +89,13 @@ func BuildDependencies(
 	for resource, validator := range compensationValidators {
 		validators[resource] = validator
 	}
+	payComponentValidators, err := security.PayComponentValidators(repos)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM pay component validators: %w", err))
+	}
+	for resource, validator := range payComponentValidators {
+		validators[resource] = validator
+	}
 	analyticsValidators, err := security.AnalyticsValidators(repos)
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM analytics validators: %w", err))
