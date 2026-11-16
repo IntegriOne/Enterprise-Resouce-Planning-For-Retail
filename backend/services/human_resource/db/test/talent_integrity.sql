@@ -68,8 +68,11 @@ VALUES (pg_temp.u(21),pg_temp.u(20),pg_temp.u(6),pg_temp.u(16),pg_temp.u(998),'2
 SELECT pg_temp.expect_error($q$UPDATE hr_talent_pool_memberships SET status='active' WHERE id=pg_temp.u(21)$q$,'23514','pool aktif tanpa approval');
 UPDATE hr_talent_pool_memberships SET status='active',approved_by_principal_id=pg_temp.u(999),approved_at=now() WHERE id=pg_temp.u(21);
 SELECT pg_temp.expect_error($q$INSERT INTO hr_talent_pool_memberships (id,talent_pool_id,worker_id,assessment_id,nominated_by_principal_id,valid_from,status,approved_by_principal_id,approved_at) VALUES (pg_temp.u(22),pg_temp.u(20),pg_temp.u(6),pg_temp.u(16),pg_temp.u(998),'2026-12-01','active',pg_temp.u(999),now())$q$,'23P01','keanggotaan pool aktif bertumpuk');
-INSERT INTO hr_career_paths (id,path_code,path_version,path_name,job_family_id,valid_from,approved_by_principal_id,approved_at)
-VALUES (pg_temp.u(23),'STORE',1,'Karier toko',pg_temp.u(1),'2026-01-01',pg_temp.u(999),now());
+INSERT INTO hr_career_paths (id,path_code,path_version,path_name,job_family_id,valid_from,created_by_principal_id)
+VALUES (pg_temp.u(23),'STORE',1,'Karier toko',pg_temp.u(1),'2026-01-01',pg_temp.u(998));
+SELECT pg_temp.expect_error($q$UPDATE hr_career_paths SET status='approved' WHERE id=pg_temp.u(23)$q$,'23514','jalur karier tanpa approval');
+SELECT pg_temp.expect_error($q$UPDATE hr_career_paths SET status='approved',approved_by_principal_id=pg_temp.u(998),approved_at=now() WHERE id=pg_temp.u(23)$q$,'23514','pembuat tidak menyetujui jalur sendiri');
+UPDATE hr_career_paths SET status='approved',approved_by_principal_id=pg_temp.u(999),approved_at=now() WHERE id=pg_temp.u(23);
 INSERT INTO hr_career_path_transitions (id,career_path_id,from_job_id,to_job_id,movement_type,requirements_document_version_reference_id,requirements_digest)
 VALUES (pg_temp.u(24),pg_temp.u(23),pg_temp.u(2),pg_temp.u(3),'promotion',pg_temp.u(915),'\x06');
 SELECT pg_temp.expect_error($q$UPDATE hr_career_path_transitions SET to_job_id=from_job_id WHERE id=pg_temp.u(24)$q$,'23514','jalur karier menunjuk jabatan yang sama');

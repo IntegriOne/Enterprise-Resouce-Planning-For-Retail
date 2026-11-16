@@ -13,11 +13,11 @@ import (
 // WorkforcePlanningValidators memasang pemeriksaan awal dua resource katalog HRM.
 func WorkforcePlanningValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
 	if repos == nil || repos.JobFamily == nil || repos.Job == nil || repos.Position == nil || repos.JobCompetency == nil ||
-		repos.DevelopmentPlan == nil || repos.WorkerCareerAspiration == nil || repos.CareerPathTransition == nil {
+		repos.DevelopmentPlan == nil || repos.WorkerCareerAspiration == nil || repos.CareerPathTransition == nil || repos.CareerPath == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
-		"hr_job_families": &jobFamilyValidator{families: repos.JobFamily, jobs: repos.Job},
+		"hr_job_families": &jobFamilyValidator{families: repos.JobFamily, jobs: repos.Job, paths: repos.CareerPath},
 		"hr_jobs": &jobValidator{
 			families: repos.JobFamily, jobs: repos.Job, positions: repos.Position,
 			requirements: repos.JobCompetency, developmentPlans: repos.DevelopmentPlan,
@@ -43,10 +43,11 @@ type positionCounter interface {
 type jobFamilyValidator struct {
 	families jobFamilyReader
 	jobs     jobReader
+	paths    positionCounter
 }
 
 func (v *jobFamilyValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
-	if v == nil || v.families == nil || v.jobs == nil || table != "hr_job_families" {
+	if v == nil || v.families == nil || v.jobs == nil || v.paths == nil || table != "hr_job_families" {
 		return hrerrors.ErrUnavailable
 	}
 	if err := ctx.Err(); err != nil {
@@ -74,6 +75,7 @@ func (v *jobFamilyValidator) ValidateMutation(ctx context.Context, table string,
 			if count > 0 {
 				return hrerrors.ErrReferenceConflict
 			}
+			return v.checkCareerPaths(ctx, family.ID)
 		}
 		return nil
 	}
@@ -82,6 +84,17 @@ func (v *jobFamilyValidator) ValidateMutation(ctx context.Context, table string,
 		return hrerrors.ErrInvalidInput
 	}
 	count, err := v.jobs.CountWhere(ctx, []domainrepo.Filter{{Column: "job_family_id", Values: []any{family.ID}}})
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return hrerrors.ErrReferenceConflict
+	}
+	return v.checkCareerPaths(ctx, family.ID)
+}
+
+func (v *jobFamilyValidator) checkCareerPaths(ctx context.Context, familyID string) error {
+	count, err := v.paths.CountWhere(ctx, []domainrepo.Filter{{Column: "job_family_id", Values: []any{familyID}}})
 	if err != nil {
 		return err
 	}

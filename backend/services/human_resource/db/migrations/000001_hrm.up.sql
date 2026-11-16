@@ -1421,9 +1421,15 @@ CREATE TABLE "hr_career_paths" (
   "job_family_id" uuid NOT NULL,
   "valid_from" date NOT NULL,
   "valid_to" date,
-  "approved_by_principal_id" uuid NOT NULL,
-  "approved_at" timestamptz NOT NULL,
-  CONSTRAINT "ck_hr_career_path_dates" CHECK (path_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from))
+  "status" varchar(20) NOT NULL DEFAULT 'draft',
+  "created_by_principal_id" uuid NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "approved_by_principal_id" uuid,
+  "approved_at" timestamptz,
+  CONSTRAINT "ck_hr_career_path_dates" CHECK (path_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from)),
+  CONSTRAINT "ck_hr_career_path_status" CHECK (status IN ('draft','approved')),
+  CONSTRAINT "ck_hr_career_path_approval" CHECK ((status = 'draft' AND approved_by_principal_id IS NULL AND approved_at IS NULL) OR (status = 'approved' AND approved_by_principal_id IS NOT NULL AND approved_at IS NOT NULL)),
+  CONSTRAINT "ck_hr_career_path_separation" CHECK (approved_by_principal_id IS NULL OR approved_by_principal_id <> created_by_principal_id)
 );
 
 CREATE TABLE "hr_career_path_transitions" (

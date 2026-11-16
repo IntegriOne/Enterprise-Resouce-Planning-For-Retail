@@ -1785,10 +1785,18 @@ Table hr_career_paths {
   job_family_id uuid [not null]
   valid_from date [not null]
   valid_to date
-  approved_by_principal_id uuid [not null]
-  approved_at timestamptz [not null]
+  status varchar(20) [not null, default: 'draft']
+  created_by_principal_id uuid [not null]
+  created_at timestamptz [not null, default: `now()`]
+  approved_by_principal_id uuid
+  approved_at timestamptz
   indexes { (path_code, path_version) [unique] }
-  checks { `path_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_career_path_dates'] }
+  checks {
+    `path_version > 0 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_career_path_dates']
+    `status IN ('draft','approved')` [name: 'ck_hr_career_path_status']
+    `(status = 'draft' AND approved_by_principal_id IS NULL AND approved_at IS NULL) OR (status = 'approved' AND approved_by_principal_id IS NOT NULL AND approved_at IS NOT NULL)` [name: 'ck_hr_career_path_approval']
+    `approved_by_principal_id IS NULL OR approved_by_principal_id <> created_by_principal_id` [name: 'ck_hr_career_path_separation']
+  }
 }
 
 Table hr_career_path_transitions {

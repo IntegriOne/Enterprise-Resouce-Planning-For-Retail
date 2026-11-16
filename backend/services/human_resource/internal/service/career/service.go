@@ -312,6 +312,22 @@ func (s *Service) FindCareerPathByJobFamilyID(ctx context.Context, value string,
 	return s.careerPath.List(ctx, []domainrepo.Filter{{Column: "job_family_id", Values: []any{value}}}, limit, offset)
 }
 
+// FindCareerPathByStatus membaca jalur berdasarkan status dengan paginasi.
+func (s *Service) FindCareerPathByStatus(ctx context.Context, value string, limit, offset int) (operation.Page[entity.CareerPath], error) {
+	if s == nil {
+		return operation.Page[entity.CareerPath]{}, hrerrors.ErrUnavailable
+	}
+	return s.careerPath.List(ctx, []domainrepo.Filter{{Column: "status", Values: []any{value}}}, limit, offset)
+}
+
+// FindCareerPathByCreatedByPrincipalID membaca jalur berdasarkan pembuat dengan paginasi.
+func (s *Service) FindCareerPathByCreatedByPrincipalID(ctx context.Context, value string, limit, offset int) (operation.Page[entity.CareerPath], error) {
+	if s == nil {
+		return operation.Page[entity.CareerPath]{}, hrerrors.ErrUnavailable
+	}
+	return s.careerPath.List(ctx, []domainrepo.Filter{{Column: "created_by_principal_id", Values: []any{value}}}, limit, offset)
+}
+
 // FindCareerPathByApprovedByPrincipalID menjalankan operasi aplikasi dengan validasi dan scope server.
 func (s *Service) FindCareerPathByApprovedByPrincipalID(ctx context.Context, value string, limit, offset int) (operation.Page[entity.CareerPath], error) {
 	if s == nil {

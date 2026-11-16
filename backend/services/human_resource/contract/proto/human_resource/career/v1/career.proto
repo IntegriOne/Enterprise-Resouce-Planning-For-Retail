@@ -70,8 +70,11 @@ message CareerPath {
  string job_family_id = 5;
  google.protobuf.Timestamp valid_from = 6;
  google.protobuf.Timestamp valid_to = 7;
- string approved_by_principal_id = 8;
+ optional string approved_by_principal_id = 8;
  google.protobuf.Timestamp approved_at = 9;
+ string status = 10;
+ string created_by_principal_id = 11;
+ google.protobuf.Timestamp created_at = 12;
 }
 message CareerPathInput {
  optional string path_code = 1;
@@ -80,8 +83,8 @@ message CareerPathInput {
  optional string job_family_id = 4;
  google.protobuf.Timestamp valid_from = 5;
  google.protobuf.Timestamp valid_to = 6;
- optional string approved_by_principal_id = 7;
- google.protobuf.Timestamp approved_at = 8;
+ optional string approved_by_principal_id = 7 [deprecated = true];
+ google.protobuf.Timestamp approved_at = 8 [deprecated = true];
 }
 message CreateCareerPathRequest { CareerPathInput input = 1; }
 message UpdateCareerPathRequest { string id = 1; CareerPathInput input = 2; google.protobuf.FieldMask update_mask = 3; }
@@ -162,11 +165,14 @@ service CareerService {
  rpc FindDevelopmentActionByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentActionsResponse);
  rpc CreateCareerPath(CreateCareerPathRequest) returns (CareerPathResponse);
  rpc UpdateCareerPath(UpdateCareerPathRequest) returns (CareerPathResponse);
+ rpc ApproveCareerPath(human_resource.common.v1.IDRequest) returns (CareerPathResponse);
  rpc DeleteCareerPath(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
  rpc GetCareerPathByID(human_resource.common.v1.IDRequest) returns (CareerPathResponse);
  rpc GetAllCareerPaths(human_resource.common.v1.PageRequest) returns (CareerPathsResponse);
  rpc FindCareerPathByPathCode(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
  rpc FindCareerPathByJobFamilyID(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
+ rpc FindCareerPathByStatus(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
+ rpc FindCareerPathByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
  rpc FindCareerPathByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (CareerPathsResponse);
  rpc CreateCareerPathTransition(CreateCareerPathTransitionRequest) returns (CareerPathTransitionResponse);
  rpc UpdateCareerPathTransition(UpdateCareerPathTransitionRequest) returns (CareerPathTransitionResponse);

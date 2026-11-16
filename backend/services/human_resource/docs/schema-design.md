@@ -32,7 +32,7 @@ Pemetaan tabel berikut merupakan **keputusan desain untuk repositori ini**, buka
 
 Kelompok teknis terpisah: `hr_access_requests`, `hr_outbox_events`, `hr_inbox_events`. Ketiganya mencatat permintaan/receipt dan pengiriman, **bukan** divisi HR, sistem grant lokal, atau bukti integrasi sudah berjalan.
 
-Perluasan pertama: 45 → 69 tabel. Penyatuan Talent Management menambah 17 tabel sehingga total sekarang **86 tabel**, 9 enum, **130 FK internal**, **147 CHECK DBML** dan 12 TableGroup (11 bisnis + 1 integrasi). Baseline menambah lima exclusion constraint, 14 trigger dan delapan function. Matriks di atas diperlengkap oleh tabel pada dokumen Talent Management.
+Perluasan pertama: 45 → 69 tabel. Penyatuan Talent Management menambah 17 tabel sehingga total sekarang **86 tabel**, 9 enum, **130 FK internal**, **150 CHECK DBML** dan 12 TableGroup (11 bisnis + 1 integrasi). Baseline menambah lima exclusion constraint, 14 trigger dan delapan function. Matriks di atas diperlengkap oleh tabel pada dokumen Talent Management.
 
 ## Mengapa cakupan ini proporsional
 

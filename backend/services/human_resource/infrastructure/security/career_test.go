@@ -74,6 +74,49 @@ func (s *careerCompetencyStub) FindByIDForUpdate(context.Context, string) (*enti
 	return s.competency, nil
 }
 
+type careerPathCatalogStub struct{ rows []entity.CareerPath }
+
+func (s *careerPathCatalogStub) SelectWhere(_ context.Context, filters []domainrepo.Filter, _, _ int) ([]entity.CareerPath, error) {
+	if len(filters) != 2 || filters[0].Column != "path_code" || filters[1].Column != "path_version" {
+		return nil, hrerrors.ErrInvalidInput
+	}
+	return s.rows, nil
+}
+
+func TestCareerPathValidatorChecksVersionApprovalAndChildren(t *testing.T) {
+	t.Parallel()
+	now := time.Date(2026, 11, 16, 10, 0, 0, 0, time.UTC)
+	families := &familyReaderStub{family: &entity.JobFamily{IsActive: true}}
+	paths := &careerPathCatalogStub{}
+	transitions := &positionCounterStub{}
+	validator := &careerPathValidator{families: families, paths: paths, transitions: transitions}
+	path := &entity.CareerPath{ID: "path", PathCode: "STORE", PathVersion: 1,
+		PathName: "Store career", JobFamilyID: "family", ValidFrom: now, Status: "draft",
+		CreatedByPrincipalID: "creator", CreatedAt: now}
+	if err := validator.ValidateMutation(t.Context(), "hr_career_paths", nil, path); err != nil || !families.locked {
+		t.Fatalf("create draft career path: %v", err)
+	}
+	paths.rows = []entity.CareerPath{{ID: "other"}}
+	if err := validator.ValidateMutation(t.Context(), "hr_career_paths", nil, path); !errors.Is(err, hrerrors.ErrAlreadyExists) {
+		t.Fatalf("duplicate path version: %v", err)
+	}
+	paths.rows = nil
+	approved := *path
+	approver := "approver"
+	approved.Status, approved.ApprovedByPrincipalID, approved.ApprovedAt = "approved", &approver, &now
+	if err := validator.ValidateMutation(t.Context(), "hr_career_paths", path, &approved); err != nil {
+		t.Fatalf("approve draft career path: %v", err)
+	}
+	approved.PathName = "changed while approving"
+	if err := validator.ValidateMutation(t.Context(), "hr_career_paths", path, &approved); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("approve and edit path together: %v", err)
+	}
+	transitions.count = 1
+	if err := validator.ValidateMutation(t.Context(), "hr_career_paths", path, nil); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("delete path with transition: %v", err)
+	}
+}
+
 func TestDevelopmentPlanValidatorChecksPeopleJobVersionAndChildren(t *testing.T) {
 	t.Parallel()
 	order := []string{}

@@ -913,8 +913,11 @@ type CareerPath struct {
 	JobFamilyId           string                 `protobuf:"bytes,5,opt,name=job_family_id,json=jobFamilyId,proto3" json:"job_family_id,omitempty"`
 	ValidFrom             *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=valid_from,json=validFrom,proto3" json:"valid_from,omitempty"`
 	ValidTo               *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=valid_to,json=validTo,proto3" json:"valid_to,omitempty"`
-	ApprovedByPrincipalId string                 `protobuf:"bytes,8,opt,name=approved_by_principal_id,json=approvedByPrincipalId,proto3" json:"approved_by_principal_id,omitempty"`
+	ApprovedByPrincipalId *string                `protobuf:"bytes,8,opt,name=approved_by_principal_id,json=approvedByPrincipalId,proto3,oneof" json:"approved_by_principal_id,omitempty"`
 	ApprovedAt            *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
+	Status                string                 `protobuf:"bytes,10,opt,name=status,proto3" json:"status,omitempty"`
+	CreatedByPrincipalId  string                 `protobuf:"bytes,11,opt,name=created_by_principal_id,json=createdByPrincipalId,proto3" json:"created_by_principal_id,omitempty"`
+	CreatedAt             *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -999,8 +1002,8 @@ func (x *CareerPath) GetValidTo() *timestamppb.Timestamp {
 }
 
 func (x *CareerPath) GetApprovedByPrincipalId() string {
-	if x != nil {
-		return x.ApprovedByPrincipalId
+	if x != nil && x.ApprovedByPrincipalId != nil {
+		return *x.ApprovedByPrincipalId
 	}
 	return ""
 }
@@ -1012,18 +1015,41 @@ func (x *CareerPath) GetApprovedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *CareerPath) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *CareerPath) GetCreatedByPrincipalId() string {
+	if x != nil {
+		return x.CreatedByPrincipalId
+	}
+	return ""
+}
+
+func (x *CareerPath) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
 type CareerPathInput struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	PathCode              *string                `protobuf:"bytes,1,opt,name=path_code,json=pathCode,proto3,oneof" json:"path_code,omitempty"`
-	PathVersion           *int32                 `protobuf:"varint,2,opt,name=path_version,json=pathVersion,proto3,oneof" json:"path_version,omitempty"`
-	PathName              *string                `protobuf:"bytes,3,opt,name=path_name,json=pathName,proto3,oneof" json:"path_name,omitempty"`
-	JobFamilyId           *string                `protobuf:"bytes,4,opt,name=job_family_id,json=jobFamilyId,proto3,oneof" json:"job_family_id,omitempty"`
-	ValidFrom             *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=valid_from,json=validFrom,proto3" json:"valid_from,omitempty"`
-	ValidTo               *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=valid_to,json=validTo,proto3" json:"valid_to,omitempty"`
-	ApprovedByPrincipalId *string                `protobuf:"bytes,7,opt,name=approved_by_principal_id,json=approvedByPrincipalId,proto3,oneof" json:"approved_by_principal_id,omitempty"`
-	ApprovedAt            *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	PathCode    *string                `protobuf:"bytes,1,opt,name=path_code,json=pathCode,proto3,oneof" json:"path_code,omitempty"`
+	PathVersion *int32                 `protobuf:"varint,2,opt,name=path_version,json=pathVersion,proto3,oneof" json:"path_version,omitempty"`
+	PathName    *string                `protobuf:"bytes,3,opt,name=path_name,json=pathName,proto3,oneof" json:"path_name,omitempty"`
+	JobFamilyId *string                `protobuf:"bytes,4,opt,name=job_family_id,json=jobFamilyId,proto3,oneof" json:"job_family_id,omitempty"`
+	ValidFrom   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=valid_from,json=validFrom,proto3" json:"valid_from,omitempty"`
+	ValidTo     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=valid_to,json=validTo,proto3" json:"valid_to,omitempty"`
+	// Deprecated: Marked as deprecated in human_resource/career/v1/career.proto.
+	ApprovedByPrincipalId *string `protobuf:"bytes,7,opt,name=approved_by_principal_id,json=approvedByPrincipalId,proto3,oneof" json:"approved_by_principal_id,omitempty"`
+	// Deprecated: Marked as deprecated in human_resource/career/v1/career.proto.
+	ApprovedAt    *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CareerPathInput) Reset() {
@@ -1098,6 +1124,7 @@ func (x *CareerPathInput) GetValidTo() *timestamppb.Timestamp {
 	return nil
 }
 
+// Deprecated: Marked as deprecated in human_resource/career/v1/career.proto.
 func (x *CareerPathInput) GetApprovedByPrincipalId() string {
 	if x != nil && x.ApprovedByPrincipalId != nil {
 		return *x.ApprovedByPrincipalId
@@ -1105,6 +1132,7 @@ func (x *CareerPathInput) GetApprovedByPrincipalId() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in human_resource/career/v1/career.proto.
 func (x *CareerPathInput) GetApprovedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ApprovedAt
@@ -2241,7 +2269,7 @@ const file_human_resource_career_v1_career_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v2+.human_resource.career.v1.DevelopmentActionR\x05value\"\x97\x01\n" +
 	"\x1aDevelopmentActionsResponse\x12A\n" +
 	"\x05items\x18\x01 \x03(\v2+.human_resource.career.v1.DevelopmentActionR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\x85\x03\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xb1\x04\n" +
 	"\n" +
 	"CareerPath\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
@@ -2251,10 +2279,16 @@ const file_human_resource_career_v1_career_proto_rawDesc = "" +
 	"\rjob_family_id\x18\x05 \x01(\tR\vjobFamilyId\x129\n" +
 	"\n" +
 	"valid_from\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tvalidFrom\x125\n" +
-	"\bvalid_to\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\avalidTo\x127\n" +
-	"\x18approved_by_principal_id\x18\b \x01(\tR\x15approvedByPrincipalId\x12;\n" +
+	"\bvalid_to\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\avalidTo\x12<\n" +
+	"\x18approved_by_principal_id\x18\b \x01(\tH\x00R\x15approvedByPrincipalId\x88\x01\x01\x12;\n" +
 	"\vapproved_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"approvedAt\"\xef\x03\n" +
+	"approvedAt\x12\x16\n" +
+	"\x06status\x18\n" +
+	" \x01(\tR\x06status\x125\n" +
+	"\x17created_by_principal_id\x18\v \x01(\tR\x14createdByPrincipalId\x129\n" +
+	"\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\x1b\n" +
+	"\x19_approved_by_principal_id\"\xf7\x03\n" +
 	"\x0fCareerPathInput\x12 \n" +
 	"\tpath_code\x18\x01 \x01(\tH\x00R\bpathCode\x88\x01\x01\x12&\n" +
 	"\fpath_version\x18\x02 \x01(\x05H\x01R\vpathVersion\x88\x01\x01\x12 \n" +
@@ -2262,9 +2296,9 @@ const file_human_resource_career_v1_career_proto_rawDesc = "" +
 	"\rjob_family_id\x18\x04 \x01(\tH\x03R\vjobFamilyId\x88\x01\x01\x129\n" +
 	"\n" +
 	"valid_from\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tvalidFrom\x125\n" +
-	"\bvalid_to\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\avalidTo\x12<\n" +
-	"\x18approved_by_principal_id\x18\a \x01(\tH\x04R\x15approvedByPrincipalId\x88\x01\x01\x12;\n" +
-	"\vapproved_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"\bvalid_to\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\avalidTo\x12@\n" +
+	"\x18approved_by_principal_id\x18\a \x01(\tB\x02\x18\x01H\x04R\x15approvedByPrincipalId\x88\x01\x01\x12?\n" +
+	"\vapproved_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampB\x02\x18\x01R\n" +
 	"approvedAtB\f\n" +
 	"\n" +
 	"_path_codeB\x0f\n" +
@@ -2367,7 +2401,7 @@ const file_human_resource_career_v1_career_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v20.human_resource.career.v1.WorkerCareerAspirationR\x05value\"\xa1\x01\n" +
 	"\x1fWorkerCareerAspirationsResponse\x12F\n" +
 	"\x05items\x18\x01 \x03(\v20.human_resource.career.v1.WorkerCareerAspirationR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xbe4\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xa57\n" +
 	"\rCareerService\x12\x82\x01\n" +
 	"\x15CreateDevelopmentPlan\x126.human_resource.career.v1.CreateDevelopmentPlanRequest\x1a1.human_resource.career.v1.DevelopmentPlanResponse\x12\x82\x01\n" +
 	"\x15UpdateDevelopmentPlan\x126.human_resource.career.v1.UpdateDevelopmentPlanRequest\x1a1.human_resource.career.v1.DevelopmentPlanResponse\x12e\n" +
@@ -2392,12 +2426,15 @@ const file_human_resource_career_v1_career_proto_rawDesc = "" +
 	"!FindDevelopmentActionByActionType\x12-.human_resource.common.v1.StringFinderRequest\x1a4.human_resource.career.v1.DevelopmentActionsResponse\x12\xa0\x01\n" +
 	"9FindDevelopmentActionByEvidenceDocumentVersionReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a4.human_resource.career.v1.DevelopmentActionsResponse\x12s\n" +
 	"\x10CreateCareerPath\x121.human_resource.career.v1.CreateCareerPathRequest\x1a,.human_resource.career.v1.CareerPathResponse\x12s\n" +
-	"\x10UpdateCareerPath\x121.human_resource.career.v1.UpdateCareerPathRequest\x1a,.human_resource.career.v1.CareerPathResponse\x12`\n" +
+	"\x10UpdateCareerPath\x121.human_resource.career.v1.UpdateCareerPathRequest\x1a,.human_resource.career.v1.CareerPathResponse\x12f\n" +
+	"\x11ApproveCareerPath\x12#.human_resource.common.v1.IDRequest\x1a,.human_resource.career.v1.CareerPathResponse\x12`\n" +
 	"\x10DeleteCareerPath\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12f\n" +
 	"\x11GetCareerPathByID\x12#.human_resource.common.v1.IDRequest\x1a,.human_resource.career.v1.CareerPathResponse\x12i\n" +
 	"\x11GetAllCareerPaths\x12%.human_resource.common.v1.PageRequest\x1a-.human_resource.career.v1.CareerPathsResponse\x12x\n" +
 	"\x18FindCareerPathByPathCode\x12-.human_resource.common.v1.StringFinderRequest\x1a-.human_resource.career.v1.CareerPathsResponse\x12{\n" +
-	"\x1bFindCareerPathByJobFamilyID\x12-.human_resource.common.v1.StringFinderRequest\x1a-.human_resource.career.v1.CareerPathsResponse\x12\x85\x01\n" +
+	"\x1bFindCareerPathByJobFamilyID\x12-.human_resource.common.v1.StringFinderRequest\x1a-.human_resource.career.v1.CareerPathsResponse\x12v\n" +
+	"\x16FindCareerPathByStatus\x12-.human_resource.common.v1.StringFinderRequest\x1a-.human_resource.career.v1.CareerPathsResponse\x12\x84\x01\n" +
+	"$FindCareerPathByCreatedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a-.human_resource.career.v1.CareerPathsResponse\x12\x85\x01\n" +
 	"%FindCareerPathByApprovedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a-.human_resource.career.v1.CareerPathsResponse\x12\x91\x01\n" +
 	"\x1aCreateCareerPathTransition\x12;.human_resource.career.v1.CreateCareerPathTransitionRequest\x1a6.human_resource.career.v1.CareerPathTransitionResponse\x12\x91\x01\n" +
 	"\x1aUpdateCareerPathTransition\x12;.human_resource.career.v1.UpdateCareerPathTransitionRequest\x1a6.human_resource.career.v1.CareerPathTransitionResponse\x12j\n" +
@@ -2499,137 +2536,144 @@ var file_human_resource_career_v1_career_proto_depIdxs = []int32{
 	30,  // 22: human_resource.career.v1.CareerPath.valid_from:type_name -> google.protobuf.Timestamp
 	30,  // 23: human_resource.career.v1.CareerPath.valid_to:type_name -> google.protobuf.Timestamp
 	30,  // 24: human_resource.career.v1.CareerPath.approved_at:type_name -> google.protobuf.Timestamp
-	30,  // 25: human_resource.career.v1.CareerPathInput.valid_from:type_name -> google.protobuf.Timestamp
-	30,  // 26: human_resource.career.v1.CareerPathInput.valid_to:type_name -> google.protobuf.Timestamp
-	30,  // 27: human_resource.career.v1.CareerPathInput.approved_at:type_name -> google.protobuf.Timestamp
-	13,  // 28: human_resource.career.v1.CreateCareerPathRequest.input:type_name -> human_resource.career.v1.CareerPathInput
-	13,  // 29: human_resource.career.v1.UpdateCareerPathRequest.input:type_name -> human_resource.career.v1.CareerPathInput
-	31,  // 30: human_resource.career.v1.UpdateCareerPathRequest.update_mask:type_name -> google.protobuf.FieldMask
-	12,  // 31: human_resource.career.v1.CareerPathResponse.value:type_name -> human_resource.career.v1.CareerPath
-	12,  // 32: human_resource.career.v1.CareerPathsResponse.items:type_name -> human_resource.career.v1.CareerPath
-	32,  // 33: human_resource.career.v1.CareerPathsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	19,  // 34: human_resource.career.v1.CreateCareerPathTransitionRequest.input:type_name -> human_resource.career.v1.CareerPathTransitionInput
-	19,  // 35: human_resource.career.v1.UpdateCareerPathTransitionRequest.input:type_name -> human_resource.career.v1.CareerPathTransitionInput
-	31,  // 36: human_resource.career.v1.UpdateCareerPathTransitionRequest.update_mask:type_name -> google.protobuf.FieldMask
-	18,  // 37: human_resource.career.v1.CareerPathTransitionResponse.value:type_name -> human_resource.career.v1.CareerPathTransition
-	18,  // 38: human_resource.career.v1.CareerPathTransitionsResponse.items:type_name -> human_resource.career.v1.CareerPathTransition
-	32,  // 39: human_resource.career.v1.CareerPathTransitionsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	30,  // 40: human_resource.career.v1.WorkerCareerAspiration.recorded_at:type_name -> google.protobuf.Timestamp
-	30,  // 41: human_resource.career.v1.WorkerCareerAspiration.target_date:type_name -> google.protobuf.Timestamp
-	30,  // 42: human_resource.career.v1.WorkerCareerAspiration.withdrawn_at:type_name -> google.protobuf.Timestamp
-	30,  // 43: human_resource.career.v1.WorkerCareerAspirationInput.target_date:type_name -> google.protobuf.Timestamp
-	30,  // 44: human_resource.career.v1.WorkerCareerAspirationInput.withdrawn_at:type_name -> google.protobuf.Timestamp
-	25,  // 45: human_resource.career.v1.CreateWorkerCareerAspirationRequest.input:type_name -> human_resource.career.v1.WorkerCareerAspirationInput
-	25,  // 46: human_resource.career.v1.UpdateWorkerCareerAspirationRequest.input:type_name -> human_resource.career.v1.WorkerCareerAspirationInput
-	31,  // 47: human_resource.career.v1.UpdateWorkerCareerAspirationRequest.update_mask:type_name -> google.protobuf.FieldMask
-	24,  // 48: human_resource.career.v1.WorkerCareerAspirationResponse.value:type_name -> human_resource.career.v1.WorkerCareerAspiration
-	24,  // 49: human_resource.career.v1.WorkerCareerAspirationsResponse.items:type_name -> human_resource.career.v1.WorkerCareerAspiration
-	32,  // 50: human_resource.career.v1.WorkerCareerAspirationsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	2,   // 51: human_resource.career.v1.CareerService.CreateDevelopmentPlan:input_type -> human_resource.career.v1.CreateDevelopmentPlanRequest
-	3,   // 52: human_resource.career.v1.CareerService.UpdateDevelopmentPlan:input_type -> human_resource.career.v1.UpdateDevelopmentPlanRequest
-	33,  // 53: human_resource.career.v1.CareerService.DeleteDevelopmentPlan:input_type -> human_resource.common.v1.IDRequest
-	33,  // 54: human_resource.career.v1.CareerService.GetDevelopmentPlanByID:input_type -> human_resource.common.v1.IDRequest
-	34,  // 55: human_resource.career.v1.CareerService.GetAllDevelopmentPlans:input_type -> human_resource.common.v1.PageRequest
-	35,  // 56: human_resource.career.v1.CareerService.FindDevelopmentPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 57: human_resource.career.v1.CareerService.FindDevelopmentPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 58: human_resource.career.v1.CareerService.FindDevelopmentPlanByTargetJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 59: human_resource.career.v1.CareerService.FindDevelopmentPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 60: human_resource.career.v1.CareerService.FindDevelopmentPlanByMentorWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 61: human_resource.career.v1.CareerService.FindDevelopmentPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,   // 62: human_resource.career.v1.CareerService.CreateDevelopmentAction:input_type -> human_resource.career.v1.CreateDevelopmentActionRequest
-	9,   // 63: human_resource.career.v1.CareerService.UpdateDevelopmentAction:input_type -> human_resource.career.v1.UpdateDevelopmentActionRequest
-	33,  // 64: human_resource.career.v1.CareerService.DeleteDevelopmentAction:input_type -> human_resource.common.v1.IDRequest
-	33,  // 65: human_resource.career.v1.CareerService.GetDevelopmentActionByID:input_type -> human_resource.common.v1.IDRequest
-	34,  // 66: human_resource.career.v1.CareerService.GetAllDevelopmentActions:input_type -> human_resource.common.v1.PageRequest
-	35,  // 67: human_resource.career.v1.CareerService.FindDevelopmentActionByDevelopmentPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 68: human_resource.career.v1.CareerService.FindDevelopmentActionByActionNumber:input_type -> human_resource.common.v1.Int32FinderRequest
-	35,  // 69: human_resource.career.v1.CareerService.FindDevelopmentActionByCompetencyID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 70: human_resource.career.v1.CareerService.FindDevelopmentActionByCourseID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 71: human_resource.career.v1.CareerService.FindDevelopmentActionByActionType:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 72: human_resource.career.v1.CareerService.FindDevelopmentActionByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	14,  // 73: human_resource.career.v1.CareerService.CreateCareerPath:input_type -> human_resource.career.v1.CreateCareerPathRequest
-	15,  // 74: human_resource.career.v1.CareerService.UpdateCareerPath:input_type -> human_resource.career.v1.UpdateCareerPathRequest
-	33,  // 75: human_resource.career.v1.CareerService.DeleteCareerPath:input_type -> human_resource.common.v1.IDRequest
-	33,  // 76: human_resource.career.v1.CareerService.GetCareerPathByID:input_type -> human_resource.common.v1.IDRequest
-	34,  // 77: human_resource.career.v1.CareerService.GetAllCareerPaths:input_type -> human_resource.common.v1.PageRequest
-	35,  // 78: human_resource.career.v1.CareerService.FindCareerPathByPathCode:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 79: human_resource.career.v1.CareerService.FindCareerPathByJobFamilyID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 80: human_resource.career.v1.CareerService.FindCareerPathByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	20,  // 81: human_resource.career.v1.CareerService.CreateCareerPathTransition:input_type -> human_resource.career.v1.CreateCareerPathTransitionRequest
-	21,  // 82: human_resource.career.v1.CareerService.UpdateCareerPathTransition:input_type -> human_resource.career.v1.UpdateCareerPathTransitionRequest
-	33,  // 83: human_resource.career.v1.CareerService.DeleteCareerPathTransition:input_type -> human_resource.common.v1.IDRequest
-	33,  // 84: human_resource.career.v1.CareerService.GetCareerPathTransitionByID:input_type -> human_resource.common.v1.IDRequest
-	34,  // 85: human_resource.career.v1.CareerService.GetAllCareerPathTransitions:input_type -> human_resource.common.v1.PageRequest
-	35,  // 86: human_resource.career.v1.CareerService.FindCareerPathTransitionByCareerPathID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 87: human_resource.career.v1.CareerService.FindCareerPathTransitionByFromJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 88: human_resource.career.v1.CareerService.FindCareerPathTransitionByToJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 89: human_resource.career.v1.CareerService.FindCareerPathTransitionByMovementType:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 90: human_resource.career.v1.CareerService.FindCareerPathTransitionByRequirementsDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	26,  // 91: human_resource.career.v1.CareerService.CreateWorkerCareerAspiration:input_type -> human_resource.career.v1.CreateWorkerCareerAspirationRequest
-	27,  // 92: human_resource.career.v1.CareerService.UpdateWorkerCareerAspiration:input_type -> human_resource.career.v1.UpdateWorkerCareerAspirationRequest
-	33,  // 93: human_resource.career.v1.CareerService.DeleteWorkerCareerAspiration:input_type -> human_resource.common.v1.IDRequest
-	33,  // 94: human_resource.career.v1.CareerService.GetWorkerCareerAspirationByID:input_type -> human_resource.common.v1.IDRequest
-	34,  // 95: human_resource.career.v1.CareerService.GetAllWorkerCareerAspirations:input_type -> human_resource.common.v1.PageRequest
-	35,  // 96: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 97: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByTargetJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 98: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByCareerPathTransitionID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 99: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByRecordedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	35,  // 100: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByPreferredLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,   // 101: human_resource.career.v1.CareerService.CreateDevelopmentPlan:output_type -> human_resource.career.v1.DevelopmentPlanResponse
-	4,   // 102: human_resource.career.v1.CareerService.UpdateDevelopmentPlan:output_type -> human_resource.career.v1.DevelopmentPlanResponse
-	37,  // 103: human_resource.career.v1.CareerService.DeleteDevelopmentPlan:output_type -> human_resource.common.v1.EmptyResponse
-	4,   // 104: human_resource.career.v1.CareerService.GetDevelopmentPlanByID:output_type -> human_resource.career.v1.DevelopmentPlanResponse
-	5,   // 105: human_resource.career.v1.CareerService.GetAllDevelopmentPlans:output_type -> human_resource.career.v1.DevelopmentPlansResponse
-	5,   // 106: human_resource.career.v1.CareerService.FindDevelopmentPlanByWorkerID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
-	5,   // 107: human_resource.career.v1.CareerService.FindDevelopmentPlanByPlanCode:output_type -> human_resource.career.v1.DevelopmentPlansResponse
-	5,   // 108: human_resource.career.v1.CareerService.FindDevelopmentPlanByTargetJobID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
-	5,   // 109: human_resource.career.v1.CareerService.FindDevelopmentPlanByStatus:output_type -> human_resource.career.v1.DevelopmentPlansResponse
-	5,   // 110: human_resource.career.v1.CareerService.FindDevelopmentPlanByMentorWorkerID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
-	5,   // 111: human_resource.career.v1.CareerService.FindDevelopmentPlanByApprovedByPrincipalID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
-	10,  // 112: human_resource.career.v1.CareerService.CreateDevelopmentAction:output_type -> human_resource.career.v1.DevelopmentActionResponse
-	10,  // 113: human_resource.career.v1.CareerService.UpdateDevelopmentAction:output_type -> human_resource.career.v1.DevelopmentActionResponse
-	37,  // 114: human_resource.career.v1.CareerService.DeleteDevelopmentAction:output_type -> human_resource.common.v1.EmptyResponse
-	10,  // 115: human_resource.career.v1.CareerService.GetDevelopmentActionByID:output_type -> human_resource.career.v1.DevelopmentActionResponse
-	11,  // 116: human_resource.career.v1.CareerService.GetAllDevelopmentActions:output_type -> human_resource.career.v1.DevelopmentActionsResponse
-	11,  // 117: human_resource.career.v1.CareerService.FindDevelopmentActionByDevelopmentPlanID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
-	11,  // 118: human_resource.career.v1.CareerService.FindDevelopmentActionByActionNumber:output_type -> human_resource.career.v1.DevelopmentActionsResponse
-	11,  // 119: human_resource.career.v1.CareerService.FindDevelopmentActionByCompetencyID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
-	11,  // 120: human_resource.career.v1.CareerService.FindDevelopmentActionByCourseID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
-	11,  // 121: human_resource.career.v1.CareerService.FindDevelopmentActionByActionType:output_type -> human_resource.career.v1.DevelopmentActionsResponse
-	11,  // 122: human_resource.career.v1.CareerService.FindDevelopmentActionByEvidenceDocumentVersionReferenceID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
-	16,  // 123: human_resource.career.v1.CareerService.CreateCareerPath:output_type -> human_resource.career.v1.CareerPathResponse
-	16,  // 124: human_resource.career.v1.CareerService.UpdateCareerPath:output_type -> human_resource.career.v1.CareerPathResponse
-	37,  // 125: human_resource.career.v1.CareerService.DeleteCareerPath:output_type -> human_resource.common.v1.EmptyResponse
-	16,  // 126: human_resource.career.v1.CareerService.GetCareerPathByID:output_type -> human_resource.career.v1.CareerPathResponse
-	17,  // 127: human_resource.career.v1.CareerService.GetAllCareerPaths:output_type -> human_resource.career.v1.CareerPathsResponse
-	17,  // 128: human_resource.career.v1.CareerService.FindCareerPathByPathCode:output_type -> human_resource.career.v1.CareerPathsResponse
-	17,  // 129: human_resource.career.v1.CareerService.FindCareerPathByJobFamilyID:output_type -> human_resource.career.v1.CareerPathsResponse
-	17,  // 130: human_resource.career.v1.CareerService.FindCareerPathByApprovedByPrincipalID:output_type -> human_resource.career.v1.CareerPathsResponse
-	22,  // 131: human_resource.career.v1.CareerService.CreateCareerPathTransition:output_type -> human_resource.career.v1.CareerPathTransitionResponse
-	22,  // 132: human_resource.career.v1.CareerService.UpdateCareerPathTransition:output_type -> human_resource.career.v1.CareerPathTransitionResponse
-	37,  // 133: human_resource.career.v1.CareerService.DeleteCareerPathTransition:output_type -> human_resource.common.v1.EmptyResponse
-	22,  // 134: human_resource.career.v1.CareerService.GetCareerPathTransitionByID:output_type -> human_resource.career.v1.CareerPathTransitionResponse
-	23,  // 135: human_resource.career.v1.CareerService.GetAllCareerPathTransitions:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
-	23,  // 136: human_resource.career.v1.CareerService.FindCareerPathTransitionByCareerPathID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
-	23,  // 137: human_resource.career.v1.CareerService.FindCareerPathTransitionByFromJobID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
-	23,  // 138: human_resource.career.v1.CareerService.FindCareerPathTransitionByToJobID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
-	23,  // 139: human_resource.career.v1.CareerService.FindCareerPathTransitionByMovementType:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
-	23,  // 140: human_resource.career.v1.CareerService.FindCareerPathTransitionByRequirementsDocumentVersionReferenceID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
-	28,  // 141: human_resource.career.v1.CareerService.CreateWorkerCareerAspiration:output_type -> human_resource.career.v1.WorkerCareerAspirationResponse
-	28,  // 142: human_resource.career.v1.CareerService.UpdateWorkerCareerAspiration:output_type -> human_resource.career.v1.WorkerCareerAspirationResponse
-	37,  // 143: human_resource.career.v1.CareerService.DeleteWorkerCareerAspiration:output_type -> human_resource.common.v1.EmptyResponse
-	28,  // 144: human_resource.career.v1.CareerService.GetWorkerCareerAspirationByID:output_type -> human_resource.career.v1.WorkerCareerAspirationResponse
-	29,  // 145: human_resource.career.v1.CareerService.GetAllWorkerCareerAspirations:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
-	29,  // 146: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByWorkerID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
-	29,  // 147: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByTargetJobID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
-	29,  // 148: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByCareerPathTransitionID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
-	29,  // 149: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByRecordedByPrincipalID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
-	29,  // 150: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByPreferredLocationReferenceID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
-	101, // [101:151] is the sub-list for method output_type
-	51,  // [51:101] is the sub-list for method input_type
-	51,  // [51:51] is the sub-list for extension type_name
-	51,  // [51:51] is the sub-list for extension extendee
-	0,   // [0:51] is the sub-list for field type_name
+	30,  // 25: human_resource.career.v1.CareerPath.created_at:type_name -> google.protobuf.Timestamp
+	30,  // 26: human_resource.career.v1.CareerPathInput.valid_from:type_name -> google.protobuf.Timestamp
+	30,  // 27: human_resource.career.v1.CareerPathInput.valid_to:type_name -> google.protobuf.Timestamp
+	30,  // 28: human_resource.career.v1.CareerPathInput.approved_at:type_name -> google.protobuf.Timestamp
+	13,  // 29: human_resource.career.v1.CreateCareerPathRequest.input:type_name -> human_resource.career.v1.CareerPathInput
+	13,  // 30: human_resource.career.v1.UpdateCareerPathRequest.input:type_name -> human_resource.career.v1.CareerPathInput
+	31,  // 31: human_resource.career.v1.UpdateCareerPathRequest.update_mask:type_name -> google.protobuf.FieldMask
+	12,  // 32: human_resource.career.v1.CareerPathResponse.value:type_name -> human_resource.career.v1.CareerPath
+	12,  // 33: human_resource.career.v1.CareerPathsResponse.items:type_name -> human_resource.career.v1.CareerPath
+	32,  // 34: human_resource.career.v1.CareerPathsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	19,  // 35: human_resource.career.v1.CreateCareerPathTransitionRequest.input:type_name -> human_resource.career.v1.CareerPathTransitionInput
+	19,  // 36: human_resource.career.v1.UpdateCareerPathTransitionRequest.input:type_name -> human_resource.career.v1.CareerPathTransitionInput
+	31,  // 37: human_resource.career.v1.UpdateCareerPathTransitionRequest.update_mask:type_name -> google.protobuf.FieldMask
+	18,  // 38: human_resource.career.v1.CareerPathTransitionResponse.value:type_name -> human_resource.career.v1.CareerPathTransition
+	18,  // 39: human_resource.career.v1.CareerPathTransitionsResponse.items:type_name -> human_resource.career.v1.CareerPathTransition
+	32,  // 40: human_resource.career.v1.CareerPathTransitionsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	30,  // 41: human_resource.career.v1.WorkerCareerAspiration.recorded_at:type_name -> google.protobuf.Timestamp
+	30,  // 42: human_resource.career.v1.WorkerCareerAspiration.target_date:type_name -> google.protobuf.Timestamp
+	30,  // 43: human_resource.career.v1.WorkerCareerAspiration.withdrawn_at:type_name -> google.protobuf.Timestamp
+	30,  // 44: human_resource.career.v1.WorkerCareerAspirationInput.target_date:type_name -> google.protobuf.Timestamp
+	30,  // 45: human_resource.career.v1.WorkerCareerAspirationInput.withdrawn_at:type_name -> google.protobuf.Timestamp
+	25,  // 46: human_resource.career.v1.CreateWorkerCareerAspirationRequest.input:type_name -> human_resource.career.v1.WorkerCareerAspirationInput
+	25,  // 47: human_resource.career.v1.UpdateWorkerCareerAspirationRequest.input:type_name -> human_resource.career.v1.WorkerCareerAspirationInput
+	31,  // 48: human_resource.career.v1.UpdateWorkerCareerAspirationRequest.update_mask:type_name -> google.protobuf.FieldMask
+	24,  // 49: human_resource.career.v1.WorkerCareerAspirationResponse.value:type_name -> human_resource.career.v1.WorkerCareerAspiration
+	24,  // 50: human_resource.career.v1.WorkerCareerAspirationsResponse.items:type_name -> human_resource.career.v1.WorkerCareerAspiration
+	32,  // 51: human_resource.career.v1.WorkerCareerAspirationsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	2,   // 52: human_resource.career.v1.CareerService.CreateDevelopmentPlan:input_type -> human_resource.career.v1.CreateDevelopmentPlanRequest
+	3,   // 53: human_resource.career.v1.CareerService.UpdateDevelopmentPlan:input_type -> human_resource.career.v1.UpdateDevelopmentPlanRequest
+	33,  // 54: human_resource.career.v1.CareerService.DeleteDevelopmentPlan:input_type -> human_resource.common.v1.IDRequest
+	33,  // 55: human_resource.career.v1.CareerService.GetDevelopmentPlanByID:input_type -> human_resource.common.v1.IDRequest
+	34,  // 56: human_resource.career.v1.CareerService.GetAllDevelopmentPlans:input_type -> human_resource.common.v1.PageRequest
+	35,  // 57: human_resource.career.v1.CareerService.FindDevelopmentPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 58: human_resource.career.v1.CareerService.FindDevelopmentPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 59: human_resource.career.v1.CareerService.FindDevelopmentPlanByTargetJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 60: human_resource.career.v1.CareerService.FindDevelopmentPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 61: human_resource.career.v1.CareerService.FindDevelopmentPlanByMentorWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 62: human_resource.career.v1.CareerService.FindDevelopmentPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	8,   // 63: human_resource.career.v1.CareerService.CreateDevelopmentAction:input_type -> human_resource.career.v1.CreateDevelopmentActionRequest
+	9,   // 64: human_resource.career.v1.CareerService.UpdateDevelopmentAction:input_type -> human_resource.career.v1.UpdateDevelopmentActionRequest
+	33,  // 65: human_resource.career.v1.CareerService.DeleteDevelopmentAction:input_type -> human_resource.common.v1.IDRequest
+	33,  // 66: human_resource.career.v1.CareerService.GetDevelopmentActionByID:input_type -> human_resource.common.v1.IDRequest
+	34,  // 67: human_resource.career.v1.CareerService.GetAllDevelopmentActions:input_type -> human_resource.common.v1.PageRequest
+	35,  // 68: human_resource.career.v1.CareerService.FindDevelopmentActionByDevelopmentPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 69: human_resource.career.v1.CareerService.FindDevelopmentActionByActionNumber:input_type -> human_resource.common.v1.Int32FinderRequest
+	35,  // 70: human_resource.career.v1.CareerService.FindDevelopmentActionByCompetencyID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 71: human_resource.career.v1.CareerService.FindDevelopmentActionByCourseID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 72: human_resource.career.v1.CareerService.FindDevelopmentActionByActionType:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 73: human_resource.career.v1.CareerService.FindDevelopmentActionByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	14,  // 74: human_resource.career.v1.CareerService.CreateCareerPath:input_type -> human_resource.career.v1.CreateCareerPathRequest
+	15,  // 75: human_resource.career.v1.CareerService.UpdateCareerPath:input_type -> human_resource.career.v1.UpdateCareerPathRequest
+	33,  // 76: human_resource.career.v1.CareerService.ApproveCareerPath:input_type -> human_resource.common.v1.IDRequest
+	33,  // 77: human_resource.career.v1.CareerService.DeleteCareerPath:input_type -> human_resource.common.v1.IDRequest
+	33,  // 78: human_resource.career.v1.CareerService.GetCareerPathByID:input_type -> human_resource.common.v1.IDRequest
+	34,  // 79: human_resource.career.v1.CareerService.GetAllCareerPaths:input_type -> human_resource.common.v1.PageRequest
+	35,  // 80: human_resource.career.v1.CareerService.FindCareerPathByPathCode:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 81: human_resource.career.v1.CareerService.FindCareerPathByJobFamilyID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 82: human_resource.career.v1.CareerService.FindCareerPathByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 83: human_resource.career.v1.CareerService.FindCareerPathByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 84: human_resource.career.v1.CareerService.FindCareerPathByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	20,  // 85: human_resource.career.v1.CareerService.CreateCareerPathTransition:input_type -> human_resource.career.v1.CreateCareerPathTransitionRequest
+	21,  // 86: human_resource.career.v1.CareerService.UpdateCareerPathTransition:input_type -> human_resource.career.v1.UpdateCareerPathTransitionRequest
+	33,  // 87: human_resource.career.v1.CareerService.DeleteCareerPathTransition:input_type -> human_resource.common.v1.IDRequest
+	33,  // 88: human_resource.career.v1.CareerService.GetCareerPathTransitionByID:input_type -> human_resource.common.v1.IDRequest
+	34,  // 89: human_resource.career.v1.CareerService.GetAllCareerPathTransitions:input_type -> human_resource.common.v1.PageRequest
+	35,  // 90: human_resource.career.v1.CareerService.FindCareerPathTransitionByCareerPathID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 91: human_resource.career.v1.CareerService.FindCareerPathTransitionByFromJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 92: human_resource.career.v1.CareerService.FindCareerPathTransitionByToJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 93: human_resource.career.v1.CareerService.FindCareerPathTransitionByMovementType:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 94: human_resource.career.v1.CareerService.FindCareerPathTransitionByRequirementsDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	26,  // 95: human_resource.career.v1.CareerService.CreateWorkerCareerAspiration:input_type -> human_resource.career.v1.CreateWorkerCareerAspirationRequest
+	27,  // 96: human_resource.career.v1.CareerService.UpdateWorkerCareerAspiration:input_type -> human_resource.career.v1.UpdateWorkerCareerAspirationRequest
+	33,  // 97: human_resource.career.v1.CareerService.DeleteWorkerCareerAspiration:input_type -> human_resource.common.v1.IDRequest
+	33,  // 98: human_resource.career.v1.CareerService.GetWorkerCareerAspirationByID:input_type -> human_resource.common.v1.IDRequest
+	34,  // 99: human_resource.career.v1.CareerService.GetAllWorkerCareerAspirations:input_type -> human_resource.common.v1.PageRequest
+	35,  // 100: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 101: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByTargetJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 102: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByCareerPathTransitionID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 103: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByRecordedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	35,  // 104: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByPreferredLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,   // 105: human_resource.career.v1.CareerService.CreateDevelopmentPlan:output_type -> human_resource.career.v1.DevelopmentPlanResponse
+	4,   // 106: human_resource.career.v1.CareerService.UpdateDevelopmentPlan:output_type -> human_resource.career.v1.DevelopmentPlanResponse
+	37,  // 107: human_resource.career.v1.CareerService.DeleteDevelopmentPlan:output_type -> human_resource.common.v1.EmptyResponse
+	4,   // 108: human_resource.career.v1.CareerService.GetDevelopmentPlanByID:output_type -> human_resource.career.v1.DevelopmentPlanResponse
+	5,   // 109: human_resource.career.v1.CareerService.GetAllDevelopmentPlans:output_type -> human_resource.career.v1.DevelopmentPlansResponse
+	5,   // 110: human_resource.career.v1.CareerService.FindDevelopmentPlanByWorkerID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
+	5,   // 111: human_resource.career.v1.CareerService.FindDevelopmentPlanByPlanCode:output_type -> human_resource.career.v1.DevelopmentPlansResponse
+	5,   // 112: human_resource.career.v1.CareerService.FindDevelopmentPlanByTargetJobID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
+	5,   // 113: human_resource.career.v1.CareerService.FindDevelopmentPlanByStatus:output_type -> human_resource.career.v1.DevelopmentPlansResponse
+	5,   // 114: human_resource.career.v1.CareerService.FindDevelopmentPlanByMentorWorkerID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
+	5,   // 115: human_resource.career.v1.CareerService.FindDevelopmentPlanByApprovedByPrincipalID:output_type -> human_resource.career.v1.DevelopmentPlansResponse
+	10,  // 116: human_resource.career.v1.CareerService.CreateDevelopmentAction:output_type -> human_resource.career.v1.DevelopmentActionResponse
+	10,  // 117: human_resource.career.v1.CareerService.UpdateDevelopmentAction:output_type -> human_resource.career.v1.DevelopmentActionResponse
+	37,  // 118: human_resource.career.v1.CareerService.DeleteDevelopmentAction:output_type -> human_resource.common.v1.EmptyResponse
+	10,  // 119: human_resource.career.v1.CareerService.GetDevelopmentActionByID:output_type -> human_resource.career.v1.DevelopmentActionResponse
+	11,  // 120: human_resource.career.v1.CareerService.GetAllDevelopmentActions:output_type -> human_resource.career.v1.DevelopmentActionsResponse
+	11,  // 121: human_resource.career.v1.CareerService.FindDevelopmentActionByDevelopmentPlanID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
+	11,  // 122: human_resource.career.v1.CareerService.FindDevelopmentActionByActionNumber:output_type -> human_resource.career.v1.DevelopmentActionsResponse
+	11,  // 123: human_resource.career.v1.CareerService.FindDevelopmentActionByCompetencyID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
+	11,  // 124: human_resource.career.v1.CareerService.FindDevelopmentActionByCourseID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
+	11,  // 125: human_resource.career.v1.CareerService.FindDevelopmentActionByActionType:output_type -> human_resource.career.v1.DevelopmentActionsResponse
+	11,  // 126: human_resource.career.v1.CareerService.FindDevelopmentActionByEvidenceDocumentVersionReferenceID:output_type -> human_resource.career.v1.DevelopmentActionsResponse
+	16,  // 127: human_resource.career.v1.CareerService.CreateCareerPath:output_type -> human_resource.career.v1.CareerPathResponse
+	16,  // 128: human_resource.career.v1.CareerService.UpdateCareerPath:output_type -> human_resource.career.v1.CareerPathResponse
+	16,  // 129: human_resource.career.v1.CareerService.ApproveCareerPath:output_type -> human_resource.career.v1.CareerPathResponse
+	37,  // 130: human_resource.career.v1.CareerService.DeleteCareerPath:output_type -> human_resource.common.v1.EmptyResponse
+	16,  // 131: human_resource.career.v1.CareerService.GetCareerPathByID:output_type -> human_resource.career.v1.CareerPathResponse
+	17,  // 132: human_resource.career.v1.CareerService.GetAllCareerPaths:output_type -> human_resource.career.v1.CareerPathsResponse
+	17,  // 133: human_resource.career.v1.CareerService.FindCareerPathByPathCode:output_type -> human_resource.career.v1.CareerPathsResponse
+	17,  // 134: human_resource.career.v1.CareerService.FindCareerPathByJobFamilyID:output_type -> human_resource.career.v1.CareerPathsResponse
+	17,  // 135: human_resource.career.v1.CareerService.FindCareerPathByStatus:output_type -> human_resource.career.v1.CareerPathsResponse
+	17,  // 136: human_resource.career.v1.CareerService.FindCareerPathByCreatedByPrincipalID:output_type -> human_resource.career.v1.CareerPathsResponse
+	17,  // 137: human_resource.career.v1.CareerService.FindCareerPathByApprovedByPrincipalID:output_type -> human_resource.career.v1.CareerPathsResponse
+	22,  // 138: human_resource.career.v1.CareerService.CreateCareerPathTransition:output_type -> human_resource.career.v1.CareerPathTransitionResponse
+	22,  // 139: human_resource.career.v1.CareerService.UpdateCareerPathTransition:output_type -> human_resource.career.v1.CareerPathTransitionResponse
+	37,  // 140: human_resource.career.v1.CareerService.DeleteCareerPathTransition:output_type -> human_resource.common.v1.EmptyResponse
+	22,  // 141: human_resource.career.v1.CareerService.GetCareerPathTransitionByID:output_type -> human_resource.career.v1.CareerPathTransitionResponse
+	23,  // 142: human_resource.career.v1.CareerService.GetAllCareerPathTransitions:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
+	23,  // 143: human_resource.career.v1.CareerService.FindCareerPathTransitionByCareerPathID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
+	23,  // 144: human_resource.career.v1.CareerService.FindCareerPathTransitionByFromJobID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
+	23,  // 145: human_resource.career.v1.CareerService.FindCareerPathTransitionByToJobID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
+	23,  // 146: human_resource.career.v1.CareerService.FindCareerPathTransitionByMovementType:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
+	23,  // 147: human_resource.career.v1.CareerService.FindCareerPathTransitionByRequirementsDocumentVersionReferenceID:output_type -> human_resource.career.v1.CareerPathTransitionsResponse
+	28,  // 148: human_resource.career.v1.CareerService.CreateWorkerCareerAspiration:output_type -> human_resource.career.v1.WorkerCareerAspirationResponse
+	28,  // 149: human_resource.career.v1.CareerService.UpdateWorkerCareerAspiration:output_type -> human_resource.career.v1.WorkerCareerAspirationResponse
+	37,  // 150: human_resource.career.v1.CareerService.DeleteWorkerCareerAspiration:output_type -> human_resource.common.v1.EmptyResponse
+	28,  // 151: human_resource.career.v1.CareerService.GetWorkerCareerAspirationByID:output_type -> human_resource.career.v1.WorkerCareerAspirationResponse
+	29,  // 152: human_resource.career.v1.CareerService.GetAllWorkerCareerAspirations:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
+	29,  // 153: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByWorkerID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
+	29,  // 154: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByTargetJobID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
+	29,  // 155: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByCareerPathTransitionID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
+	29,  // 156: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByRecordedByPrincipalID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
+	29,  // 157: human_resource.career.v1.CareerService.FindWorkerCareerAspirationByPreferredLocationReferenceID:output_type -> human_resource.career.v1.WorkerCareerAspirationsResponse
+	105, // [105:158] is the sub-list for method output_type
+	52,  // [52:105] is the sub-list for method input_type
+	52,  // [52:52] is the sub-list for extension type_name
+	52,  // [52:52] is the sub-list for extension extendee
+	0,   // [0:52] is the sub-list for field type_name
 }
 
 func init() { file_human_resource_career_v1_career_proto_init() }
@@ -2641,6 +2685,7 @@ func file_human_resource_career_v1_career_proto_init() {
 	file_human_resource_career_v1_career_proto_msgTypes[1].OneofWrappers = []any{}
 	file_human_resource_career_v1_career_proto_msgTypes[6].OneofWrappers = []any{}
 	file_human_resource_career_v1_career_proto_msgTypes[7].OneofWrappers = []any{}
+	file_human_resource_career_v1_career_proto_msgTypes[12].OneofWrappers = []any{}
 	file_human_resource_career_v1_career_proto_msgTypes[13].OneofWrappers = []any{}
 	file_human_resource_career_v1_career_proto_msgTypes[19].OneofWrappers = []any{}
 	file_human_resource_career_v1_career_proto_msgTypes[24].OneofWrappers = []any{}

@@ -2,6 +2,7 @@ package security
 
 import (
 	"context"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -48,6 +49,16 @@ type careerPathReader interface {
 	FindByIDForUpdate(context.Context, string) (*entity.CareerPath, error)
 }
 
+type careerPathCatalogReader interface {
+	SelectWhere(context.Context, []domainrepo.Filter, int, int) ([]entity.CareerPath, error)
+}
+
+type careerPathValidator struct {
+	families    jobFamilyReader
+	paths       careerPathCatalogReader
+	transitions positionCounter
+}
+
 type workerCareerAspirationValidator struct {
 	workers     lockedWorkerReader
 	jobs        lockedJobReader
@@ -60,7 +71,7 @@ func CareerValidators(repos *repository.Registry) (map[string]MutationValidator,
 	if repos == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	for _, dependency := range []any{repos.Worker, repos.Job, repos.DevelopmentPlan, repos.DevelopmentAction, repos.LearningCourse, repos.Competency, repos.CareerPathTransition, repos.CareerPath} {
+	for _, dependency := range []any{repos.Worker, repos.Job, repos.DevelopmentPlan, repos.DevelopmentAction, repos.LearningCourse, repos.Competency, repos.CareerPathTransition, repos.CareerPath, repos.JobFamily} {
 		if operation.RequireDependency(dependency) != nil {
 			return nil, hrerrors.ErrUnavailable
 		}
@@ -73,11 +84,89 @@ func CareerValidators(repos *repository.Registry) (map[string]MutationValidator,
 			plans: repos.DevelopmentPlan, courses: repos.LearningCourse,
 			competencies: repos.Competency, actions: repos.DevelopmentAction,
 		},
+		"hr_career_paths": &careerPathValidator{
+			families: repos.JobFamily, paths: repos.CareerPath, transitions: repos.CareerPathTransition,
+		},
 		"hr_worker_career_aspirations": &workerCareerAspirationValidator{
 			workers: repos.Worker, jobs: repos.Job,
 			transitions: repos.CareerPathTransition, paths: repos.CareerPath,
 		},
 	}, nil
+}
+
+// ValidateMutation menjaga versi unik dan perubahan status yang hanya sah melalui approval.
+func (v *careerPathValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
+	if v == nil || table != "hr_career_paths" || operation.RequireDependency(v.families) != nil ||
+		operation.RequireDependency(v.paths) != nil || operation.RequireDependency(v.transitions) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	var previous *entity.CareerPath
+	if before != nil {
+		var ok bool
+		previous, ok = before.(*entity.CareerPath)
+		if !ok || previous == nil {
+			return hrerrors.ErrInvalidInput
+		}
+	}
+	if after == nil {
+		if previous == nil || previous.Status != "draft" {
+			return hrerrors.ErrWorkflowRequired
+		}
+		count, err := v.transitions.CountWhere(ctx, []domainrepo.Filter{{Column: "career_path_id", Values: []any{previous.ID}}})
+		if err != nil {
+			return err
+		}
+		if count > 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+		return nil
+	}
+	path, ok := after.(*entity.CareerPath)
+	if !ok || path == nil {
+		return hrerrors.ErrInvalidInput
+	}
+	if previous == nil {
+		if path.Status != "draft" || path.ApprovedByPrincipalID != nil || path.ApprovedAt != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else {
+		if previous.ID != path.ID || previous.Status != "draft" ||
+			previous.CreatedByPrincipalID != path.CreatedByPrincipalID || !previous.CreatedAt.Equal(path.CreatedAt) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		if path.Status == "approved" {
+			if path.PathCode != previous.PathCode || path.PathVersion != previous.PathVersion ||
+				path.PathName != previous.PathName || path.JobFamilyID != previous.JobFamilyID ||
+				!path.ValidFrom.Equal(previous.ValidFrom) || !reflect.DeepEqual(path.ValidTo, previous.ValidTo) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if path.Status != "draft" || path.ApprovedByPrincipalID != nil || path.ApprovedAt != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+	}
+	family, err := v.families.FindByIDForUpdate(ctx, path.JobFamilyID)
+	if err != nil {
+		return err
+	}
+	if family == nil || !family.IsActive {
+		return hrerrors.ErrReferenceConflict
+	}
+	matches, err := v.paths.SelectWhere(ctx, []domainrepo.Filter{
+		{Column: "path_code", Values: []any{path.PathCode}},
+		{Column: "path_version", Values: []any{path.PathVersion}},
+	}, 2, 0)
+	if err != nil {
+		return err
+	}
+	for _, existing := range matches {
+		if existing.ID != path.ID {
+			return hrerrors.ErrAlreadyExists
+		}
+	}
+	return nil
 }
 
 // ValidateMutation menjaga pemilik aspirasi, job tujuan, dan transisi jalur yang disetujui.
@@ -161,7 +250,8 @@ func (v *workerCareerAspirationValidator) ValidateMutation(ctx context.Context, 
 	if err != nil {
 		return err
 	}
-	if path == nil || path.ApprovedByPrincipalID == "" || path.ApprovedAt.IsZero() || path.ApprovedAt.After(aspiration.RecordedAt) ||
+	if path == nil || path.Status != "approved" || path.ApprovedByPrincipalID == nil || path.ApprovedAt == nil ||
+		path.ApprovedAt.After(aspiration.RecordedAt) ||
 		entity.CompareDates(path.ValidFrom, aspiration.RecordedAt) > 0 ||
 		entity.CompareDates(path.ValidFrom, targetDate) > 0 ||
 		(path.ValidTo != nil && (entity.CompareDates(*path.ValidTo, aspiration.RecordedAt) < 0 ||

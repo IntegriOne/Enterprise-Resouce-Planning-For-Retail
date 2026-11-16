@@ -37,7 +37,7 @@ func PermissionCatalog() map[string]string {
 		"payroll_results":           true,
 		"worker_lifecycle_events":   true,
 	}
-	permissions := make(map[string]string, 84*5+3)
+	permissions := make(map[string]string, 84*5+4)
 	for _, resource := range resources {
 		operation := "hr_" + resource
 		code := "human_resource." + resource + ".read"
@@ -52,6 +52,7 @@ func PermissionCatalog() map[string]string {
 	}
 	permissions["hr_leave_entitlements.post_leave_entry"] = "human_resource.leave_entitlements.post"
 	permissions["hr_payroll_runs.approve"] = "human_resource.payroll_runs.approve"
+	permissions["hr_career_paths.approve"] = "human_resource.career_paths.approve"
 	permissions["hr_talent_assessments.finalize"] = "human_resource.talent_assessments.finalize"
 	return permissions
 }

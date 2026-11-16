@@ -158,14 +158,36 @@ func (x *CareerPath) Validate() error {
 			return hrerrors.Invalid("valid_to", "has invalid value")
 		}
 	}
-	if err := ValidateUUID("approved_by_principal_id", x.ApprovedByPrincipalID); err != nil {
-		return hrerrors.Invalid("approved_by_principal_id", "has invalid value")
+	if err := validateText("status", string(x.Status), true, 20, 0); err != nil {
+		return hrerrors.Invalid("status", "has invalid value")
 	}
-	if err := validateTime("approved_at", x.ApprovedAt); err != nil {
-		return hrerrors.Invalid("approved_at", "has invalid value")
+	if err := ValidateUUID("created_by_principal_id", x.CreatedByPrincipalID); err != nil {
+		return hrerrors.Invalid("created_by_principal_id", "has invalid value")
+	}
+	if err := validateTime("created_at", x.CreatedAt); err != nil {
+		return hrerrors.Invalid("created_at", "has invalid value")
+	}
+	if x.ApprovedByPrincipalID != nil {
+		if err := ValidateUUID("approved_by_principal_id", (*x.ApprovedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("approved_by_principal_id", "has invalid value")
+		}
+	}
+	if x.ApprovedAt != nil {
+		if err := validateTime("approved_at", (*x.ApprovedAt)); err != nil {
+			return hrerrors.Invalid("approved_at", "has invalid value")
+		}
 	}
 	if ruleAnd(ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.PathVersion)), ruleNumber("0"), ">")), ruleOr(ruleKnown(x.ValidTo == nil), rulePresent(x.ValidTo != nil, func() bool { return ruleCompareResult(CompareDates((*x.ValidTo), x.ValidFrom), ">=") }))) == ruleFalse {
 		return hrerrors.Invalid("hr_career_paths", "ck_hr_career_path_dates")
+	}
+	if ruleOr(ruleKnown(string(x.Status) == string("draft")), ruleKnown(string(x.Status) == string("approved"))) == ruleFalse {
+		return hrerrors.Invalid("hr_career_paths", "ck_hr_career_path_status")
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("draft")), ruleKnown(x.ApprovedByPrincipalID == nil)), ruleKnown(x.ApprovedAt == nil)), ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("approved")), ruleKnown(x.ApprovedByPrincipalID != nil)), ruleKnown(x.ApprovedAt != nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_career_paths", "ck_hr_career_path_approval")
+	}
+	if ruleOr(ruleKnown(x.ApprovedByPrincipalID == nil), rulePresent(x.ApprovedByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.ApprovedByPrincipalID), x.CreatedByPrincipalID) })) == ruleFalse {
+		return hrerrors.Invalid("hr_career_paths", "ck_hr_career_path_separation")
 	}
 	return nil
 }

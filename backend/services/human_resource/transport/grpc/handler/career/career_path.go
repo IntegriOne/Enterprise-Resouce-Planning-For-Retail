@@ -18,7 +18,8 @@ func careerPath(v *entity.CareerPath) *pb.CareerPath {
 	}
 	return &pb.CareerPath{Id: v.ID, PathCode: v.PathCode, PathVersion: v.PathVersion,
 		PathName: v.PathName, JobFamilyId: v.JobFamilyID, ValidFrom: timestamppb.New(v.ValidFrom), ValidTo: timestamp(v.ValidTo),
-		ApprovedByPrincipalId: v.ApprovedByPrincipalID, ApprovedAt: timestamppb.New(v.ApprovedAt)}
+		ApprovedByPrincipalId: v.ApprovedByPrincipalID, ApprovedAt: timestamp(v.ApprovedAt),
+		Status: v.Status, CreatedByPrincipalId: v.CreatedByPrincipalID, CreatedAt: timestamppb.New(v.CreatedAt)}
 }
 func pathResult(v *entity.CareerPath, err error) (*pb.CareerPathResponse, error) {
 	if err != nil {
@@ -41,6 +42,9 @@ func (s *server) CreateCareerPath(ctx context.Context, r *pb.CreateCareerPathReq
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	in := r.Input
+	if in.ApprovedByPrincipalId != nil || in.ApprovedAt != nil {
+		return nil, response.Error(hrerrors.ErrWorkflowRequired)
+	}
 	from, err := response.Timestamp(in.ValidFrom)
 	if err != nil {
 		return nil, response.Error(err)
@@ -49,19 +53,18 @@ func (s *server) CreateCareerPath(ctx context.Context, r *pb.CreateCareerPathReq
 	if err != nil {
 		return nil, response.Error(err)
 	}
-	approved, err := response.Timestamp(in.ApprovedAt)
-	if err != nil {
-		return nil, response.Error(err)
-	}
 	return pathResult(s.service.CreateCareerPath(ctx, service.CreateCareerPathInput{
 		PathCode: in.GetPathCode(), PathVersion: in.GetPathVersion(), PathName: in.GetPathName(), JobFamilyID: in.GetJobFamilyId(),
-		ValidFrom: from, ValidTo: to, ApprovedByPrincipalID: in.GetApprovedByPrincipalId(), ApprovedAt: approved}))
+		ValidFrom: from, ValidTo: to}))
 }
 func (s *server) UpdateCareerPath(ctx context.Context, r *pb.UpdateCareerPathRequest) (*pb.CareerPathResponse, error) {
 	if r == nil || r.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
-	f, err := response.ValidateMask(r.UpdateMask, "path_code", "path_version", "path_name", "job_family_id", "valid_from", "valid_to", "approved_by_principal_id", "approved_at")
+	if r.Input.ApprovedByPrincipalId != nil || r.Input.ApprovedAt != nil {
+		return nil, response.Error(hrerrors.ErrWorkflowRequired)
+	}
+	f, err := response.ValidateMask(r.UpdateMask, "path_code", "path_version", "path_name", "job_family_id", "valid_from", "valid_to")
 	if err != nil {
 		return nil, response.Error(err)
 	}
@@ -74,14 +77,17 @@ func (s *server) UpdateCareerPath(ctx context.Context, r *pb.UpdateCareerPathReq
 	if err != nil {
 		return nil, response.Error(err)
 	}
-	approved, err := timeField(f["approved_at"], in.ApprovedAt)
-	if err != nil {
-		return nil, response.Error(err)
-	}
 	return pathResult(s.service.UpdateCareerPath(ctx, r.Id, service.UpdateCareerPathInput{
 		PathCode: operation.Field[string]{Set: f["path_code"], Value: in.PathCode}, PathVersion: operation.Field[int32]{Set: f["path_version"], Value: in.PathVersion},
 		PathName: operation.Field[string]{Set: f["path_name"], Value: in.PathName}, JobFamilyID: operation.Field[string]{Set: f["job_family_id"], Value: in.JobFamilyId},
-		ValidFrom: from, ValidTo: to, ApprovedByPrincipalID: operation.Field[string]{Set: f["approved_by_principal_id"], Value: in.ApprovedByPrincipalId}, ApprovedAt: approved}))
+		ValidFrom: from, ValidTo: to}))
+}
+
+func (s *server) ApproveCareerPath(ctx context.Context, r *commonv1.IDRequest) (*pb.CareerPathResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return pathResult(s.service.ApproveCareerPath(ctx, r.Id))
 }
 func (s *server) DeleteCareerPath(ctx context.Context, r *commonv1.IDRequest) (*commonv1.EmptyResponse, error) {
 	if r == nil {
@@ -115,6 +121,18 @@ func (s *server) FindCareerPathByJobFamilyID(ctx context.Context, r *commonv1.St
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return paths(s.service.FindCareerPathByJobFamilyID(ctx, r.GetValue(), int(r.Limit), int(r.Offset)))
+}
+func (s *server) FindCareerPathByStatus(ctx context.Context, r *commonv1.StringFinderRequest) (*pb.CareerPathsResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return paths(s.service.FindCareerPathByStatus(ctx, r.GetValue(), int(r.Limit), int(r.Offset)))
+}
+func (s *server) FindCareerPathByCreatedByPrincipalID(ctx context.Context, r *commonv1.StringFinderRequest) (*pb.CareerPathsResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return paths(s.service.FindCareerPathByCreatedByPrincipalID(ctx, r.GetValue(), int(r.Limit), int(r.Offset)))
 }
 func (s *server) FindCareerPathByApprovedByPrincipalID(ctx context.Context, r *commonv1.StringFinderRequest) (*pb.CareerPathsResponse, error) {
 	if r == nil {

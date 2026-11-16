@@ -6,7 +6,7 @@ Lapisan persistensi mencakup **86 tabel** pada 22 domain bisnis serta inbox/outb
 
 - `domain/entity/`: model data bertipe, UUID `string`, nullable pointer, date/timestamp `time.Time`, JSON dan numeric presisi eksak. Tag GORM diperbolehkan pada domain data model oleh aturan repository proyek. Model ini tidak berisi keputusan bisnis.
 - `domain/repository/`: port tiap tabel dengan assertion implementasi saat kompilasi.
-- `repository/<domain>/`: struct dengan field `db *gorm.DB`, constructor `New<Entity>Repository`, implementasi CRUD langsung dan `FindBy<Field>` bertipe. Ada 503 finder kolom, di luar `FindByID`. Tidak memakai embedding repository generik atau pewarisan method CRUD.
+- `repository/<domain>/`: struct dengan field `db *gorm.DB`, constructor `New<Entity>Repository`, implementasi CRUD langsung dan `FindBy<Field>` bertipe. Ada 505 finder kolom, di luar `FindByID`; dua finder terbaru membaca status dan pembuat career path. Tidak memakai embedding repository generik atau pewarisan method CRUD.
 - `repository/pgstore/`: helper teknis untuk context transaksi, validasi key, normalisasi pagination, allowlist filter dan pemetaan error. Eksekusi `Create`, `First`, `Find`, `Count`, `Updates` dan `Delete` berada pada repository entity masing-masing.
 - `repository/registry.go`: `New(db)` membangun seluruh repository serta transactor memakai handle PostgreSQL yang sama.
 
@@ -48,7 +48,7 @@ store.LeavePolicy.GetAllLeavePolicies(ctx, 20, 0)
 
 `ByUUID` menunjuk kolom primary key `id` bertipe UUID, bukan kolom baru bernama `uuid`. Tiga tabel identity memakai `ByID` dengan parameter `int64`. Tabel hubungan kursus/kompetensi memakai `ByCourseIDAndCompetencyID` dengan kedua field pada `LearningCourseCompetencyKey`. Finder lain menyebut kolom nyata pada model dan mempertahankan tipe nullable/enum serta pagination. Nama objek mengikuti nama tabel tanpa awalan `hr_`, termasuk `ApplicationStageHistory` dan `InterviewFeedback` yang memang tidak berakhiran `s`.
 
-Method bernama objek tersedia pada interface `domain/repository` dan registry, bukan hanya tipe concrete. Tiap tabel memiliki operasi bernama objek untuk insert, update, find/delete berdasarkan key, row lock, get-all, count, select/count dengan filter; seluruh 503 finder kolom juga memiliki nama objek. Alias lama dipertahankan agar service yang sudah ada tetap berjalan. Satu operasi bernama plural tetap menulis **satu** record; nama tidak berarti bulk write. Seluruh caller tetap wajib memeriksa error.
+Method bernama objek tersedia pada interface `domain/repository` dan registry, bukan hanya tipe concrete. Tiap tabel memiliki operasi bernama objek untuk insert, update, find/delete berdasarkan key, row lock, get-all, count, select/count dengan filter; seluruh 505 finder kolom juga memiliki nama objek. Alias lama dipertahankan agar service yang sudah ada tetap berjalan. Satu operasi bernama plural tetap menulis **satu** record; nama tidak berarti bulk write. Seluruh caller tetap wajib memeriksa error.
 
 `key` umumnya UUID string; tiga tabel identity memakai `int64`. `LearningCourseCompetencyKey{CourseID, CompetencyID}` wajib membawa kedua bagian primary key. Tidak ada penghapusan atau update massal tanpa key.
 

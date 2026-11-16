@@ -48,7 +48,8 @@ func TestJobFamilyValidatorPreventsDuplicateAndReferencedDeactivation(t *testing
 	t.Parallel()
 	families := &familyReaderStub{matches: []entity.JobFamily{{ID: "other"}}}
 	jobs := &jobReaderStub{}
-	validator := &jobFamilyValidator{families: families, jobs: jobs}
+	paths := &positionCounterStub{}
+	validator := &jobFamilyValidator{families: families, jobs: jobs, paths: paths}
 	proposed := &entity.JobFamily{ID: "family", FamilyCode: "RETAIL", IsActive: true}
 	if err := validator.ValidateMutation(t.Context(), "hr_job_families", nil, proposed); !errors.Is(err, hrerrors.ErrAlreadyExists) {
 		t.Fatalf("duplicate family code: %v", err)
@@ -64,6 +65,11 @@ func TestJobFamilyValidatorPreventsDuplicateAndReferencedDeactivation(t *testing
 	}
 	if err := validator.ValidateMutation(t.Context(), "hr_job_families", proposed, nil); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("delete referenced family: %v", err)
+	}
+	jobs.count = 0
+	paths.count = 1
+	if err := validator.ValidateMutation(t.Context(), "hr_job_families", proposed, nil); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("delete family with career path: %v", err)
 	}
 }
 

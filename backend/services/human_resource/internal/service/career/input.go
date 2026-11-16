@@ -66,26 +66,22 @@ type UpdateDevelopmentActionInput struct {
 
 // CreateCareerPathInput adalah object input aplikasi, bukan entity ORM.
 type CreateCareerPathInput struct {
-	PathCode              string
-	PathVersion           int32
-	PathName              string
-	JobFamilyID           string
-	ValidFrom             time.Time
-	ValidTo               *time.Time
-	ApprovedByPrincipalID string
-	ApprovedAt            time.Time
+	PathCode    string
+	PathVersion int32
+	PathName    string
+	JobFamilyID string
+	ValidFrom   time.Time
+	ValidTo     *time.Time
 }
 
 // UpdateCareerPathInput membedakan field absen, null dan nilai eksplisit.
 type UpdateCareerPathInput struct {
-	PathCode              operation.Field[string]
-	PathVersion           operation.Field[int32]
-	PathName              operation.Field[string]
-	JobFamilyID           operation.Field[string]
-	ValidFrom             operation.Field[time.Time]
-	ValidTo               operation.Field[time.Time]
-	ApprovedByPrincipalID operation.Field[string]
-	ApprovedAt            operation.Field[time.Time]
+	PathCode    operation.Field[string]
+	PathVersion operation.Field[int32]
+	PathName    operation.Field[string]
+	JobFamilyID operation.Field[string]
+	ValidFrom   operation.Field[time.Time]
+	ValidTo     operation.Field[time.Time]
 }
 
 // CreateCareerPathTransitionInput adalah object input aplikasi, bukan entity ORM.

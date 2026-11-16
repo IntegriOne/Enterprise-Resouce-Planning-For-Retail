@@ -43,6 +43,7 @@ func TestWorkerCareerAspirationValidator(t *testing.T) {
 		CareerPathTransitionID: &transitionID, RecordedAt: now, RecordedByPrincipalID: "actor-id",
 	}
 	makeValidator := func() *workerCareerAspirationValidator {
+		approver, approvedAt := "approver-id", now.Add(-time.Hour)
 		return &workerCareerAspirationValidator{
 			workers: aspirationWorkerReader{value: &entity.Worker{Status: entity.WorkerStatusActive}},
 			jobs:    aspirationJobReader{value: &entity.Job{IsActive: true, ValidFrom: now.AddDate(-1, 0, 0)}},
@@ -50,7 +51,8 @@ func TestWorkerCareerAspirationValidator(t *testing.T) {
 				ToJobID: "job-id", CareerPathID: "path-id",
 			}},
 			paths: aspirationPathReader{value: &entity.CareerPath{
-				ApprovedByPrincipalID: "approver-id", ApprovedAt: now.Add(-time.Hour), ValidFrom: now.AddDate(-1, 0, 0),
+				Status: "approved", ApprovedByPrincipalID: &approver, ApprovedAt: &approvedAt,
+				ValidFrom: now.AddDate(-1, 0, 0),
 			}},
 		}
 	}

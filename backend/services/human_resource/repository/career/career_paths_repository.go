@@ -62,6 +62,12 @@ func (r *CareerPathRepository) FindCareerPathsByPathCode(ctx context.Context, va
 func (r *CareerPathRepository) FindCareerPathsByJobFamilyID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error) {
 	return r.FindByJobFamilyID(ctx, value, limit, offset)
 }
+func (r *CareerPathRepository) FindCareerPathsByStatus(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error) {
+	return r.FindByStatus(ctx, value, limit, offset)
+}
+func (r *CareerPathRepository) FindCareerPathsByCreatedByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error) {
+	return r.FindByCreatedByPrincipalID(ctx, value, limit, offset)
+}
 func (r *CareerPathRepository) FindCareerPathsByApprovedByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error) {
 	return r.FindByApprovedByPrincipalID(ctx, value, limit, offset)
 }
@@ -213,6 +219,16 @@ func (r *CareerPathRepository) FindByPathCode(ctx context.Context, value string,
 // FindByJobFamilyID mencari kecocokan job_family_id dengan paginasi dan urutan primary key.
 func (r *CareerPathRepository) FindByJobFamilyID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error) {
 	return r.SelectBy(ctx, "job_family_id", value, limit, offset)
+}
+
+// FindByStatus mencari status jalur karier dengan paginasi.
+func (r *CareerPathRepository) FindByStatus(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error) {
+	return r.SelectBy(ctx, "status", value, limit, offset)
+}
+
+// FindByCreatedByPrincipalID mencari pembuat jalur karier dengan paginasi.
+func (r *CareerPathRepository) FindByCreatedByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error) {
+	return r.SelectBy(ctx, "created_by_principal_id", value, limit, offset)
 }
 
 // FindByApprovedByPrincipalID mencari kecocokan approved_by_principal_id dengan paginasi dan urutan primary key.

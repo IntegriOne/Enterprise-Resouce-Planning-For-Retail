@@ -72,9 +72,13 @@ type CareerPathRepository interface {
 	CountCareerPathsWhere(context.Context, []Filter) (int64, error)
 	FindCareerPathsByPathCode(context.Context, string, int, int) ([]entity.CareerPath, error)
 	FindCareerPathsByJobFamilyID(context.Context, string, int, int) ([]entity.CareerPath, error)
+	FindCareerPathsByStatus(context.Context, string, int, int) ([]entity.CareerPath, error)
+	FindCareerPathsByCreatedByPrincipalID(context.Context, string, int, int) ([]entity.CareerPath, error)
 	FindCareerPathsByApprovedByPrincipalID(context.Context, string, int, int) ([]entity.CareerPath, error)
 	FindByPathCode(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error)
 	FindByJobFamilyID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error)
+	FindByStatus(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error)
+	FindByCreatedByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error)
 	FindByApprovedByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.CareerPath, error)
 }
 

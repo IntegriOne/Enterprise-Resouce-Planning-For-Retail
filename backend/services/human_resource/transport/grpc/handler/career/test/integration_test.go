@@ -31,11 +31,15 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-type integrationPolicy struct{}
+type integrationPolicy struct{ principalID string }
 
-func (*integrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
+func (p *integrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
+	principalID := p.principalID
+	if principalID == "" {
+		principalID = "00000000-0000-4000-8000-000000000001"
+	}
 	return operation.Actor{
-		PrincipalID: "00000000-0000-4000-8000-000000000001",
+		PrincipalID: principalID,
 		SessionID:   "00000000-0000-4000-8000-000000000002",
 		Kind:        "human",
 	}, nil
@@ -80,9 +84,10 @@ func TestDevelopmentPlanAndActionRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	policy := &integrationPolicy{}
 	runtime := operation.Dependencies{
 		Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-		Policy: &integrationPolicy{}, Integrity: security.NewIntegrity(validators),
+		Policy: policy, Integrity: security.NewIntegrity(validators),
 	}
 	svc, err := service.NewService(service.Dependencies{
 		Runtime: runtime, DevelopmentPlan: repos.DevelopmentPlan, DevelopmentAction: repos.DevelopmentAction,
@@ -135,7 +140,7 @@ func TestDevelopmentPlanAndActionRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var planID, actionID string
+	var planID, actionID, pathID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
@@ -144,6 +149,8 @@ func TestDevelopmentPlanAndActionRPCWithPostgreSQL(t *testing.T) {
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", actionID},
 			{"DELETE FROM hr_development_plans WHERE id = ?", planID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", planID},
+			{"DELETE FROM hr_career_paths WHERE id = ?", pathID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", pathID},
 			{"DELETE FROM hr_workers WHERE id = ?", workerID},
 			{"DELETE FROM hr_workers WHERE id = ?", mentorID},
 			{"DELETE FROM hr_jobs WHERE id = ?", jobID},
@@ -238,7 +245,58 @@ func TestDevelopmentPlanAndActionRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.DeleteDevelopmentPlan(ctx, &common.IDRequest{Id: planID}); err != nil {
 		t.Fatalf("delete empty draft development plan: %v", err)
 	}
-	for _, aggregate := range []struct{ id string; want int64 }{{planID, 3}, {actionID, 3}} {
+	pathCode, pathName := "career-"+familyID, "Store career"
+	pathVersion := int32(1)
+	pathInput := &pb.CareerPathInput{PathCode: &pathCode, PathVersion: &pathVersion,
+		PathName: &pathName, JobFamilyId: &familyID, ValidFrom: start}
+	path, err := client.CreateCareerPath(ctx, &pb.CreateCareerPathRequest{Input: pathInput})
+	if err != nil || path.GetValue().GetStatus() != "draft" || path.GetValue().GetApprovedByPrincipalId() != "" {
+		t.Fatalf("create career path draft: %v", err)
+	}
+	pathID = path.GetValue().GetId()
+	draftStatus := "draft"
+	drafts, err := client.FindCareerPathByStatus(ctx, &common.StringFinderRequest{Value: &draftStatus, Limit: 1})
+	if err != nil || len(drafts.GetItems()) != 1 || drafts.GetPage().GetTotal() != 1 {
+		t.Fatalf("find career path draft with pagination: %v", err)
+	}
+	creatorID := "00000000-0000-4000-8000-000000000001"
+	createdBy, err := client.FindCareerPathByCreatedByPrincipalID(ctx, &common.StringFinderRequest{Value: &creatorID, Limit: 1})
+	if err != nil || len(createdBy.GetItems()) != 1 || createdBy.GetItems()[0].GetId() != pathID {
+		t.Fatalf("find career path creator: %v", err)
+	}
+	if _, err := client.CreateCareerPath(ctx, &pb.CreateCareerPathRequest{Input: pathInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate path code/version: %v", err)
+	}
+	spoofedApprover := familyID
+	if _, err := client.CreateCareerPath(ctx, &pb.CreateCareerPathRequest{Input: &pb.CareerPathInput{
+		PathCode: &pathCode, PathVersion: &pathVersion, PathName: &pathName,
+		JobFamilyId: &familyID, ValidFrom: start, ApprovedByPrincipalId: &spoofedApprover,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("client supplied approval accepted: %v", err)
+	}
+	if _, err := client.ApproveCareerPath(ctx, &common.IDRequest{Id: pathID}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("creator approved own path: %v", err)
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000003"
+	approvedPath, err := client.ApproveCareerPath(ctx, &common.IDRequest{Id: pathID})
+	if err != nil || approvedPath.GetValue().GetStatus() != "approved" ||
+		approvedPath.GetValue().GetApprovedByPrincipalId() != policy.principalID {
+		t.Fatalf("approve path by independent actor: %v", err)
+	}
+	approvedStatus := "approved"
+	approvedPaths, err := client.FindCareerPathByStatus(ctx, &common.StringFinderRequest{Value: &approvedStatus, Limit: 1})
+	if err != nil || len(approvedPaths.GetItems()) != 1 || approvedPaths.GetItems()[0].GetId() != pathID {
+		t.Fatalf("find approved career path: %v", err)
+	}
+	if _, err := client.UpdateCareerPath(ctx, &pb.UpdateCareerPathRequest{Id: pathID,
+		Input: &pb.CareerPathInput{PathName: &pathName}, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"path_name"}},
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("approved path changed: %v", err)
+	}
+	for _, aggregate := range []struct {
+		id   string
+		want int64
+	}{{planID, 3}, {actionID, 3}, {pathID, 2}} {
 		var count int64
 		if err := db.WithContext(ctx).Raw("SELECT count(*) FROM hr_outbox_events WHERE aggregate_id = ?", aggregate.id).Scan(&count).Error; err != nil {
 			t.Fatal(err)

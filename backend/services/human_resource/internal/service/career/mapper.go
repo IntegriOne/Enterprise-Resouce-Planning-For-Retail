@@ -256,8 +256,6 @@ func createCareerPath(in CreateCareerPathInput) (*entity.CareerPath, error) {
 	v.JobFamilyID = in.JobFamilyID
 	v.ValidFrom = in.ValidFrom
 	v.ValidTo = in.ValidTo
-	v.ApprovedByPrincipalID = in.ApprovedByPrincipalID
-	v.ApprovedAt = in.ApprovedAt
 	return v, nil
 }
 func patchCareerPath(v *entity.CareerPath, in UpdateCareerPathInput) error {
@@ -294,18 +292,6 @@ func patchCareerPath(v *entity.CareerPath, in UpdateCareerPathInput) error {
 	if in.ValidTo.Set {
 		v.ValidTo = in.ValidTo.Value
 	}
-	if in.ApprovedByPrincipalID.Set {
-		if in.ApprovedByPrincipalID.Value == nil {
-			return hrerrors.Invalid("approved_by_principal_id", "must not be null")
-		}
-		v.ApprovedByPrincipalID = *in.ApprovedByPrincipalID.Value
-	}
-	if in.ApprovedAt.Set {
-		if in.ApprovedAt.Value == nil {
-			return hrerrors.Invalid("approved_at", "must not be null")
-		}
-		v.ApprovedAt = *in.ApprovedAt.Value
-	}
 	return nil
 }
 func specCareerPath() operation.Specification[entity.CareerPath, string] {
@@ -317,32 +303,39 @@ func specCareerPath() operation.Specification[entity.CareerPath, string] {
 		AggregateID: func(v *entity.CareerPath) string { return v.ID },
 		Initialize: func(v *entity.CareerPath, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
+			v.Status = "draft"
+			v.CreatedByPrincipalID = actor.PrincipalID
+			v.CreatedAt = now
 		},
 		Touch: func(v *entity.CareerPath, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.CareerPath) map[string]string {
 			a := map[string]string{}
 			a["id"] = fmt.Sprint(v.ID)
 			a["job_family_id"] = fmt.Sprint(v.JobFamilyID)
-			a["approved_by_principal_id"] = fmt.Sprint(v.ApprovedByPrincipalID)
+			a["created_by_principal_id"] = v.CreatedByPrincipalID
+			if v.ApprovedByPrincipalID != nil {
+				a["approved_by_principal_id"] = *v.ApprovedByPrincipalID
+			}
 			return a
 		},
 		Guard: func(action string, old, next *entity.CareerPath) error {
-			if action == "create" && !reflect.ValueOf(next.ApprovedByPrincipalID).IsZero() {
-				return hrerrors.ErrWorkflowRequired
+			if action == "create" && next != nil && next.Status == "draft" &&
+				next.ApprovedByPrincipalID == nil && next.ApprovedAt == nil {
+				return nil
 			}
-			if action == "update" && !reflect.DeepEqual(old.ApprovedByPrincipalID, next.ApprovedByPrincipalID) {
-				return hrerrors.ErrWorkflowRequired
+			if action == "update" && old != nil && next != nil && old.Status == "draft" && next.Status == "draft" &&
+				old.CreatedByPrincipalID == next.CreatedByPrincipalID && old.CreatedAt.Equal(next.CreatedAt) &&
+				reflect.DeepEqual(old.ApprovedByPrincipalID, next.ApprovedByPrincipalID) &&
+				reflect.DeepEqual(old.ApprovedAt, next.ApprovedAt) {
+				return nil
 			}
-			if action == "create" && !reflect.ValueOf(next.ApprovedAt).IsZero() {
-				return hrerrors.ErrWorkflowRequired
-			}
-			if action == "update" && !reflect.DeepEqual(old.ApprovedAt, next.ApprovedAt) {
-				return hrerrors.ErrWorkflowRequired
+			if action == "delete" && old != nil && old.Status == "draft" {
+				return nil
 			}
 			if action != "create" {
 				return hrerrors.ErrWorkflowRequired
 			}
-			return nil
+			return hrerrors.ErrInvalidInput
 		},
 	}
 }

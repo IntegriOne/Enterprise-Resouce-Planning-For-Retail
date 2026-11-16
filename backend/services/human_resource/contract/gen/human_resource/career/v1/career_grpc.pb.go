@@ -44,11 +44,14 @@ const (
 	CareerService_FindDevelopmentActionByEvidenceDocumentVersionReferenceID_FullMethodName        = "/human_resource.career.v1.CareerService/FindDevelopmentActionByEvidenceDocumentVersionReferenceID"
 	CareerService_CreateCareerPath_FullMethodName                                                 = "/human_resource.career.v1.CareerService/CreateCareerPath"
 	CareerService_UpdateCareerPath_FullMethodName                                                 = "/human_resource.career.v1.CareerService/UpdateCareerPath"
+	CareerService_ApproveCareerPath_FullMethodName                                                = "/human_resource.career.v1.CareerService/ApproveCareerPath"
 	CareerService_DeleteCareerPath_FullMethodName                                                 = "/human_resource.career.v1.CareerService/DeleteCareerPath"
 	CareerService_GetCareerPathByID_FullMethodName                                                = "/human_resource.career.v1.CareerService/GetCareerPathByID"
 	CareerService_GetAllCareerPaths_FullMethodName                                                = "/human_resource.career.v1.CareerService/GetAllCareerPaths"
 	CareerService_FindCareerPathByPathCode_FullMethodName                                         = "/human_resource.career.v1.CareerService/FindCareerPathByPathCode"
 	CareerService_FindCareerPathByJobFamilyID_FullMethodName                                      = "/human_resource.career.v1.CareerService/FindCareerPathByJobFamilyID"
+	CareerService_FindCareerPathByStatus_FullMethodName                                           = "/human_resource.career.v1.CareerService/FindCareerPathByStatus"
+	CareerService_FindCareerPathByCreatedByPrincipalID_FullMethodName                             = "/human_resource.career.v1.CareerService/FindCareerPathByCreatedByPrincipalID"
 	CareerService_FindCareerPathByApprovedByPrincipalID_FullMethodName                            = "/human_resource.career.v1.CareerService/FindCareerPathByApprovedByPrincipalID"
 	CareerService_CreateCareerPathTransition_FullMethodName                                       = "/human_resource.career.v1.CareerService/CreateCareerPathTransition"
 	CareerService_UpdateCareerPathTransition_FullMethodName                                       = "/human_resource.career.v1.CareerService/UpdateCareerPathTransition"
@@ -100,11 +103,14 @@ type CareerServiceClient interface {
 	FindDevelopmentActionByEvidenceDocumentVersionReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*DevelopmentActionsResponse, error)
 	CreateCareerPath(ctx context.Context, in *CreateCareerPathRequest, opts ...grpc.CallOption) (*CareerPathResponse, error)
 	UpdateCareerPath(ctx context.Context, in *UpdateCareerPathRequest, opts ...grpc.CallOption) (*CareerPathResponse, error)
+	ApproveCareerPath(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*CareerPathResponse, error)
 	DeleteCareerPath(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetCareerPathByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*CareerPathResponse, error)
 	GetAllCareerPaths(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error)
 	FindCareerPathByPathCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error)
 	FindCareerPathByJobFamilyID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error)
+	FindCareerPathByStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error)
+	FindCareerPathByCreatedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error)
 	FindCareerPathByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error)
 	CreateCareerPathTransition(ctx context.Context, in *CreateCareerPathTransitionRequest, opts ...grpc.CallOption) (*CareerPathTransitionResponse, error)
 	UpdateCareerPathTransition(ctx context.Context, in *UpdateCareerPathTransitionRequest, opts ...grpc.CallOption) (*CareerPathTransitionResponse, error)
@@ -376,6 +382,16 @@ func (c *careerServiceClient) UpdateCareerPath(ctx context.Context, in *UpdateCa
 	return out, nil
 }
 
+func (c *careerServiceClient) ApproveCareerPath(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*CareerPathResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CareerPathResponse)
+	err := c.cc.Invoke(ctx, CareerService_ApproveCareerPath_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *careerServiceClient) DeleteCareerPath(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(v1.EmptyResponse)
@@ -420,6 +436,26 @@ func (c *careerServiceClient) FindCareerPathByJobFamilyID(ctx context.Context, i
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CareerPathsResponse)
 	err := c.cc.Invoke(ctx, CareerService_FindCareerPathByJobFamilyID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *careerServiceClient) FindCareerPathByStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CareerPathsResponse)
+	err := c.cc.Invoke(ctx, CareerService_FindCareerPathByStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *careerServiceClient) FindCareerPathByCreatedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CareerPathsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CareerPathsResponse)
+	err := c.cc.Invoke(ctx, CareerService_FindCareerPathByCreatedByPrincipalID_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -664,11 +700,14 @@ type CareerServiceServer interface {
 	FindDevelopmentActionByEvidenceDocumentVersionReferenceID(context.Context, *v1.StringFinderRequest) (*DevelopmentActionsResponse, error)
 	CreateCareerPath(context.Context, *CreateCareerPathRequest) (*CareerPathResponse, error)
 	UpdateCareerPath(context.Context, *UpdateCareerPathRequest) (*CareerPathResponse, error)
+	ApproveCareerPath(context.Context, *v1.IDRequest) (*CareerPathResponse, error)
 	DeleteCareerPath(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetCareerPathByID(context.Context, *v1.IDRequest) (*CareerPathResponse, error)
 	GetAllCareerPaths(context.Context, *v1.PageRequest) (*CareerPathsResponse, error)
 	FindCareerPathByPathCode(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error)
 	FindCareerPathByJobFamilyID(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error)
+	FindCareerPathByStatus(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error)
+	FindCareerPathByCreatedByPrincipalID(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error)
 	FindCareerPathByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error)
 	CreateCareerPathTransition(context.Context, *CreateCareerPathTransitionRequest) (*CareerPathTransitionResponse, error)
 	UpdateCareerPathTransition(context.Context, *UpdateCareerPathTransitionRequest) (*CareerPathTransitionResponse, error)
@@ -772,6 +811,9 @@ func (UnimplementedCareerServiceServer) CreateCareerPath(context.Context, *Creat
 func (UnimplementedCareerServiceServer) UpdateCareerPath(context.Context, *UpdateCareerPathRequest) (*CareerPathResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateCareerPath not implemented")
 }
+func (UnimplementedCareerServiceServer) ApproveCareerPath(context.Context, *v1.IDRequest) (*CareerPathResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveCareerPath not implemented")
+}
 func (UnimplementedCareerServiceServer) DeleteCareerPath(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteCareerPath not implemented")
 }
@@ -786,6 +828,12 @@ func (UnimplementedCareerServiceServer) FindCareerPathByPathCode(context.Context
 }
 func (UnimplementedCareerServiceServer) FindCareerPathByJobFamilyID(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindCareerPathByJobFamilyID not implemented")
+}
+func (UnimplementedCareerServiceServer) FindCareerPathByStatus(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindCareerPathByStatus not implemented")
+}
+func (UnimplementedCareerServiceServer) FindCareerPathByCreatedByPrincipalID(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindCareerPathByCreatedByPrincipalID not implemented")
 }
 func (UnimplementedCareerServiceServer) FindCareerPathByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*CareerPathsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindCareerPathByApprovedByPrincipalID not implemented")
@@ -1303,6 +1351,24 @@ func _CareerService_UpdateCareerPath_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CareerService_ApproveCareerPath_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CareerServiceServer).ApproveCareerPath(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CareerService_ApproveCareerPath_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CareerServiceServer).ApproveCareerPath(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CareerService_DeleteCareerPath_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(v1.IDRequest)
 	if err := dec(in); err != nil {
@@ -1389,6 +1455,42 @@ func _CareerService_FindCareerPathByJobFamilyID_Handler(srv interface{}, ctx con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CareerServiceServer).FindCareerPathByJobFamilyID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CareerService_FindCareerPathByStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.StringFinderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CareerServiceServer).FindCareerPathByStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CareerService_FindCareerPathByStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CareerServiceServer).FindCareerPathByStatus(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CareerService_FindCareerPathByCreatedByPrincipalID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.StringFinderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CareerServiceServer).FindCareerPathByCreatedByPrincipalID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CareerService_FindCareerPathByCreatedByPrincipalID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CareerServiceServer).FindCareerPathByCreatedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1875,6 +1977,10 @@ var CareerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CareerService_UpdateCareerPath_Handler,
 		},
 		{
+			MethodName: "ApproveCareerPath",
+			Handler:    _CareerService_ApproveCareerPath_Handler,
+		},
+		{
 			MethodName: "DeleteCareerPath",
 			Handler:    _CareerService_DeleteCareerPath_Handler,
 		},
@@ -1893,6 +1999,14 @@ var CareerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindCareerPathByJobFamilyID",
 			Handler:    _CareerService_FindCareerPathByJobFamilyID_Handler,
+		},
+		{
+			MethodName: "FindCareerPathByStatus",
+			Handler:    _CareerService_FindCareerPathByStatus_Handler,
+		},
+		{
+			MethodName: "FindCareerPathByCreatedByPrincipalID",
+			Handler:    _CareerService_FindCareerPathByCreatedByPrincipalID_Handler,
 		},
 		{
 			MethodName: "FindCareerPathByApprovedByPrincipalID",

@@ -15,6 +15,9 @@ func ValidateAspiration(aspiration *entity.WorkerCareerAspiration, transition *e
 			return err
 		}
 	}
+	if path.Status != "approved" {
+		return hrerrors.ErrWorkflowRequired
+	}
 	if aspiration.CareerPathTransitionID == nil || !strings.EqualFold(*aspiration.CareerPathTransitionID, transition.ID) || !strings.EqualFold(transition.CareerPathID, path.ID) || !strings.EqualFold(aspiration.TargetJobID, transition.ToJobID) {
 		return hrerrors.Invalid("career_path_transition_id", "career path and target job must match aspiration")
 	}

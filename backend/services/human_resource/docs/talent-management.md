@@ -84,7 +84,7 @@ Promosi dengan tanggal efektif mendatang tetap approved sampai tanggal tersebut;
 
 ## Validasi aktual
 
-Baseline `000001` diregenerasi dengan DBML CLI 12.0.0. Total skema sekarang **86 tabel**, **130 FK internal**, **147 CHECK**, 9 enum dan 12 TableGroup. Tambahan PostgreSQL total lima exclusion constraint, 14 trigger dan delapan function.
+Baseline `000001` diregenerasi dengan DBML CLI 12.0.0. Total skema sekarang **86 tabel**, **130 FK internal**, **150 CHECK**, 9 enum dan 12 TableGroup. Tambahan PostgreSQL total lima exclusion constraint, 14 trigger dan delapan function.
 
 `bash backend/services/human_resource/db/test/verify_schema.sh` menjalankan 38 kasus lama + **32 kasus negatif Talent baru**, semuanya lulus pada PostgreSQL Docker. Fixture positif membuktikan asesmen/approval tidak mengubah assignment, penerapan promosi dengan bukti lengkap berhasil, skor sebelum/sesudah kalibrasi terpisah dan satu kursus dapat memetakan banyak kompetensi. Siklus up → tes → down → up lulus; database disposable dihapus. Tidak ada database aplikasi dimigrasikan atau service baru dideploy.
 

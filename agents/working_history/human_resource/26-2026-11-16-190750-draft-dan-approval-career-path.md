@@ -1,0 +1,3 @@
+# Draft dan approval career path
+
+Mengubah baseline `000001` agar career path dapat dibuat sebagai draft. Audit pembuat berasal dari actor server; approval nullable di draft dan wajib pada status approved, dengan CHECK pemisahan tugas. `ApproveCareerPath` ditambahkan ke service, gRPC dan katalog permission sensitif. Finder status serta pembuat tersedia di port/repository/service/gRPC. Validator mengunci keluarga job, menjaga keunikan versi dan membekukan path approved. Uji SQL up/down/up, unit/race, vet/build, serta gRPC `bufconn` sampai PostgreSQL `_test` lulus. Database development HRM tanpa baris bisnis dibuat ulang dan container kembali healthy. Transisi path masih menunggu verifikasi dokumen DRM; grant IAM/Gateway E2E belum diuji.
