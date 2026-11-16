@@ -99,6 +99,7 @@ func TestEnsureAndMigrateDevAndTestDatabases(t *testing.T) {
 			t.Fatalf("failed to list enums: %v", err)
 		}
 		assertExpectedEnums(t, gotEnums)
+		assertDisposableRollback(t, ctx, sqlDB)
 		return
 	}
 
@@ -162,17 +163,32 @@ func TestEnsureAndMigrateDevAndTestDatabases(t *testing.T) {
 		t.Fatalf("columns mismatch between dev and test databases")
 	}
 
-	// Verifikasi rollback dan re-migrate bersih pada database iam_test saja.
-	if err := RunMigrationsDown(ctx, testSQL); err != nil {
-		t.Fatalf("rollback on test database failed: %v", err)
-	}
-	if err := RunMigrationsUp(ctx, testSQL); err != nil {
-		t.Fatalf("re-applying migrations on test database failed: %v", err)
-	}
+	assertDisposableRollback(t, ctx, testSQL)
 
 	// Pastikan migrasi ulang bersifat idempoten.
 	if err := RunMigrationsUp(ctx, testSQL); err != nil {
 		t.Fatalf("idempotent re-run on test database failed: %v", err)
+	}
+}
+
+func assertDisposableRollback(t *testing.T, ctx context.Context, testSQL *sql.DB) {
+	t.Helper()
+	// Rollback skema hanya aman pada database sementara yang memang boleh dihapus.
+	if os.Getenv("IAM_TEST_DATABASE_DISPOSABLE") != "1" {
+		return
+	}
+	var databaseName string
+	if err := testSQL.QueryRowContext(ctx, "SELECT current_database()").Scan(&databaseName); err != nil {
+		t.Fatalf("identify disposable test database: %v", err)
+	}
+	if !strings.HasPrefix(databaseName, "iam_disposable_") || !strings.HasSuffix(databaseName, "_test") {
+		t.Fatalf("refusing rollback of non-disposable database %q", databaseName)
+	}
+	if err := RunMigrationsDown(ctx, testSQL); err != nil {
+		t.Fatalf("rollback on disposable test database failed: %v", err)
+	}
+	if err := RunMigrationsUp(ctx, testSQL); err != nil {
+		t.Fatalf("re-applying migrations on disposable test database failed: %v", err)
 	}
 }
 

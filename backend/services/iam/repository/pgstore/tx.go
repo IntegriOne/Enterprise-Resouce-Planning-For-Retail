@@ -73,6 +73,12 @@ func (t *Transactor) WithinTransaction(ctx context.Context, fn func(ctx context.
 	if isOutermost {
 		collector = &afterCommitCollector{}
 		baseCtx = context.WithValue(ctx, afterCommitKey{}, collector)
+	} else {
+		collector, _ = ctx.Value(afterCommitKey{}).(*afterCommitCollector)
+	}
+	hookStart := 0
+	if collector != nil {
+		hookStart = len(collector.hooks)
 	}
 
 	txErr := baseDB.Transaction(func(tx *gorm.DB) error {
@@ -80,6 +86,10 @@ func (t *Transactor) WithinTransaction(ctx context.Context, fn func(ctx context.
 		return fn(txCtx)
 	})
 	if txErr != nil {
+		// Callback dari savepoint yang gagal tidak boleh dijalankan saat transaksi luar commit.
+		if collector != nil {
+			collector.hooks = collector.hooks[:hookStart]
+		}
 		return MapError(txErr, nil)
 	}
 

@@ -2,6 +2,7 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Audit ulang lintas lapisan 17 November 2026:** inventaris 16 tabel dan 81 RPC enam domain dicocokkan dengan service/repository, lalu bukti mock dipisahkan dari PostgreSQL/Redis nyata. Callback pascacommit pada savepoint gagal diperbaiki dan diuji. Tes migrasi dan live Redis yang destruktif kini hanya menerima database `iam_disposable_*_test` dengan opt-in. Migrasi serta alur bootstrap/login/outbox/outage/recovery lulus pada DB sementara dan Redis TLS; Go fmt/vet/race lulus. Detail dan insiden `iam_test` ada di audit IAM nomor 5.
 - **Audit menyeluruh flow gRPC 17 November 2026:** 81 RPC pada User/Identity (20), Auth/MFA (12), Session (13), Role (15), Group (15), dan Permission (6) telah dicocokkan ke service, domain, dan repository; seluruh method RPC mempunyai eksekusi tes. Token verifikasi email kini terikat ke identitas email tepat; token tanpa target serta request untuk email yang sudah verified ditolak. Permintaan token mengirim email setelah transaksi. RPC self membutuhkan caller terautentikasi; `GetSessionCsrf` hanya menerima session ID caller. CreateRole RPC tidak dapat membuat role sistem; snapshot repository gagal tertutup jika recovery epoch tidak tersedia. `go fmt`, `go vet`, race test IAM, build/restart Docker IAM, dan matriks E2E Gateway Query/Mutation selain fixture permission resource lama lulus. Detail di audit IAM nomor 4.
 - **Hardening IAM gRPC 17 November 2026:** kode permission baru wajib sejalan dengan `resource` namespaced dan `action`; bootstrap memperbaiki metadata katalog lama dan menolak drift `is_sensitive`; permission yang masih terpasang pada role tidak dapat dihapus. `assigned_by` dan `group_members.added_by` berasal dari caller internal terverifikasi, bukan payload. Penulisan outbox sesi gagal tertutup; pemilik sesi nonaktif tidak lolos authenticate/CSRF/MFA; kegagalan recovery epoch menghalangi refresh snapshot. RPC `IssueSession` hanya untuk caller terautentikasi dengan `user_id` sama dan tanpa klaim MFA; `MarkSessionMfaVerified` ditolak dan didepresiasi, gunakan `AuthService.VerifySessionMfa`. HMAC internal wajib pada runtime development/production.
 - `go fmt ./...`, `go vet ./...`, dan `go test -race -count=1 ./...` lulus pada modul IAM; `go generate ./...` kontrak serta `docker compose build iam` lulus. Container IAM development sudah direstart sendiri dan sehat; smoke live membuktikan gRPC health `SERVING`, RPC bisnis tanpa HMAC mendapat `Unauthenticated`, dan `/api/graphql` tetap merespons query publik. E2E `TestMutationUserLogin` lulus; matriks Query/Mutation lulus bila `TestQueryPermissions` dikecualikan. Tes itu memakai `resource="users"` lama sehingga gagal setelah katalog memakai `iam.users`; pemilik Gateway perlu memperbarui fixture.
@@ -20,6 +21,7 @@
 
 ## Apa yang belum dikerjakan
 
+- Tes bufconn 81 RPC masih memakai transactor mock; belum ada pembuktian RPC→PostgreSQL untuk rollback sesi/outbox, concurrent MFA, dan perubahan grant/revoke sampai Redis lintas instance. Klaim "seluruh RPC tersentuh tes" tidak berarti seluruh business flow sudah terverifikasi.
 - Scope non-global belum dibuktikan ke owner Enterprise Foundation pada saat role assignment; pengiriman email belum memakai outbox tahan gangguan. Cakupan statement handler 69,4% dan service 62,3%; cabang fault injection repository belum lengkap.
 - Validasi kelayakan `scope_id` non-global terhadap owner objek Enterprise Foundation pada jalur assignment IAM/Gateway belum terbukti menyeluruh; IAM saat ini memvalidasi tipe/format UUID dan kepemilikan `self`.
 - Tes E2E `TestQueryPermissions` pada Gateway perlu menyelaraskan filter resource menjadi `iam.users`; audit data permission lama dalam database development masih perlu dilakukan.
@@ -28,6 +30,7 @@
 
 ## Apa yang harus dikerjakan selanjutanya
 
-1. Selaraskan tes filter resource Gateway, ulangi matriks E2E tanpa pengecualian, dan verifikasi metadata permission lama direkonsiliasi setelah bootstrap serta HMAC development bekerja.
-2. Tambahkan validasi target scope lintas owner pada alur pemberian role dengan kontrak pembuktian Enterprise Foundation, tanpa memberi IAM akses langsung ke database owner lain.
-3. Lanjutkan integrasi lintas management sesuai prioritas program di [docs/README.md](file:///home/muriarfad/Documents/projects/erp-retail/docs/README.md) menggunakan principal tunggal IAM, batas RBAC `*self` vs internal staf, dan kontrak gRPC privat yang terverifikasi.
+1. Tambahkan tes integrasi terisolasi untuk rollback dan concurrent MFA, lalu role/group grant-revoke dengan revisi dan invalidasi Redis; gunakan DB `iam_disposable_*_test` unik per eksekusi.
+2. Selaraskan tes filter resource Gateway, ulangi matriks E2E tanpa pengecualian, dan verifikasi metadata permission lama direkonsiliasi setelah bootstrap serta HMAC development bekerja.
+3. Tambahkan validasi target scope lintas owner pada alur pemberian role dengan kontrak pembuktian Enterprise Foundation, tanpa memberi IAM akses langsung ke database owner lain.
+4. Lanjutkan integrasi lintas management sesuai prioritas program di [docs/README.md](file:///home/muriarfad/Documents/projects/erp-retail/docs/README.md) menggunakan principal tunggal IAM, batas RBAC `*self` vs internal staf, dan kontrak gRPC privat yang terverifikasi.

@@ -56,6 +56,9 @@ func loadLivePGAndRedisTestEnv(t *testing.T) (string, authsession.RedisConfig) {
 
 func TestLivePGAndTLSRedis_OutboxBootstrapAndOutageRecovery(t *testing.T) {
 	dsn, redisCfg := loadLivePGAndRedisTestEnv(t)
+	if os.Getenv("IAM_TEST_DATABASE_DISPOSABLE") != "1" {
+		t.Skip("live integration test requires an explicitly disposable IAM test database")
+	}
 	ctx := t.Context()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 
@@ -68,6 +71,13 @@ func TestLivePGAndTLSRedis_OutboxBootstrapAndOutageRecovery(t *testing.T) {
 		t.Fatalf("gormDB.DB() error = %v", err)
 	}
 	t.Cleanup(func() { _ = sqlDB.Close() })
+	var databaseName string
+	if err := sqlDB.QueryRowContext(ctx, "SELECT current_database()").Scan(&databaseName); err != nil {
+		t.Fatalf("identify disposable test database: %v", err)
+	}
+	if !strings.HasPrefix(databaseName, "iam_disposable_") || !strings.HasSuffix(databaseName, "_test") {
+		t.Fatalf("refusing to truncate non-disposable database %q", databaseName)
+	}
 
 	// Bersihkan tabel domain pada DB _test saja sambil mempertahankan baris kontrol id=1 pada iam_security_control.
 	if err := gormDB.Exec(`TRUNCATE TABLE iam_outbox_events, user_roles, group_roles, group_members, role_permissions, sessions, user_tokens, user_recovery_codes, user_totp_factors, user_credentials, user_identities, users, roles, permissions, groups RESTART IDENTITY CASCADE`).Error; err != nil {

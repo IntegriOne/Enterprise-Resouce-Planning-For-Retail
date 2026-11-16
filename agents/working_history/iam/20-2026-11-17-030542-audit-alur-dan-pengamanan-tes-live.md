@@ -1,0 +1,3 @@
+# Audit alur IAM dan pengamanan tes live
+
+Meninjau ulang 81 RPC enam domain sampai port dan repository, lalu memisahkan tes mock dari bukti PostgreSQL/Redis nyata. Memperbaiki callback pascacommit pada savepoint yang rollback dan menambah tes regresi. Mengunci tes live destruktif ke database bernama `iam_disposable_*_test` dengan opt-in eksplisit. Go fmt/vet/race lulus; migrasi dan outbox/outage/recovery PostgreSQL+Redis TLS lulus di DB sementara. Eksekusi awal tanpa DSN sementara sempat mereset `iam_test`; skema kembali, data lama tidak dapat dipastikan. Gap concurrency MFA, rollback bisnis, scope lintas owner, dan Redis multi-instance dicatat pada audit IAM nomor 5.
