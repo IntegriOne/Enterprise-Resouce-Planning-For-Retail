@@ -133,10 +133,7 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	requirementID, err := ids.NewID()
-	if err != nil {
-		t.Fatal(err)
-	}
+	var requirementID string
 	var competencyID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -146,6 +143,7 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 			value string
 		}{
 			{"DELETE FROM hr_job_competencies WHERE id = ?", requirementID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", requirementID},
 			{"DELETE FROM hr_jobs WHERE id = ?", jobID},
 			{"DELETE FROM hr_job_families WHERE id = ?", familyID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", competencyID},
@@ -212,11 +210,27 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	).Error; err != nil {
 		t.Fatal(err)
 	}
-	if err := db.WithContext(ctx).Exec(
-		"INSERT INTO hr_job_competencies (id, job_id, competency_id, required_level, effective_from) VALUES (?, ?, ?, ?, ?)",
-		requirementID, jobID, competencyID, 2, "2026-01-01",
-	).Error; err != nil {
-		t.Fatal(err)
+	level := int32(2)
+	effectiveFrom := "2026-01-01"
+	requirementInput := &pb.JobCompetencyInput{
+		JobId: &jobID, CompetencyId: &competencyID,
+		RequiredLevel: &level, EffectiveFrom: &effectiveFrom,
+	}
+	requirement, err := client.CreateJobCompetency(ctx, &pb.CreateJobCompetencyRequest{Input: requirementInput})
+	if err != nil || requirement.GetItem() == nil {
+		t.Fatalf("create job competency through gRPC: %v", err)
+	}
+	requirementID = requirement.Item.Id
+	if requirementID == "" {
+		t.Fatal("created job competency has no identity")
+	}
+	overlapFrom := "2026-03-01"
+	overlapping := &pb.JobCompetencyInput{
+		JobId: &jobID, CompetencyId: &competencyID,
+		RequiredLevel: &level, EffectiveFrom: &overlapFrom,
+	}
+	if _, err := client.CreateJobCompetency(ctx, &pb.CreateJobCompetencyRequest{Input: overlapping}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("overlapping job competency requirement: %v", err)
 	}
 	if _, err := client.UpdateCompetency(ctx, &pb.UpdateCompetencyRequest{
 		Id: competencyID,
@@ -242,5 +256,11 @@ func TestCompetencyRPCWithPostgreSQL(t *testing.T) {
 	}
 	if events != 2 {
 		t.Fatalf("committed event count = %d, want 2", events)
+	}
+	if err := db.WithContext(ctx).Raw("SELECT count(*) FROM hr_outbox_events WHERE aggregate_id = ?", requirementID).Scan(&events).Error; err != nil {
+		t.Fatal(err)
+	}
+	if events != 1 {
+		t.Fatalf("job competency event count = %d, want 1", events)
 	}
 }

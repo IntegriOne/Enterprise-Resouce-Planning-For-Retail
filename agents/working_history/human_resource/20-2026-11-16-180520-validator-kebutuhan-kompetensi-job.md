@@ -1,0 +1,3 @@
+# Validator kebutuhan kompetensi job
+
+Validator `hr_job_competencies` kini mengunci job lalu kompetensi dalam transaksi, menolak parent nonaktif, tanggal di luar masa berlaku job, dan rentang kebutuhan yang bertumpang tindih. Validator job juga menolak penonaktifan, perubahan masa berlaku, atau penghapusan saat kebutuhan kompetensi masih merujuk kepadanya. Tes unit memeriksa urutan lock, konflik, dan penghapusan child; tes integrasi gRPC `bufconn` ke PostgreSQL `_test` membuktikan create serta penolakan overlap bertanggal mulai berbeda. `go vet`, `go test -race`, dan `go build` modul HRM lulus. Empat dari 78 resource mutable memiliki validator; lainnya tetap fail-closed. Grant IAM, scope parsial, dan E2E Gateway belum dibuktikan.
