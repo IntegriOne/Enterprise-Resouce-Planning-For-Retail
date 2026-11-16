@@ -1,0 +1,3 @@
+# Audit semua business flow IAM
+
+Audit nomor 9 mencocokkan enam kelompok (81 RPC) dengan domain, repository, service, handler, dan bukti tes yang tersedia. Temuan utama: grant scope eksternal belum diverifikasi Foundation, email token belum memakai outbox tahan crash, revoke role/group dapat melewati revision/outbox saat `SecurityRuntime` nil, serta beberapa list relasi belum terpaginasi. `go vet` dan `go test -race -count=1 ./...` lulus. Cakupan statement gabungan empat lapisan 51,1%; bufconn tidak membuktikan PostgreSQL/Redis untuk seluruh RPC. Tidak ada source IAM yang diubah dalam audit ini. Lanjutkan perbaikan mutasi RBAC dan tes transaksi nyata sebelum menyatakan IAM selesai.

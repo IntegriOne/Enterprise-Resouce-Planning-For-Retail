@@ -2,6 +2,7 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Audit ulang seluruh business flow 17 November 2026 (audit nomor 9):** enam kelompok/81 RPC dicocokkan dengan lapisan domain–repository–service–handler dan dibedakan dari pembuktian transaksi nyata. `go vet`, race test, dan pengukuran coverage gabungan lulus; coverage statement gabungan empat lapisan 51,1%. Audit ini tidak mengubah source IAM.
 - **Audit menyeluruh lanjutan 17 November 2026 (audit nomor 8):** inventaris 16 tabel dan 81 RPC enam kelompok dicocokkan dengan lapisan domain–repository–service–handler. Bootstrap kini meneruskan kegagalan refresh snapshot, aktivasi akun, dan lookup UUID alih-alih melaporkan sukses; tiga tes injeksi gagal lulus. Go fmt/vet/build/race lulus. Bukti PostgreSQL/Redis dan temuan terbuka dibedakan secara eksplisit pada audit nomor 8.
 - **Audit ulang seluruh enam domain IAM 17 November 2026 (audit nomor 6):** 81 RPC dan alur domain–repository–service–handler dicocokkan ulang. Repository sesi kini memeriksa idle/absolute expiry saat UPDATE aktivitas/MFA dan menjaga cap aktivitas monotonik; tes PostgreSQL terisolasi membuktikan kasus aktif, kedaluwarsa, dan permintaan lama. Go fmt/vet/race/build lulus. Batas bukti lintas domain tetap tercatat di audit nomor 6.
 - **Audit ulang lintas lapisan 17 November 2026:** inventaris 16 tabel dan 81 RPC enam domain dicocokkan dengan service/repository, lalu bukti mock dipisahkan dari PostgreSQL/Redis nyata. Callback pascacommit pada savepoint gagal diperbaiki dan diuji. Tes migrasi dan live Redis yang destruktif kini hanya menerima database `iam_disposable_*_test` dengan opt-in. Migrasi serta alur bootstrap/login/outbox/outage/recovery lulus pada DB sementara dan Redis TLS; Go fmt/vet/race lulus. Detail dan insiden `iam_test` ada di audit IAM nomor 5.
@@ -23,6 +24,7 @@
 
 ## Apa yang belum dikerjakan
 
+- Port `SecurityRuntime` masih opsional pada service role/group; revoke assignment bisa sukses tanpa kenaikan revision/outbox bila port nil. Beberapa RPC list relasi belum memakai limit/offset.
 - Tes PostgreSQL terisolasi sudah ada untuk repository sesi, tetapi tes gRPC→PostgreSQL bagi seluruh alur auth/role/group belum lengkap.
 - Tes bufconn 81 RPC masih memakai transactor mock; belum ada pembuktian RPC→PostgreSQL untuk rollback sesi/outbox, concurrent MFA, dan perubahan grant/revoke sampai Redis lintas instance. Klaim "seluruh RPC tersentuh tes" tidak berarti seluruh business flow sudah terverifikasi.
 - Scope non-global belum dibuktikan ke owner Enterprise Foundation pada saat role assignment; pengiriman email belum memakai outbox tahan gangguan. Cakupan statement handler 69,4% dan service 62,3%; cabang fault injection repository belum lengkap.
@@ -33,7 +35,7 @@
 
 ## Apa yang harus dikerjakan selanjutanya
 
-1. Tambahkan tes integrasi terisolasi untuk rollback dan concurrent MFA, lalu role/group grant-revoke dengan revisi dan invalidasi Redis; gunakan DB `iam_disposable_*_test` unik per eksekusi.
+1. Wajibkan revision/outbox pada mutasi role/group dan buktikan rollback saat port gagal; gunakan DB `iam_disposable_*_test` unik per eksekusi. Tambahkan tes integrasi concurrent MFA dan invalidasi Redis.
 2. Selaraskan tes filter resource Gateway, ulangi matriks E2E tanpa pengecualian, dan verifikasi metadata permission lama direkonsiliasi setelah bootstrap serta HMAC development bekerja.
 3. Tambahkan validasi target scope lintas owner pada alur pemberian role dengan kontrak pembuktian Enterprise Foundation, tanpa memberi IAM akses langsung ke database owner lain.
 4. Lanjutkan integrasi lintas management sesuai prioritas program di [docs/README.md](file:///home/muriarfad/Documents/projects/erp-retail/docs/README.md) menggunakan principal tunggal IAM, batas RBAC `*self` vs internal staf, dan kontrak gRPC privat yang terverifikasi.
