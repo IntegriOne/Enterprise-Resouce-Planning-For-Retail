@@ -14,6 +14,7 @@ import (
 	common "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/common/v1"
 	pb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/recruitment/v1"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
+	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/recruitment"
@@ -32,6 +33,15 @@ import (
 )
 
 type candidateIntegrationPolicy struct{}
+
+type requisitionIntegrationVerifier struct{}
+
+func (requisitionIntegrationVerifier) VerifyPositionReferences(_ context.Context, check security.PositionReferenceCheck) error {
+	if check.OrganizationUnitID == "" || check.LegalEntityID == "" || check.ValidFrom.IsZero() {
+		return hrerrors.ErrReferenceConflict
+	}
+	return nil
+}
 
 func (candidateIntegrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
 	return operation.Actor{PrincipalID: "00000000-0000-4000-8000-000000000001", SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human"}, nil
@@ -77,6 +87,13 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		t.Fatal(err)
 	}
 	for resource, validator := range applicationValidators {
+		validators[resource] = validator
+	}
+	requisitionValidators, err := security.RecruitmentRequisitionValidators(repos, requisitionIntegrationVerifier{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for resource, validator := range requisitionValidators {
 		validators[resource] = validator
 	}
 	interviewValidators, err := security.RecruitmentInterviewValidators(repos)
@@ -187,6 +204,50 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		(id, job_family_id, job_code, job_title, valid_from)
 		VALUES (?, ?, 'RECRUIT-DRAFT', 'Recruiter', CURRENT_DATE - 1)`, jobID, familyID).Error; err != nil {
 		t.Fatal(err)
+	}
+	const managerWorkerID = "00000000-0000-4000-8000-000000000013"
+	const managerPrincipalID = "00000000-0000-4000-8000-000000000001"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_workers
+		(id, worker_number, person_party_reference_id, worker_category, status,
+		 primary_legal_entity_reference_id, iam_principal_reference_id)
+		VALUES (?, 'WORKER-RECRUIT-MANAGER', ?, 'employee', 'active', ?, ?)`,
+		managerWorkerID, familyID, familyID, managerPrincipalID).Error; err != nil {
+		t.Fatal(err)
+	}
+	draftNumber, draftKey, draftType, category := "REQ-DRAFT-2", "REQ-DRAFT-2", "new_headcount", "employee"
+	draftInput := &pb.RequisitionInput{RequisitionNumber: &draftNumber, JobId: text(jobID),
+		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),
+		RequisitionType: &draftType, EmploymentCategory: &category, IdempotencyKey: &draftKey}
+	draft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: draftInput})
+	if err != nil || draft.GetItem().GetStatus() != "draft" || draft.GetItem().GetId() == "" {
+		t.Fatalf("create requisition draft: %+v, %v", draft, err)
+	}
+	draftID := draft.GetItem().GetId()
+	if _, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: draftInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate requisition status = %v, want AlreadyExists", status.Code(err))
+	}
+	if _, err := client.UpdateRequisition(ctx, &pb.UpdateRequisitionRequest{Id: draftID,
+		Input:      &pb.RequisitionInput{Status: text("open")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"status"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("open requisition through CRUD status = %v, want FailedPrecondition", status.Code(err))
+	}
+	updatedHeadcount := int32(2)
+	updatedDraft, err := client.UpdateRequisition(ctx, &pb.UpdateRequisitionRequest{Id: draftID,
+		Input:      &pb.RequisitionInput{Headcount: &updatedHeadcount},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"headcount"}}})
+	if err != nil || updatedDraft.GetItem().GetHeadcount() != updatedHeadcount {
+		t.Fatalf("update requisition draft: %+v, %v", updatedDraft, err)
+	}
+	draftPage, err := client.GetAllRequisitions(ctx, &common.PageRequest{Limit: 1})
+	if err != nil || draftPage.GetPage().GetTotal() != 1 || len(draftPage.GetItems()) != 1 {
+		t.Fatalf("requisition draft pagination: %+v, %v", draftPage, err)
+	}
+	if _, err := client.DeleteRequisition(ctx, &common.IDRequest{Id: draftID}); err != nil {
+		t.Fatalf("delete requisition draft: %v", err)
+	}
+	var requisitionOutboxCount int64
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", draftID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 3 {
+		t.Fatalf("requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
 	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_requisitions
 		(id, requisition_number, job_id, organization_unit_reference_id, hiring_manager_principal_id,
