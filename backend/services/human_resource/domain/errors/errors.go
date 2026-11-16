@@ -4,6 +4,8 @@ package errors
 import "errors"
 
 var (
+	ErrForbidden           = errors.New("hrm.forbidden")
+	ErrWorkflowRequired    = errors.New("hrm.workflow_required")
 	ErrInvalidInput        = errors.New("hrm.invalid_input")
 	ErrNotFound            = errors.New("hrm.not_found")
 	ErrAlreadyExists       = errors.New("hrm.already_exists")

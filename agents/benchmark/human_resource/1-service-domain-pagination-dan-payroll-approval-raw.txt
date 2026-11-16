@@ -1,0 +1,315 @@
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service	[no test files]
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/accessrequest	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/accessrequest/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   20342	      5815 ns/op	    3872 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   20685	      5761 ns/op	    3869 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21355	      5623 ns/op	    3870 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21428	      5599 ns/op	    3870 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21492	      5588 ns/op	    3873 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21019	      5668 ns/op	    3869 B/op	      37 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/accessrequest/test	0.721s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/analytics	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/analytics/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   25570	      4702 ns/op	    2751 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26336	      4580 ns/op	    2751 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25759	      4604 ns/op	    2752 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26166	      4602 ns/op	    2751 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26342	      4577 ns/op	    2751 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26193	      4614 ns/op	    2750 B/op	      33 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/analytics/test	0.726s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/benefits	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/benefits/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   21441	      5542 ns/op	    3202 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21662	      5522 ns/op	    3202 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21711	      5513 ns/op	    3202 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21796	      5479 ns/op	    3202 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21789	      5509 ns/op	    3203 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21690	      5467 ns/op	    3201 B/op	      33 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/benefits/test	0.721s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/career	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/career/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   24003	      4966 ns/op	    2966 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24392	      4855 ns/op	    2966 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24849	      4845 ns/op	    2966 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24704	      4870 ns/op	    2968 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24633	      4869 ns/op	    2965 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25081	      4818 ns/op	    2966 B/op	      33 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/career/test	0.724s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/compensation	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/compensation/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   23832	      5039 ns/op	    3200 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23960	      4932 ns/op	    3203 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24711	      4895 ns/op	    3203 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24698	      4928 ns/op	    3201 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24200	      4908 ns/op	    3203 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23906	      5060 ns/op	    3203 B/op	      29 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/compensation/test	0.726s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/competency	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/competency/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   24829	      4802 ns/op	    2913 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25459	      4692 ns/op	    2915 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25045	      4693 ns/op	    2912 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24609	      4740 ns/op	    2913 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26131	      4587 ns/op	    2912 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26088	      4563 ns/op	    2911 B/op	      33 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/competency/test	0.717s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/employeerelations	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/employeerelations/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   21388	      5610 ns/op	    3545 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21970	      5497 ns/op	    3547 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22558	      5355 ns/op	    3546 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21902	      5443 ns/op	    3544 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22119	      5366 ns/op	    3544 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22370	      5383 ns/op	    3545 B/op	      33 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/employeerelations/test	0.724s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/engagement	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/engagement/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   22959	      5203 ns/op	    3347 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23428	      5017 ns/op	    3346 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24331	      4928 ns/op	    3347 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23910	      4996 ns/op	    3346 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24270	      5115 ns/op	    3347 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23962	      4949 ns/op	    3346 B/op	      35 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/engagement/test	0.723s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/hrservice	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/hrservice/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   21340	      5642 ns/op	    3738 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22470	      5323 ns/op	    3738 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22622	      5318 ns/op	    3738 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22447	      5317 ns/op	    3738 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22720	      5340 ns/op	    3737 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22572	      5423 ns/op	    3739 B/op	      37 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/hrservice/test	0.728s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/learning	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/learning/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   23742	      4924 ns/op	    2879 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25490	      4765 ns/op	    2880 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24841	      4842 ns/op	    2880 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25374	      4762 ns/op	    2880 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24514	      4834 ns/op	    2880 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   24457	      4813 ns/op	    2879 B/op	      29 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/learning/test	0.720s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/leave	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/leave/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   22042	      5310 ns/op	    3138 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23400	      5165 ns/op	    3137 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22923	      5221 ns/op	    3138 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23287	      5191 ns/op	    3136 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23374	      5178 ns/op	    3137 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23150	      5135 ns/op	    3137 B/op	      29 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/leave/test	0.723s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/offboarding	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/offboarding/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   18672	      6399 ns/op	    4317 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   19304	      6174 ns/op	    4320 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   19866	      6012 ns/op	    4319 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   20065	      6060 ns/op	    4320 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   19930	      5994 ns/op	    4318 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   19980	      6058 ns/op	    4320 B/op	      35 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/offboarding/test	0.725s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/onboarding	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/onboarding/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   24640	      4787 ns/op	    2804 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25388	      4639 ns/op	    2804 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26128	      4564 ns/op	    2804 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26565	      4561 ns/op	    2806 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   25674	      4590 ns/op	    2804 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26314	      4555 ns/op	    2805 B/op	      37 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/onboarding/test	0.718s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation	[no test files]
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation/test	0.001s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/payroll	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/payroll/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceApprovePayrollRun-24    	    1084	    100541 ns/op	   74429 B/op	    1073 allocs/op
+BenchmarkServiceApprovePayrollRun-24    	    1161	    100392 ns/op	   74381 B/op	    1073 allocs/op
+BenchmarkServiceApprovePayrollRun-24    	    1280	     97731 ns/op	   74380 B/op	    1073 allocs/op
+BenchmarkServiceApprovePayrollRun-24    	    1264	     99110 ns/op	   74410 B/op	    1073 allocs/op
+BenchmarkServiceApprovePayrollRun-24    	    1224	     97333 ns/op	   74383 B/op	    1072 allocs/op
+BenchmarkServiceApprovePayrollRun-24    	    1230	     96315 ns/op	   74372 B/op	    1072 allocs/op
+BenchmarkServiceList/scoped-page-1-24   	   21328	      5537 ns/op	    3851 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24   	   21829	      5509 ns/op	    3850 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24   	   21666	      5631 ns/op	    3850 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24   	   21924	      5504 ns/op	    3848 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24   	   21969	      5483 ns/op	    3849 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24   	   21618	      5528 ns/op	    3850 B/op	      35 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5856	     21479 ns/op	   15764 B/op	     156 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5420	     21958 ns/op	   15766 B/op	     156 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5475	     21993 ns/op	   15770 B/op	     156 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5562	     21767 ns/op	   15767 B/op	     156 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5875	     21567 ns/op	   15767 B/op	     156 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5950	     21452 ns/op	   15765 B/op	     156 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/payroll/test	2.301s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/performance	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/performance/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   20751	      5698 ns/op	    3290 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21325	      5623 ns/op	    3292 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22282	      5465 ns/op	    3291 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   21909	      5481 ns/op	    3291 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22070	      5473 ns/op	    3291 B/op	      35 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22046	      5418 ns/op	    3290 B/op	      35 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/performance/test	0.725s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/personnel	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/personnel/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   18964	      6166 ns/op	    4064 B/op	      41 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   20500	      5881 ns/op	    4065 B/op	      41 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   20037	      5962 ns/op	    4066 B/op	      41 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   19648	      6050 ns/op	    4062 B/op	      41 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   19622	      6020 ns/op	    4064 B/op	      41 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   20433	      5862 ns/op	    4063 B/op	      41 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    4953	     22528 ns/op	   16324 B/op	     180 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5596	     22591 ns/op	   16320 B/op	     180 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5640	     22858 ns/op	   16323 B/op	     180 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5548	     22344 ns/op	   16312 B/op	     180 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5096	     22482 ns/op	   16313 B/op	     180 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    5647	     22579 ns/op	   16312 B/op	     180 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/personnel/test	1.453s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/policy	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/policy/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   26379	      4425 ns/op	    2622 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   27210	      4358 ns/op	    2623 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   27966	      4358 ns/op	    2622 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26976	      4474 ns/op	    2623 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26760	      4444 ns/op	    2622 B/op	      33 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   26480	      4560 ns/op	    2623 B/op	      33 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/policy/test	0.722s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/promotion	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/promotion/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   16802	      7169 ns/op	    5241 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   17187	      6917 ns/op	    5239 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   17412	      6922 ns/op	    5239 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   17354	      6929 ns/op	    5242 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   17036	      7007 ns/op	    5242 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   16716	      7224 ns/op	    5237 B/op	      45 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/promotion/test	0.725s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/recruitment	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/recruitment/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   15558	      7738 ns/op	    5028 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   15447	      7758 ns/op	    5030 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   15580	      7662 ns/op	    5027 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   15723	      7578 ns/op	    5030 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   16266	      7428 ns/op	    5033 B/op	      45 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   15679	      7641 ns/op	    5030 B/op	      45 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/recruitment/test	0.725s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/succession	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/succession/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   27180	      4478 ns/op	    2687 B/op	      31 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   27253	      4424 ns/op	    2687 B/op	      31 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   27753	      4303 ns/op	    2687 B/op	      31 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   27452	      4386 ns/op	    2688 B/op	      31 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   27537	      4319 ns/op	    2687 B/op	      31 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   27442	      4312 ns/op	    2687 B/op	      31 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/succession/test	0.724s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/talent	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/talent/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   22003	      5359 ns/op	    3410 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23288	      5202 ns/op	    3412 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22815	      5251 ns/op	    3412 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23283	      5167 ns/op	    3412 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   23158	      5170 ns/op	    3411 B/op	      37 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   22818	      5308 ns/op	    3412 B/op	      37 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/talent/test	0.725s
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/testsupport	[no test files]
+?   	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/workforceplanning	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/integrione/erp-retail/backend/services/human_resource/internal/service/workforceplanning/test
+cpu: AMD Ryzen 9 9900X 12-Core Processor
+BenchmarkServiceList/scoped-page-1-24         	   33132	      3578 ns/op	    1883 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   33962	      3561 ns/op	    1882 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   34617	      3554 ns/op	    1883 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   34148	      3476 ns/op	    1883 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   34099	      3567 ns/op	    1882 B/op	      29 allocs/op
+BenchmarkServiceList/scoped-page-1-24         	   33798	      3593 ns/op	    1882 B/op	      29 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    6745	     17146 ns/op	   11643 B/op	     127 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    7286	     16841 ns/op	   11642 B/op	     127 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    6710	     16771 ns/op	   11644 B/op	     127 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    7508	     16874 ns/op	   11640 B/op	     127 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    7576	     16959 ns/op	   11639 B/op	     127 allocs/op
+BenchmarkServiceUpdate/validated-write-outbox-24         	    7388	     17765 ns/op	   11640 B/op	     127 allocs/op
+PASS
+ok  	github.com/integrione/erp-retail/backend/services/human_resource/internal/service/workforceplanning/test	1.469s

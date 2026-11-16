@@ -1,8 +1,8 @@
 # Human Resource Management
 
-Status: **entity tervalidasi, aturan domain, port dan repository GORM tersedia**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
+Status: **entity, aturan domain, repository dan application service 22 domain tersedia**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
 
-Skema, baseline SQL, validasi domain dan repository 86 tabel tersedia dalam modul Go mandiri. Lapisan aplikasi/transport masih placeholder; belum ada proses service, kontrak RPC, handler, otorisasi, atau deployment HRM. Struktur mengikuti lapisan service IAM pada checkout aktif, bukan path historis `human_resource_management`.
+Skema, baseline SQL, validasi domain dan repository 86 tabel tersedia dalam modul Go mandiri. Application service mencakup 84 tabel bisnis; inbox/outbox memakai jalur khusus. Adapter policy/referensi produksi, proses service, kontrak RPC, handler dan deployment HRM belum tersedia. Struktur mengikuti path aktif `human_resource`, bukan path historis `human_resource_management`.
 
 ## Struktur lapisan
 
@@ -27,8 +27,11 @@ human_resource/
 │   ├── inbox/                  # Persistensi penerimaan event
 │   ├── outbox/                 # Persistensi pengiriman event
 │   └── <domain>/               # Implementasi repository per domain
-├── services/
-│   └── <domain>/               # Use case dan koordinasi transaksi
+├── internal/service/
+│   ├── registry.go             # Wiring 22 domain ke repository
+│   ├── operation/             # Guard, transaksi, pagination dan outbox bersama
+│   └── <domain>/              # Use case, DTO, mapper dan test per domain
+├── services/                  # Placeholder historis; tidak berisi implementasi aktif
 ├── infrastructure/
 │   ├── integration/
 │   │   ├── iam/                # Kontrak identitas/akses milik IAM
@@ -46,11 +49,11 @@ human_resource/
 └── docs/                       # Desain dan batas implementasi
 ```
 
-Placeholder `<domain>` di diagram berarti folder nyata yang tercantum pada tabel berikut. Unit test nantinya mengikuti package/lapisan terkait. Folder `test/` masih placeholder. Unit test entity berada di `domain/entity/test/`; aturan agregat diuji di `domain/service/<domain>/test/`.
+Placeholder `<domain>` di diagram berarti folder nyata yang tercantum pada tabel berikut. Tes application service berada di `internal/service/<domain>/test/`; unit test entity berada di `domain/entity/test/`; aturan agregat diuji di `domain/service/<domain>/test/`. Folder `test/integration` dan `test/e2e` masih placeholder.
 
 ## Domain yang disiapkan
 
-Setiap nama di bawah mempunyai folder pada **`services/` dan `repository/`**. Pengelompokan ini adalah batas tanggung jawab implementasi dalam satu service; bukan microservice atau database terpisah. Interface/entitas berada pada `domain/`, mengikuti pola service yang ada.
+Setiap nama di bawah mempunyai implementasi pada **`internal/service/` dan `repository/`**. Pengelompokan ini adalah batas tanggung jawab implementasi dalam satu service; bukan microservice atau database terpisah. Interface/entitas berada pada `domain/`.
 
 | Folder domain | Tabel DBML yang menjadi tanggung jawabnya |
 |---|---|
@@ -83,7 +86,7 @@ Talent Management mencakup `competency`, `performance`, `talent`, `career`, `suc
 
 ## Alur dan batas implementasi
 
-- Handler gRPC memetakan kontrak ke `services`; service menggunakan entitas/aturan/interface `domain`; repository dan adapter menyediakan implementasi dependency. `domain` tidak bergantung pada transport atau implementasi infrastruktur.
+- Handler gRPC nantinya memetakan kontrak ke `internal/service/<domain>`; service menggunakan entitas/aturan/interface `domain`; repository dan adapter menyediakan implementasi dependency. `domain` tidak bergantung pada transport atau implementasi infrastruktur.
 - Operasi lintas subdomain HRM, misalnya penerapan promosi, harus mengubah assignment, lifecycle event, status rekomendasi dan outbox dalam satu transaksi. Approval rekomendasi belum berarti jabatan berubah.
 - `personnel` mengelola tautan identitas pada `hr_workers.iam_principal_reference_id`. Binding akun dan lookup pekerja harus memakai kontrak IAM yang disepakati, dengan konteks legal entity dan hubungan kerja yang tepat. Worker ID bukan user ID; rehire dapat membentuk hubungan kerja baru. Kredensial, login, session, role dan grant tetap dimiliki IAM.
 - `accessrequest` mengelola permintaan/proyeksi akses HRM. Status lokal tidak menjadi izin otomatis. Adapter integrasi berkomunikasi lewat kontrak owner; tidak memakai SQL, FK atau repository management lain.
@@ -103,3 +106,5 @@ Talent Management mencakup `competency`, `performance`, `talent`, `career`, `suc
 [Kontrak repository, pagination dan verifikasi](docs/repository.md).
 
 [Validasi domain, aturan agregat dan wiring writer](docs/domain.md).
+
+[Application service, panduan review, command dan batas implementasi](docs/service.md).

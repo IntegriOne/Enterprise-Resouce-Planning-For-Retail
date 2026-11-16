@@ -20,6 +20,8 @@ type Repository[T any, K any] interface {
 	GetAll(ctx context.Context, limit, offset int) ([]T, error)
 	SelectList(ctx context.Context, limit, offset int) ([]T, error)
 	Count(context.Context) (int64, error)
+	SelectWhere(ctx context.Context, filters []Filter, limit, offset int) ([]T, error)
+	CountWhere(ctx context.Context, filters []Filter) (int64, error)
 	Update(context.Context, *T) error
 	DeleteByID(context.Context, K) error
 	Delete(context.Context, K) error
