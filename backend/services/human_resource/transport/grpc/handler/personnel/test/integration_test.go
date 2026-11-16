@@ -14,6 +14,7 @@ import (
 	common "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/common/v1"
 	pb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/personnel/v1"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
+	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/human_resource/domain/repository"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
@@ -32,6 +33,15 @@ import (
 )
 
 type workerScopePolicy struct{ legalEntityID string }
+
+type workerReferenceVerifier struct{}
+
+func (workerReferenceVerifier) VerifyWorkerReferences(_ context.Context, check security.WorkerReferenceCheck) error {
+	if check.PersonPartyID == "" || check.LegalEntityID == "" {
+		return hrerrors.ErrReferenceConflict
+	}
+	return nil
+}
 
 func (workerScopePolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
 	return operation.Actor{
@@ -82,6 +92,13 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 	validators, err := security.PersonnelValidators(repos)
 	if err != nil {
 		t.Fatal(err)
+	}
+	workerValidators, err := security.WorkerValidators(repos, workerReferenceVerifier{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for resource, validator := range workerValidators {
+		validators[resource] = validator
 	}
 	ids := operation.UUIDGenerator{}
 	insideID, err := ids.NewID()
@@ -220,6 +237,48 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 	var events int64
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", contractID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("contract outbox events = %d, %v", events, err)
+	}
+	workerNumber := "WORKER-DRAFT-" + insideID
+	personPartyID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	workerInput := &pb.WorkerInput{
+		WorkerNumber: &workerNumber, PersonPartyReferenceId: &personPartyID,
+		WorkerCategory: stringPointer("employee"), PrimaryLegalEntityReferenceId: &legalA,
+		HireDate: stringPointer("2026-11-20"), ServiceStartDate: stringPointer("2026-11-21"),
+	}
+	createdWorker, err := client.CreateWorker(ctx, &pb.CreateWorkerRequest{Input: workerInput})
+	if err != nil || createdWorker.GetItem().GetStatus() != "preboarding" {
+		t.Fatalf("create preboarding worker = %+v, %v", createdWorker, err)
+	}
+	newWorkerID := createdWorker.GetItem().GetId()
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cleanupCancel()
+		if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_workers WHERE id = ?", newWorkerID).Error; err != nil {
+			t.Errorf("clean preboarding worker: %v", err)
+		}
+	})
+	if _, err := client.CreateWorker(ctx, &pb.CreateWorkerRequest{Input: workerInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate worker number = %v", err)
+	}
+	linkedInput := *workerInput
+	linkedInput.IamPrincipalReferenceId = &insideID
+	if _, err := client.CreateWorker(ctx, &pb.CreateWorkerRequest{Input: &linkedInput}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("IAM link through worker CRUD = %v", err)
+	}
+	updatedWorker, err := client.UpdateWorker(ctx, &pb.UpdateWorkerRequest{Id: newWorkerID,
+		Input:      &pb.WorkerInput{ServiceStartDate: stringPointer("2026-11-22")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"service_start_date"}}})
+	if err != nil || updatedWorker.GetItem().GetServiceStartDate() != "2026-11-22" {
+		t.Fatalf("correct preboarding date = %+v, %v", updatedWorker, err)
+	}
+	if _, err := client.DeleteWorker(ctx, &common.IDRequest{Id: newWorkerID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete employment history = %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", newWorkerID).Count(&events).Error; err != nil || events != 2 {
+		t.Fatalf("worker outbox events = %d, %v", events, err)
 	}
 }
 
