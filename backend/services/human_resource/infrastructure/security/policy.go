@@ -109,7 +109,7 @@ func (p *Policy) Authorize(ctx context.Context, access operation.Access) (operat
 		return operation.Actor{}, hrerrors.ErrForbidden
 	}
 	grant, allowed := state.Snapshot.HasPermission(permission)
-	if !allowed || (grant.IsSensitive && !state.Token.MFAAuthenticated) {
+	if !allowed || ((grant.IsSensitive || IsSensitiveOperation(access.Resource, access.Action)) && !state.Token.MFAAuthenticated) {
 		return operation.Actor{}, hrerrors.ErrForbidden
 	}
 	return operation.Actor{

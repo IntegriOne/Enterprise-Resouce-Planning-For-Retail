@@ -48,7 +48,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return errors.New("configure HRM session store failed")
 	}
-	policy, err := security.NewPolicy(store, map[string]string{})
+	policy, err := security.NewPolicy(store, security.PermissionCatalog())
 	if err != nil {
 		return fmt.Errorf("configure HRM security policy: %w", err)
 	}
@@ -73,7 +73,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	cancel()
-	logger.Warn("HRM business permission catalog and mutation validators are not activated; business access is denied")
+	logger.Warn("HRM mutation validators are not activated; mutations remain unavailable")
 	logger.Info("starting private HRM gRPC listener", "address", cfg.GRPCAddress())
 	served := make(chan error, 1)
 	go func() { served <- server.ListenAndServe() }()

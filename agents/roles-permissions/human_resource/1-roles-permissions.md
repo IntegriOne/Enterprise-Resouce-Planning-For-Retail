@@ -100,10 +100,10 @@ Operasi yang wajib step-up: seluruh Delete; perubahan kompensasi dan payroll; ak
 
 Gateway menolak request tanpa autentikasi, permission, scope dan step-up sebelum RPC. Service HRM tetap memverifikasi proof internal dan memeriksa permission, scope objek, SoD serta invariant sebagai pemilik data menurut `agents/arsitektur.md` D01–D12 dan `agents/boundary.md`; keputusan katalog ini tidak menghapus pemeriksaan service. Penolakan HMAC internal dari downstream harus diperlakukan Gateway sebagai kegagalan dependency, bukan logout pengguna, mengikuti pola Enterprise Foundation.
 
-Status runtime saat keputusan ini dicatat: adapter HRM masih hanya menerima grant `global`, peta permission production belum diaktifkan, dan validator integrity belum tersedia untuk seluruh mutasi. Grant dengan `legal_entity`, `organization_unit`, atau `self` **harus ditolak** sampai filter list, get, finder/count dan mutasi diuji E2E. Tidak ada role, permission atau grant IAM yang dibuat oleh dokumen ini; provisioning tetap melalui alur resmi IAM.
+Status runtime saat pembaruan ini: adapter HRM masih hanya menerima grant `global`; peta 321 permission telah dihubungkan ke policy service, tetapi belum ada provisioning/grant IAM dan validator integrity belum tersedia untuk seluruh mutasi. Grant dengan `legal_entity`, `organization_unit`, atau `self` **harus ditolak** sampai filter list, get, finder/count dan mutasi diuji E2E. Tidak ada role, permission atau grant IAM yang dibuat oleh dokumen ini; provisioning tetap melalui alur resmi IAM.
 
 ## Pengujian sebelum aktivasi
 
 Minimal dua identitas: berizin dan terautentikasi tanpa permission. Uji scope lain, UUID objek tebakan, finder/count, deny, expired/revoked session, perubahan revision, Redis/gate unavailable, MFA, SoD dan rollback transaksi. Untuk mutasi child, adapter integrity wajib mengunci parent serta memeriksa status final dan referensi owner dalam transaksi yang sama.
 
-Implementasi policy awal hanya menerima grant global eksplisit; scope parsial dan resource tanpa mapping ditolak. Ini pembatasan sementara, bukan persetujuan memberikan global grant kepada operator.
+Implementasi policy awal hanya menerima grant global eksplisit; scope parsial dan resource tanpa mapping ditolak. Mutasi tetap ditolak bila validator integrity resource belum ada. Ini pembatasan sementara, bukan persetujuan memberikan global grant kepada operator.
