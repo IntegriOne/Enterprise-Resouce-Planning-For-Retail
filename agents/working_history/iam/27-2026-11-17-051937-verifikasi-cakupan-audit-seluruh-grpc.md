@@ -1,0 +1,3 @@
+# Verifikasi cakupan audit seluruh IAM gRPC
+
+Menghitung ulang 81 RPC pada enam service, menelusuri list permission sampai repository dan alur email verifikasi, serta membandingkan bukti audit nomor 13 dengan tes aktual. Race test, vet, build dan dua tes integrasi PostgreSQL disposable (expiry sesi, rollback revoke role/grup) lulus; container IAM, PostgreSQL dan Redis sehat. Audit nomor 14 mencatat bahwa tes bufconn memakai mock pada banyak cabang, tujuh list relasi belum berhalaman, email pascacommit belum tahan crash, dan E2E lintas seluruh cabang belum terbukti. Tidak ada perubahan source IAM.
