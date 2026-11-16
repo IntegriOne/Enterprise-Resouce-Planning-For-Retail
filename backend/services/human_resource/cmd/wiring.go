@@ -124,6 +124,13 @@ func BuildDependencies(
 	for resource, validator := range talentDimensionValidators {
 		validators[resource] = validator
 	}
+	successionValidators, err := security.SuccessionValidators(repos)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM succession validators: %w", err))
+	}
+	for resource, validator := range successionValidators {
+		validators[resource] = validator
+	}
 	leaveValidators, err := security.LeaveValidators(repos)
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM leave validators: %w", err))
