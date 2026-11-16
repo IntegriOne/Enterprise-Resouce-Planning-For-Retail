@@ -133,12 +133,17 @@ func TestSuccessionPlanRPCWithPostgreSQL(t *testing.T) {
 		t.Fatal(err)
 	}
 	var planID string
+	var candidateID string
+	var candidateWorkerID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
 		for _, statement := range []struct{ query, id string }{
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", candidateID},
+			{"DELETE FROM hr_succession_candidates WHERE id = ?", candidateID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", planID},
 			{"DELETE FROM hr_succession_plans WHERE id = ?", planID},
+			{"DELETE FROM hr_workers WHERE id = ?", candidateWorkerID},
 			{"DELETE FROM hr_positions WHERE id = ?", positionID},
 			{"DELETE FROM hr_jobs WHERE id = ?", jobID},
 			{"DELETE FROM hr_job_families WHERE id = ?", familyID},
@@ -234,20 +239,61 @@ func TestSuccessionPlanRPCWithPostgreSQL(t *testing.T) {
 	if err != nil || !updated.GetValue().GetReviewDate().AsTime().Equal(newReviewDate.AsTime()) {
 		t.Fatalf("update draft review date: %v", err)
 	}
-	candidateWorkerID, err := ids.NewID()
+	candidateWorkerID, err = ids.NewID()
 	if err != nil {
 		t.Fatal(err)
 	}
-	readiness := "ready_now"
-	if _, err := client.CreateSuccessionCandidate(ctx, &pb.CreateSuccessionCandidateRequest{Input: &pb.SuccessionCandidateInput{
-		SuccessionPlanId: &planID, CandidateWorkerId: &candidateWorkerID,
-		ReadinessCode: &readiness, ReadinessAssessedAt: newReviewDate,
-	}}); status.Code(err) != codes.Unavailable {
-		t.Fatalf("candidate without production validator: %v", err)
+	if err := db.WithContext(ctx).Exec(
+		"INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, primary_legal_entity_reference_id) VALUES (?, ?, ?, 'employee', 'active', ?)",
+		candidateWorkerID, "WORKER-"+candidateWorkerID, candidateWorkerID, familyID,
+	).Error; err != nil {
+		t.Fatal(err)
+	}
+	readiness := "development_needed"
+	rationale := "Development needed for target role"
+	candidateInput := &pb.SuccessionCandidateInput{SuccessionPlanId: &planID,
+		CandidateWorkerId: &candidateWorkerID, ReadinessCode: &readiness,
+		ReadinessAssessedAt: newReviewDate, ReadinessRationale: &rationale}
+	candidate, err := client.CreateSuccessionCandidate(ctx, &pb.CreateSuccessionCandidateRequest{Input: candidateInput})
+	if err != nil || candidate.GetValue().GetId() == "" {
+		t.Fatalf("create draft succession candidate: %+v, %v", candidate, err)
+	}
+	candidateID = candidate.GetValue().GetId()
+	if _, err := client.CreateSuccessionCandidate(ctx, &pb.CreateSuccessionCandidateRequest{Input: candidateInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate succession candidate: %v", err)
+	}
+	readyNow := "ready_now"
+	if _, err := client.UpdateSuccessionCandidate(ctx, &pb.UpdateSuccessionCandidateRequest{Id: candidateID,
+		Input:      &pb.SuccessionCandidateInput{ReadinessCode: &readyNow},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"readiness_code"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("readiness without final assessment: %v", err)
+	}
+	laterRationale := "Development plan is being prepared"
+	updatedCandidate, err := client.UpdateSuccessionCandidate(ctx, &pb.UpdateSuccessionCandidateRequest{Id: candidateID,
+		Input:      &pb.SuccessionCandidateInput{ReadinessRationale: &laterRationale},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"readiness_rationale"}}})
+	if err != nil || updatedCandidate.GetValue().GetReadinessRationale() != laterRationale {
+		t.Fatalf("update draft nomination: %+v, %v", updatedCandidate, err)
+	}
+	foundCandidate, err := client.FindSuccessionCandidateBySuccessionPlanID(ctx, &commonv1.StringFinderRequest{Value: &planID, Limit: 1})
+	if err != nil || foundCandidate.GetPage().GetTotal() != 1 || len(foundCandidate.GetItems()) != 1 {
+		t.Fatalf("paged candidate finder: %+v, %v", foundCandidate, err)
+	}
+	if _, err := client.UpdateSuccessionPlan(ctx, &pb.UpdateSuccessionPlanRequest{Id: planID,
+		Input:      &pb.SuccessionPlanInput{ReviewDate: reviewDate},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"review_date"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("change plan with nominated candidate: %v", err)
 	}
 	var candidateCount int64
-	if err := db.WithContext(ctx).Raw("SELECT count(*) FROM hr_succession_candidates WHERE succession_plan_id = ?", planID).Scan(&candidateCount).Error; err != nil || candidateCount != 0 {
-		t.Fatalf("rejected candidate persisted: count=%d error=%v", candidateCount, err)
+	if err := db.WithContext(ctx).Raw("SELECT count(*) FROM hr_succession_candidates WHERE succession_plan_id = ?", planID).Scan(&candidateCount).Error; err != nil || candidateCount != 1 {
+		t.Fatalf("candidate count: count=%d error=%v", candidateCount, err)
+	}
+	if _, err := client.DeleteSuccessionCandidate(ctx, &commonv1.IDRequest{Id: candidateID}); err != nil {
+		t.Fatalf("delete draft nomination: %v", err)
+	}
+	var candidateOutboxCount int64
+	if err := db.WithContext(ctx).Raw("SELECT count(*) FROM hr_outbox_events WHERE aggregate_id = ?", candidateID).Scan(&candidateOutboxCount).Error; err != nil || candidateOutboxCount != 3 {
+		t.Fatalf("candidate outbox count: count=%d error=%v", candidateOutboxCount, err)
 	}
 	if _, err := client.DeleteSuccessionPlan(ctx, &commonv1.IDRequest{Id: planID}); err != nil {
 		t.Fatalf("delete unused draft plan: %v", err)
