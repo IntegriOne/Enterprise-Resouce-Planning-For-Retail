@@ -1,0 +1,3 @@
+# Perincian permission workflow HRM
+
+Katalog HRM telah memiliki 323 kode aktif: `read`, `create`, `update`, `delete` per resource yang sesuai dan lima command khusus. Rancangan lanjutan kini memisahkan persetujuan, penolakan, pengembalian dan penerapan promosi, serta menambahkan keputusan kontrak, dokumen pekerja, rekrutmen, kompensasi, benefit, cuti, kinerja dan kalibrasi. Hak `apply` promosi ditempatkan pada keputusan resmi dan pelaksana penempatan, terpisah dari penyetuju. Seluruh kode baru tetap rancangan nonaktif; belum ada RPC, validator, provisioning atau grant IAM untuk kode tersebut. Katalog runtime dan kebijakan fail-closed tidak berubah.
