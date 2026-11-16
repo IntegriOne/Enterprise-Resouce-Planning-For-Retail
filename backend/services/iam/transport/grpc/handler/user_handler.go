@@ -395,7 +395,7 @@ func enforceSelfSessionCaller(ctx context.Context, targetUserID, sessionID strin
 	}
 	callerSessID := strings.TrimSpace(caller.SessionID)
 	targetSessID := strings.TrimSpace(sessionID)
-	if callerSessID != "" && (targetSessID == "" || !strings.EqualFold(callerSessID, targetSessID)) {
+	if callerSessID == "" || targetSessID == "" || !strings.EqualFold(callerSessID, targetSessID) {
 		return iamerrors.WithField(iamerrors.ErrPermissionDenied, "session_id", "cannot operate on another session in self flow")
 	}
 	return nil

@@ -205,6 +205,27 @@ func (s *Service) VerifyCSRFOnSession(sess *entity.Session, csrfToken string) er
 	return nil
 }
 
+// MarkUserMFAVerified memastikan sesi milik pengguna sebelum mencatat step-up MFA.
+func (s *Service) MarkUserMFAVerified(ctx context.Context, userID, sessionID string) (*CSRFTokenResult, error) {
+	if err := s.ensureReady(); err != nil {
+		return nil, err
+	}
+	if err := entity.ValidateUUID("user_id", userID); err != nil {
+		return nil, err
+	}
+	if err := entity.ValidateUUID("session_id", sessionID); err != nil {
+		return nil, err
+	}
+	sess, err := s.sessions.SelectByID(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	if sess.UserID != userID {
+		return nil, iamerrors.WithField(iamerrors.ErrPermissionDenied, "session_id", "session does not belong to user")
+	}
+	return s.MarkMFAVerified(ctx, sessionID)
+}
+
 // MarkMFAVerified mencatat verifikasi MFA pada sesi aktif sambil merotasi token CSRF secara atomik.
 func (s *Service) MarkMFAVerified(ctx context.Context, sessionID string) (*CSRFTokenResult, error) {
 	if err := s.ensureReady(); err != nil {

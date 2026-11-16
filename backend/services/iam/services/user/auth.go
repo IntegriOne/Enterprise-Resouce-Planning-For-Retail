@@ -391,9 +391,12 @@ func (s *Service) VerifySessionMFA(ctx context.Context, userID, sessionID, code 
 		if !accepted {
 			return iamerrors.ErrTOTPReplayDetected
 		}
-		res, err := s.sessions.MarkMFAVerified(txCtx, sessionID)
+		res, err := s.sessions.MarkUserMFAVerified(txCtx, userID, sessionID)
 		if err != nil {
 			return err
+		}
+		if res == nil || res.Session == nil || res.Session.UserID != userID {
+			return iamerrors.WithField(iamerrors.ErrPermissionDenied, "session_id", "session does not belong to user")
 		}
 		rotated = res
 		return nil

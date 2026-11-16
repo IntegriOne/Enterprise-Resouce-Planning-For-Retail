@@ -258,6 +258,14 @@ func TestSessionService_IssueAuthenticateTimeoutsCSRFAndLogout(t *testing.T) {
 	if issued.SessionToken == "" || issued.CSRFToken == "" {
 		t.Fatal("expected non-empty opaque session and CSRF tokens")
 	}
+	otherUserID, _ := idGen.NewUUID()
+	if _, err := svc.MarkUserMFAVerified(context.Background(), otherUserID, issued.Session.ID); !errors.Is(err, iamerrors.ErrPermissionDenied) {
+		t.Fatalf("MarkUserMFAVerified(other user) error = %v, want permission denied", err)
+	}
+	unchanged, err := sessRepo.SelectByID(context.Background(), issued.Session.ID)
+	if err != nil || unchanged.MFAVerified {
+		t.Fatalf("cross-user MFA changed session: session=%+v error=%v", unchanged, err)
+	}
 
 	// Tolak IP address yang tidak valid.
 	if _, err := svc.Issue(context.Background(), session.IssueInput{
@@ -276,9 +284,9 @@ func TestSessionService_IssueAuthenticateTimeoutsCSRFAndLogout(t *testing.T) {
 	}
 
 	// Tandai MFA terverifikasi + rotasi token CSRF lama agar token lama tidak berlaku lagi.
-	rotated, err := svc.MarkMFAVerified(context.Background(), issued.Session.ID)
+	rotated, err := svc.MarkUserMFAVerified(context.Background(), userID, issued.Session.ID)
 	if err != nil {
-		t.Fatalf("MarkMFAVerified() error = %v", err)
+		t.Fatalf("MarkUserMFAVerified() error = %v", err)
 	}
 	if rotated.CSRFToken == issued.CSRFToken {
 		t.Fatal("expected CSRF token rotation upon MFA verification")

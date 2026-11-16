@@ -11,5 +11,5 @@ import (
 type SessionCollaborator interface {
 	Issue(ctx context.Context, in session.IssueInput) (*session.IssuedSession, error)
 	RevokeAllUserSessions(ctx context.Context, userID string, reason entity.SessionEndReason) (int64, error)
-	MarkMFAVerified(ctx context.Context, sessionID string) (*session.CSRFTokenResult, error)
+	MarkUserMFAVerified(ctx context.Context, userID, sessionID string) (*session.CSRFTokenResult, error)
 }

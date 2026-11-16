@@ -271,6 +271,11 @@ func TestHandlerEnforceSelfCallerAndSessionGuards(t *testing.T) {
 	_, err = aHandler.VerifySessionMfa(ctxCallerA, &iamv1.VerifySessionMfaRequest{UserId: uA.ID, SessionId: sessBID, Code: "123456"})
 	assertPermissionDenied(t, "VerifySessionMfa(cross-session)", err)
 
+	callerWithoutSession := callerA
+	callerWithoutSession.SessionID = ""
+	_, err = aHandler.VerifySessionMfa(authcontext.WithCaller(ctx, callerWithoutSession), &iamv1.VerifySessionMfaRequest{UserId: uA.ID, SessionId: sessAID, Code: "123456"})
+	assertPermissionDenied(t, "VerifySessionMfa(missing caller session)", err)
+
 	// Pemanggil A mengubah profilnya sendiri harus berhasil.
 	_ = now
 	upd, err := uHandler.UpdateUserProfile(ctxCallerA, &iamv1.UpdateUserProfileRequest{UserId: uA.ID, DisplayName: "Alice Updated"})
