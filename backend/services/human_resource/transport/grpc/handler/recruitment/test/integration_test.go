@@ -79,6 +79,13 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	for resource, validator := range applicationValidators {
 		validators[resource] = validator
 	}
+	interviewValidators, err := security.RecruitmentInterviewValidators(repos)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for resource, validator := range interviewValidators {
+		validators[resource] = validator
+	}
 	svc, err := service.NewService(service.Dependencies{
 		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
 			Policy: candidateIntegrationPolicy{}, Integrity: security.NewIntegrity(validators)},
@@ -225,5 +232,103 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", applicationID).Count(&outboxCount).Error; err != nil || outboxCount != 1 {
 		t.Fatalf("application outbox count = %d, err = %v", outboxCount, err)
+	}
+	interviewType, timezone := "screening", "Asia/Jakarta"
+	round := int32(1)
+	start := timestamppb.New(time.Now().Add(48 * time.Hour))
+	end := timestamppb.New(start.AsTime().Add(time.Hour))
+	createInterview := &pb.InterviewInput{ApplicationId: &applicationID, InterviewRound: &round,
+		InterviewType: &interviewType, ScheduledStart: start, ScheduledEnd: end, CandidateTimezone: &timezone}
+	createdInterview, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: createInterview})
+	if err != nil || createdInterview.GetItem().GetId() == "" || createdInterview.GetItem().GetStatus() != "planned" {
+		t.Fatalf("create planned interview: %+v, %v", createdInterview, err)
+	}
+	interviewID := createdInterview.GetItem().GetId()
+	if createdInterview.GetItem().GetCreatedByPrincipalId() != "00000000-0000-4000-8000-000000000001" {
+		t.Fatal("interview creator did not come from server actor")
+	}
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: createInterview}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate interview round status = %v, want AlreadyExists", status.Code(err))
+	}
+	otherRound := int32(2)
+	invalidTimezone := "Invalid/Timezone"
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
+		ScheduledStart: start, ScheduledEnd: end, CandidateTimezone: &invalidTimezone,
+	}}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("invalid timezone status = %v, want InvalidArgument", status.Code(err))
+	}
+	shortRetention := time.Now().Add(24 * time.Hour).Format("2006-01-02")
+	if err := database.WithContext(ctx).Exec("UPDATE hr_candidates SET data_retention_until = ? WHERE id = ?",
+		shortRetention, linkedCandidate.GetItem().GetId()).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
+		ScheduledStart: start, ScheduledEnd: end, CandidateTimezone: &timezone,
+	}}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("interview beyond candidate retention status = %v, want InvalidArgument", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_candidates SET data_retention_until = ? WHERE id = ?",
+		retention, linkedCandidate.GetItem().GetId()).Error; err != nil {
+		t.Fatal(err)
+	}
+	locationID := "00000000-0000-4000-8000-000000000015"
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
+		LocationReferenceId: &locationID,
+	}}); status.Code(err) != codes.Unavailable {
+		t.Fatalf("unverified location status = %v, want Unavailable", status.Code(err))
+	}
+	interviewPage, err := client.FindInterviewByApplicationID(ctx, &common.StringFinderRequest{Value: &applicationID, Limit: 1})
+	if err != nil || interviewPage.GetPage().GetTotal() != 1 || len(interviewPage.GetItems()) != 1 {
+		t.Fatalf("interview finder: %+v, %v", interviewPage, err)
+	}
+	interviewPage, err = client.GetAllInterviews(ctx, &common.PageRequest{Limit: 1, Offset: 1})
+	if err != nil || interviewPage.GetPage().GetTotal() != 1 || len(interviewPage.GetItems()) != 0 {
+		t.Fatalf("interview offset: %+v, %v", interviewPage, err)
+	}
+	newStart := timestamppb.New(start.AsTime().Add(30 * time.Minute))
+	updatedInterview, err := client.UpdateInterview(ctx, &pb.UpdateInterviewRequest{Id: interviewID,
+		Input:      &pb.InterviewInput{ScheduledStart: newStart},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"scheduled_start"}}})
+	if err != nil || !updatedInterview.GetItem().GetScheduledStart().AsTime().Equal(newStart.AsTime()) {
+		t.Fatalf("reschedule planned interview: %+v, %v", updatedInterview, err)
+	}
+	if _, err := client.UpdateInterview(ctx, &pb.UpdateInterviewRequest{Id: interviewID,
+		Input:      &pb.InterviewInput{Status: text("scheduled")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"status"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("direct interview status change = %v, want FailedPrecondition", status.Code(err))
+	}
+	if _, err := client.CreateInterviewPanelist(ctx, &pb.CreateInterviewPanelistRequest{Input: &pb.InterviewPanelistInput{
+		InterviewId: &interviewID, InterviewerPrincipalId: text("00000000-0000-4000-8000-000000000001"),
+	}}); status.Code(err) != codes.Unavailable {
+		t.Fatalf("panelist without verifier status = %v, want Unavailable", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", interviewID).Count(&outboxCount).Error; err != nil || outboxCount != 2 {
+		t.Fatalf("interview outbox count before delete = %d, err = %v", outboxCount, err)
+	}
+	panelistID := "00000000-0000-4000-8000-000000000016"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_interview_panelists
+		(id, interview_id, interviewer_principal_id) VALUES (?, ?, ?)`,
+		panelistID, interviewID, "00000000-0000-4000-8000-000000000001").Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.UpdateInterview(ctx, &pb.UpdateInterviewRequest{Id: interviewID,
+		Input:      &pb.InterviewInput{ScheduledStart: start},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"scheduled_start"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("update interview with panelist status = %v, want FailedPrecondition", status.Code(err))
+	}
+	if _, err := client.DeleteInterview(ctx, &common.IDRequest{Id: interviewID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete interview with panelist status = %v, want FailedPrecondition", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Exec("DELETE FROM hr_interview_panelists WHERE id = ?", panelistID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.DeleteInterview(ctx, &common.IDRequest{Id: interviewID}); err != nil {
+		t.Fatalf("delete unreferenced planned interview: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", interviewID).Count(&outboxCount).Error; err != nil || outboxCount != 3 {
+		t.Fatalf("interview outbox count after delete = %d, err = %v", outboxCount, err)
 	}
 }
