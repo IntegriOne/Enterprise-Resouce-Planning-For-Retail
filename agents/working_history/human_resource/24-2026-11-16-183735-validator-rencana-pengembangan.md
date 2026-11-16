@@ -1,0 +1,3 @@
+# Validator rencana pengembangan karier
+
+Menambahkan validator produksi `hr_development_plans` dan `hr_development_actions`, dengan lock pekerja/mentor/job, rencana/kursus/kompetensi, versi unik, nomor tindakan unik, tanggal dalam periode plan, serta perlindungan draft dan referensi DRM. Job dan course kini menolak penonaktifan/perubahan masa berlaku bila dipakai rencana/action. Unit test, race, vet, build, integrasi gRPC–PostgreSQL dan outbox lulus. Audit terpisah menemukan `hr_career_paths` belum dapat dibuat karena kolom approval wajib tetapi Guard CRUD melarang pengisiannya. Policy tes tiruan; IAM/Gateway positif belum dibuktikan.

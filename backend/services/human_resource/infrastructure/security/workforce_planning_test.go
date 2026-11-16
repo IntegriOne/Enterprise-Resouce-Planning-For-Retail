@@ -73,7 +73,8 @@ func TestJobValidatorLocksParentAndProtectsReferencedJob(t *testing.T) {
 	jobs := &jobReaderStub{}
 	positions := &positionCounterStub{}
 	requirements := &positionCounterStub{}
-	validator := &jobValidator{families: families, jobs: jobs, positions: positions, requirements: requirements}
+	developmentPlans := &positionCounterStub{}
+	validator := &jobValidator{families: families, jobs: jobs, positions: positions, requirements: requirements, developmentPlans: developmentPlans}
 	proposed := &entity.Job{ID: "job", JobFamilyID: "family", JobCode: "STORE"}
 	if err := validator.ValidateMutation(t.Context(), "hr_jobs", nil, proposed); !errors.Is(err, hrerrors.ErrReferenceConflict) || !families.locked {
 		t.Fatalf("inactive parent was not locked and rejected: %v", err)
@@ -101,5 +102,10 @@ func TestJobValidatorLocksParentAndProtectsReferencedJob(t *testing.T) {
 	proposed.IsActive = true
 	if err := validator.ValidateMutation(t.Context(), "hr_jobs", proposed, &inactive); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("deactivate job with competency requirement: %v", err)
+	}
+	requirements.count = 0
+	developmentPlans.count = 1
+	if err := validator.ValidateMutation(t.Context(), "hr_jobs", proposed, &inactive); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("deactivate job used by development plan: %v", err)
 	}
 }

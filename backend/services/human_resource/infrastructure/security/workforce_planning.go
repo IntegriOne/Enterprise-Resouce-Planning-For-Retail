@@ -12,12 +12,15 @@ import (
 
 // WorkforcePlanningValidators memasang pemeriksaan awal dua resource katalog HRM.
 func WorkforcePlanningValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
-	if repos == nil || repos.JobFamily == nil || repos.Job == nil || repos.Position == nil || repos.JobCompetency == nil {
+	if repos == nil || repos.JobFamily == nil || repos.Job == nil || repos.Position == nil || repos.JobCompetency == nil || repos.DevelopmentPlan == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
 		"hr_job_families": &jobFamilyValidator{families: repos.JobFamily, jobs: repos.Job},
-		"hr_jobs":         &jobValidator{families: repos.JobFamily, jobs: repos.Job, positions: repos.Position, requirements: repos.JobCompetency},
+		"hr_jobs": &jobValidator{
+			families: repos.JobFamily, jobs: repos.Job, positions: repos.Position,
+			requirements: repos.JobCompetency, developmentPlans: repos.DevelopmentPlan,
+		},
 	}, nil
 }
 
@@ -87,14 +90,15 @@ func (v *jobFamilyValidator) ValidateMutation(ctx context.Context, table string,
 }
 
 type jobValidator struct {
-	families     jobFamilyReader
-	jobs         jobReader
-	positions    positionCounter
-	requirements positionCounter
+	families         jobFamilyReader
+	jobs             jobReader
+	positions        positionCounter
+	requirements     positionCounter
+	developmentPlans positionCounter
 }
 
 func (v *jobValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
-	if v == nil || v.families == nil || v.jobs == nil || v.positions == nil || v.requirements == nil || table != "hr_jobs" {
+	if v == nil || v.families == nil || v.jobs == nil || v.positions == nil || v.requirements == nil || v.developmentPlans == nil || table != "hr_jobs" {
 		return hrerrors.ErrUnavailable
 	}
 	if err := ctx.Err(); err != nil {
@@ -123,7 +127,21 @@ func (v *jobValidator) ValidateMutation(ctx context.Context, table string, befor
 		}
 		if previous, ok := before.(*entity.Job); ok && previous != nil &&
 			((previous.IsActive && !job.IsActive) || !previous.ValidFrom.Equal(job.ValidFrom) || !reflect.DeepEqual(previous.ValidTo, job.ValidTo)) {
-			count, err := v.requirements.CountWhere(ctx, []domainrepo.Filter{{Column: "job_id", Values: []any{job.ID}}})
+			count, err := v.positions.CountWhere(ctx, []domainrepo.Filter{{Column: "job_id", Values: []any{job.ID}}})
+			if err != nil {
+				return err
+			}
+			if count > 0 {
+				return hrerrors.ErrReferenceConflict
+			}
+			count, err = v.requirements.CountWhere(ctx, []domainrepo.Filter{{Column: "job_id", Values: []any{job.ID}}})
+			if err != nil {
+				return err
+			}
+			if count > 0 {
+				return hrerrors.ErrReferenceConflict
+			}
+			count, err = v.developmentPlans.CountWhere(ctx, []domainrepo.Filter{{Column: "target_job_id", Values: []any{job.ID}}})
 			if err != nil {
 				return err
 			}
@@ -145,6 +163,13 @@ func (v *jobValidator) ValidateMutation(ctx context.Context, table string, befor
 		return hrerrors.ErrReferenceConflict
 	}
 	count, err = v.requirements.CountWhere(ctx, []domainrepo.Filter{{Column: "job_id", Values: []any{job.ID}}})
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return hrerrors.ErrReferenceConflict
+	}
+	count, err = v.developmentPlans.CountWhere(ctx, []domainrepo.Filter{{Column: "target_job_id", Values: []any{job.ID}}})
 	if err != nil {
 		return err
 	}

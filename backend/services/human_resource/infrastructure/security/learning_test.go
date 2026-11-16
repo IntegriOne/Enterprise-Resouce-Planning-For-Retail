@@ -58,7 +58,8 @@ func TestLearningCourseValidatorKeepsVersionAndReferencesSafe(t *testing.T) {
 	courses := &learningCourseStub{}
 	links := &learningCounterStub{}
 	enrollments := &learningCounterStub{}
-	validator := &learningCourseValidator{courses: courses, competencies: links, enrollments: enrollments}
+	actions := &learningCounterStub{}
+	validator := &learningCourseValidator{courses: courses, competencies: links, enrollments: enrollments, developmentActions: actions}
 	value := &entity.LearningCourse{ID: "course", CourseCode: "SAFETY", CourseVersion: "1", IsActive: true}
 	courses.matches = []entity.LearningCourse{{ID: "other"}}
 	if err := validator.ValidateMutation(t.Context(), "hr_learning_courses", nil, value); !errors.Is(err, hrerrors.ErrAlreadyExists) {
@@ -87,6 +88,11 @@ func TestLearningCourseValidatorKeepsVersionAndReferencesSafe(t *testing.T) {
 	enrollments.count = 1
 	if err := validator.ValidateMutation(t.Context(), "hr_learning_courses", value, nil); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("enrolled course deleted: %v", err)
+	}
+	enrollments.count = 0
+	actions.count = 1
+	if err := validator.ValidateMutation(t.Context(), "hr_learning_courses", value, nil); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("course used by development action deleted: %v", err)
 	}
 }
 

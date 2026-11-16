@@ -82,6 +82,13 @@ func BuildDependencies(
 	for resource, validator := range analyticsValidators {
 		validators[resource] = validator
 	}
+	careerValidators, err := security.CareerValidators(repos)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM career validators: %w", err))
+	}
+	for resource, validator := range careerValidators {
+		validators[resource] = validator
+	}
 	integrity := security.NewIntegrity(validators)
 	services, err := appservice.NewRegistry(repos, operation.Dependencies{Policy: policy, Integrity: integrity})
 	if err != nil {

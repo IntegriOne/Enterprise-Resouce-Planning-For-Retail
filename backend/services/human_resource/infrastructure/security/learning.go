@@ -16,14 +16,15 @@ func LearningValidators(repos *repository.Registry) (map[string]MutationValidato
 	if repos == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	for _, dependency := range []any{repos.Worker, repos.LearningCourse, repos.LearningCourseCompetency, repos.LearningEnrollment, repos.Competency} {
+	for _, dependency := range []any{repos.Worker, repos.LearningCourse, repos.LearningCourseCompetency, repos.LearningEnrollment, repos.Competency, repos.DevelopmentAction} {
 		if operation.RequireDependency(dependency) != nil {
 			return nil, hrerrors.ErrUnavailable
 		}
 	}
 	return map[string]MutationValidator{
 		"hr_learning_courses": &learningCourseValidator{
-			courses: repos.LearningCourse, competencies: repos.LearningCourseCompetency, enrollments: repos.LearningEnrollment,
+			courses: repos.LearningCourse, competencies: repos.LearningCourseCompetency,
+			enrollments: repos.LearningEnrollment, developmentActions: repos.DevelopmentAction,
 		},
 		"hr_learning_course_competencies": &learningCourseCompetencyValidator{
 			courses: repos.LearningCourse, competencies: repos.Competency, links: repos.LearningCourseCompetency,
@@ -44,15 +45,17 @@ type learningReferenceCounter interface {
 }
 
 type learningCourseValidator struct {
-	courses      learningCourseReader
-	competencies learningReferenceCounter
-	enrollments  learningReferenceCounter
+	courses            learningCourseReader
+	competencies       learningReferenceCounter
+	enrollments        learningReferenceCounter
+	developmentActions learningReferenceCounter
 }
 
 // ValidateMutation menjaga identitas versi kursus dan referensi konsumennya.
 func (v *learningCourseValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
 	if v == nil || table != "hr_learning_courses" || operation.RequireDependency(v.courses) != nil ||
-		operation.RequireDependency(v.competencies) != nil || operation.RequireDependency(v.enrollments) != nil {
+		operation.RequireDependency(v.competencies) != nil || operation.RequireDependency(v.enrollments) != nil ||
+		operation.RequireDependency(v.developmentActions) != nil {
 		return hrerrors.ErrUnavailable
 	}
 	if err := ctx.Err(); err != nil {
@@ -100,7 +103,7 @@ func (v *learningCourseValidator) ValidateMutation(ctx context.Context, table st
 		!reflect.DeepEqual(previous.DurationHours, course.DurationHours) ||
 		previous.CredentialAwarded != course.CredentialAwarded || !reflect.DeepEqual(previous.ExpiryMonths, course.ExpiryMonths) ||
 		!reflect.DeepEqual(previous.ValidFrom, course.ValidFrom) || !reflect.DeepEqual(previous.ValidTo, course.ValidTo)
-	if changedDefinition {
+	if changedDefinition || (previous.IsActive && !course.IsActive) {
 		return v.rejectIfReferenced(ctx, course.ID)
 	}
 	return nil
@@ -108,7 +111,7 @@ func (v *learningCourseValidator) ValidateMutation(ctx context.Context, table st
 
 func (v *learningCourseValidator) rejectIfReferenced(ctx context.Context, courseID string) error {
 	filters := []domainrepo.Filter{{Column: "course_id", Values: []any{courseID}}}
-	for _, reference := range []learningReferenceCounter{v.competencies, v.enrollments} {
+	for _, reference := range []learningReferenceCounter{v.competencies, v.enrollments, v.developmentActions} {
 		count, err := reference.CountWhere(ctx, filters)
 		if err != nil {
 			return err

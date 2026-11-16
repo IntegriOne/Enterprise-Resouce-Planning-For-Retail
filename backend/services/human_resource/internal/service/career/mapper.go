@@ -109,6 +109,9 @@ func specDevelopmentPlan() operation.Specification[entity.DevelopmentPlan, strin
 			return a
 		},
 		Guard: func(action string, old, next *entity.DevelopmentPlan) error {
+			if action != "create" && old.Status != "draft" {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if action == "update" && !reflect.DeepEqual(old.Status, next.Status) {
 				return hrerrors.ErrWorkflowRequired
 			}
@@ -229,7 +232,16 @@ func specDevelopmentAction() operation.Specification[entity.DevelopmentAction, s
 			if action == "create" && next.CompletedAt != nil {
 				return hrerrors.ErrWorkflowRequired
 			}
+			if action == "delete" && (old.CompletedAt != nil || old.EvidenceDocumentVersionReferenceID != nil) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			if action == "update" && old.CompletedAt != nil {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if action == "update" && !reflect.DeepEqual(old.CompletedAt, next.CompletedAt) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			if action == "update" && !reflect.DeepEqual(old.EvidenceDocumentVersionReferenceID, next.EvidenceDocumentVersionReferenceID) {
 				return hrerrors.ErrWorkflowRequired
 			}
 			return nil
