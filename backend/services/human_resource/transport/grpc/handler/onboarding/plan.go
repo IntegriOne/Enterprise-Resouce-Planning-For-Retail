@@ -10,12 +10,27 @@ import (
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/onboarding"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	"github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/response"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func plan(value *entity.OnboardingPlan) *pb.OnboardingPlan {
-	return &pb.OnboardingPlan{Id: value.ID, WorkerId: value.WorkerID, PlanCode: value.PlanCode, PlanVersion: value.PlanVersion,
+	item := &pb.OnboardingPlan{Id: value.ID, WorkerId: value.WorkerID, PlanCode: value.PlanCode, PlanVersion: value.PlanVersion,
 		StartDate: value.StartDate.Format("2006-01-02"), TargetCompletionDate: dateString(value.TargetCompletionDate),
-		Status: value.Status, TemplateReferenceId: value.TemplateReferenceID, CreatedByPrincipalId: value.CreatedByPrincipalID}
+		Status: value.Status, TemplateReferenceId: value.TemplateReferenceID, CreatedByPrincipalId: value.CreatedByPrincipalID,
+		StartedByPrincipalId: value.StartedByPrincipalID, CompletedByPrincipalId: value.CompletedByPrincipalID}
+	if value.StartedAt != nil {
+		item.StartedAt = timestamppb.New(*value.StartedAt)
+	}
+	if value.CompletedAt != nil {
+		item.CompletedAt = timestamppb.New(*value.CompletedAt)
+	}
+	return item
+}
+func (h *Handler) StartOnboardingPlan(ctx context.Context, request *common.IDRequest) (*pb.OnboardingPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return planResponse(h.service.StartOnboardingPlan(ctx, request.Id))
 }
 func planResponse(value *entity.OnboardingPlan, err error) (*pb.OnboardingPlanResponse, error) {
 	if err != nil {

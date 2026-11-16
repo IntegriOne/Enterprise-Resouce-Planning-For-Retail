@@ -387,7 +387,12 @@ CREATE TABLE "hr_onboarding_plans" (
   "status" varchar(30) NOT NULL DEFAULT 'draft',
   "template_reference_id" uuid,
   "created_by_principal_id" uuid,
-  CONSTRAINT "ck_hr_onboarding_plan_dates" CHECK (plan_version > 0 AND (target_completion_date IS NULL OR target_completion_date >= start_date))
+  "started_at" timestamptz,
+  "started_by_principal_id" uuid,
+  "completed_at" timestamptz,
+  "completed_by_principal_id" uuid,
+  CONSTRAINT "ck_hr_onboarding_plan_dates" CHECK (plan_version > 0 AND (target_completion_date IS NULL OR target_completion_date >= start_date)),
+  CONSTRAINT "ck_hr_onboarding_plan_lifecycle" CHECK ((status = 'draft' AND started_at IS NULL AND started_by_principal_id IS NULL AND completed_at IS NULL AND completed_by_principal_id IS NULL) OR (status = 'in_progress' AND started_at IS NOT NULL AND started_by_principal_id IS NOT NULL AND completed_at IS NULL AND completed_by_principal_id IS NULL) OR (status = 'completed' AND started_at IS NOT NULL AND started_by_principal_id IS NOT NULL AND completed_at IS NOT NULL AND completed_by_principal_id IS NOT NULL AND completed_at >= started_at))
 );
 
 CREATE TABLE "hr_onboarding_tasks" (
@@ -399,8 +404,10 @@ CREATE TABLE "hr_onboarding_tasks" (
   "assigned_principal_id" uuid,
   "due_at" timestamptz,
   "completed_at" timestamptz,
+  "completed_by_principal_id" uuid,
   "completion_evidence_reference_id" uuid,
-  "is_mandatory" boolean NOT NULL DEFAULT true
+  "is_mandatory" boolean NOT NULL DEFAULT true,
+  CONSTRAINT "ck_hr_onboarding_task_completion" CHECK ((completed_at IS NULL AND completed_by_principal_id IS NULL AND completion_evidence_reference_id IS NULL) OR (completed_at IS NOT NULL AND completed_by_principal_id IS NOT NULL AND completion_evidence_reference_id IS NOT NULL))
 );
 
 CREATE TABLE "hr_compensation_bands" (

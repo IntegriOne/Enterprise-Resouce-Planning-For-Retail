@@ -6,15 +6,19 @@ import "time"
 
 // OnboardingPlan memetakan baris hr_onboarding_plans.
 type OnboardingPlan struct {
-	ID                   string     `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
-	WorkerID             string     `gorm:"column:worker_id;type:uuid" json:"worker_id"`
-	PlanCode             string     `gorm:"column:plan_code;type:varchar(100)" json:"plan_code"`
-	PlanVersion          int32      `gorm:"column:plan_version;type:integer" json:"plan_version"`
-	StartDate            time.Time  `gorm:"column:start_date;type:date" json:"start_date"`
-	TargetCompletionDate *time.Time `gorm:"column:target_completion_date;type:date" json:"target_completion_date"`
-	Status               string     `gorm:"column:status;type:varchar(30)" json:"status"`
-	TemplateReferenceID  *string    `gorm:"column:template_reference_id;type:uuid" json:"template_reference_id"`
-	CreatedByPrincipalID *string    `gorm:"column:created_by_principal_id;type:uuid" json:"created_by_principal_id"`
+	ID                     string     `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
+	WorkerID               string     `gorm:"column:worker_id;type:uuid" json:"worker_id"`
+	PlanCode               string     `gorm:"column:plan_code;type:varchar(100)" json:"plan_code"`
+	PlanVersion            int32      `gorm:"column:plan_version;type:integer" json:"plan_version"`
+	StartDate              time.Time  `gorm:"column:start_date;type:date" json:"start_date"`
+	TargetCompletionDate   *time.Time `gorm:"column:target_completion_date;type:date" json:"target_completion_date"`
+	Status                 string     `gorm:"column:status;type:varchar(30)" json:"status"`
+	TemplateReferenceID    *string    `gorm:"column:template_reference_id;type:uuid" json:"template_reference_id"`
+	CreatedByPrincipalID   *string    `gorm:"column:created_by_principal_id;type:uuid" json:"created_by_principal_id"`
+	StartedAt              *time.Time `gorm:"column:started_at;type:timestamptz" json:"started_at"`
+	StartedByPrincipalID   *string    `gorm:"column:started_by_principal_id;type:uuid" json:"started_by_principal_id"`
+	CompletedAt            *time.Time `gorm:"column:completed_at;type:timestamptz" json:"completed_at"`
+	CompletedByPrincipalID *string    `gorm:"column:completed_by_principal_id;type:uuid" json:"completed_by_principal_id"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.
@@ -30,6 +34,7 @@ type OnboardingTask struct {
 	AssignedPrincipalID           *string    `gorm:"column:assigned_principal_id;type:uuid" json:"assigned_principal_id"`
 	DueAt                         *time.Time `gorm:"column:due_at;type:timestamptz" json:"due_at"`
 	CompletedAt                   *time.Time `gorm:"column:completed_at;type:timestamptz" json:"completed_at"`
+	CompletedByPrincipalID        *string    `gorm:"column:completed_by_principal_id;type:uuid" json:"completed_by_principal_id"`
 	CompletionEvidenceReferenceID *string    `gorm:"column:completion_evidence_reference_id;type:uuid" json:"completion_evidence_reference_id"`
 	IsMandatory                   bool       `gorm:"column:is_mandatory;type:boolean" json:"is_mandatory"`
 }

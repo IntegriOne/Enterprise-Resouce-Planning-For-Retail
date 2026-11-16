@@ -43,8 +43,31 @@ func (x *OnboardingPlan) Validate() error {
 			return hrerrors.Invalid("created_by_principal_id", "has invalid value")
 		}
 	}
+	if x.StartedAt != nil {
+		if err := validateTime("started_at", (*x.StartedAt)); err != nil {
+			return hrerrors.Invalid("started_at", "has invalid value")
+		}
+	}
+	if x.StartedByPrincipalID != nil {
+		if err := ValidateUUID("started_by_principal_id", (*x.StartedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("started_by_principal_id", "has invalid value")
+		}
+	}
+	if x.CompletedAt != nil {
+		if err := validateTime("completed_at", (*x.CompletedAt)); err != nil {
+			return hrerrors.Invalid("completed_at", "has invalid value")
+		}
+	}
+	if x.CompletedByPrincipalID != nil {
+		if err := ValidateUUID("completed_by_principal_id", (*x.CompletedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("completed_by_principal_id", "has invalid value")
+		}
+	}
 	if ruleAnd(ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.PlanVersion)), ruleNumber("0"), ">")), ruleOr(ruleKnown(x.TargetCompletionDate == nil), rulePresent(x.TargetCompletionDate != nil, func() bool { return ruleCompareResult(CompareDates((*x.TargetCompletionDate), x.StartDate), ">=") }))) == ruleFalse {
 		return hrerrors.Invalid("hr_onboarding_plans", "ck_hr_onboarding_plan_dates")
+	}
+	if ruleOr(ruleOr(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("draft")), ruleKnown(x.StartedAt == nil)), ruleKnown(x.StartedByPrincipalID == nil)), ruleKnown(x.CompletedAt == nil)), ruleKnown(x.CompletedByPrincipalID == nil)), ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("in_progress")), ruleKnown(x.StartedAt != nil)), ruleKnown(x.StartedByPrincipalID != nil)), ruleKnown(x.CompletedAt == nil)), ruleKnown(x.CompletedByPrincipalID == nil))), ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("completed")), ruleKnown(x.StartedAt != nil)), ruleKnown(x.StartedByPrincipalID != nil)), ruleKnown(x.CompletedAt != nil)), ruleKnown(x.CompletedByPrincipalID != nil)), rulePresent(x.CompletedAt != nil && x.StartedAt != nil, func() bool { return ruleCompareResult((*x.CompletedAt).Compare((*x.StartedAt)), ">=") }))) == ruleFalse {
+		return hrerrors.Invalid("hr_onboarding_plans", "ck_hr_onboarding_plan_lifecycle")
 	}
 	return nil
 }
@@ -94,10 +117,18 @@ func (x *OnboardingTask) Validate() error {
 			return hrerrors.Invalid("completed_at", "has invalid value")
 		}
 	}
+	if x.CompletedByPrincipalID != nil {
+		if err := ValidateUUID("completed_by_principal_id", (*x.CompletedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("completed_by_principal_id", "has invalid value")
+		}
+	}
 	if x.CompletionEvidenceReferenceID != nil {
 		if err := ValidateUUID("completion_evidence_reference_id", (*x.CompletionEvidenceReferenceID)); err != nil {
 			return hrerrors.Invalid("completion_evidence_reference_id", "has invalid value")
 		}
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleKnown(x.CompletedAt == nil), ruleKnown(x.CompletedByPrincipalID == nil)), ruleKnown(x.CompletionEvidenceReferenceID == nil)), ruleAnd(ruleAnd(ruleKnown(x.CompletedAt != nil), ruleKnown(x.CompletedByPrincipalID != nil)), ruleKnown(x.CompletionEvidenceReferenceID != nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_onboarding_tasks", "ck_hr_onboarding_task_completion")
 	}
 	return nil
 }

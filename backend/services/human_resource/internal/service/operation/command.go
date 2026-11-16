@@ -25,8 +25,9 @@ func (r *Resource[T, K, P]) Command(
 	approvesPayroll := r.spec.Table == "hr_payroll_runs" && action == "approve"
 	approvesCareerPath := r.spec.Table == "hr_career_paths" && action == "approve"
 	launchesPerformanceCycle := r.spec.Table == "hr_performance_cycles" && action == "launch"
+	startsOnboardingPlan := r.spec.Table == "hr_onboarding_plans" && action == "start"
 	finalizesTalent := r.spec.Table == "hr_talent_assessments" && action == "finalize"
-	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || launchesPerformanceCycle || finalizesTalent
+	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || launchesPerformanceCycle || startsOnboardingPlan || finalizesTalent
 	if !allowed || change == nil {
 		return nil, hrerrors.ErrWorkflowRequired
 	}

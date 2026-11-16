@@ -28,6 +28,14 @@ VALUES (pg_temp.u(3),'CASHIER-01','Kasir toko',pg_temp.u(2),pg_temp.u(900),pg_te
 INSERT INTO hr_workers (id,worker_number,person_party_reference_id,worker_category,primary_legal_entity_reference_id)
 VALUES (pg_temp.u(4),'W-A',pg_temp.u(904),'employee',pg_temp.u(901)),
        (pg_temp.u(5),'W-B',pg_temp.u(905),'employee',pg_temp.u(901));
+INSERT INTO hr_onboarding_plans (id,worker_id,plan_code,start_date)
+VALUES (pg_temp.u(100),pg_temp.u(4),'FIRST-WEEK','2026-01-01');
+SELECT pg_temp.expect_error($q$UPDATE hr_onboarding_plans SET status='in_progress' WHERE id=pg_temp.u(100)$q$,'23514','onboarding mulai tanpa audit actor dan waktu');
+UPDATE hr_onboarding_plans SET status='in_progress', started_at=now(), started_by_principal_id=pg_temp.u(999) WHERE id=pg_temp.u(100);
+SELECT pg_temp.expect_error($q$UPDATE hr_onboarding_plans SET status='completed', completed_at=now() WHERE id=pg_temp.u(100)$q$,'23514','onboarding selesai tanpa audit actor');
+INSERT INTO hr_onboarding_tasks (id,onboarding_plan_id,task_code,task_name,task_owner_type)
+VALUES (pg_temp.u(101),pg_temp.u(100),'ORIENTATION','Orientation','worker');
+SELECT pg_temp.expect_error($q$UPDATE hr_onboarding_tasks SET completed_at=now() WHERE id=pg_temp.u(101)$q$,'23514','tugas onboarding selesai tanpa actor dan bukti');
 INSERT INTO hr_worker_assignments (id,worker_id,position_id,assignment_type,valid_from,valid_to)
 VALUES (pg_temp.u(6),pg_temp.u(4),pg_temp.u(3),'primary','2026-01-01','2026-06-30');
 -- Periode bersebelahan sah; penempatan paralel secondary juga sah.

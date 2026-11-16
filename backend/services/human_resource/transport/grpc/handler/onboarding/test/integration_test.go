@@ -119,14 +119,18 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var planID, taskID string
+	var planID, taskID, startedPlanID, startedTaskID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
 		for _, statement := range []struct{ query, value string }{
+			{"DELETE FROM hr_onboarding_tasks WHERE id = ?", startedTaskID},
 			{"DELETE FROM hr_onboarding_tasks WHERE id = ?", taskID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", startedTaskID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", taskID},
+			{"DELETE FROM hr_onboarding_plans WHERE id = ?", startedPlanID},
 			{"DELETE FROM hr_onboarding_plans WHERE id = ?", planID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", startedPlanID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", planID},
 			{"DELETE FROM hr_workers WHERE id = ?", workerID},
 		} {
@@ -169,7 +173,7 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.UpdateOnboardingPlan(ctx, &pb.UpdateOnboardingPlanRequest{
 		Id: planID, Input: &pb.OnboardingPlanInput{Status: &active},
 		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"status"}},
-	}); status.Code(err) != codes.FailedPrecondition {
+	}); status.Code(err) != codes.InvalidArgument {
 		t.Fatalf("start plan through CRUD: %v", err)
 	}
 	loaded, err := client.GetOnboardingPlanByID(ctx, &common.IDRequest{Id: planID})
@@ -206,7 +210,7 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.CreateOnboardingTask(ctx, &pb.CreateOnboardingTaskRequest{Input: &pb.OnboardingTaskInput{
 		OnboardingPlanId: &planID, TaskCode: &taskCode, TaskName: &name, TaskOwnerType: &owner,
 		CompletedAt: due,
-	}}); status.Code(err) != codes.FailedPrecondition {
+	}}); status.Code(err) != codes.InvalidArgument {
 		t.Fatalf("client completed task through CRUD: %v", err)
 	}
 	if _, err := client.DeleteOnboardingPlan(ctx, &common.IDRequest{Id: planID}); status.Code(err) != codes.FailedPrecondition {
@@ -249,5 +253,38 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", planID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("plan outbox after create/update/delete: count=%d, error=%v", events, err)
+	}
+
+	today := time.Now().UTC().Format("2006-01-02")
+	startCode := "START-" + workerID
+	startPlan, err := client.CreateOnboardingPlan(ctx, &pb.CreateOnboardingPlanRequest{Input: &pb.OnboardingPlanInput{
+		WorkerId: &workerID, PlanCode: &startCode, StartDate: &today,
+	}})
+	if err != nil {
+		t.Fatalf("create plan for start: %v", err)
+	}
+	startedPlanID = startPlan.GetItem().GetId()
+	if _, err := client.StartOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("start without tasks: %v", err)
+	}
+	startTaskCode := "START-ORIENTATION"
+	startTask, err := client.CreateOnboardingTask(ctx, &pb.CreateOnboardingTaskRequest{Input: &pb.OnboardingTaskInput{
+		OnboardingPlanId: &startedPlanID, TaskCode: &startTaskCode, TaskName: &name, TaskOwnerType: &owner,
+		AssignedPrincipalId: &principal,
+	}})
+	if err != nil {
+		t.Fatalf("create task for start: %v", err)
+	}
+	startedTaskID = startTask.GetItem().GetId()
+	started, err := client.StartOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID})
+	if err != nil || started.GetItem().GetStatus() != "in_progress" || started.GetItem().GetStartedAt() == nil ||
+		started.GetItem().GetStartedByPrincipalId() != principal {
+		t.Fatalf("start plan: %+v, %v", started, err)
+	}
+	if _, err := client.StartOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat start: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedPlanID).Count(&events).Error; err != nil || events != 2 {
+		t.Fatalf("start plan outbox count=%d, error=%v", events, err)
 	}
 }

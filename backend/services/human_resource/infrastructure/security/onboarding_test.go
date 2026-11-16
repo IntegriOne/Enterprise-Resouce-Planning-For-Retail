@@ -108,6 +108,21 @@ func TestOnboardingPlanValidatorKeepsDraftAndWorkerReferences(t *testing.T) {
 		t.Fatalf("start through CRUD: %v", err)
 	}
 	changed = *plan
+	changed.Status = "in_progress"
+	changed.StartedAt = &start
+	changed.StartedByPrincipalID = &principal
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", plan, &changed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("start without tasks: %v", err)
+	}
+	tasks.count = 1
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", plan, &changed); err != nil {
+		t.Fatalf("start with tasks: %v", err)
+	}
+	changed.PlanCode = "FORGED"
+	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", plan, &changed); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("start changing plan data: %v", err)
+	}
+	changed = *plan
 	changed.TemplateReferenceID = &principal
 	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", nil, &changed); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("unverified template reference: %v", err)

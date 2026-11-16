@@ -1,0 +1,3 @@
+# Transisi mulai onboarding HRM
+
+Menambahkan metadata audit lifecycle plan/task dan CHECK PostgreSQL pada baseline `000001`. Command serta RPC `StartOnboardingPlan` membuka draf yang mempunyai tugas pada tanggal sah, dengan actor manusia, permission sensitif, pemeriksaan worker, dan outbox atomik. Katalog runtime kini 325 permission; izin penyelesaian tetap rancangan. Tes unit/race, integrasi gRPC→PostgreSQL `_test`, SQL up/down/up, build dan Docker healthy lulus. Database development HRM dibangun ulang setelah semua tabel bisnis terbukti kosong. Tindak lanjut: verifikasi bukti DRM dan relasi PIC, command penyelesaian tugas/rencana, lalu E2E IAM/Gateway dengan grant resmi.

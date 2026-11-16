@@ -66,6 +66,7 @@ func (v *onboardingPlanValidator) ValidateMutation(ctx context.Context, table st
 		return err
 	}
 	var previous *entity.OnboardingPlan
+	starting := false
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.OnboardingPlan)
@@ -83,7 +84,8 @@ func (v *onboardingPlanValidator) ValidateMutation(ctx context.Context, table st
 		if !ok || plan == nil {
 			return hrerrors.ErrInvalidInput
 		}
-		if plan.Status != "draft" || plan.TemplateReferenceID != nil {
+		starting = previous != nil && validOnboardingStart(previous, plan)
+		if plan.Status != "draft" && !starting || plan.TemplateReferenceID != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 		if previous != nil && (previous.ID != plan.ID || previous.WorkerID != plan.WorkerID ||
@@ -98,7 +100,7 @@ func (v *onboardingPlanValidator) ValidateMutation(ctx context.Context, table st
 	if worker == nil || (worker.Status != entity.WorkerStatusPreboarding && worker.Status != entity.WorkerStatusActive) {
 		return hrerrors.ErrReferenceConflict
 	}
-	if previous != nil && (after == nil || !reflect.DeepEqual(previous, plan)) {
+	if previous != nil && !starting && (after == nil || !reflect.DeepEqual(previous, plan)) {
 		count, err := v.tasks.CountWhere(ctx, []domainrepo.Filter{{Column: "onboarding_plan_id", Values: []any{plan.ID}}})
 		if err != nil {
 			return err
@@ -109,6 +111,15 @@ func (v *onboardingPlanValidator) ValidateMutation(ctx context.Context, table st
 	}
 	if after == nil {
 		return nil
+	}
+	if starting {
+		count, err := v.tasks.CountWhere(ctx, []domainrepo.Filter{{Column: "onboarding_plan_id", Values: []any{plan.ID}}})
+		if err != nil {
+			return err
+		}
+		if count == 0 {
+			return hrerrors.ErrReferenceConflict
+		}
 	}
 	matches, err := v.plans.SelectWhere(ctx, []domainrepo.Filter{
 		{Column: "worker_id", Values: []any{plan.WorkerID}},
@@ -124,6 +135,19 @@ func (v *onboardingPlanValidator) ValidateMutation(ctx context.Context, table st
 		}
 	}
 	return nil
+}
+
+func validOnboardingStart(before, after *entity.OnboardingPlan) bool {
+	if before == nil || after == nil || before.Status != "draft" || after.Status != "in_progress" ||
+		before.StartedAt != nil || before.StartedByPrincipalID != nil || after.StartedAt == nil ||
+		after.StartedByPrincipalID == nil || after.CompletedAt != nil || after.CompletedByPrincipalID != nil {
+		return false
+	}
+	unchanged := *after
+	unchanged.Status = before.Status
+	unchanged.StartedAt = before.StartedAt
+	unchanged.StartedByPrincipalID = before.StartedByPrincipalID
+	return reflect.DeepEqual(*before, unchanged)
 }
 
 func (v *onboardingTaskValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {

@@ -7,10 +7,54 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/onboarding"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
+	mockdb "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/testsupport"
 )
+
+func TestStartOnboardingPlanRequiresTaskAndPreservesAudit(t *testing.T) {
+	t.Parallel()
+	h := mockdb.New()
+	plans := mockdb.NewStore[entity.OnboardingPlan, string](h, func(v *entity.OnboardingPlan) string { return v.ID })
+	tasks := mockdb.NewStore[entity.OnboardingTask, string](h, func(v *entity.OnboardingTask) string { return v.ID })
+	svc, err := service.NewService(service.Dependencies{Runtime: h.Runtime(), OnboardingPlan: plans, OnboardingTask: tasks})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := t.Context()
+	plan, err := svc.CreateOnboardingPlan(ctx, input())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.StartOnboardingPlan(ctx, plan.ID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("start without tasks: %v", err)
+	}
+	if len(h.Events) != 1 {
+		t.Fatal("rejected start must not create an outbox event")
+	}
+	_, err = svc.CreateOnboardingTask(ctx, service.CreateOnboardingTaskInput{
+		OnboardingPlanID: plan.ID, TaskCode: "ORIENTATION", TaskName: "Orientation", TaskOwnerType: "worker",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	started, err := svc.StartOnboardingPlan(ctx, plan.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if started.Status != "in_progress" || started.StartedAt == nil || started.StartedByPrincipalID == nil ||
+		started.CompletedAt != nil || started.CompletedByPrincipalID != nil {
+		t.Fatalf("invalid started plan: %+v", started)
+	}
+	if _, err := svc.StartOnboardingPlan(ctx, plan.ID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("repeated start: %v", err)
+	}
+	if len(h.Events) != 3 || plans.Rows[plan.ID].Status != "in_progress" {
+		t.Fatal("start must persist once with its outbox event")
+	}
+}
 
 func TestServiceCRUDAndPagination(t *testing.T) {
 	t.Parallel()

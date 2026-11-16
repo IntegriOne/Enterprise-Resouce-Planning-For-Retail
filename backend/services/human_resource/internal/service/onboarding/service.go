@@ -21,6 +21,7 @@ type Dependencies struct {
 type Service struct {
 	onboardingPlan *operation.Resource[entity.OnboardingPlan, string, *entity.OnboardingPlan]
 	onboardingTask *operation.Resource[entity.OnboardingTask, string, *entity.OnboardingTask]
+	tasks          domainrepo.RecordRepository[entity.OnboardingTask, string]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
@@ -43,6 +44,7 @@ func NewService(deps Dependencies) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	s.tasks = deps.OnboardingTask
 	return s, nil
 }
 

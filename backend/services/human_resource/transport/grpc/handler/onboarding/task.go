@@ -15,7 +15,8 @@ import (
 
 func task(value *entity.OnboardingTask) *pb.OnboardingTask {
 	item := &pb.OnboardingTask{Id: value.ID, OnboardingPlanId: value.OnboardingPlanID, TaskCode: value.TaskCode, TaskName: value.TaskName,
-		TaskOwnerType: value.TaskOwnerType, AssignedPrincipalId: value.AssignedPrincipalID, CompletionEvidenceReferenceId: value.CompletionEvidenceReferenceID, IsMandatory: value.IsMandatory}
+		TaskOwnerType: value.TaskOwnerType, AssignedPrincipalId: value.AssignedPrincipalID, CompletionEvidenceReferenceId: value.CompletionEvidenceReferenceID, IsMandatory: value.IsMandatory,
+		CompletedByPrincipalId: value.CompletedByPrincipalID}
 	if value.DueAt != nil {
 		item.DueAt = timestamppb.New(*value.DueAt)
 	}

@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	OnboardingService_CreateOnboardingPlan_FullMethodName                              = "/human_resource.onboarding.v1.OnboardingService/CreateOnboardingPlan"
 	OnboardingService_UpdateOnboardingPlan_FullMethodName                              = "/human_resource.onboarding.v1.OnboardingService/UpdateOnboardingPlan"
+	OnboardingService_StartOnboardingPlan_FullMethodName                               = "/human_resource.onboarding.v1.OnboardingService/StartOnboardingPlan"
 	OnboardingService_DeleteOnboardingPlan_FullMethodName                              = "/human_resource.onboarding.v1.OnboardingService/DeleteOnboardingPlan"
 	OnboardingService_GetOnboardingPlanByID_FullMethodName                             = "/human_resource.onboarding.v1.OnboardingService/GetOnboardingPlanByID"
 	OnboardingService_GetAllOnboardingPlans_FullMethodName                             = "/human_resource.onboarding.v1.OnboardingService/GetAllOnboardingPlans"
@@ -48,6 +49,7 @@ const (
 type OnboardingServiceClient interface {
 	CreateOnboardingPlan(ctx context.Context, in *CreateOnboardingPlanRequest, opts ...grpc.CallOption) (*OnboardingPlanResponse, error)
 	UpdateOnboardingPlan(ctx context.Context, in *UpdateOnboardingPlanRequest, opts ...grpc.CallOption) (*OnboardingPlanResponse, error)
+	StartOnboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OnboardingPlanResponse, error)
 	DeleteOnboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetOnboardingPlanByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OnboardingPlanResponse, error)
 	GetAllOnboardingPlans(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*OnboardingPlansResponse, error)
@@ -90,6 +92,16 @@ func (c *onboardingServiceClient) UpdateOnboardingPlan(ctx context.Context, in *
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OnboardingPlanResponse)
 	err := c.cc.Invoke(ctx, OnboardingService_UpdateOnboardingPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *onboardingServiceClient) StartOnboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OnboardingPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OnboardingPlanResponse)
+	err := c.cc.Invoke(ctx, OnboardingService_StartOnboardingPlan_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -282,6 +294,7 @@ func (c *onboardingServiceClient) FindOnboardingTaskByCompletionEvidenceReferenc
 type OnboardingServiceServer interface {
 	CreateOnboardingPlan(context.Context, *CreateOnboardingPlanRequest) (*OnboardingPlanResponse, error)
 	UpdateOnboardingPlan(context.Context, *UpdateOnboardingPlanRequest) (*OnboardingPlanResponse, error)
+	StartOnboardingPlan(context.Context, *v1.IDRequest) (*OnboardingPlanResponse, error)
 	DeleteOnboardingPlan(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetOnboardingPlanByID(context.Context, *v1.IDRequest) (*OnboardingPlanResponse, error)
 	GetAllOnboardingPlans(context.Context, *v1.PageRequest) (*OnboardingPlansResponse, error)
@@ -315,6 +328,9 @@ func (UnimplementedOnboardingServiceServer) CreateOnboardingPlan(context.Context
 }
 func (UnimplementedOnboardingServiceServer) UpdateOnboardingPlan(context.Context, *UpdateOnboardingPlanRequest) (*OnboardingPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateOnboardingPlan not implemented")
+}
+func (UnimplementedOnboardingServiceServer) StartOnboardingPlan(context.Context, *v1.IDRequest) (*OnboardingPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartOnboardingPlan not implemented")
 }
 func (UnimplementedOnboardingServiceServer) DeleteOnboardingPlan(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteOnboardingPlan not implemented")
@@ -423,6 +439,24 @@ func _OnboardingService_UpdateOnboardingPlan_Handler(srv interface{}, ctx contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OnboardingServiceServer).UpdateOnboardingPlan(ctx, req.(*UpdateOnboardingPlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OnboardingService_StartOnboardingPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OnboardingServiceServer).StartOnboardingPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OnboardingService_StartOnboardingPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OnboardingServiceServer).StartOnboardingPlan(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -765,6 +799,10 @@ var OnboardingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateOnboardingPlan",
 			Handler:    _OnboardingService_UpdateOnboardingPlan_Handler,
+		},
+		{
+			MethodName: "StartOnboardingPlan",
+			Handler:    _OnboardingService_StartOnboardingPlan_Handler,
 		},
 		{
 			MethodName: "DeleteOnboardingPlan",
