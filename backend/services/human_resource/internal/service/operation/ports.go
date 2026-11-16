@@ -39,20 +39,18 @@ type Integrity interface {
 	ValidateMutation(context.Context, string, entity.Validatable, entity.Validatable) error
 }
 
-// Clock dan IDGenerator dapat diinjeksi agar waktu dan idempotensi tes deterministik.
-type Clock interface{ Now() time.Time }
-type IDGenerator interface{ NewID() (string, error) }
-
-// Repository adalah port yang benar-benar dikonsumsi application service.
-type Repository[T any, K any] interface {
-	SelectByID(context.Context, K) (*T, error)
-	FindByIDForUpdate(context.Context, K) (*T, error)
-	SelectWhere(context.Context, []domainrepo.Filter, int, int) ([]T, error)
-	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
-	Insert(context.Context, *T) error
-	Update(context.Context, *T) error
-	DeleteByID(context.Context, K) error
+// Clock menyediakan waktu yang dapat dikendalikan dalam tes.
+type Clock interface {
+	Now() time.Time
 }
+
+// IDGenerator menyediakan pengenal yang dapat dikendalikan dalam tes.
+type IDGenerator interface {
+	NewID() (string, error)
+}
+
+// Repository mempertahankan kompatibilitas port operasi dengan kontrak milik domain.
+type Repository[T any, K any] = domainrepo.RecordRepository[T, K]
 
 // Outbox menyimpan event dalam transaksi perubahan yang sama, tanpa publikasi jaringan.
 type Outbox interface {

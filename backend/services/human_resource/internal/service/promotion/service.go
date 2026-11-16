@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime                 operation.Dependencies
-	PromotionRecommendation operation.Repository[entity.PromotionRecommendation, string]
-	PromotionDecision       operation.Repository[entity.PromotionDecision, string]
+	PromotionRecommendation domainrepo.RecordRepository[entity.PromotionRecommendation, string]
+	PromotionDecision       domainrepo.RecordRepository[entity.PromotionDecision, string]
 }
 
 // Service mengoordinasikan operasi domain promotion.
@@ -27,11 +27,23 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.promotionRecommendation, err = operation.NewResource[entity.PromotionRecommendation, string, *entity.PromotionRecommendation](deps.PromotionRecommendation, deps.Runtime, specPromotionRecommendation())
+	s.promotionRecommendation, err = operation.NewResource[
+		entity.PromotionRecommendation,
+		string,
+		*entity.PromotionRecommendation,
+	](
+		deps.PromotionRecommendation,
+		deps.Runtime,
+		specPromotionRecommendation(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.promotionDecision, err = operation.NewResource[entity.PromotionDecision, string, *entity.PromotionDecision](deps.PromotionDecision, deps.Runtime, specPromotionDecision())
+	s.promotionDecision, err = operation.NewResource[entity.PromotionDecision, string, *entity.PromotionDecision](
+		deps.PromotionDecision,
+		deps.Runtime,
+		specPromotionDecision(),
+	)
 	if err != nil {
 		return nil, err
 	}

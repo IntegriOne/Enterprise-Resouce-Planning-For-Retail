@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime                      operation.Dependencies
-	HumanCapitalMetricDefinition operation.Repository[entity.HumanCapitalMetricDefinition, string]
-	HumanCapitalMetricSnapshot   operation.Repository[entity.HumanCapitalMetricSnapshot, string]
+	HumanCapitalMetricDefinition domainrepo.RecordRepository[entity.HumanCapitalMetricDefinition, string]
+	HumanCapitalMetricSnapshot   domainrepo.RecordRepository[entity.HumanCapitalMetricSnapshot, string]
 }
 
 // Service mengoordinasikan operasi domain analytics.
@@ -27,11 +27,27 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.humanCapitalMetricDefinition, err = operation.NewResource[entity.HumanCapitalMetricDefinition, string, *entity.HumanCapitalMetricDefinition](deps.HumanCapitalMetricDefinition, deps.Runtime, specHumanCapitalMetricDefinition())
+	s.humanCapitalMetricDefinition, err = operation.NewResource[
+		entity.HumanCapitalMetricDefinition,
+		string,
+		*entity.HumanCapitalMetricDefinition,
+	](
+		deps.HumanCapitalMetricDefinition,
+		deps.Runtime,
+		specHumanCapitalMetricDefinition(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.humanCapitalMetricSnapshot, err = operation.NewResource[entity.HumanCapitalMetricSnapshot, string, *entity.HumanCapitalMetricSnapshot](deps.HumanCapitalMetricSnapshot, deps.Runtime, specHumanCapitalMetricSnapshot())
+	s.humanCapitalMetricSnapshot, err = operation.NewResource[
+		entity.HumanCapitalMetricSnapshot,
+		string,
+		*entity.HumanCapitalMetricSnapshot,
+	](
+		deps.HumanCapitalMetricSnapshot,
+		deps.Runtime,
+		specHumanCapitalMetricSnapshot(),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime               operation.Dependencies
-	Policy                operation.Repository[entity.Policy, string]
-	PolicyAcknowledgement operation.Repository[entity.PolicyAcknowledgement, string]
+	Policy                domainrepo.RecordRepository[entity.Policy, string]
+	PolicyAcknowledgement domainrepo.RecordRepository[entity.PolicyAcknowledgement, string]
 }
 
 // Service mengoordinasikan operasi domain policy.
@@ -27,11 +27,23 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.policy, err = operation.NewResource[entity.Policy, string, *entity.Policy](deps.Policy, deps.Runtime, specPolicy())
+	s.policy, err = operation.NewResource[entity.Policy, string, *entity.Policy](
+		deps.Policy,
+		deps.Runtime,
+		specPolicy(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.policyAcknowledgement, err = operation.NewResource[entity.PolicyAcknowledgement, string, *entity.PolicyAcknowledgement](deps.PolicyAcknowledgement, deps.Runtime, specPolicyAcknowledgement())
+	s.policyAcknowledgement, err = operation.NewResource[
+		entity.PolicyAcknowledgement,
+		string,
+		*entity.PolicyAcknowledgement,
+	](
+		deps.PolicyAcknowledgement,
+		deps.Runtime,
+		specPolicyAcknowledgement(),
+	)
 	if err != nil {
 		return nil, err
 	}

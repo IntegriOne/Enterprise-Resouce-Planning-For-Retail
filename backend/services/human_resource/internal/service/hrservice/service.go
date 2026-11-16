@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime             operation.Dependencies
-	ServiceRequest      operation.Repository[entity.ServiceRequest, string]
-	ServiceRequestEvent operation.Repository[entity.ServiceRequestEvent, string]
+	ServiceRequest      domainrepo.RecordRepository[entity.ServiceRequest, string]
+	ServiceRequestEvent domainrepo.RecordRepository[entity.ServiceRequestEvent, string]
 }
 
 // Service mengoordinasikan operasi domain hrservice.
@@ -27,11 +27,19 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.serviceRequest, err = operation.NewResource[entity.ServiceRequest, string, *entity.ServiceRequest](deps.ServiceRequest, deps.Runtime, specServiceRequest())
+	s.serviceRequest, err = operation.NewResource[entity.ServiceRequest, string, *entity.ServiceRequest](
+		deps.ServiceRequest,
+		deps.Runtime,
+		specServiceRequest(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.serviceRequestEvent, err = operation.NewResource[entity.ServiceRequestEvent, string, *entity.ServiceRequestEvent](deps.ServiceRequestEvent, deps.Runtime, specServiceRequestEvent())
+	s.serviceRequestEvent, err = operation.NewResource[entity.ServiceRequestEvent, string, *entity.ServiceRequestEvent](
+		deps.ServiceRequestEvent,
+		deps.Runtime,
+		specServiceRequestEvent(),
+	)
 	if err != nil {
 		return nil, err
 	}

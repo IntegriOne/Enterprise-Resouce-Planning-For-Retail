@@ -13,15 +13,15 @@ import (
 
 type Dependencies struct {
 	Runtime           operation.Dependencies
-	PayrollProfile    operation.Repository[entity.PayrollProfile, string]
-	PayComponent      operation.Repository[entity.PayComponent, string]
-	PayrollPeriod     operation.Repository[entity.PayrollPeriod, string]
-	PayrollRun        operation.Repository[entity.PayrollRun, string]
-	PayrollResult     operation.Repository[entity.PayrollResult, string]
-	PayrollResultLine operation.Repository[entity.PayrollResultLine, string]
-	PayrollAdjustment operation.Repository[entity.PayrollAdjustment, string]
-	PayrollGroup      operation.Repository[entity.PayrollGroup, string]
-	PayrollRuleSet    operation.Repository[entity.PayrollRuleSet, string]
+	PayrollProfile    domainrepo.RecordRepository[entity.PayrollProfile, string]
+	PayComponent      domainrepo.RecordRepository[entity.PayComponent, string]
+	PayrollPeriod     domainrepo.RecordRepository[entity.PayrollPeriod, string]
+	PayrollRun        domainrepo.RecordRepository[entity.PayrollRun, string]
+	PayrollResult     domainrepo.RecordRepository[entity.PayrollResult, string]
+	PayrollResultLine domainrepo.RecordRepository[entity.PayrollResultLine, string]
+	PayrollAdjustment domainrepo.RecordRepository[entity.PayrollAdjustment, string]
+	PayrollGroup      domainrepo.RecordRepository[entity.PayrollGroup, string]
+	PayrollRuleSet    domainrepo.RecordRepository[entity.PayrollRuleSet, string]
 }
 
 // Service mengoordinasikan operasi domain payroll.
@@ -42,39 +42,75 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{dependencies: deps}
 	var err error
-	s.payrollProfile, err = operation.NewResource[entity.PayrollProfile, string, *entity.PayrollProfile](deps.PayrollProfile, deps.Runtime, specPayrollProfile())
+	s.payrollProfile, err = operation.NewResource[entity.PayrollProfile, string, *entity.PayrollProfile](
+		deps.PayrollProfile,
+		deps.Runtime,
+		specPayrollProfile(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payComponent, err = operation.NewResource[entity.PayComponent, string, *entity.PayComponent](deps.PayComponent, deps.Runtime, specPayComponent())
+	s.payComponent, err = operation.NewResource[entity.PayComponent, string, *entity.PayComponent](
+		deps.PayComponent,
+		deps.Runtime,
+		specPayComponent(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payrollPeriod, err = operation.NewResource[entity.PayrollPeriod, string, *entity.PayrollPeriod](deps.PayrollPeriod, deps.Runtime, specPayrollPeriod())
+	s.payrollPeriod, err = operation.NewResource[entity.PayrollPeriod, string, *entity.PayrollPeriod](
+		deps.PayrollPeriod,
+		deps.Runtime,
+		specPayrollPeriod(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payrollRun, err = operation.NewResource[entity.PayrollRun, string, *entity.PayrollRun](deps.PayrollRun, deps.Runtime, specPayrollRun())
+	s.payrollRun, err = operation.NewResource[entity.PayrollRun, string, *entity.PayrollRun](
+		deps.PayrollRun,
+		deps.Runtime,
+		specPayrollRun(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payrollResult, err = operation.NewResource[entity.PayrollResult, string, *entity.PayrollResult](deps.PayrollResult, deps.Runtime, specPayrollResult())
+	s.payrollResult, err = operation.NewResource[entity.PayrollResult, string, *entity.PayrollResult](
+		deps.PayrollResult,
+		deps.Runtime,
+		specPayrollResult(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payrollResultLine, err = operation.NewResource[entity.PayrollResultLine, string, *entity.PayrollResultLine](deps.PayrollResultLine, deps.Runtime, specPayrollResultLine())
+	s.payrollResultLine, err = operation.NewResource[entity.PayrollResultLine, string, *entity.PayrollResultLine](
+		deps.PayrollResultLine,
+		deps.Runtime,
+		specPayrollResultLine(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payrollAdjustment, err = operation.NewResource[entity.PayrollAdjustment, string, *entity.PayrollAdjustment](deps.PayrollAdjustment, deps.Runtime, specPayrollAdjustment())
+	s.payrollAdjustment, err = operation.NewResource[entity.PayrollAdjustment, string, *entity.PayrollAdjustment](
+		deps.PayrollAdjustment,
+		deps.Runtime,
+		specPayrollAdjustment(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payrollGroup, err = operation.NewResource[entity.PayrollGroup, string, *entity.PayrollGroup](deps.PayrollGroup, deps.Runtime, specPayrollGroup())
+	s.payrollGroup, err = operation.NewResource[entity.PayrollGroup, string, *entity.PayrollGroup](
+		deps.PayrollGroup,
+		deps.Runtime,
+		specPayrollGroup(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.payrollRuleSet, err = operation.NewResource[entity.PayrollRuleSet, string, *entity.PayrollRuleSet](deps.PayrollRuleSet, deps.Runtime, specPayrollRuleSet())
+	s.payrollRuleSet, err = operation.NewResource[entity.PayrollRuleSet, string, *entity.PayrollRuleSet](
+		deps.PayrollRuleSet,
+		deps.Runtime,
+		specPayrollRuleSet(),
+	)
 	if err != nil {
 		return nil, err
 	}

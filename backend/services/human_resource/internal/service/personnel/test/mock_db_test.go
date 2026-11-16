@@ -3,10 +3,11 @@
 package service_test
 
 import (
+	"testing"
+
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/personnel"
 	mockdb "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/testsupport"
-	"testing"
 )
 
 func setup(tb testing.TB) (*mockdb.Harness, *service.Service, *mockdb.Store[entity.Worker, string]) {

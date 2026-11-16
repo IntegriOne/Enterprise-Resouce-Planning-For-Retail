@@ -13,11 +13,11 @@ import (
 
 type Dependencies struct {
 	Runtime           operation.Dependencies
-	JobFamily         operation.Repository[entity.JobFamily, string]
-	Job               operation.Repository[entity.Job, string]
-	Position          operation.Repository[entity.Position, string]
-	WorkforcePlan     operation.Repository[entity.WorkforcePlan, string]
-	WorkforcePlanLine operation.Repository[entity.WorkforcePlanLine, string]
+	JobFamily         domainrepo.RecordRepository[entity.JobFamily, string]
+	Job               domainrepo.RecordRepository[entity.Job, string]
+	Position          domainrepo.RecordRepository[entity.Position, string]
+	WorkforcePlan     domainrepo.RecordRepository[entity.WorkforcePlan, string]
+	WorkforcePlanLine domainrepo.RecordRepository[entity.WorkforcePlanLine, string]
 }
 
 // Service mengoordinasikan operasi domain workforceplanning.
@@ -33,23 +33,43 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.jobFamily, err = operation.NewResource[entity.JobFamily, string, *entity.JobFamily](deps.JobFamily, deps.Runtime, specJobFamily())
+	s.jobFamily, err = operation.NewResource[entity.JobFamily, string, *entity.JobFamily](
+		deps.JobFamily,
+		deps.Runtime,
+		specJobFamily(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.job, err = operation.NewResource[entity.Job, string, *entity.Job](deps.Job, deps.Runtime, specJob())
+	s.job, err = operation.NewResource[entity.Job, string, *entity.Job](
+		deps.Job,
+		deps.Runtime,
+		specJob(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.position, err = operation.NewResource[entity.Position, string, *entity.Position](deps.Position, deps.Runtime, specPosition())
+	s.position, err = operation.NewResource[entity.Position, string, *entity.Position](
+		deps.Position,
+		deps.Runtime,
+		specPosition(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.workforcePlan, err = operation.NewResource[entity.WorkforcePlan, string, *entity.WorkforcePlan](deps.WorkforcePlan, deps.Runtime, specWorkforcePlan())
+	s.workforcePlan, err = operation.NewResource[entity.WorkforcePlan, string, *entity.WorkforcePlan](
+		deps.WorkforcePlan,
+		deps.Runtime,
+		specWorkforcePlan(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.workforcePlanLine, err = operation.NewResource[entity.WorkforcePlanLine, string, *entity.WorkforcePlanLine](deps.WorkforcePlanLine, deps.Runtime, specWorkforcePlanLine())
+	s.workforcePlanLine, err = operation.NewResource[entity.WorkforcePlanLine, string, *entity.WorkforcePlanLine](
+		deps.WorkforcePlanLine,
+		deps.Runtime,
+		specWorkforcePlanLine(),
+	)
 	if err != nil {
 		return nil, err
 	}

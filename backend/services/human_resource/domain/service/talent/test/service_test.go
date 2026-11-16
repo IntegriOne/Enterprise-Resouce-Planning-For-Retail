@@ -52,6 +52,11 @@ func TestCalibrationPreservesOriginalScore(t *testing.T) {
 	if score.Score != 4 {
 		t.Fatal("original score mutated")
 	}
+	foreignScore := score
+	foreignScore.FrameworkID = f.ID(999)
+	if err := service.ValidateCalibration(&session, &assessment, &foreignScore, &decision); err == nil {
+		t.Fatal("score from another framework accepted")
+	}
 	decision.OriginalScore = 3
 	if err := service.ValidateCalibration(&session, &assessment, &score, &decision); err == nil {
 		t.Fatal("false original score accepted")

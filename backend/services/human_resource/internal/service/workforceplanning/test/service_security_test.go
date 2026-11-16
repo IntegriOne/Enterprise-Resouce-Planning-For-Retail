@@ -46,6 +46,22 @@ func TestScopeIsAppliedBeforeCountAndPagination(t *testing.T) {
 	}
 }
 
+func TestRevocationDuringCountRejectsPage(t *testing.T) {
+	t.Parallel()
+	h, svc, _ := setup(t)
+	if _, err := svc.CreateJobFamily(t.Context(), input()); err != nil {
+		t.Fatal(err)
+	}
+	h.RevokeAfterNextCount = true
+	page, err := svc.GetAllJobFamilies(t.Context(), 20, 0)
+	if !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("revoked list returned page: %+v, error: %v", page, err)
+	}
+	if len(page.Items) != 0 || page.Total != 0 {
+		t.Fatal("revoked list leaked records or count")
+	}
+}
+
 func TestConcurrentWritesAreSerializedWithOutbox(t *testing.T) {
 	h, svc, store := setup(t)
 	ctx := context.Background()

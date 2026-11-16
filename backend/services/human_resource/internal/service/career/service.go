@@ -13,11 +13,11 @@ import (
 
 type Dependencies struct {
 	Runtime                operation.Dependencies
-	DevelopmentPlan        operation.Repository[entity.DevelopmentPlan, string]
-	DevelopmentAction      operation.Repository[entity.DevelopmentAction, string]
-	CareerPath             operation.Repository[entity.CareerPath, string]
-	CareerPathTransition   operation.Repository[entity.CareerPathTransition, string]
-	WorkerCareerAspiration operation.Repository[entity.WorkerCareerAspiration, string]
+	DevelopmentPlan        domainrepo.RecordRepository[entity.DevelopmentPlan, string]
+	DevelopmentAction      domainrepo.RecordRepository[entity.DevelopmentAction, string]
+	CareerPath             domainrepo.RecordRepository[entity.CareerPath, string]
+	CareerPathTransition   domainrepo.RecordRepository[entity.CareerPathTransition, string]
+	WorkerCareerAspiration domainrepo.RecordRepository[entity.WorkerCareerAspiration, string]
 }
 
 // Service mengoordinasikan operasi domain career.
@@ -33,23 +33,47 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.developmentPlan, err = operation.NewResource[entity.DevelopmentPlan, string, *entity.DevelopmentPlan](deps.DevelopmentPlan, deps.Runtime, specDevelopmentPlan())
+	s.developmentPlan, err = operation.NewResource[entity.DevelopmentPlan, string, *entity.DevelopmentPlan](
+		deps.DevelopmentPlan,
+		deps.Runtime,
+		specDevelopmentPlan(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.developmentAction, err = operation.NewResource[entity.DevelopmentAction, string, *entity.DevelopmentAction](deps.DevelopmentAction, deps.Runtime, specDevelopmentAction())
+	s.developmentAction, err = operation.NewResource[entity.DevelopmentAction, string, *entity.DevelopmentAction](
+		deps.DevelopmentAction,
+		deps.Runtime,
+		specDevelopmentAction(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.careerPath, err = operation.NewResource[entity.CareerPath, string, *entity.CareerPath](deps.CareerPath, deps.Runtime, specCareerPath())
+	s.careerPath, err = operation.NewResource[entity.CareerPath, string, *entity.CareerPath](
+		deps.CareerPath,
+		deps.Runtime,
+		specCareerPath(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.careerPathTransition, err = operation.NewResource[entity.CareerPathTransition, string, *entity.CareerPathTransition](deps.CareerPathTransition, deps.Runtime, specCareerPathTransition())
+	s.careerPathTransition, err = operation.NewResource[entity.CareerPathTransition, string, *entity.CareerPathTransition](
+		deps.CareerPathTransition,
+		deps.Runtime,
+		specCareerPathTransition(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.workerCareerAspiration, err = operation.NewResource[entity.WorkerCareerAspiration, string, *entity.WorkerCareerAspiration](deps.WorkerCareerAspiration, deps.Runtime, specWorkerCareerAspiration())
+	s.workerCareerAspiration, err = operation.NewResource[
+		entity.WorkerCareerAspiration,
+		string,
+		*entity.WorkerCareerAspiration,
+	](
+		deps.WorkerCareerAspiration,
+		deps.Runtime,
+		specWorkerCareerAspiration(),
+	)
 	if err != nil {
 		return nil, err
 	}

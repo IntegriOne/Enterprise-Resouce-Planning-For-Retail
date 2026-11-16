@@ -13,7 +13,7 @@ import (
 
 type Dependencies struct {
 	Runtime       operation.Dependencies
-	AccessRequest operation.Repository[entity.AccessRequest, string]
+	AccessRequest domainrepo.RecordRepository[entity.AccessRequest, string]
 }
 
 // Service mengoordinasikan operasi domain accessrequest.
@@ -25,7 +25,11 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.accessRequest, err = operation.NewResource[entity.AccessRequest, string, *entity.AccessRequest](deps.AccessRequest, deps.Runtime, specAccessRequest())
+	s.accessRequest, err = operation.NewResource[entity.AccessRequest, string, *entity.AccessRequest](
+		deps.AccessRequest,
+		deps.Runtime,
+		specAccessRequest(),
+	)
 	if err != nil {
 		return nil, err
 	}

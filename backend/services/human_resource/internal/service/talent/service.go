@@ -14,15 +14,15 @@ import (
 type Dependencies struct {
 	PerformanceReviewReader   ReviewReader
 	Runtime                   operation.Dependencies
-	TalentFramework           operation.Repository[entity.TalentFramework, string]
-	TalentDimension           operation.Repository[entity.TalentDimension, string]
-	TalentReviewCycle         operation.Repository[entity.TalentReviewCycle, string]
-	TalentAssessment          operation.Repository[entity.TalentAssessment, string]
-	TalentAssessmentScore     operation.Repository[entity.TalentAssessmentScore, string]
-	TalentCalibrationSession  operation.Repository[entity.TalentCalibrationSession, string]
-	TalentCalibrationDecision operation.Repository[entity.TalentCalibrationDecision, string]
-	TalentPool                operation.Repository[entity.TalentPool, string]
-	TalentPoolMembership      operation.Repository[entity.TalentPoolMembership, string]
+	TalentFramework           domainrepo.RecordRepository[entity.TalentFramework, string]
+	TalentDimension           domainrepo.RecordRepository[entity.TalentDimension, string]
+	TalentReviewCycle         domainrepo.RecordRepository[entity.TalentReviewCycle, string]
+	TalentAssessment          domainrepo.RecordRepository[entity.TalentAssessment, string]
+	TalentAssessmentScore     domainrepo.RecordRepository[entity.TalentAssessmentScore, string]
+	TalentCalibrationSession  domainrepo.RecordRepository[entity.TalentCalibrationSession, string]
+	TalentCalibrationDecision domainrepo.RecordRepository[entity.TalentCalibrationDecision, string]
+	TalentPool                domainrepo.RecordRepository[entity.TalentPool, string]
+	TalentPoolMembership      domainrepo.RecordRepository[entity.TalentPoolMembership, string]
 }
 
 // Service mengoordinasikan operasi domain talent.
@@ -43,39 +43,87 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{dependencies: deps}
 	var err error
-	s.talentFramework, err = operation.NewResource[entity.TalentFramework, string, *entity.TalentFramework](deps.TalentFramework, deps.Runtime, specTalentFramework())
+	s.talentFramework, err = operation.NewResource[entity.TalentFramework, string, *entity.TalentFramework](
+		deps.TalentFramework,
+		deps.Runtime,
+		specTalentFramework(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentDimension, err = operation.NewResource[entity.TalentDimension, string, *entity.TalentDimension](deps.TalentDimension, deps.Runtime, specTalentDimension())
+	s.talentDimension, err = operation.NewResource[entity.TalentDimension, string, *entity.TalentDimension](
+		deps.TalentDimension,
+		deps.Runtime,
+		specTalentDimension(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentReviewCycle, err = operation.NewResource[entity.TalentReviewCycle, string, *entity.TalentReviewCycle](deps.TalentReviewCycle, deps.Runtime, specTalentReviewCycle())
+	s.talentReviewCycle, err = operation.NewResource[entity.TalentReviewCycle, string, *entity.TalentReviewCycle](
+		deps.TalentReviewCycle,
+		deps.Runtime,
+		specTalentReviewCycle(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentAssessment, err = operation.NewResource[entity.TalentAssessment, string, *entity.TalentAssessment](deps.TalentAssessment, deps.Runtime, specTalentAssessment())
+	s.talentAssessment, err = operation.NewResource[entity.TalentAssessment, string, *entity.TalentAssessment](
+		deps.TalentAssessment,
+		deps.Runtime,
+		specTalentAssessment(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentAssessmentScore, err = operation.NewResource[entity.TalentAssessmentScore, string, *entity.TalentAssessmentScore](deps.TalentAssessmentScore, deps.Runtime, specTalentAssessmentScore())
+	s.talentAssessmentScore, err = operation.NewResource[
+		entity.TalentAssessmentScore,
+		string,
+		*entity.TalentAssessmentScore,
+	](
+		deps.TalentAssessmentScore,
+		deps.Runtime,
+		specTalentAssessmentScore(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentCalibrationSession, err = operation.NewResource[entity.TalentCalibrationSession, string, *entity.TalentCalibrationSession](deps.TalentCalibrationSession, deps.Runtime, specTalentCalibrationSession())
+	s.talentCalibrationSession, err = operation.NewResource[
+		entity.TalentCalibrationSession,
+		string,
+		*entity.TalentCalibrationSession,
+	](
+		deps.TalentCalibrationSession,
+		deps.Runtime,
+		specTalentCalibrationSession(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentCalibrationDecision, err = operation.NewResource[entity.TalentCalibrationDecision, string, *entity.TalentCalibrationDecision](deps.TalentCalibrationDecision, deps.Runtime, specTalentCalibrationDecision())
+	s.talentCalibrationDecision, err = operation.NewResource[
+		entity.TalentCalibrationDecision,
+		string,
+		*entity.TalentCalibrationDecision,
+	](
+		deps.TalentCalibrationDecision,
+		deps.Runtime,
+		specTalentCalibrationDecision(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentPool, err = operation.NewResource[entity.TalentPool, string, *entity.TalentPool](deps.TalentPool, deps.Runtime, specTalentPool())
+	s.talentPool, err = operation.NewResource[entity.TalentPool, string, *entity.TalentPool](
+		deps.TalentPool,
+		deps.Runtime,
+		specTalentPool(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.talentPoolMembership, err = operation.NewResource[entity.TalentPoolMembership, string, *entity.TalentPoolMembership](deps.TalentPoolMembership, deps.Runtime, specTalentPoolMembership())
+	s.talentPoolMembership, err = operation.NewResource[entity.TalentPoolMembership, string, *entity.TalentPoolMembership](
+		deps.TalentPoolMembership,
+		deps.Runtime,
+		specTalentPoolMembership(),
+	)
 	if err != nil {
 		return nil, err
 	}

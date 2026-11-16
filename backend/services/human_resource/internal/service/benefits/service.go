@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime           operation.Dependencies
-	BenefitPlan       operation.Repository[entity.BenefitPlan, string]
-	BenefitEnrollment operation.Repository[entity.BenefitEnrollment, string]
+	BenefitPlan       domainrepo.RecordRepository[entity.BenefitPlan, string]
+	BenefitEnrollment domainrepo.RecordRepository[entity.BenefitEnrollment, string]
 }
 
 // Service mengoordinasikan operasi domain benefits.
@@ -27,11 +27,19 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.benefitPlan, err = operation.NewResource[entity.BenefitPlan, string, *entity.BenefitPlan](deps.BenefitPlan, deps.Runtime, specBenefitPlan())
+	s.benefitPlan, err = operation.NewResource[entity.BenefitPlan, string, *entity.BenefitPlan](
+		deps.BenefitPlan,
+		deps.Runtime,
+		specBenefitPlan(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.benefitEnrollment, err = operation.NewResource[entity.BenefitEnrollment, string, *entity.BenefitEnrollment](deps.BenefitEnrollment, deps.Runtime, specBenefitEnrollment())
+	s.benefitEnrollment, err = operation.NewResource[entity.BenefitEnrollment, string, *entity.BenefitEnrollment](
+		deps.BenefitEnrollment,
+		deps.Runtime,
+		specBenefitEnrollment(),
+	)
 	if err != nil {
 		return nil, err
 	}

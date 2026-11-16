@@ -5,10 +5,11 @@ package service_test
 import (
 	"context"
 	"errors"
+	"testing"
+
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/payroll"
-	"testing"
 )
 
 func TestServiceCRUDAndPagination(t *testing.T) {

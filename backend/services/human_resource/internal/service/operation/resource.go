@@ -18,7 +18,11 @@ type Resource[T any, K any, P Pointer[T]] struct {
 }
 
 // NewResource memeriksa wiring secara fail-closed tanpa fallback policy/referensi.
-func NewResource[T any, K any, P Pointer[T]](repo Repository[T, K], deps Dependencies, spec Specification[T, K]) (*Resource[T, K, P], error) {
+func NewResource[T any, K any, P Pointer[T]](
+	repo Repository[T, K],
+	deps Dependencies,
+	spec Specification[T, K],
+) (*Resource[T, K, P], error) {
 	for _, dependency := range []struct {
 		name  string
 		value any
@@ -30,8 +34,16 @@ func NewResource[T any, K any, P Pointer[T]](repo Repository[T, K], deps Depende
 			return nil, fmt.Errorf("%w: %s %s dependency is required", hrerrors.ErrUnavailable, spec.Table, dependency.name)
 		}
 	}
-	if spec.Table == "" || spec.Domain == "" || spec.Key == nil || spec.KeyString == nil || spec.ValidateKey == nil || spec.Initialize == nil || spec.Touch == nil || spec.Attributes == nil || spec.Guard == nil || spec.AggregateID == nil {
+	if spec.Table == "" || spec.Domain == "" {
 		return nil, hrerrors.ErrInvalidInput
+	}
+	for _, callback := range []any{
+		spec.Key, spec.KeyString, spec.ValidateKey, spec.Initialize,
+		spec.Touch, spec.Attributes, spec.Guard, spec.AggregateID,
+	} {
+		if isNil(callback) {
+			return nil, hrerrors.ErrInvalidInput
+		}
 	}
 	if isNil(deps.Clock) {
 		deps.Clock = SystemClock{}
@@ -128,7 +140,7 @@ func (r *Resource[T, K, P]) authorize(ctx context.Context, action string, value 
 	return actor, nil
 }
 func sameActor(first, second Actor) error {
-	if !reflect.DeepEqual(first, second) {
+	if first != second {
 		return hrerrors.ErrForbidden
 	}
 	return nil
@@ -214,6 +226,9 @@ func (r *Resource[T, K, P]) List(ctx context.Context, filters []domainrepo.Filte
 	}
 	total, err := r.repo.CountWhere(ctx, combined)
 	if err != nil {
+		return empty, err
+	}
+	if err := r.finish(ctx, "list", nil, actor); err != nil {
 		return empty, err
 	}
 	return Page[T]{Items: items, Total: total, Limit: limit, Offset: offset}, nil

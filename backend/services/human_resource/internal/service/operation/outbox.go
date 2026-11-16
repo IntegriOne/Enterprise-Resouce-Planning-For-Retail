@@ -42,13 +42,29 @@ func (r *Resource[T, K, P]) emit(ctx context.Context, action string, value *T, a
 	if err != nil {
 		return err
 	}
-	payload, err := json.Marshal(map[string]string{"aggregate_id": aggregateID, "record_key": r.spec.KeyString(r.spec.Key(value)), "change_kind": action, "actor_principal_id": actor.PrincipalID})
+	payload, err := json.Marshal(map[string]string{
+		"aggregate_id":       aggregateID,
+		"record_key":         r.spec.KeyString(r.spec.Key(value)),
+		"change_kind":        action,
+		"actor_principal_id": actor.PrincipalID,
+	})
 	if err != nil {
 		return err
 	}
 	digest := sha256.Sum256(payload)
 	now := r.deps.Clock.Now()
-	event := &entity.OutboxEvent{ID: id, AggregateType: r.spec.Table, AggregateID: aggregateID, AggregateVersion: latest + 1, EventType: r.spec.Table + "." + action, SchemaVersion: 1, Payload: entity.JSON(payload), PayloadDigest: digest[:], OccurredAt: now, AvailableAt: now}
+	event := &entity.OutboxEvent{
+		ID:               id,
+		AggregateType:    r.spec.Table,
+		AggregateID:      aggregateID,
+		AggregateVersion: latest + 1,
+		EventType:        r.spec.Table + "." + action,
+		SchemaVersion:    1,
+		Payload:          entity.JSON(payload),
+		PayloadDigest:    digest[:],
+		OccurredAt:       now,
+		AvailableAt:      now,
+	}
 	if err := event.Validate(); err != nil {
 		return err
 	}

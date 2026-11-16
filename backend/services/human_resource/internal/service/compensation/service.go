@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime            operation.Dependencies
-	CompensationBand   operation.Repository[entity.CompensationBand, string]
-	CompensationRecord operation.Repository[entity.CompensationRecord, string]
+	CompensationBand   domainrepo.RecordRepository[entity.CompensationBand, string]
+	CompensationRecord domainrepo.RecordRepository[entity.CompensationRecord, string]
 }
 
 // Service mengoordinasikan operasi domain compensation.
@@ -27,11 +27,19 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.compensationBand, err = operation.NewResource[entity.CompensationBand, string, *entity.CompensationBand](deps.CompensationBand, deps.Runtime, specCompensationBand())
+	s.compensationBand, err = operation.NewResource[entity.CompensationBand, string, *entity.CompensationBand](
+		deps.CompensationBand,
+		deps.Runtime,
+		specCompensationBand(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.compensationRecord, err = operation.NewResource[entity.CompensationRecord, string, *entity.CompensationRecord](deps.CompensationRecord, deps.Runtime, specCompensationRecord())
+	s.compensationRecord, err = operation.NewResource[entity.CompensationRecord, string, *entity.CompensationRecord](
+		deps.CompensationRecord,
+		deps.Runtime,
+		specCompensationRecord(),
+	)
 	if err != nil {
 		return nil, err
 	}

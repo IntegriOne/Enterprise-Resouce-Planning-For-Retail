@@ -43,6 +43,10 @@ func RebuildBalance(input BalanceInput) (*entity.LeaveEntitlement, error) {
 		if err := entry.Validate(); err != nil {
 			return nil, err
 		}
+		if entity.CompareDates(entry.EffectiveDate, current.EntitlementPeriodStart) < 0 ||
+			entity.CompareDates(entry.EffectiveDate, current.EntitlementPeriodEnd) > 0 {
+			return nil, hrerrors.Invalid("effective_date", "ledger entry must fall within the entitlement period")
+		}
 		key := strings.ToLower(entry.ID)
 		_, duplicate := seen[key]
 		source := [3]string{entry.SourceManagement, entry.SourceEventID, entry.SourceLineKey}
@@ -51,7 +55,8 @@ func RebuildBalance(input BalanceInput) (*entity.LeaveEntitlement, error) {
 		}
 		sources[source] = true
 		kind := entry.EntryType
-		if kind == "reversal" {
+		switch kind {
+		case "reversal":
 			originalKey := strings.ToLower(*entry.ReversesEntryID)
 			original, ok := seen[originalKey]
 			if !ok || reversed[originalKey] || original.EntryType == "reversal" {
@@ -70,12 +75,12 @@ func RebuildBalance(input BalanceInput) (*entity.LeaveEntitlement, error) {
 			}
 			reversed[originalKey] = true
 			kind = original.EntryType
-		} else if kind == "opening" {
+		case "opening":
 			if openingSeen || index != 0 {
 				return nil, hrerrors.Invalid("entry_type", "opening entry must be the first and unique entry")
 			}
 			openingSeen = true
-		} else if kind == "adjustment" {
+		case "adjustment":
 			adjustmentKey := strings.ToLower(*entry.AdjustmentID)
 			adjustment, ok := adjustments[adjustmentKey]
 			if !ok || postedAdjustments[adjustmentKey] || !strings.EqualFold(adjustment.EntitlementID, current.ID) || adjustment.ApprovedAt == nil || adjustment.ApprovedByPrincipalID == nil || strings.EqualFold(*adjustment.ApprovedByPrincipalID, adjustment.RequestedByPrincipalID) {

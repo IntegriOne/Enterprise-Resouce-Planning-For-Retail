@@ -31,7 +31,7 @@ func CheckDB(db *gorm.DB) error {
 	if db == nil || db.Config == nil || db.Dialector == nil {
 		return hrerrors.ErrUnavailable
 	}
-	if db.Dialector.Name() != "postgres" {
+	if db.Name() != "postgres" {
 		return fmt.Errorf("%w: postgres dialect required", hrerrors.ErrInvalidInput)
 	}
 	return nil

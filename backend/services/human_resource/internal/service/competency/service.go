@@ -13,10 +13,10 @@ import (
 
 type Dependencies struct {
 	Runtime                    operation.Dependencies
-	WorkerQualification        operation.Repository[entity.WorkerQualification, string]
-	Competency                 operation.Repository[entity.Competency, string]
-	JobCompetency              operation.Repository[entity.JobCompetency, string]
-	WorkerCompetencyAssessment operation.Repository[entity.WorkerCompetencyAssessment, string]
+	WorkerQualification        domainrepo.RecordRepository[entity.WorkerQualification, string]
+	Competency                 domainrepo.RecordRepository[entity.Competency, string]
+	JobCompetency              domainrepo.RecordRepository[entity.JobCompetency, string]
+	WorkerCompetencyAssessment domainrepo.RecordRepository[entity.WorkerCompetencyAssessment, string]
 }
 
 // Service mengoordinasikan operasi domain competency.
@@ -31,19 +31,39 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.workerQualification, err = operation.NewResource[entity.WorkerQualification, string, *entity.WorkerQualification](deps.WorkerQualification, deps.Runtime, specWorkerQualification())
+	s.workerQualification, err = operation.NewResource[entity.WorkerQualification, string, *entity.WorkerQualification](
+		deps.WorkerQualification,
+		deps.Runtime,
+		specWorkerQualification(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.competency, err = operation.NewResource[entity.Competency, string, *entity.Competency](deps.Competency, deps.Runtime, specCompetency())
+	s.competency, err = operation.NewResource[entity.Competency, string, *entity.Competency](
+		deps.Competency,
+		deps.Runtime,
+		specCompetency(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.jobCompetency, err = operation.NewResource[entity.JobCompetency, string, *entity.JobCompetency](deps.JobCompetency, deps.Runtime, specJobCompetency())
+	s.jobCompetency, err = operation.NewResource[entity.JobCompetency, string, *entity.JobCompetency](
+		deps.JobCompetency,
+		deps.Runtime,
+		specJobCompetency(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.workerCompetencyAssessment, err = operation.NewResource[entity.WorkerCompetencyAssessment, string, *entity.WorkerCompetencyAssessment](deps.WorkerCompetencyAssessment, deps.Runtime, specWorkerCompetencyAssessment())
+	s.workerCompetencyAssessment, err = operation.NewResource[
+		entity.WorkerCompetencyAssessment,
+		string,
+		*entity.WorkerCompetencyAssessment,
+	](
+		deps.WorkerCompetencyAssessment,
+		deps.Runtime,
+		specWorkerCompetencyAssessment(),
+	)
 	if err != nil {
 		return nil, err
 	}

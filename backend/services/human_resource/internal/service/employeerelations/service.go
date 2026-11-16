@@ -13,9 +13,9 @@ import (
 
 type Dependencies struct {
 	Runtime                operation.Dependencies
-	EmployeeRelationsCase  operation.Repository[entity.EmployeeRelationsCase, string]
-	EmployeeRelationsEvent operation.Repository[entity.EmployeeRelationsEvent, int64]
-	CollectiveAgreement    operation.Repository[entity.CollectiveAgreement, string]
+	EmployeeRelationsCase  domainrepo.RecordRepository[entity.EmployeeRelationsCase, string]
+	EmployeeRelationsEvent domainrepo.RecordRepository[entity.EmployeeRelationsEvent, int64]
+	CollectiveAgreement    domainrepo.RecordRepository[entity.CollectiveAgreement, string]
 }
 
 // Service mengoordinasikan operasi domain employeerelations.
@@ -29,15 +29,35 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.employeeRelationsCase, err = operation.NewResource[entity.EmployeeRelationsCase, string, *entity.EmployeeRelationsCase](deps.EmployeeRelationsCase, deps.Runtime, specEmployeeRelationsCase())
+	s.employeeRelationsCase, err = operation.NewResource[
+		entity.EmployeeRelationsCase,
+		string,
+		*entity.EmployeeRelationsCase,
+	](
+		deps.EmployeeRelationsCase,
+		deps.Runtime,
+		specEmployeeRelationsCase(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.employeeRelationsEvent, err = operation.NewResource[entity.EmployeeRelationsEvent, int64, *entity.EmployeeRelationsEvent](deps.EmployeeRelationsEvent, deps.Runtime, specEmployeeRelationsEvent())
+	s.employeeRelationsEvent, err = operation.NewResource[
+		entity.EmployeeRelationsEvent,
+		int64,
+		*entity.EmployeeRelationsEvent,
+	](
+		deps.EmployeeRelationsEvent,
+		deps.Runtime,
+		specEmployeeRelationsEvent(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.collectiveAgreement, err = operation.NewResource[entity.CollectiveAgreement, string, *entity.CollectiveAgreement](deps.CollectiveAgreement, deps.Runtime, specCollectiveAgreement())
+	s.collectiveAgreement, err = operation.NewResource[entity.CollectiveAgreement, string, *entity.CollectiveAgreement](
+		deps.CollectiveAgreement,
+		deps.Runtime,
+		specCollectiveAgreement(),
+	)
 	if err != nil {
 		return nil, err
 	}

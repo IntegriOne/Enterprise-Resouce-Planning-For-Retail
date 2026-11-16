@@ -13,11 +13,11 @@ import (
 
 type Dependencies struct {
 	Runtime                    operation.Dependencies
-	PerformanceCycle           operation.Repository[entity.PerformanceCycle, string]
-	PerformanceGoal            operation.Repository[entity.PerformanceGoal, string]
-	PerformanceReview          operation.Repository[entity.PerformanceReview, string]
-	PerformanceGoalUpdate      operation.Repository[entity.PerformanceGoalUpdate, string]
-	PerformanceReviewGoalScore operation.Repository[entity.PerformanceReviewGoalScore, string]
+	PerformanceCycle           domainrepo.RecordRepository[entity.PerformanceCycle, string]
+	PerformanceGoal            domainrepo.RecordRepository[entity.PerformanceGoal, string]
+	PerformanceReview          domainrepo.RecordRepository[entity.PerformanceReview, string]
+	PerformanceGoalUpdate      domainrepo.RecordRepository[entity.PerformanceGoalUpdate, string]
+	PerformanceReviewGoalScore domainrepo.RecordRepository[entity.PerformanceReviewGoalScore, string]
 }
 
 // Service mengoordinasikan operasi domain performance.
@@ -33,23 +33,51 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.performanceCycle, err = operation.NewResource[entity.PerformanceCycle, string, *entity.PerformanceCycle](deps.PerformanceCycle, deps.Runtime, specPerformanceCycle())
+	s.performanceCycle, err = operation.NewResource[entity.PerformanceCycle, string, *entity.PerformanceCycle](
+		deps.PerformanceCycle,
+		deps.Runtime,
+		specPerformanceCycle(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.performanceGoal, err = operation.NewResource[entity.PerformanceGoal, string, *entity.PerformanceGoal](deps.PerformanceGoal, deps.Runtime, specPerformanceGoal())
+	s.performanceGoal, err = operation.NewResource[entity.PerformanceGoal, string, *entity.PerformanceGoal](
+		deps.PerformanceGoal,
+		deps.Runtime,
+		specPerformanceGoal(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.performanceReview, err = operation.NewResource[entity.PerformanceReview, string, *entity.PerformanceReview](deps.PerformanceReview, deps.Runtime, specPerformanceReview())
+	s.performanceReview, err = operation.NewResource[entity.PerformanceReview, string, *entity.PerformanceReview](
+		deps.PerformanceReview,
+		deps.Runtime,
+		specPerformanceReview(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.performanceGoalUpdate, err = operation.NewResource[entity.PerformanceGoalUpdate, string, *entity.PerformanceGoalUpdate](deps.PerformanceGoalUpdate, deps.Runtime, specPerformanceGoalUpdate())
+	s.performanceGoalUpdate, err = operation.NewResource[
+		entity.PerformanceGoalUpdate,
+		string,
+		*entity.PerformanceGoalUpdate,
+	](
+		deps.PerformanceGoalUpdate,
+		deps.Runtime,
+		specPerformanceGoalUpdate(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.performanceReviewGoalScore, err = operation.NewResource[entity.PerformanceReviewGoalScore, string, *entity.PerformanceReviewGoalScore](deps.PerformanceReviewGoalScore, deps.Runtime, specPerformanceReviewGoalScore())
+	s.performanceReviewGoalScore, err = operation.NewResource[
+		entity.PerformanceReviewGoalScore,
+		string,
+		*entity.PerformanceReviewGoalScore,
+	](
+		deps.PerformanceReviewGoalScore,
+		deps.Runtime,
+		specPerformanceReviewGoalScore(),
+	)
 	if err != nil {
 		return nil, err
 	}

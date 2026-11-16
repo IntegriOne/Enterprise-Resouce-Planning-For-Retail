@@ -6,7 +6,7 @@ Status 16 November 2026: 22 package domain pada `internal/service/`, 84 resource
 
 1. `internal/service/registry.go`: binding eksplisit seluruh dependency repository dan pembaca performance untuk talent.
 2. `<domain>/service.go`: constructor dan method publik per entity; `input.go`: kontrak input operasi; `mapper.go`: pemetaan field, default, audit dan guard lifecycle.
-3. `operation/ports.go`: kontrak policy, integrity dan repository yang dikonsumsi; `resource.go`: alur CRUD; `command.go`: transaksi command; `outbox.go`: event minimum.
+3. `domain/repository/repository.go`: `RecordRepository[T,K]`, kontrak minimum tujuh operasi yang dikonsumsi service. `operation/ports.go`: kontrak policy/integrity serta alias kompatibilitas repository; `resource.go`: alur CRUD; `command.go`: transaksi command; `outbox.go`: event minimum.
 4. `leave/ledger.go`, `payroll/approval.go`, `talent/finalization.go`: command yang memanggil aturan agregat pada `domain/service/`.
 5. `<domain>/test/`: mock dependency, tes perilaku publik dan benchmark. Common harness pada `testsupport/` hanya dipakai tes; tidak dipasang pada registry runtime.
 
@@ -16,7 +16,11 @@ Kerangka awal service/DTO/tes sempat dibuat dengan alat bantu sebelum owner memi
 
 Method publik mencakup `Create<Entity>`, `Update<Entity>`, `Delete<Entity>`, `Get<Entity>ByID`, `GetAll<Entities>` dan finder bertipe `Find<Entity>By<Field>`. Service meneruskan operasi ke port repository `Insert`, `Update`, `DeleteByID`, `SelectByID`, `SelectWhere` dan `CountWhere`; tidak mengimpor GORM selain lewat composition root repository.
 
+Dependency setiap resource memakai kontrak domain `RecordRepository[Entity, Key]` dengan tipe entity/key yang tepat. Registry memasukkan objek repository langsung ke constructor service, mengikuti pola injection IAM. Tidak ada binding callback atau reflection untuk merakit registry. Port lengkap per objek tetap menyediakan CRUD dan finder bernama tabel/kolom bagi konsumen yang membutuhkannya. Finder service menyatukan filter pencarian dan scope server melalui `SelectWhere`, sehingga tidak mengganti pembatas akses dengan finder tanpa scope. Helper `operation.Resource` tetap menangani mekanisme bersama; aturan bisnis berada pada domain dan command masing-masing.
+
 `GetAll`/finder menerima `limit, offset` dan mengembalikan `operation.Page[T]`: `Items`, `Total`, `Limit`, `Offset`. Default 20, maksimum 100, nilai negatif ditolak. Scope tepercaya diterapkan bersama filter pencarian **sebelum** pagination dan count. Scope kosong ditolak; `All` hanya boleh berasal dari adapter policy yang membuktikan hak akses penuh terhadap resource terkait. Pemeriksaan objek tetap dilakukan pada setiap hasil. Tidak ada penyaringan di memori yang membuat halaman atau total bocor.
+
+Sesudah `CountWhere`, service memeriksa ulang actor/revisi dan cancellation sebelum mengembalikan halaman. Pencabutan yang terlihat pada pemeriksaan ini menghasilkan error tanpa data/total; ini tetap pemeriksaan pada suatu waktu, bukan jaminan membatalkan respons setelah pemeriksaan terakhir.
 
 Filter saat ini berbentuk AND antar kolom; beberapa nilai dalam satu filter berarti IN. Nama kolom di-allowlist dari metadata GORM, nilai memakai parameter SQL. Adapter harus menolak policy yang tidak bisa direpresentasikan dengan aman; jangan mengubah pasangan scope berkorelasi menjadi dua IN yang memperluas akses. Count/list pada READ COMMITTED tidak menjanjikan snapshot atomik.
 

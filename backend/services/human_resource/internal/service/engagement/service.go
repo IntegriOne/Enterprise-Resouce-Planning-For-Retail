@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime                operation.Dependencies
-	EngagementSurvey       operation.Repository[entity.EngagementSurvey, string]
-	EngagementSurveyResult operation.Repository[entity.EngagementSurveyResult, string]
+	EngagementSurvey       domainrepo.RecordRepository[entity.EngagementSurvey, string]
+	EngagementSurveyResult domainrepo.RecordRepository[entity.EngagementSurveyResult, string]
 }
 
 // Service mengoordinasikan operasi domain engagement.
@@ -27,11 +27,23 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.engagementSurvey, err = operation.NewResource[entity.EngagementSurvey, string, *entity.EngagementSurvey](deps.EngagementSurvey, deps.Runtime, specEngagementSurvey())
+	s.engagementSurvey, err = operation.NewResource[entity.EngagementSurvey, string, *entity.EngagementSurvey](
+		deps.EngagementSurvey,
+		deps.Runtime,
+		specEngagementSurvey(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.engagementSurveyResult, err = operation.NewResource[entity.EngagementSurveyResult, string, *entity.EngagementSurveyResult](deps.EngagementSurveyResult, deps.Runtime, specEngagementSurveyResult())
+	s.engagementSurveyResult, err = operation.NewResource[
+		entity.EngagementSurveyResult,
+		string,
+		*entity.EngagementSurveyResult,
+	](
+		deps.EngagementSurveyResult,
+		deps.Runtime,
+		specEngagementSurveyResult(),
+	)
 	if err != nil {
 		return nil, err
 	}

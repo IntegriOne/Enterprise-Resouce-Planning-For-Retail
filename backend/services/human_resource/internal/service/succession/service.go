@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime             operation.Dependencies
-	SuccessionPlan      operation.Repository[entity.SuccessionPlan, string]
-	SuccessionCandidate operation.Repository[entity.SuccessionCandidate, string]
+	SuccessionPlan      domainrepo.RecordRepository[entity.SuccessionPlan, string]
+	SuccessionCandidate domainrepo.RecordRepository[entity.SuccessionCandidate, string]
 }
 
 // Service mengoordinasikan operasi domain succession.
@@ -27,11 +27,19 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.successionPlan, err = operation.NewResource[entity.SuccessionPlan, string, *entity.SuccessionPlan](deps.SuccessionPlan, deps.Runtime, specSuccessionPlan())
+	s.successionPlan, err = operation.NewResource[entity.SuccessionPlan, string, *entity.SuccessionPlan](
+		deps.SuccessionPlan,
+		deps.Runtime,
+		specSuccessionPlan(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.successionCandidate, err = operation.NewResource[entity.SuccessionCandidate, string, *entity.SuccessionCandidate](deps.SuccessionCandidate, deps.Runtime, specSuccessionCandidate())
+	s.successionCandidate, err = operation.NewResource[entity.SuccessionCandidate, string, *entity.SuccessionCandidate](
+		deps.SuccessionCandidate,
+		deps.Runtime,
+		specSuccessionCandidate(),
+	)
 	if err != nil {
 		return nil, err
 	}

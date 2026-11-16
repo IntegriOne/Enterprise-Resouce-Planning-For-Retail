@@ -13,10 +13,10 @@ import (
 
 type Dependencies struct {
 	Runtime          operation.Dependencies
-	LeavePolicy      operation.Repository[entity.LeavePolicy, string]
-	LeaveEntitlement operation.Repository[entity.LeaveEntitlement, string]
-	LeaveAdjustment  operation.Repository[entity.LeaveAdjustment, string]
-	LeaveLedgerEntry operation.Repository[entity.LeaveLedgerEntry, string]
+	LeavePolicy      domainrepo.RecordRepository[entity.LeavePolicy, string]
+	LeaveEntitlement domainrepo.RecordRepository[entity.LeaveEntitlement, string]
+	LeaveAdjustment  domainrepo.RecordRepository[entity.LeaveAdjustment, string]
+	LeaveLedgerEntry domainrepo.RecordRepository[entity.LeaveLedgerEntry, string]
 }
 
 // Service mengoordinasikan operasi domain leave.
@@ -32,19 +32,35 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{dependencies: deps}
 	var err error
-	s.leavePolicy, err = operation.NewResource[entity.LeavePolicy, string, *entity.LeavePolicy](deps.LeavePolicy, deps.Runtime, specLeavePolicy())
+	s.leavePolicy, err = operation.NewResource[entity.LeavePolicy, string, *entity.LeavePolicy](
+		deps.LeavePolicy,
+		deps.Runtime,
+		specLeavePolicy(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.leaveEntitlement, err = operation.NewResource[entity.LeaveEntitlement, string, *entity.LeaveEntitlement](deps.LeaveEntitlement, deps.Runtime, specLeaveEntitlement())
+	s.leaveEntitlement, err = operation.NewResource[entity.LeaveEntitlement, string, *entity.LeaveEntitlement](
+		deps.LeaveEntitlement,
+		deps.Runtime,
+		specLeaveEntitlement(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.leaveAdjustment, err = operation.NewResource[entity.LeaveAdjustment, string, *entity.LeaveAdjustment](deps.LeaveAdjustment, deps.Runtime, specLeaveAdjustment())
+	s.leaveAdjustment, err = operation.NewResource[entity.LeaveAdjustment, string, *entity.LeaveAdjustment](
+		deps.LeaveAdjustment,
+		deps.Runtime,
+		specLeaveAdjustment(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.leaveLedgerEntry, err = operation.NewResource[entity.LeaveLedgerEntry, string, *entity.LeaveLedgerEntry](deps.LeaveLedgerEntry, deps.Runtime, specLeaveLedgerEntry())
+	s.leaveLedgerEntry, err = operation.NewResource[entity.LeaveLedgerEntry, string, *entity.LeaveLedgerEntry](
+		deps.LeaveLedgerEntry,
+		deps.Runtime,
+		specLeaveLedgerEntry(),
+	)
 	if err != nil {
 		return nil, err
 	}

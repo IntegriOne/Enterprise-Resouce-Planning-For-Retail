@@ -109,7 +109,15 @@ func ValidateCalibration(session *entity.TalentCalibrationSession, assessment *e
 			return err
 		}
 	}
-	if session.Status != "open" || assessment.Status != "finalized" || !strings.EqualFold(session.ID, decision.SessionID) || !strings.EqualFold(session.TalentReviewCycleID, assessment.TalentReviewCycleID) || !strings.EqualFold(decision.TalentReviewCycleID, assessment.TalentReviewCycleID) || !strings.EqualFold(source.AssessmentID, assessment.ID) || !strings.EqualFold(decision.AssessmentID, assessment.ID) || !strings.EqualFold(decision.DimensionID, source.DimensionID) || decision.OriginalScore != source.Score {
+	if session.Status != "open" || assessment.Status != "finalized" ||
+		!strings.EqualFold(session.ID, decision.SessionID) ||
+		!strings.EqualFold(session.TalentReviewCycleID, assessment.TalentReviewCycleID) ||
+		!strings.EqualFold(decision.TalentReviewCycleID, assessment.TalentReviewCycleID) ||
+		!strings.EqualFold(source.AssessmentID, assessment.ID) ||
+		!strings.EqualFold(source.FrameworkID, assessment.FrameworkID) ||
+		!strings.EqualFold(decision.AssessmentID, assessment.ID) ||
+		!strings.EqualFold(decision.DimensionID, source.DimensionID) ||
+		decision.OriginalScore != source.Score {
 		return hrerrors.Invalid("calibration", "open session and original finalized assessment evidence must match")
 	}
 	return nil

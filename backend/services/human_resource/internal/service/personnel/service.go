@@ -13,12 +13,12 @@ import (
 
 type Dependencies struct {
 	Runtime              operation.Dependencies
-	Worker               operation.Repository[entity.Worker, string]
-	EmploymentContract   operation.Repository[entity.EmploymentContract, string]
-	WorkerAssignment     operation.Repository[entity.WorkerAssignment, string]
-	WorkerLifecycleEvent operation.Repository[entity.WorkerLifecycleEvent, int64]
-	WorkerDocument       operation.Repository[entity.WorkerDocument, string]
-	EmergencyContact     operation.Repository[entity.EmergencyContact, string]
+	Worker               domainrepo.RecordRepository[entity.Worker, string]
+	EmploymentContract   domainrepo.RecordRepository[entity.EmploymentContract, string]
+	WorkerAssignment     domainrepo.RecordRepository[entity.WorkerAssignment, string]
+	WorkerLifecycleEvent domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
+	WorkerDocument       domainrepo.RecordRepository[entity.WorkerDocument, string]
+	EmergencyContact     domainrepo.RecordRepository[entity.EmergencyContact, string]
 }
 
 // Service mengoordinasikan operasi domain personnel.
@@ -35,27 +35,51 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.worker, err = operation.NewResource[entity.Worker, string, *entity.Worker](deps.Worker, deps.Runtime, specWorker())
+	s.worker, err = operation.NewResource[entity.Worker, string, *entity.Worker](
+		deps.Worker,
+		deps.Runtime,
+		specWorker(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.employmentContract, err = operation.NewResource[entity.EmploymentContract, string, *entity.EmploymentContract](deps.EmploymentContract, deps.Runtime, specEmploymentContract())
+	s.employmentContract, err = operation.NewResource[entity.EmploymentContract, string, *entity.EmploymentContract](
+		deps.EmploymentContract,
+		deps.Runtime,
+		specEmploymentContract(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.workerAssignment, err = operation.NewResource[entity.WorkerAssignment, string, *entity.WorkerAssignment](deps.WorkerAssignment, deps.Runtime, specWorkerAssignment())
+	s.workerAssignment, err = operation.NewResource[entity.WorkerAssignment, string, *entity.WorkerAssignment](
+		deps.WorkerAssignment,
+		deps.Runtime,
+		specWorkerAssignment(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.workerLifecycleEvent, err = operation.NewResource[entity.WorkerLifecycleEvent, int64, *entity.WorkerLifecycleEvent](deps.WorkerLifecycleEvent, deps.Runtime, specWorkerLifecycleEvent())
+	s.workerLifecycleEvent, err = operation.NewResource[entity.WorkerLifecycleEvent, int64, *entity.WorkerLifecycleEvent](
+		deps.WorkerLifecycleEvent,
+		deps.Runtime,
+		specWorkerLifecycleEvent(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.workerDocument, err = operation.NewResource[entity.WorkerDocument, string, *entity.WorkerDocument](deps.WorkerDocument, deps.Runtime, specWorkerDocument())
+	s.workerDocument, err = operation.NewResource[entity.WorkerDocument, string, *entity.WorkerDocument](
+		deps.WorkerDocument,
+		deps.Runtime,
+		specWorkerDocument(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.emergencyContact, err = operation.NewResource[entity.EmergencyContact, string, *entity.EmergencyContact](deps.EmergencyContact, deps.Runtime, specEmergencyContact())
+	s.emergencyContact, err = operation.NewResource[entity.EmergencyContact, string, *entity.EmergencyContact](
+		deps.EmergencyContact,
+		deps.Runtime,
+		specEmergencyContact(),
+	)
 	if err != nil {
 		return nil, err
 	}

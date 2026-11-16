@@ -38,6 +38,7 @@ type Harness struct {
 	LastFilters                                  []domainrepo.Filter
 	WriteCalls, IntegrityCalls, TransactionCalls int
 	RevokeAfterNextOutbox                        bool
+	RevokeAfterNextCount                         bool
 	revoked                                      bool
 	RetainLastEvent                              bool
 }
@@ -319,6 +320,9 @@ func (s *Store[T, K]) CountWhere(ctx context.Context, filters []domainrepo.Filte
 		return 0, err
 	}
 	rows, err := s.selected(filters)
+	if s.Harness.RevokeAfterNextCount {
+		s.Harness.revoked = true
+	}
 	return int64(len(rows)), err
 }
 func (s *Store[T, K]) Insert(ctx context.Context, value *T) error {

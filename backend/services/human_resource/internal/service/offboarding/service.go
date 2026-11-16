@@ -13,8 +13,8 @@ import (
 
 type Dependencies struct {
 	Runtime         operation.Dependencies
-	OffboardingPlan operation.Repository[entity.OffboardingPlan, string]
-	OffboardingTask operation.Repository[entity.OffboardingTask, string]
+	OffboardingPlan domainrepo.RecordRepository[entity.OffboardingPlan, string]
+	OffboardingTask domainrepo.RecordRepository[entity.OffboardingTask, string]
 }
 
 // Service mengoordinasikan operasi domain offboarding.
@@ -27,11 +27,19 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.offboardingPlan, err = operation.NewResource[entity.OffboardingPlan, string, *entity.OffboardingPlan](deps.OffboardingPlan, deps.Runtime, specOffboardingPlan())
+	s.offboardingPlan, err = operation.NewResource[entity.OffboardingPlan, string, *entity.OffboardingPlan](
+		deps.OffboardingPlan,
+		deps.Runtime,
+		specOffboardingPlan(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.offboardingTask, err = operation.NewResource[entity.OffboardingTask, string, *entity.OffboardingTask](deps.OffboardingTask, deps.Runtime, specOffboardingTask())
+	s.offboardingTask, err = operation.NewResource[entity.OffboardingTask, string, *entity.OffboardingTask](
+		deps.OffboardingTask,
+		deps.Runtime,
+		specOffboardingTask(),
+	)
 	if err != nil {
 		return nil, err
 	}

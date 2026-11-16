@@ -13,9 +13,9 @@ import (
 
 type Dependencies struct {
 	Runtime                  operation.Dependencies
-	LearningCourse           operation.Repository[entity.LearningCourse, string]
-	LearningEnrollment       operation.Repository[entity.LearningEnrollment, string]
-	LearningCourseCompetency operation.Repository[entity.LearningCourseCompetency, entity.LearningCourseCompetencyKey]
+	LearningCourse           domainrepo.RecordRepository[entity.LearningCourse, string]
+	LearningEnrollment       domainrepo.RecordRepository[entity.LearningEnrollment, string]
+	LearningCourseCompetency domainrepo.RecordRepository[entity.LearningCourseCompetency, entity.LearningCourseCompetencyKey]
 }
 
 // Service mengoordinasikan operasi domain learning.
@@ -29,15 +29,31 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.learningCourse, err = operation.NewResource[entity.LearningCourse, string, *entity.LearningCourse](deps.LearningCourse, deps.Runtime, specLearningCourse())
+	s.learningCourse, err = operation.NewResource[entity.LearningCourse, string, *entity.LearningCourse](
+		deps.LearningCourse,
+		deps.Runtime,
+		specLearningCourse(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.learningEnrollment, err = operation.NewResource[entity.LearningEnrollment, string, *entity.LearningEnrollment](deps.LearningEnrollment, deps.Runtime, specLearningEnrollment())
+	s.learningEnrollment, err = operation.NewResource[entity.LearningEnrollment, string, *entity.LearningEnrollment](
+		deps.LearningEnrollment,
+		deps.Runtime,
+		specLearningEnrollment(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.learningCourseCompetency, err = operation.NewResource[entity.LearningCourseCompetency, entity.LearningCourseCompetencyKey, *entity.LearningCourseCompetency](deps.LearningCourseCompetency, deps.Runtime, specLearningCourseCompetency())
+	s.learningCourseCompetency, err = operation.NewResource[
+		entity.LearningCourseCompetency,
+		entity.LearningCourseCompetencyKey,
+		*entity.LearningCourseCompetency,
+	](
+		deps.LearningCourseCompetency,
+		deps.Runtime,
+		specLearningCourseCompetency(),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -11,13 +11,19 @@ import (
 
 // Command hanya dipakai command domain bernama tetap yang memvalidasi transisinya sendiri.
 // Action tidak boleh diteruskan langsung dari input transport.
-func (r *Resource[T, K, P]) Command(ctx context.Context, key K, action string, change func(context.Context, *T, Actor, time.Time) (*T, error)) (*T, error) {
+func (r *Resource[T, K, P]) Command(
+	ctx context.Context,
+	key K,
+	action string,
+	change func(context.Context, *T, Actor, time.Time) (*T, error),
+) (*T, error) {
 	if r == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	allowed := (r.spec.Table == "hr_leave_entitlements" && action == "post_leave_entry") ||
-		(r.spec.Table == "hr_payroll_runs" && action == "approve") ||
-		(r.spec.Table == "hr_talent_assessments" && action == "finalize")
+	postsLeave := r.spec.Table == "hr_leave_entitlements" && action == "post_leave_entry"
+	approvesPayroll := r.spec.Table == "hr_payroll_runs" && action == "approve"
+	finalizesTalent := r.spec.Table == "hr_talent_assessments" && action == "finalize"
+	allowed := postsLeave || approvesPayroll || finalizesTalent
 	if !allowed || change == nil {
 		return nil, hrerrors.ErrWorkflowRequired
 	}

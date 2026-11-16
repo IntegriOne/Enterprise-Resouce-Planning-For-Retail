@@ -21,6 +21,14 @@ func TestLedgerReplay(t *testing.T) {
 		{"partial reversal", func(i *service.BalanceInput) { i.Entries[2].QuantityDelta = "1" }, false},
 		{"gap", func(i *service.BalanceInput) { i.Entries[2].EntrySequence = 4 }, false},
 		{"foreign entitlement", func(i *service.BalanceInput) { i.Entries[1].EntitlementID = f.ID(999) }, false},
+		{"before entitlement period", func(i *service.BalanceInput) {
+			i.Entries[1].EffectiveDate = i.Entitlement.EntitlementPeriodStart.AddDate(0, 0, -1)
+		}, false},
+		{"after entitlement period", func(i *service.BalanceInput) {
+			i.Entries[1].EffectiveDate = i.Entitlement.EntitlementPeriodEnd.AddDate(0, 0, 1)
+		}, false},
+		{"period start inclusive", func(i *service.BalanceInput) { i.Entries[1].EffectiveDate = i.Entitlement.EntitlementPeriodStart }, true},
+		{"period end inclusive", func(i *service.BalanceInput) { i.Entries[1].EffectiveDate = i.Entitlement.EntitlementPeriodEnd }, true},
 		{"negative balance", func(i *service.BalanceInput) { i.Entries = i.Entries[:2]; i.Entries[1].QuantityDelta = "-13" }, false},
 	}
 	for _, tt := range tests {

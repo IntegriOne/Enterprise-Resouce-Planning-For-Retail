@@ -13,16 +13,16 @@ import (
 
 type Dependencies struct {
 	Runtime                 operation.Dependencies
-	Requisition             operation.Repository[entity.Requisition, string]
-	Candidate               operation.Repository[entity.Candidate, string]
-	Application             operation.Repository[entity.Application, string]
-	ApplicationStageHistory operation.Repository[entity.ApplicationStageHistory, int64]
-	Interview               operation.Repository[entity.Interview, string]
-	InterviewPanelist       operation.Repository[entity.InterviewPanelist, string]
-	InterviewFeedback       operation.Repository[entity.InterviewFeedback, string]
-	Offer                   operation.Repository[entity.Offer, string]
-	JobPosting              operation.Repository[entity.JobPosting, string]
-	ApplicationAssessment   operation.Repository[entity.ApplicationAssessment, string]
+	Requisition             domainrepo.RecordRepository[entity.Requisition, string]
+	Candidate               domainrepo.RecordRepository[entity.Candidate, string]
+	Application             domainrepo.RecordRepository[entity.Application, string]
+	ApplicationStageHistory domainrepo.RecordRepository[entity.ApplicationStageHistory, int64]
+	Interview               domainrepo.RecordRepository[entity.Interview, string]
+	InterviewPanelist       domainrepo.RecordRepository[entity.InterviewPanelist, string]
+	InterviewFeedback       domainrepo.RecordRepository[entity.InterviewFeedback, string]
+	Offer                   domainrepo.RecordRepository[entity.Offer, string]
+	JobPosting              domainrepo.RecordRepository[entity.JobPosting, string]
+	ApplicationAssessment   domainrepo.RecordRepository[entity.ApplicationAssessment, string]
 }
 
 // Service mengoordinasikan operasi domain recruitment.
@@ -43,43 +43,91 @@ type Service struct {
 func NewService(deps Dependencies) (*Service, error) {
 	s := &Service{}
 	var err error
-	s.requisition, err = operation.NewResource[entity.Requisition, string, *entity.Requisition](deps.Requisition, deps.Runtime, specRequisition())
+	s.requisition, err = operation.NewResource[entity.Requisition, string, *entity.Requisition](
+		deps.Requisition,
+		deps.Runtime,
+		specRequisition(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.candidate, err = operation.NewResource[entity.Candidate, string, *entity.Candidate](deps.Candidate, deps.Runtime, specCandidate())
+	s.candidate, err = operation.NewResource[entity.Candidate, string, *entity.Candidate](
+		deps.Candidate,
+		deps.Runtime,
+		specCandidate(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.application, err = operation.NewResource[entity.Application, string, *entity.Application](deps.Application, deps.Runtime, specApplication())
+	s.application, err = operation.NewResource[entity.Application, string, *entity.Application](
+		deps.Application,
+		deps.Runtime,
+		specApplication(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.applicationStageHistory, err = operation.NewResource[entity.ApplicationStageHistory, int64, *entity.ApplicationStageHistory](deps.ApplicationStageHistory, deps.Runtime, specApplicationStageHistory())
+	s.applicationStageHistory, err = operation.NewResource[
+		entity.ApplicationStageHistory,
+		int64,
+		*entity.ApplicationStageHistory,
+	](
+		deps.ApplicationStageHistory,
+		deps.Runtime,
+		specApplicationStageHistory(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.interview, err = operation.NewResource[entity.Interview, string, *entity.Interview](deps.Interview, deps.Runtime, specInterview())
+	s.interview, err = operation.NewResource[entity.Interview, string, *entity.Interview](
+		deps.Interview,
+		deps.Runtime,
+		specInterview(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.interviewPanelist, err = operation.NewResource[entity.InterviewPanelist, string, *entity.InterviewPanelist](deps.InterviewPanelist, deps.Runtime, specInterviewPanelist())
+	s.interviewPanelist, err = operation.NewResource[entity.InterviewPanelist, string, *entity.InterviewPanelist](
+		deps.InterviewPanelist,
+		deps.Runtime,
+		specInterviewPanelist(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.interviewFeedback, err = operation.NewResource[entity.InterviewFeedback, string, *entity.InterviewFeedback](deps.InterviewFeedback, deps.Runtime, specInterviewFeedback())
+	s.interviewFeedback, err = operation.NewResource[entity.InterviewFeedback, string, *entity.InterviewFeedback](
+		deps.InterviewFeedback,
+		deps.Runtime,
+		specInterviewFeedback(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.offer, err = operation.NewResource[entity.Offer, string, *entity.Offer](deps.Offer, deps.Runtime, specOffer())
+	s.offer, err = operation.NewResource[entity.Offer, string, *entity.Offer](
+		deps.Offer,
+		deps.Runtime,
+		specOffer(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.jobPosting, err = operation.NewResource[entity.JobPosting, string, *entity.JobPosting](deps.JobPosting, deps.Runtime, specJobPosting())
+	s.jobPosting, err = operation.NewResource[entity.JobPosting, string, *entity.JobPosting](
+		deps.JobPosting,
+		deps.Runtime,
+		specJobPosting(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	s.applicationAssessment, err = operation.NewResource[entity.ApplicationAssessment, string, *entity.ApplicationAssessment](deps.ApplicationAssessment, deps.Runtime, specApplicationAssessment())
+	s.applicationAssessment, err = operation.NewResource[
+		entity.ApplicationAssessment,
+		string,
+		*entity.ApplicationAssessment,
+	](
+		deps.ApplicationAssessment,
+		deps.Runtime,
+		specApplicationAssessment(),
+	)
 	if err != nil {
 		return nil, err
 	}
