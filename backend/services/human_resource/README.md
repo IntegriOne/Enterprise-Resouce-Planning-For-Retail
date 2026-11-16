@@ -2,7 +2,7 @@
 
 Status: **entity, aturan domain, repository dan application service 22 domain tersedia**. HRM dan Talent Management berada dalam satu service dengan master `hr_workers` yang sama. Recruitment/ATS termasuk HRM.
 
-Skema, baseline SQL, validasi domain dan repository 86 tabel tersedia dalam modul Go mandiri. Application service mencakup 84 tabel bisnis; inbox/outbox memakai jalur khusus. Kontrak dan handler gRPC privat sudah tersedia dan container development sehat. Policy katalog berjalan untuk grant global; validator mutasi produksi baru tersedia untuk job family dan job. Relay outbox berjalan standby secara bawaan dan dapat memakai webhook bila dikonfigurasi. Scope parsial, validasi owner seluruh resource, grant IAM, E2E positif dan wiring Gateway HRM belum selesai. Struktur mengikuti path aktif `human_resource`, bukan path historis `human_resource_management`.
+Skema, baseline SQL, validasi domain dan repository 86 tabel tersedia dalam modul Go mandiri. Application service mencakup 84 tabel bisnis; inbox/outbox memakai jalur khusus. Kontrak dan handler gRPC privat sudah tersedia dan container development sehat. Policy katalog berjalan untuk grant global; validator mutasi produksi baru tersedia untuk job family, job, dan katalog kompetensi. Relay outbox berjalan standby secara bawaan dan dapat memakai webhook bila dikonfigurasi. Scope parsial, validasi owner seluruh resource, grant IAM, E2E positif dan wiring Gateway HRM belum selesai. Struktur mengikuti path aktif `human_resource`, bukan path historis `human_resource_management`.
 
 ## Struktur lapisan
 

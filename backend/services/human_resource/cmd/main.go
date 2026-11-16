@@ -73,7 +73,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	cancel()
-	logger.Warn("HRM mutation validators are limited to local workforce catalog resources; other mutations remain unavailable")
+	logger.Warn("HRM mutation validators are limited to selected local catalog resources; other mutations remain unavailable")
 	logger.Info("starting private HRM gRPC listener", "address", cfg.GRPCAddress())
 	served := make(chan error, 1)
 	relayed := make(chan error, 1)

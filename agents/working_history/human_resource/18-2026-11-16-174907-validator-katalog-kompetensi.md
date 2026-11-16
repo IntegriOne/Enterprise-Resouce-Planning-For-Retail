@@ -1,0 +1,3 @@
+# Validator katalog kompetensi HRM
+
+Menambahkan validator produksi `hr_competencies` dan wiring ke Integrity. Pasangan kode/versi diperiksa sebelum insert/update; constraint unik PostgreSQL tetap menjadi penjaga race. Empat relasi lokal HRM diperiksa agar rubrik/kode/versi yang sudah dipakai tidak berubah dan resource yang direferensikan tidak dinonaktifkan atau dihapus. Unit test menguji duplikasi, seluruh empat relasi, perubahan yang sah, dan kegagalan dependency. `go fmt`, `go vet`, `go test -race ./...`, serta build/health Docker lulus. Validator 75 resource mutabel lain dan scope parsial tetap belum siap.
