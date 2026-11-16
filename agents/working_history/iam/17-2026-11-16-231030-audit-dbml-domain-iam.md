@@ -1,0 +1,3 @@
+# Audit DBML dan domain IAM
+
+Meninjau 16 tabel DBML IAM, migrasi awal, entity/domain service, serta jalur bootstrap permission, permission service, dan membership grup. Audit menemukan namespace `resource` permission dibuang saat bootstrap sehingga dapat berbenturan dengan katalog management lain; validasi domain juga belum memastikan `code`, `resource`, dan `action` sejalan. Kolom `group_members.added_by` tidak terisi pada jalur service, dan beberapa constraint migrasi belum terwakili jelas dalam DBML. Temuan lengkap dan prioritas ada di `agents/audit/iam/2-2026-11-16-231030-review-dbml-dan-domain-iam.md`. Unit test dan `go vet` untuk domain, permission, role, serta group lulus. Audit tidak mengubah kode atau skema runtime.

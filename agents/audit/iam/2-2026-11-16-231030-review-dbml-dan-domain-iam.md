@@ -1,0 +1,21 @@
+# Audit DBML dan domain IAM gRPC
+
+Tanggal: 16 November 2026 (WIB). Cakupan: `backend/services/iam/db/schema/identity_access_management.dbml`, migrasi `000001`, entity/domain service, serta jalur service yang membuktikan penggunaan kontrak. Audit statis; tidak menjalankan migrasi atau gRPC/Docker E2E.
+
+## Temuan
+
+1. **Tinggi — namespace resource permission hilang saat bootstrap.** DBML baris 248–250 mencontohkan `code=iam.users.read`, `resource=iam.users`, `action=read`, dan migrasi baris 262–271 menetapkan `UNIQUE(resource, action)`. Namun `services/bootstrap.go` baris 423–441 membuang segmen domain sehingga `iam.users.read` menjadi `resource=users`, `action=read`. Permission management lain dengan resource/action yang sama akan bertabrakan meski `code` berbeda. Perbaikan: tetapkan format kanonik lintas management, pertahankan namespace domain pada `resource`, dan siapkan migrasi data eksisting sebelum mengubah bootstrap.
+2. **Sedang — domain menerima metadata permission yang tidak sejalan dengan code.** `domain/entity/role.go` baris 142–168 memvalidasi setiap field sendiri, sedangkan `services/permission/service.go` baris 94–122 langsung menyimpan hasilnya. `code=iam.users.read`, `resource=finance.invoice`, `action=delete` lolos validasi domain dan dua constraint unik jika nilainya belum dipakai. Keputusan otorisasi memakai `code`, sementara filter katalog memakai `resource/action`; akibatnya metadata dan grant dapat berbeda makna. Normalisasi/pemeriksaan kesesuaian perlu disepakati bersama format kanonik pada temuan 1; tambahkan tes untuk kombinasi yang salah.
+3. **Sedang — jejak pemberi keanggotaan grup tidak terisi.** DBML baris 291–307 dan migrasi baris 293–301 menyediakan `group_members.added_by`, tetapi `domain/entity/group.go` baris 82–105, `repository/group/models.go` baris 20–25, dan `services/group/service.go` baris 240–284 tidak menerima atau mengisi field tersebut. Seluruh penambahan anggota lewat service menghasilkan `NULL`, sehingga pelaku tidak dapat ditelusuri dari relasi keanggotaan. Jika kolom ini memang audit wajib, teruskan actor IAM tepercaya dari handler ke service/domain/repository; jika audit disimpan di tempat lain, jelaskan fungsi kolom atau hapus setelah keputusan skema.
+4. **Rendah — DBML belum merepresentasikan semua constraint operasional.** DBML mendokumentasikan partial unique index dengan note saja, sedangkan migrasi baris 135–141 dan 202–204 benar-benar membuat index parsial. DBML menulis `unique` biasa untuk `user_roles`/`group_roles`, sedangkan migrasi baris 313/331 memakai `UNIQUE NULLS NOT DISTINCT`; cek domain dan state MFA juga hanya ada di migrasi. Artinya DBML tidak cukup untuk menghasilkan skema runtime yang ekuivalen. Tambahkan catatan eksplisit mengenai constraint PostgreSQL yang tidak didukung sintaks DBML dan rujuk migrasi sebagai kontrak executable.
+5. **Rendah — batas `self` grup hanya ditegakkan di domain.** `domain/entity/assignment.go` baris 195–218 menolak `ScopeTypeSelf` untuk `GroupRole`, tetapi `ck_group_roles_scope` di migrasi baris 332–335 menerima setiap scope non-global dengan ID, termasuk `self`. Jalur service normal tertutup; constraint DB akan memperkuat invariannya jika ada penulis data lain/migrasi baru.
+
+## Yang sudah sesuai
+
+- 16 tabel DBML mencakup pengguna, identitas, kredensial/MFA, token, sesi, RBAC, grup, kontrol keamanan, dan outbox; FK inti tersedia di migrasi.
+- `NewScope` membatasi UUID/non-global, `AccessEvaluator.Authorize` memeriksa status pengguna dan sesi, kesegaran snapshot, kesamaan user, scope `self`, serta reautentikasi sensitif.
+- Migrasi memiliki CHECK dan index lebih kuat daripada notasi DBML, termasuk token/sesi, nilai epoch, serta assignment global dengan `NULLS NOT DISTINCT`.
+
+## Verifikasi dan batas
+
+`go test ./domain/... ./services/permission/... ./services/role/... ./services/group/...` lulus; `go vet` untuk paket yang sama lulus. Indeks codebase-memory dicek untuk source yang dikutip; DBML tidak terlacak dan migrasi terindeks parsial, sehingga keduanya dibaca langsung. Temuan adalah hasil audit statis; dampak konflik permission lintas management belum direproduksi pada database live. Dokumentasi IAM lama masih menyebut `principals`; source saat ini memakai `users`, dan perubahan dokumentasi paralel di working tree belum disinkronkan oleh audit ini.
