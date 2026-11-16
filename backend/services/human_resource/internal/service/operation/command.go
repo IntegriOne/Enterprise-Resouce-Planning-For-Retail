@@ -21,11 +21,12 @@ func (r *Resource[T, K, P]) Command(
 		return nil, hrerrors.ErrUnavailable
 	}
 	postsLeave := r.spec.Table == "hr_leave_entitlements" && action == "post_leave_entry"
+	approvesLeaveAdjustment := r.spec.Table == "hr_leave_adjustments" && action == "approve"
 	approvesPayroll := r.spec.Table == "hr_payroll_runs" && action == "approve"
 	approvesCareerPath := r.spec.Table == "hr_career_paths" && action == "approve"
 	launchesPerformanceCycle := r.spec.Table == "hr_performance_cycles" && action == "launch"
 	finalizesTalent := r.spec.Table == "hr_talent_assessments" && action == "finalize"
-	allowed := postsLeave || approvesPayroll || approvesCareerPath || launchesPerformanceCycle || finalizesTalent
+	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || launchesPerformanceCycle || finalizesTalent
 	if !allowed || change == nil {
 		return nil, hrerrors.ErrWorkflowRequired
 	}

@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -13,15 +14,17 @@ import (
 )
 
 type leaveEntitlementValidator struct {
-	workers  leaveWorkerReader
-	policies leavePolicyReader
-	ledger   leaveLedgerReader
+	workers     leaveWorkerReader
+	policies    leavePolicyReader
+	adjustments leaveAdjustmentReader
+	ledger      leaveLedgerReader
 }
 
-// ValidateMutation membatasi saldo hak cuti pada draft kosong atau proyeksi posting opening.
+// ValidateMutation membatasi saldo hak cuti pada draft kosong atau proyeksi ledger HRM sah.
 func (v *leaveEntitlementValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
 	if v == nil || table != "hr_leave_entitlements" || operation.RequireDependency(v.workers) != nil ||
-		operation.RequireDependency(v.policies) != nil || operation.RequireDependency(v.ledger) != nil {
+		operation.RequireDependency(v.policies) != nil || operation.RequireDependency(v.adjustments) != nil ||
+		operation.RequireDependency(v.ledger) != nil {
 		return hrerrors.ErrUnavailable
 	}
 	if err := ctx.Err(); err != nil {
@@ -91,27 +94,73 @@ func (v *leaveEntitlementValidator) ValidateMutation(ctx context.Context, table 
 		}
 		return nil
 	}
-	if previous.Revision != 1 || !emptyLeaveBalance(previous) || entitlement.Revision != 2 ||
+	if previous.Revision != count || entitlement.Revision != previous.Revision+1 ||
 		previous.WorkerID != entitlement.WorkerID || previous.LeavePolicyID != entitlement.LeavePolicyID ||
 		previous.LeaveTypeCodeSnapshot != entitlement.LeaveTypeCodeSnapshot ||
 		!previous.EntitlementPeriodStart.Equal(entitlement.EntitlementPeriodStart) ||
 		!previous.EntitlementPeriodEnd.Equal(entitlement.EntitlementPeriodEnd) ||
-		previous.UOMCode != entitlement.UOMCode || count != 1 {
+		previous.UOMCode != entitlement.UOMCode || count > 10000 {
 		return hrerrors.ErrWorkflowRequired
 	}
-	entries, err := v.ledger.SelectWhere(ctx, filter, 2, 0)
-	if err != nil {
-		return err
+	entries := make([]entity.LeaveLedgerEntry, 0, int(count))
+	for offset := 0; offset < int(count); offset += 100 {
+		page, err := v.ledger.SelectWhere(ctx, filter, 100, offset)
+		if err != nil {
+			return err
+		}
+		entries = append(entries, page...)
 	}
-	if len(entries) != 1 || entries[0].EntryType != "opening" ||
-		!entries[0].RecordedAt.Truncate(time.Microsecond).Equal(entitlement.CalculatedAt.Truncate(time.Microsecond)) {
+	if int64(len(entries)) != count {
+		return hrerrors.ErrWorkflowRequired
+	}
+	adjustments := make([]entity.LeaveAdjustment, 0)
+	seen := make(map[string]bool)
+	lastRecorded := false
+	for _, entry := range entries {
+		if entry.EntryType != "opening" && entry.EntryType != "adjustment" {
+			return hrerrors.ErrWorkflowRequired
+		}
+		if entry.EntrySequence == count && entry.RecordedAt.Truncate(time.Microsecond).Equal(entitlement.CalculatedAt.Truncate(time.Microsecond)) {
+			lastRecorded = true
+		}
+		if entry.AdjustmentID == nil {
+			continue
+		}
+		key := strings.ToLower(*entry.AdjustmentID)
+		if seen[key] {
+			return hrerrors.ErrWorkflowRequired
+		}
+		adjustment, err := v.adjustments.FindByID(ctx, key)
+		if err != nil {
+			return err
+		}
+		if adjustment == nil {
+			return hrerrors.ErrReferenceConflict
+		}
+		adjustments = append(adjustments, *adjustment)
+		seen[key] = true
+	}
+	if !lastRecorded {
 		return hrerrors.ErrWorkflowRequired
 	}
 	expected, err := leavepolicy.RebuildBalance(leavepolicy.BalanceInput{
-		Entitlement: previous, Entries: entries, CalculatedAt: entitlement.CalculatedAt,
+		Entitlement: previous, Entries: entries, Adjustments: adjustments, CalculatedAt: entitlement.CalculatedAt,
 	})
 	if err != nil {
 		return err
+	}
+	if policy.MaxBalance != nil {
+		maximum, err := policy.MaxBalance.Rat()
+		if err != nil {
+			return err
+		}
+		closing, err := expected.ClosingBalanceSnapshot.Rat()
+		if err != nil {
+			return err
+		}
+		if closing.Cmp(maximum) > 0 {
+			return hrerrors.Invalid("closing_balance_snapshot", "balance exceeds policy maximum")
+		}
 	}
 	if !reflect.DeepEqual(expected, entitlement) {
 		return hrerrors.ErrWorkflowRequired

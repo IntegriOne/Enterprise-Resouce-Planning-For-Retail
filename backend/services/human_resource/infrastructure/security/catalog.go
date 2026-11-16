@@ -51,6 +51,7 @@ func PermissionCatalog() map[string]string {
 		}
 	}
 	permissions["hr_leave_entitlements.post_leave_entry"] = "human_resource.leave_entitlements.post"
+	permissions["hr_leave_adjustments.approve"] = "human_resource.leave_adjustments.approve"
 	permissions["hr_payroll_runs.approve"] = "human_resource.payroll_runs.approve"
 	permissions["hr_career_paths.approve"] = "human_resource.career_paths.approve"
 	permissions["hr_performance_cycles.launch"] = "human_resource.performance_cycles.launch"

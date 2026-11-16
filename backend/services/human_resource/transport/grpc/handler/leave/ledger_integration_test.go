@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -32,15 +33,19 @@ import (
 
 type leaveIntegrationPolicy struct{}
 
-func (leaveIntegrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
-	return operation.Actor{PrincipalID: "00000000-0000-4000-8000-000000000001", SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human"}, nil
+func (leaveIntegrationPolicy) Authorize(ctx context.Context, _ operation.Access) (operation.Actor, error) {
+	principalID := "00000000-0000-4000-8000-000000000001"
+	if values, ok := metadata.FromIncomingContext(ctx); ok && len(values.Get("x-test-approver")) != 0 {
+		principalID = "00000000-0000-4000-8000-000000000003"
+	}
+	return operation.Actor{PrincipalID: principalID, SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human"}, nil
 }
 
 func (leaveIntegrationPolicy) ReadScope(context.Context, operation.Access) (operation.Scope, error) {
 	return operation.Scope{All: true}, nil
 }
 
-func TestLeaveOpeningRPCWithPostgreSQL(t *testing.T) {
+func TestLeaveLedgerRPCWithPostgreSQL(t *testing.T) {
 	dsn := os.Getenv("HRM_TEST_DATABASE_URL")
 	if dsn == "" {
 		t.Skip("HRM_TEST_DATABASE_URL is not configured")
@@ -111,7 +116,7 @@ func TestLeaveOpeningRPCWithPostgreSQL(t *testing.T) {
 	invalidMethod := "statutory_engine"
 	policyInput := &pb.LeavePolicyInput{PolicyCode: &policyCode, PolicyVersion: &version,
 		PolicyName: &policyName, LeaveTypeCode: &leaveType, JurisdictionCode: &jurisdiction,
-		AccrualMethod: &invalidMethod, AnnualEntitlement: &opening, EffectiveFrom: &effectiveFrom}
+		AccrualMethod: &invalidMethod, AnnualEntitlement: &opening, MaxBalance: &opening, EffectiveFrom: &effectiveFrom}
 	if _, err := client.CreateLeavePolicy(ctx, &pb.CreateLeavePolicyRequest{Input: policyInput}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("unsupported policy method status = %v, want FailedPrecondition", status.Code(err))
 	}
@@ -203,6 +208,54 @@ func TestLeaveOpeningRPCWithPostgreSQL(t *testing.T) {
 	}}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("unsupported usage status = %v, want FailedPrecondition", status.Code(err))
 	}
+	adjustmentKey, adjustmentReason, explanation := "adjust-"+id, "CORRECTION", "Correct the initial balance"
+	adjustment, err := client.CreateLeaveAdjustment(ctx, &pb.CreateLeaveAdjustmentRequest{Input: &pb.LeaveAdjustmentInput{
+		EntitlementId: &id, QuantityDelta: &debit, ReasonCode: &adjustmentReason,
+		Reason: &explanation, IdempotencyKey: &adjustmentKey,
+	}})
+	if err != nil || adjustment.GetItem().GetId() == "" {
+		t.Fatalf("create adjustment: %+v, %v", adjustment, err)
+	}
+	adjustmentID := adjustment.GetItem().GetId()
+	if _, err := client.ApproveLeaveAdjustment(ctx, &common.IDRequest{Id: adjustmentID}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("self approval status = %v, want PermissionDenied", status.Code(err))
+	}
+	approverCtx := metadata.AppendToOutgoingContext(ctx, "x-test-approver", "true")
+	approvedAdjustment, err := client.ApproveLeaveAdjustment(approverCtx, &common.IDRequest{Id: adjustmentID})
+	if err != nil || approvedAdjustment.GetItem().GetApprovedByPrincipalId() != "00000000-0000-4000-8000-000000000003" {
+		t.Fatalf("independent approval: %+v, %v", approvedAdjustment, err)
+	}
+	if _, err := client.DeleteLeaveAdjustment(ctx, &common.IDRequest{Id: adjustmentID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete approved adjustment status = %v, want FailedPrecondition", status.Code(err))
+	}
+	adjustmentType, adjustmentEvent := "adjustment", "adjustment-"+id
+	corrected, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: id, Input: &pb.PostLedgerEntryInput{
+		EntryType: &adjustmentType, QuantityDelta: &debit, EffectiveDate: &start,
+		AdjustmentId: &adjustmentID, SourceManagement: &source, SourceEventId: &adjustmentEvent,
+		SourceLineKey: &lineKey, SourceDigest: []byte{7, 8, 9}, ReasonCode: &adjustmentReason,
+	}})
+	if err != nil || corrected.GetItem().GetRevision() != 3 || corrected.GetItem().GetClosingBalanceSnapshot() != "11.0000" {
+		t.Fatalf("post approved adjustment: %+v, %v", corrected, err)
+	}
+	excessKey, excessDelta, excessEvent := "excess-"+id, "2", "excess-"+id
+	excessAdjustment, err := client.CreateLeaveAdjustment(ctx, &pb.CreateLeaveAdjustmentRequest{Input: &pb.LeaveAdjustmentInput{
+		EntitlementId: &id, QuantityDelta: &excessDelta, ReasonCode: &adjustmentReason,
+		Reason: &explanation, IdempotencyKey: &excessKey,
+	}})
+	if err != nil {
+		t.Fatalf("create excess adjustment: %v", err)
+	}
+	excessID := excessAdjustment.GetItem().GetId()
+	if _, err := client.ApproveLeaveAdjustment(approverCtx, &common.IDRequest{Id: excessID}); err != nil {
+		t.Fatalf("approve excess adjustment: %v", err)
+	}
+	if _, err := client.PostLedgerEntry(ctx, &pb.PostLedgerEntryRequest{EntitlementId: id, Input: &pb.PostLedgerEntryInput{
+		EntryType: &adjustmentType, QuantityDelta: &excessDelta, EffectiveDate: &start,
+		AdjustmentId: &excessID, SourceManagement: &source, SourceEventId: &excessEvent,
+		SourceLineKey: &lineKey, SourceDigest: []byte{10, 11, 12}, ReasonCode: &adjustmentReason,
+	}}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("excess adjustment posting status = %v, want InvalidArgument", status.Code(err))
+	}
 	if _, err := client.DeleteLeaveEntitlement(ctx, &common.IDRequest{Id: id}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete posted entitlement status = %v, want FailedPrecondition", status.Code(err))
 	}
@@ -213,7 +266,7 @@ func TestLeaveOpeningRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", id).Count(&outboxCount).Error; err != nil {
 		t.Fatal(err)
 	}
-	if ledgerCount != 1 || outboxCount < 2 {
-		t.Fatalf("ledger/outbox count = %d/%d, want 1/at least 2", ledgerCount, outboxCount)
+	if ledgerCount != 2 || outboxCount < 3 {
+		t.Fatalf("ledger/outbox count = %d/%d, want 2/at least 3", ledgerCount, outboxCount)
 	}
 }

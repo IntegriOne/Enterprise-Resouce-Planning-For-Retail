@@ -35,6 +35,7 @@ service LeaveService {
   rpc FindLeaveAdjustmentByRequestedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
   rpc FindLeaveAdjustmentByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
   rpc FindLeaveAdjustmentByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
+  rpc ApproveLeaveAdjustment(human_resource.common.v1.IDRequest) returns (LeaveAdjustmentResponse);
   rpc CreateLeaveLedgerEntry(CreateLeaveLedgerEntryRequest) returns (LeaveLedgerEntryResponse);
   rpc UpdateLeaveLedgerEntry(UpdateLeaveLedgerEntryRequest) returns (LeaveLedgerEntryResponse);
   rpc DeleteLeaveLedgerEntry(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);

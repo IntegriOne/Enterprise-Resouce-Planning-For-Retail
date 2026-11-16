@@ -23,6 +23,12 @@ type leaveEntitlementReader interface {
 	FindByIDForUpdate(context.Context, string) (*entity.LeaveEntitlement, error)
 }
 
+type leaveAdjustmentReader interface {
+	FindByID(context.Context, string) (*entity.LeaveAdjustment, error)
+	FindByIDForUpdate(context.Context, string) (*entity.LeaveAdjustment, error)
+	SelectWhere(context.Context, []domainrepo.Filter, int, int) ([]entity.LeaveAdjustment, error)
+}
+
 type leaveLedgerReader interface {
 	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 	SelectWhere(context.Context, []domainrepo.Filter, int, int) ([]entity.LeaveLedgerEntry, error)
@@ -33,6 +39,7 @@ func LeaveValidators(repos *repository.Registry) (map[string]MutationValidator, 
 	if repos == nil || operation.RequireDependency(repos.Worker) != nil ||
 		operation.RequireDependency(repos.LeavePolicy) != nil ||
 		operation.RequireDependency(repos.LeaveEntitlement) != nil ||
+		operation.RequireDependency(repos.LeaveAdjustment) != nil ||
 		operation.RequireDependency(repos.LeaveLedgerEntry) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
@@ -41,10 +48,14 @@ func LeaveValidators(repos *repository.Registry) (map[string]MutationValidator, 
 			policies: repos.LeavePolicy, entitlements: repos.LeaveEntitlement,
 		},
 		"hr_leave_entitlements": &leaveEntitlementValidator{
-			workers: repos.Worker, policies: repos.LeavePolicy, ledger: repos.LeaveLedgerEntry,
+			workers: repos.Worker, policies: repos.LeavePolicy, adjustments: repos.LeaveAdjustment, ledger: repos.LeaveLedgerEntry,
+		},
+		"hr_leave_adjustments": &leaveAdjustmentValidator{
+			entitlements: repos.LeaveEntitlement, adjustments: repos.LeaveAdjustment, ledger: repos.LeaveLedgerEntry,
 		},
 		"hr_leave_ledger_entries": &leaveLedgerValidator{
-			entitlements: repos.LeaveEntitlement, policies: repos.LeavePolicy, ledger: repos.LeaveLedgerEntry,
+			entitlements: repos.LeaveEntitlement, policies: repos.LeavePolicy,
+			adjustments: repos.LeaveAdjustment, ledger: repos.LeaveLedgerEntry,
 		},
 	}, nil
 }

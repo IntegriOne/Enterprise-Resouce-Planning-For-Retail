@@ -85,6 +85,17 @@ func (h *Handler) DeleteLeaveAdjustment(ctx context.Context, r *common.IDRequest
 	}
 	return &common.EmptyResponse{}, nil
 }
+
+func (h *Handler) ApproveLeaveAdjustment(ctx context.Context, r *common.IDRequest) (*pb.LeaveAdjustmentResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	approved, err := h.service.ApproveLeaveAdjustment(ctx, r.Id)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.LeaveAdjustmentResponse{Item: leaveAdjustment(approved)}, nil
+}
 func (h *Handler) GetLeaveAdjustmentByID(ctx context.Context, r *common.IDRequest) (*pb.LeaveAdjustmentResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)
