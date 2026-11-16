@@ -11,6 +11,8 @@
 
 - [Desain Talent Management](../../../backend/services/human_resource/docs/talent-management.md): rubrik/asesmen/pool/kalibrasi, jalur/aspirasi karier, rekomendasi dan keputusan promosi, riwayat KPI serta kursus multi-kompetensi. Worker tidak diduplikasi. Approval tidak mengubah jabatan; applied wajib bukti assignment/event sesuai worker/target/tanggal. Rubrik terpakai, asesmen final dan keputusan dilindungi dari overwrite.
 
+- Struktur folder pra-development mengikuti lapisan IAM: `domain/{entity,errors,repository,service}`, repository/services per 22 subdomain, kontrak lokal, gRPC privat, adapter owner dan inbox/outbox. [README HRM](../../../backend/services/human_resource/README.md) memetakan 86 tabel tanpa duplikasi; seluruh folder baru masih placeholder, bukan runtime.
+
 ## Apa yang belum dikerjakan
 
 - Workflow Talent nyata, mandat panel/approval, eligibility/bobot rubrik, scope/SoD terhadap pekerja, finalisasi performance review, proyeksi KPI, transaksi promosi+outbox serta concurrency/E2E belum diimplementasikan; detail batas ada di dokumen Talent.
