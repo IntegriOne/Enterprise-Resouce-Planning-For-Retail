@@ -3,6 +3,7 @@ package security
 import (
 	"bytes"
 	"context"
+	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -36,6 +37,9 @@ func CompetencyValidators(repos *repository.Registry) (map[string]MutationValida
 		},
 		"hr_job_competencies": &jobCompetencyValidator{
 			jobs: repos.Job, competencies: repos.Competency, requirements: repos.JobCompetency,
+		},
+		"hr_worker_competency_assessments": &workerCompetencyAssessmentValidator{
+			workers: repos.Worker, competencies: repos.Competency, now: time.Now,
 		},
 	}, nil
 }

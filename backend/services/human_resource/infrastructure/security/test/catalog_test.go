@@ -79,6 +79,8 @@ func TestSensitiveOperationsRequireIndependentStepUp(t *testing.T) {
 		{"hr_talent_assessments", "finalize", true},
 		{"hr_compensation_records", "read", true},
 		{"hr_compensation_bands", "list", true},
+		{"hr_worker_competency_assessments", "read", true},
+		{"hr_worker_competency_assessments", "create", true},
 		{"hr_payroll_profiles", "read", true},
 		{"hr_employee_relations_cases", "list", true},
 		{"hr_jobs", "read", false},

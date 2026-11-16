@@ -164,6 +164,7 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 	var competencyID string
 	var courseID string
 	var enrollmentID string
+	var assessmentID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
@@ -173,6 +174,8 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 		}{
 			{"DELETE FROM hr_learning_enrollments WHERE id = ?", enrollmentID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", enrollmentID},
+			{"DELETE FROM hr_worker_competency_assessments WHERE id = ?", assessmentID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", assessmentID},
 			{"DELETE FROM hr_workers WHERE id = ?", workerID},
 			{"DELETE FROM hr_learning_course_competencies WHERE course_id = ?", courseID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", courseID},
@@ -341,6 +344,51 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 		workerID, "WORKER-"+workerID, familyID, "employee", "active", familyID,
 	).Error; err != nil {
 		t.Fatal(err)
+	}
+	assessmentMethod := "manual_observation"
+	assessmentKey := "competency-assessment-" + workerID
+	assessmentAt := timestamppb.New(time.Now().Add(-time.Hour))
+	assessmentInput := &pb.WorkerCompetencyAssessmentInput{
+		WorkerId: &workerID, CompetencyId: &competencyID, AssessedLevel: &level,
+		AssessmentMethod: &assessmentMethod, AssessedAt: assessmentAt, IdempotencyKey: &assessmentKey,
+	}
+	assessmentInput.EvidenceDocumentVersionReferenceId = &familyID
+	assessmentInput.EvidenceDigest = []byte("unverified evidence")
+	if _, err := client.CreateWorkerCompetencyAssessment(ctx, &pb.CreateWorkerCompetencyAssessmentRequest{Input: assessmentInput}); status.Code(err) != codes.Unavailable {
+		t.Fatalf("unverified assessment evidence status = %v, want Unavailable", status.Code(err))
+	}
+	assessmentInput.EvidenceDocumentVersionReferenceId = nil
+	assessmentInput.EvidenceDigest = nil
+	assessment, err := client.CreateWorkerCompetencyAssessment(ctx, &pb.CreateWorkerCompetencyAssessmentRequest{Input: assessmentInput})
+	if err != nil || assessment.GetItem().GetId() == "" || assessment.GetItem().GetAssessedByPrincipalId() != "00000000-0000-4000-8000-000000000001" {
+		t.Fatalf("create manual assessment and bind actor: %+v, %v", assessment, err)
+	}
+	assessmentID = assessment.GetItem().GetId()
+	if _, err := client.CreateWorkerCompetencyAssessment(ctx, &pb.CreateWorkerCompetencyAssessmentRequest{Input: assessmentInput}); status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate assessment key status = %v, want AlreadyExists", status.Code(err))
+	}
+	if got, err := client.GetWorkerCompetencyAssessmentByID(ctx, &common.IDRequest{Id: assessmentID}); err != nil ||
+		got.GetItem().GetAssessedLevel() != level {
+		t.Fatalf("read assessment: %+v, %v", got, err)
+	}
+	if page, err := client.FindWorkerCompetencyAssessmentByWorkerID(ctx, &common.StringFinderRequest{Value: &workerID, Limit: 1}); err != nil ||
+		page.GetPage().GetTotal() != 1 || len(page.GetItems()) != 1 {
+		t.Fatalf("find assessment: %+v, %v", page, err)
+	}
+	if page, err := client.FindWorkerCompetencyAssessmentByWorkerID(ctx, &common.StringFinderRequest{Value: &workerID, Limit: 1, Offset: 1}); err != nil ||
+		page.GetPage().GetTotal() != 1 || len(page.GetItems()) != 0 {
+		t.Fatalf("assessment offset: %+v, %v", page, err)
+	}
+	if _, err := client.UpdateWorkerCompetencyAssessment(ctx, &pb.UpdateWorkerCompetencyAssessmentRequest{Id: assessmentID,
+		Input: &pb.WorkerCompetencyAssessmentInput{AssessedLevel: &level}, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"assessed_level"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("overwrite assessment status = %v, want FailedPrecondition", status.Code(err))
+	}
+	if _, err := client.DeleteWorkerCompetencyAssessment(ctx, &common.IDRequest{Id: assessmentID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete assessment status = %v, want FailedPrecondition", status.Code(err))
+	}
+	var assessmentEvents int64
+	if err := db.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", assessmentID).Count(&assessmentEvents).Error; err != nil || assessmentEvents != 1 {
+		t.Fatalf("assessment outbox count = %d, %v", assessmentEvents, err)
 	}
 	idempotencyKey := "enrollment-" + workerID
 	spoofedAssigner := familyID
