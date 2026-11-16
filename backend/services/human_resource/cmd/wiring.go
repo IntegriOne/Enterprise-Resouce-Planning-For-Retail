@@ -68,6 +68,13 @@ func BuildDependencies(
 	for resource, validator := range personnelValidators {
 		validators[resource] = validator
 	}
+	positionValidators, err := security.PositionValidators(repos, nil)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM position validators: %w", err))
+	}
+	for resource, validator := range positionValidators {
+		validators[resource] = validator
+	}
 	competencyValidators, err := security.CompetencyValidators(repos)
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM competency validators: %w", err))

@@ -1,0 +1,5 @@
+# Kebutuhan pembuktian referensi posisi HRM
+
+HRM memiliki `PositionReferenceVerifier` untuk posisi terencana. Sebelum create/update posisi boleh aktif pada runtime, adapter HRM perlu memanggil kontrak privat pemilik Enterprise Foundation untuk membuktikan pada tanggal `valid_from` sampai `valid_to` bahwa legal entity dan unit organisasi aktif, unit berada di legal entity tersebut, serta lokasi kerja opsional valid dalam lingkup yang sama. Kegagalan lookup, timeout, status nonaktif, atau relasi yang tidak cocok harus menolak mutasi; UUID dari request tidak cukup menjadi bukti. Kontrak owner perlu menjelaskan versi/revisi dan jaminan konsistensi ketika scope Foundation berubah bersamaan dengan transaksi HRM. Biaya pusat tetap milik Finance dan belum dibuka oleh validator HRM.
+
+Kontrak dan adapter runtime belum tersedia pada checkout ini. HRM mendaftarkan validator dengan verifier nil sehingga create/update posisi mengembalikan `Unavailable`; tes positif memakai verifier tiruan. Catatan ini meminta kontrak owner, bukan memberi HRM hak menulis database Foundation.
