@@ -66,6 +66,7 @@ func TestIdentitySessionAuth_BufconnEndToEnd(t *testing.T) {
 		t.Fatalf("CreateUser error = %v", err)
 	}
 	uid := uResp.GetUser().GetId()
+	ctx = withAuthenticatedCaller(ctx, uid)
 	if _, err := roleClient.AssignUserRole(ctx, &iamv1.AssignUserRoleRequest{
 		UserId:    uid,
 		RoleId:    roleResp.GetRole().GetId(),

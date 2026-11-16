@@ -204,6 +204,12 @@ func TestHandlerEnforceSelfCallerAndSessionGuards(t *testing.T) {
 		Authenticated: true,
 	}
 	ctxCallerA := authcontext.WithCaller(ctx, callerA)
+	if _, err := uHandler.UpdateUserProfile(ctx, &iamv1.UpdateUserProfileRequest{UserId: uA.ID, DisplayName: "Anonymous Update"}); status.Code(err) != codes.Unauthenticated {
+		t.Fatalf("UpdateUserProfile(anonymous) error = %v, want Unauthenticated", err)
+	}
+	if _, err := aHandler.EnrollTotp(ctx, &iamv1.EnrollTotpRequest{UserId: uA.ID}); status.Code(err) != codes.Unauthenticated {
+		t.Fatalf("EnrollTotp(anonymous) error = %v, want Unauthenticated", err)
+	}
 	if _, err := sHandler.IssueSession(ctxCallerA, &iamv1.IssueSessionRequest{UserId: uB.ID}); status.Code(err) != codes.PermissionDenied {
 		t.Fatalf("IssueSession(cross-user) error = %v, want PermissionDenied", err)
 	}

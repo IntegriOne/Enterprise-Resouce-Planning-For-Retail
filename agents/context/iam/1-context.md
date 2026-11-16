@@ -2,6 +2,7 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Audit menyeluruh flow gRPC 17 November 2026:** 81 RPC pada User/Identity (20), Auth/MFA (12), Session (13), Role (15), Group (15), dan Permission (6) telah dicocokkan ke service, domain, dan repository; seluruh method RPC mempunyai eksekusi tes. Token verifikasi email kini terikat ke identitas email tepat; token tanpa target serta request untuk email yang sudah verified ditolak. Permintaan token mengirim email setelah transaksi. RPC self membutuhkan caller terautentikasi; `GetSessionCsrf` hanya menerima session ID caller. CreateRole RPC tidak dapat membuat role sistem; snapshot repository gagal tertutup jika recovery epoch tidak tersedia. `go fmt`, `go vet`, race test IAM, build/restart Docker IAM, dan matriks E2E Gateway Query/Mutation selain fixture permission resource lama lulus. Detail di audit IAM nomor 4.
 - **Hardening IAM gRPC 17 November 2026:** kode permission baru wajib sejalan dengan `resource` namespaced dan `action`; bootstrap memperbaiki metadata katalog lama dan menolak drift `is_sensitive`; permission yang masih terpasang pada role tidak dapat dihapus. `assigned_by` dan `group_members.added_by` berasal dari caller internal terverifikasi, bukan payload. Penulisan outbox sesi gagal tertutup; pemilik sesi nonaktif tidak lolos authenticate/CSRF/MFA; kegagalan recovery epoch menghalangi refresh snapshot. RPC `IssueSession` hanya untuk caller terautentikasi dengan `user_id` sama dan tanpa klaim MFA; `MarkSessionMfaVerified` ditolak dan didepresiasi, gunakan `AuthService.VerifySessionMfa`. HMAC internal wajib pada runtime development/production.
 - `go fmt ./...`, `go vet ./...`, dan `go test -race -count=1 ./...` lulus pada modul IAM; `go generate ./...` kontrak serta `docker compose build iam` lulus. Container IAM development sudah direstart sendiri dan sehat; smoke live membuktikan gRPC health `SERVING`, RPC bisnis tanpa HMAC mendapat `Unauthenticated`, dan `/api/graphql` tetap merespons query publik. E2E `TestMutationUserLogin` lulus; matriks Query/Mutation lulus bila `TestQueryPermissions` dikecualikan. Tes itu memakai `resource="users"` lama sehingga gagal setelah katalog memakai `iam.users`; pemilik Gateway perlu memperbarui fixture.
 - **Pemisahan Modul Self-Service (`*self`), Auto-Assignment Saat Pembuatan Akun, & Fail-Closed `UserRoles`:**
@@ -19,6 +20,7 @@
 
 ## Apa yang belum dikerjakan
 
+- Scope non-global belum dibuktikan ke owner Enterprise Foundation pada saat role assignment; pengiriman email belum memakai outbox tahan gangguan. Cakupan statement handler 69,4% dan service 62,3%; cabang fault injection repository belum lengkap.
 - Validasi kelayakan `scope_id` non-global terhadap owner objek Enterprise Foundation pada jalur assignment IAM/Gateway belum terbukti menyeluruh; IAM saat ini memvalidasi tipe/format UUID dan kepemilikan `self`.
 - Tes E2E `TestQueryPermissions` pada Gateway perlu menyelaraskan filter resource menjadi `iam.users`; audit data permission lama dalam database development masih perlu dilakukan.
 - Konfigurasi deployment produksi (`APP_ENV=production` dan mTLS internal gRPC) pada lingkungan staging/production nyata.

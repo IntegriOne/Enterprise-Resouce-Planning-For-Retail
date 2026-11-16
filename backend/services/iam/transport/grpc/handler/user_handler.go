@@ -374,7 +374,7 @@ func (h *UserHandler) ConfirmEmailVerificationByToken(ctx context.Context, req *
 func enforceSelfCaller(ctx context.Context, targetUserID string) error {
 	caller, ok := authcontext.FromContext(ctx)
 	if !ok || !caller.Authenticated {
-		return nil
+		return iamerrors.ErrUnauthorized
 	}
 	callerID := strings.TrimSpace(caller.PrincipalID)
 	targetID := strings.TrimSpace(targetUserID)
@@ -391,7 +391,7 @@ func enforceSelfSessionCaller(ctx context.Context, targetUserID, sessionID strin
 	}
 	caller, ok := authcontext.FromContext(ctx)
 	if !ok || !caller.Authenticated {
-		return nil
+		return iamerrors.ErrUnauthorized
 	}
 	callerSessID := strings.TrimSpace(caller.SessionID)
 	targetSessID := strings.TrimSpace(sessionID)

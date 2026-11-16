@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	iamv1 "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	"github.com/integrione/erp-retail/backend/services/iam/services/role"
 )
@@ -78,6 +79,9 @@ func (h *RoleHandler) ListRoles(ctx context.Context, req *iamv1.ListRolesRequest
 func (h *RoleHandler) CreateRole(ctx context.Context, req *iamv1.CreateRoleRequest) (*iamv1.CreateRoleResponse, error) {
 	if req == nil {
 		return nil, nilRequestError(h.errMapper)
+	}
+	if req.GetIsSystem() {
+		return nil, h.errMapper.ToStatus(iamerrors.ErrSystemRoleImmutable)
 	}
 	r, err := h.svc.Create(ctx, role.CreateInput{
 		Code:                req.GetCode(),

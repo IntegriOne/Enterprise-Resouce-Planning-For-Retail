@@ -30,9 +30,23 @@ import (
 	"github.com/integrione/erp-retail/backend/services/iam/services/user"
 	iamgrpc "github.com/integrione/erp-retail/backend/services/iam/transport/grpc"
 	"github.com/integrione/erp-retail/backend/services/iam/transport/grpc/handler"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 )
 
 const bufSize = 1024 * 1024
+const testGatewayHMACSecret = "test-gateway-proof-secret-with-32-bytes"
+
+func withAuthenticatedCaller(ctx context.Context, userID string, sessionIDs ...string) context.Context {
+	sessionID := "00000000-0000-4000-8000-000000000001"
+	if len(sessionIDs) > 0 {
+		sessionID = sessionIDs[0]
+	}
+	return authcontext.AppendToOutgoingGRPCContext(ctx, authcontext.CallerContext{
+		PrincipalID:   userID,
+		SessionID:     sessionID,
+		Authenticated: true,
+	}, []byte(testGatewayHMACSecret), time.Now())
+}
 
 // memStore menyimpan state repositori IAM di memori untuk pengujian gRPC bufconn.
 type memStore struct {
@@ -175,9 +189,10 @@ func startBufconnServer(t *testing.T) *bufconnEnv {
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	cfg := &config.Config{
-		AppEnv:          "test",
-		ServiceName:     "integrione-iam",
-		ShutdownTimeout: 5 * time.Second,
+		AppEnv:                    "test",
+		ServiceName:               "integrione-iam",
+		ShutdownTimeout:           5 * time.Second,
+		InternalGatewayHMACSecret: testGatewayHMACSecret,
 	}
 	srv := iamgrpc.NewServer(cfg, logger)
 	if err := handler.RegisterAll(srv.GRPCServer(), reg, logger); err != nil {

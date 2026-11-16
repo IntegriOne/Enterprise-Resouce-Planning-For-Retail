@@ -290,34 +290,15 @@ func (s *Service) ConfirmEmailVerificationByToken(ctx context.Context, rawToken 
 		}
 
 		var targetIdent *entity.UserIdentity
-		if tok.IdentityID != nil && strings.TrimSpace(*tok.IdentityID) != "" {
+		if tok.IdentityID != nil {
 			for _, item := range idents {
-				if item.ID == *tok.IdentityID {
+				if item.ID == *tok.IdentityID && item.Kind == entity.IdentityKindEmail {
 					targetIdent = item
 					break
 				}
 			}
-			if targetIdent == nil {
-				result = &VerifyEmailResult{
-					Status:  VerifyEmailStatusInvalid,
-					Message: "verification token is invalid",
-				}
-				return nil
-			}
-		} else {
-			for _, item := range idents {
-				if item.Kind == entity.IdentityKindEmail {
-					if !item.IsVerified {
-						targetIdent = item
-						break
-					}
-					if targetIdent == nil || item.IsPrimary {
-						targetIdent = item
-					}
-				}
-			}
 		}
-		if targetIdent == nil {
+		if targetIdent == nil || targetIdent.IsVerified {
 			result = &VerifyEmailResult{
 				Status:  VerifyEmailStatusInvalid,
 				Message: "verification token is invalid",

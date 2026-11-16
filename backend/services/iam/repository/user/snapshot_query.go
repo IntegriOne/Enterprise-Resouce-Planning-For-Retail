@@ -93,8 +93,11 @@ func (r *UserRepository) SelectAccessSnapshotByUserID(ctx context.Context, userI
 	var ctrlRow struct {
 		RecoveryEpoch int64 `gorm:"column:recovery_epoch"`
 	}
-	if err := db.Table("iam_security_control").Select("recovery_epoch").Where("id = ?", 1).Take(&ctrlRow).Error; err != nil || ctrlRow.RecoveryEpoch < 1 {
-		ctrlRow.RecoveryEpoch = 1
+	if err := db.Table("iam_security_control").Select("recovery_epoch").Where("id = ?", 1).Take(&ctrlRow).Error; err != nil {
+		return nil, pgstore.MapError(err, nil)
+	}
+	if ctrlRow.RecoveryEpoch < 1 {
+		return nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.security.invalid_recovery_epoch"), "security recovery epoch is unavailable")
 	}
 
 	return &entity.AccessSnapshot{

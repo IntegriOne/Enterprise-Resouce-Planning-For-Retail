@@ -204,6 +204,13 @@ func (h *SessionHandler) GetSessionCsrf(ctx context.Context, req *iamv1.GetSessi
 	if req == nil {
 		return nil, nilRequestError(h.errMapper)
 	}
+	caller, ok := authcontext.FromContext(ctx)
+	if !ok || !caller.Authenticated {
+		return nil, h.errMapper.ToStatus(iamerrors.ErrUnauthorized)
+	}
+	if caller.SessionID == "" || caller.SessionID != req.GetSessionId() {
+		return nil, h.errMapper.ToStatus(iamerrors.ErrPermissionDenied)
+	}
 	res, err := h.svc.GetSessionCSRF(ctx, req.GetSessionId())
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)

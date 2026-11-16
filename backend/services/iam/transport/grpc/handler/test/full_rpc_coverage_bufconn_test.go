@@ -24,6 +24,11 @@ func TestPermissionRoleGroupRemainingRPCs_Bufconn(t *testing.T) {
 	roleClient := iamv1.NewRoleServiceClient(env.conn)
 	groupClient := iamv1.NewGroupServiceClient(env.conn)
 	userClient := iamv1.NewUserServiceClient(env.conn)
+	if _, err := roleClient.CreateRole(ctx, &iamv1.CreateRoleRequest{
+		Code: "forged_system_role", Name: "Forged System Role", ManagementDomain: "iam", IsSystem: true,
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("CreateRole(system) error = %v, want FailedPrecondition", err)
+	}
 
 	// Siapkan permission, role, group, dan user untuk menguji seluruh siklus CRUD & pencabutan RBAC.
 	permResp, err := permClient.CreatePermission(ctx, &iamv1.CreatePermissionRequest{
@@ -234,6 +239,7 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 		t.Fatalf("CreateUser error = %v", err)
 	}
 	uid := created.GetUser().GetId()
+	ctx = withAuthenticatedCaller(ctx, uid)
 
 	if _, err := roleClient.AssignUserRole(ctx, &iamv1.AssignUserRoleRequest{
 		UserId:    uid,
@@ -356,7 +362,7 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 	}
 
 	// Penerbitan sesi langsung tanpa caller terautentikasi dan peningkatan MFA tanpa kode harus ditolak.
-	if _, err := sessClient.IssueSession(ctx, &iamv1.IssueSessionRequest{UserId: uid}); status.Code(err) != codes.Unauthenticated {
+	if _, err := sessClient.IssueSession(t.Context(), &iamv1.IssueSessionRequest{UserId: uid}); status.Code(err) != codes.Unauthenticated {
 		t.Fatalf("IssueSession() error = %v, want Unauthenticated", err)
 	}
 	issued, err := authClient.AuthenticatePassword(ctx, &iamv1.AuthenticatePasswordRequest{
@@ -432,6 +438,7 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GenerateCodeAt(step+1) error = %v", err)
 	}
+	ctx = withAuthenticatedCaller(t.Context(), uid, issued.GetIssuedSession().GetSession().GetId())
 	sessMFAResp, err := authClient.VerifySessionMfa(ctx, &iamv1.VerifySessionMfaRequest{
 		UserId:    uid,
 		SessionId: issued.GetIssuedSession().GetSession().GetId(),

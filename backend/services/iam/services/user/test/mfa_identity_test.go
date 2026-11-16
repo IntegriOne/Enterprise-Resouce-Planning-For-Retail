@@ -182,6 +182,69 @@ func TestUserService_IdentityLifecycleAndVerification(t *testing.T) {
 	}
 }
 
+func TestUserService_EmailVerificationTokenIsBoundToIdentity(t *testing.T) {
+	t.Parallel()
+
+	h := newTestHarness(t)
+	ctx := context.Background()
+	u, err := h.userSvc.CreateUser(ctx, user.CreateUserInput{
+		Kind:        entity.UserKindCustomer,
+		Status:      entity.UserStatusPending,
+		DisplayName: "Buyer Bound Token",
+		Email:       "bound-token@integrione.local",
+		Username:    "bound_token_buyer",
+		Password:    "Zx5#OceanHarbor!2026",
+	})
+	if err != nil {
+		t.Fatalf("CreateUser() error = %v", err)
+	}
+	identities, err := h.userSvc.ListIdentities(ctx, u.ID)
+	if err != nil || len(identities) != 2 {
+		t.Fatalf("ListIdentities() = (%+v, %v)", identities, err)
+	}
+	var emailID, usernameID string
+	for _, ident := range identities {
+		if ident.Kind == entity.IdentityKindEmail {
+			emailID = ident.ID
+		} else if ident.Kind == entity.IdentityKindUsername {
+			usernameID = ident.ID
+		}
+	}
+	if _, err := h.userSvc.RequestIdentityVerification(ctx, usernameID); !errors.Is(err, iamerrors.ErrInvalidInput) {
+		t.Fatalf("expected email-only verification, got %v", err)
+	}
+	legacyRaw := "legacy-email-token-without-identity"
+	legacyID, err := h.idGen.NewUUID()
+	if err != nil {
+		t.Fatalf("NewUUID() error = %v", err)
+	}
+	legacyToken, err := entity.NewUserToken(legacyID, u.ID, entity.TokenPurposeEmailVerification, h.tokGen.Digest(legacyRaw), h.clock.Now(), h.clock.Now().Add(15*time.Minute))
+	if err != nil {
+		t.Fatalf("NewUserToken() error = %v", err)
+	}
+	h.store.mu.Lock()
+	h.store.tokens[legacyID] = legacyToken
+	h.store.mu.Unlock()
+	legacyResult, err := h.userSvc.ConfirmEmailVerificationByToken(ctx, legacyRaw)
+	if err != nil || legacyResult.Status != user.VerifyEmailStatusInvalid {
+		t.Fatalf("expected unbound token to be invalid, got (%+v, %v)", legacyResult, err)
+	}
+	token, err := h.userSvc.RequestIdentityVerification(ctx, emailID)
+	if err != nil {
+		t.Fatalf("RequestIdentityVerification() error = %v", err)
+	}
+	if _, err := h.userSvc.ConfirmIdentityVerification(ctx, usernameID, token.PlaintextToken, true); !errors.Is(err, iamerrors.ErrTokenNotFound) {
+		t.Fatalf("expected token bound to email identity, got %v", err)
+	}
+	verified, err := h.userSvc.ConfirmIdentityVerification(ctx, emailID, token.PlaintextToken, true)
+	if err != nil || !verified.IsVerified {
+		t.Fatalf("expected bound token to remain usable for email, got (%+v, %v)", verified, err)
+	}
+	if _, err := h.userSvc.RequestIdentityVerification(ctx, emailID); !errors.Is(err, iamerrors.ErrEmailAlreadyVerified) {
+		t.Fatalf("expected verified email to reject a new token, got %v", err)
+	}
+}
+
 func TestUserService_IdentityCardinalityAndUpdateUsername(t *testing.T) {
 	t.Parallel()
 

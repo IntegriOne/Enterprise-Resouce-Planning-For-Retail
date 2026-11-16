@@ -1,0 +1,3 @@
+# Audit seluruh flow IAM gRPC
+
+Menginventaris 81 RPC pada enam domain dan menelusuri handler → service → repository/domain, termasuk error, transaksi, serta batas caller. Memperbaiki ikatan token verifikasi email ke identitas, penolakan token email tanpa target/untuk email terverifikasi, dispatch email permintaan verifikasi, penolakan caller anonim pada RPC self, pembatasan `GetSessionCsrf` ke sesi caller, penolakan pembuatan role sistem via RPC, dan recovery epoch snapshot yang sebelumnya menutupi error database. Tes regresi ditambah. Go fmt/vet/race, build Docker IAM, serta E2E Gateway Query/Mutation selain fixture filter resource lama lulus. Hasil lengkap dan batas lintas owner dicatat pada audit IAM nomor 4.

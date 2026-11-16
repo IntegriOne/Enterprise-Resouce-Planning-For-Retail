@@ -92,6 +92,12 @@ func (s *Service) RequestIdentityVerification(ctx context.Context, identityID st
 	if err != nil {
 		return nil, err
 	}
+	if ident.Kind != entity.IdentityKindEmail {
+		return nil, iamerrors.WithField(iamerrors.ErrInvalidInput, "identity_id", "email verification requires an email identity")
+	}
+	if ident.IsVerified {
+		return nil, iamerrors.ErrEmailAlreadyVerified
+	}
 	u, err := s.users.SelectByID(ctx, ident.UserID)
 	if err != nil {
 		return nil, err
@@ -112,6 +118,7 @@ func (s *Service) RequestIdentityVerification(ctx context.Context, identityID st
 	if err != nil {
 		return nil, err
 	}
+	s.dispatchVerificationEmail(ctx, u.DisplayName, ident.Value, issued.PlaintextToken, s.cfg.IdentityVerificationTTL)
 	return issued, nil
 }
 
@@ -421,8 +428,21 @@ func (s *Service) ConfirmIdentityVerification(
 		if err != nil {
 			return err
 		}
-		if ident.UserID != tok.UserID {
-			return iamerrors.ErrForbidden
+		if ident.Kind != entity.IdentityKindEmail || ident.UserID != tok.UserID || tok.IdentityID == nil || *tok.IdentityID != ident.ID {
+			return iamerrors.ErrTokenNotFound
+		}
+		if ident.IsVerified {
+			return iamerrors.ErrEmailAlreadyVerified
+		}
+		u, err := s.users.SelectByID(txCtx, ident.UserID)
+		if err != nil {
+			if errors.Is(err, iamerrors.ErrUserNotFound) {
+				return iamerrors.ErrTokenNotFound
+			}
+			return err
+		}
+		if u.IsDeleted() || u.Status == entity.UserStatusSuspended || u.Status == entity.UserStatusDisabled {
+			return iamerrors.ErrTokenNotFound
 		}
 
 		consumed, err := s.tokens.UpdateUsedAtIfUnused(txCtx, tok.ID, now)
@@ -465,10 +485,6 @@ func (s *Service) ConfirmIdentityVerification(
 		}
 
 		if activatePendingUser {
-			u, err := s.users.SelectByID(txCtx, ident.UserID)
-			if err != nil {
-				return err
-			}
 			if u.Status == entity.UserStatusPending {
 				if err := u.Activate(now); err != nil {
 					return err

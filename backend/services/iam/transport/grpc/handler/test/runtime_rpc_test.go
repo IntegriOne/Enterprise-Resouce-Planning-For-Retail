@@ -223,8 +223,20 @@ func TestRuntimeRPCs_RegisterVerifyCSRFAndInternalProof(t *testing.T) {
 	}
 	sid := authResp.GetIssuedSession().GetSession().GetId()
 	csrfFromLogin := authResp.GetIssuedSession().GetCsrfToken()
+	selfCtx := authcontext.AppendToOutgoingGRPCContext(t.Context(), authcontext.CallerContext{
+		PrincipalID:   createResp.GetUser().GetId(),
+		SessionID:     sid,
+		UserKind:      "CUSTOMER",
+		Authenticated: true,
+	}, []byte(secret), time.Now())
 
-	csrfResp, err := sessClient.GetSessionCsrf(signedCtx, &iamv1.GetSessionCsrfRequest{SessionId: sid})
+	if _, err := sessClient.GetSessionCsrf(signedCtx, &iamv1.GetSessionCsrfRequest{SessionId: sid}); status.Code(err) != codes.Unauthenticated {
+		t.Fatalf("GetSessionCsrf(anonymous) error = %v, want Unauthenticated", err)
+	}
+	if _, err := sessClient.GetSessionCsrf(selfCtx, &iamv1.GetSessionCsrfRequest{SessionId: "00000000-0000-4000-8000-000000000002"}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("GetSessionCsrf(other session) error = %v, want PermissionDenied", err)
+	}
+	csrfResp, err := sessClient.GetSessionCsrf(selfCtx, &iamv1.GetSessionCsrfRequest{SessionId: sid})
 	if err != nil || csrfResp.GetCsrfToken() != csrfFromLogin {
 		t.Fatalf("GetSessionCsrf mismatch: got (%q, %v), want %q", csrfResp.GetCsrfToken(), err, csrfFromLogin)
 	}

@@ -339,16 +339,6 @@ func (s *Service) buildInitialIdentities(
 	return normEmail, normUsername, idents, forbidden, nil
 }
 
-func mapIdentityConflictError(existing *entity.UserIdentity) error {
-	if existing != nil && existing.Kind == entity.IdentityKindEmail {
-		return iamerrors.WithField(iamerrors.ErrIdentityAlreadyExists, "email", "email is already registered")
-	}
-	if existing != nil && existing.Kind == entity.IdentityKindUsername {
-		return iamerrors.WithField(iamerrors.ErrIdentityAlreadyExists, "username", "username has been taken")
-	}
-	return iamerrors.ErrIdentityAlreadyExists
-}
-
 // GetByID mengambil entitas pengguna berdasarkan UUID-nya.
 func (s *Service) GetByID(ctx context.Context, userID string) (*entity.User, error) {
 	if err := s.ensureReady(); err != nil {
