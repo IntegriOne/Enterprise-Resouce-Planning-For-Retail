@@ -113,6 +113,13 @@ func TestErrorMapper_ToStatus(t *testing.T) {
 			wantReason:   "iam.internal_error",
 			forbidSubstr: "secret_token_idx",
 		},
+		{
+			name:         "wrapped grpc status sanitizes internal details",
+			err:          errors.Join(errors.New("secret_token_idx"), status.Error(codes.Unavailable, "dial tcp password=topsecret")),
+			wantCode:     codes.Internal,
+			wantReason:   "iam.internal_error",
+			forbidSubstr: "topsecret",
+		},
 	}
 
 	for _, tc := range tests {

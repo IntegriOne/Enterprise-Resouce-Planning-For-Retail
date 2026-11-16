@@ -34,10 +34,6 @@ func (m *ErrorMapper) ToStatus(err error) error {
 		return nil
 	}
 
-	if _, ok := status.FromError(err); ok {
-		return err
-	}
-
 	if errors.Is(err, context.Canceled) {
 		return status.Error(codes.Canceled, "request canceled")
 	}
