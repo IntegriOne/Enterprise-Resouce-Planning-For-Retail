@@ -1,0 +1,3 @@
+# Plan dan pengajuan benefit HRM
+
+Menambah validator produksi untuk `hr_benefit_plans` dan `hr_benefit_enrollments`, mengikatnya ke wiring HRM. Plan lokal berversi dapat dibuat dan dibekukan setelah dipakai; enrollment hanya pengajuan `pending` bagi worker aktif dalam periode plan. Referensi provider, aturan eligibilitas khusus, kontribusi, verifikasi, dan approval langsung tetap ditolak. Tes unit/mock, gRPC–PostgreSQL `_test` lima kali dengan race detector, fmt/vet/race/build, serta Docker healthy lulus. Cakupan validator menjadi 20/78; IAM/Gateway E2E dan workflow approval benefit belum tersedia.

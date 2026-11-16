@@ -75,6 +75,13 @@ func BuildDependencies(
 	for resource, validator := range learningValidators {
 		validators[resource] = validator
 	}
+	benefitValidators, err := security.BenefitsValidators(repos)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM benefits validators: %w", err))
+	}
+	for resource, validator := range benefitValidators {
+		validators[resource] = validator
+	}
 	analyticsValidators, err := security.AnalyticsValidators(repos)
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM analytics validators: %w", err))
