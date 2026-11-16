@@ -453,9 +453,6 @@ func specApplication() operation.Specification[entity.Application, string] {
 			if action == "create" && string(next.Status) != "received" {
 				return hrerrors.ErrWorkflowRequired
 			}
-			if action == "create" && !reflect.ValueOf(next.AppliedAt).IsZero() {
-				return hrerrors.ErrWorkflowRequired
-			}
 			if action == "update" && !reflect.DeepEqual(old.AppliedAt, next.AppliedAt) {
 				return hrerrors.ErrWorkflowRequired
 			}

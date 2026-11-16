@@ -13,4 +13,4 @@ Tes menggunakan `bufconn`, policy tiruan, migrasi HRM dan PostgreSQL disposable 
 | Mutation UpdateCandidate | Ubah versi notice | `FailedPrecondition` |
 | Mutation DeleteCandidate | Kandidat tanpa lamaran | Berhasil |
 
-Perintah: `go test -tags integration -race -count=1 ./transport/grpc/handler/recruitment/test -run TestCandidateDraftRPCWithPostgreSQL -timeout=2m`. Hasil: lulus pada 17 November 2026. Database sementara dihapus sesudah tes.
+Perintah terkini: `go test -tags integration -race -count=1 ./transport/grpc/handler/recruitment/test -run TestRecruitmentDraftRPCWithPostgreSQL -timeout=2m`. Hasil: lulus pada 17 November 2026. Database sementara dihapus sesudah tes.

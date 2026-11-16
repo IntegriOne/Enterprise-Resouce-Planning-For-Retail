@@ -41,7 +41,7 @@ func (candidateIntegrationPolicy) ReadScope(context.Context, operation.Access) (
 	return operation.Scope{All: true}, nil
 }
 
-func TestCandidateDraftRPCWithPostgreSQL(t *testing.T) {
+func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	dsn := os.Getenv("HRM_TEST_DATABASE_URL")
 	if dsn == "" {
 		t.Skip("HRM_TEST_DATABASE_URL is not configured")
@@ -71,6 +71,13 @@ func TestCandidateDraftRPCWithPostgreSQL(t *testing.T) {
 	validators, err := security.RecruitmentCandidateValidators(repos)
 	if err != nil {
 		t.Fatal(err)
+	}
+	applicationValidators, err := security.RecruitmentApplicationValidators(repos)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for resource, validator := range applicationValidators {
+		validators[resource] = validator
 	}
 	svc, err := service.NewService(service.Dependencies{
 		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
@@ -157,5 +164,66 @@ func TestCandidateDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if _, err := client.DeleteCandidate(ctx, &common.IDRequest{Id: id}); err != nil {
 		t.Fatalf("delete unlinked candidate: %v", err)
+	}
+	linkedCandidate, err := create("CAND-DRAFT-2")
+	if err != nil {
+		t.Fatalf("create linked candidate: %v", err)
+	}
+	const familyID = "00000000-0000-4000-8000-000000000010"
+	const jobID = "00000000-0000-4000-8000-000000000011"
+	const requisitionID = "00000000-0000-4000-8000-000000000012"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_job_families
+		(id, family_code, family_name, job_domain) VALUES (?, 'RECRUIT-DRAFT', 'Recruitment', 'HRM')`, familyID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_jobs
+		(id, job_family_id, job_code, job_title, valid_from)
+		VALUES (?, ?, 'RECRUIT-DRAFT', 'Recruiter', CURRENT_DATE - 1)`, jobID, familyID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_requisitions
+		(id, requisition_number, job_id, organization_unit_reference_id, hiring_manager_principal_id,
+		requisition_type, status, employment_category, approved_at, approved_by_principal_id,
+		opened_at, idempotency_key)
+		VALUES (?, 'REQ-DRAFT-1', ?, ?, ?, 'replacement', 'open', 'employee',
+		NOW() - INTERVAL '2 hours', ?, NOW() - INTERVAL '1 hour', 'REQ-DRAFT-1')`,
+		requisitionID, jobID, familyID, familyID, familyID).Error; err != nil {
+		t.Fatal(err)
+	}
+	applicationNumber := "APP-DRAFT-1"
+	idempotencyKey := "APP-DRAFT-1"
+	applicationInput := &pb.ApplicationInput{CandidateId: text(linkedCandidate.GetItem().GetId()),
+		RequisitionId: text(requisitionID), ApplicationNumber: &applicationNumber, IdempotencyKey: &idempotencyKey}
+	application, err := client.CreateApplication(ctx, &pb.CreateApplicationRequest{Input: applicationInput})
+	if err != nil || application.GetItem().GetStatus() != "received" {
+		t.Fatalf("create received application: %v", err)
+	}
+	applicationID := application.GetItem().GetId()
+	duplicateNumber := "APP-DRAFT-2"
+	duplicateKey := "APP-DRAFT-2"
+	_, err = client.CreateApplication(ctx, &pb.CreateApplicationRequest{Input: &pb.ApplicationInput{
+		CandidateId: applicationInput.CandidateId, RequisitionId: applicationInput.RequisitionId,
+		ApplicationNumber: &duplicateNumber, IdempotencyKey: &duplicateKey}})
+	if status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate candidate and requisition: %v", err)
+	}
+	applicationPage, err := client.GetAllApplications(ctx, &common.PageRequest{Limit: 1})
+	if err != nil || applicationPage.GetPage().GetTotal() != 1 || len(applicationPage.GetItems()) != 1 {
+		t.Fatalf("application pagination: %v", err)
+	}
+	_, err = client.UpdateApplication(ctx, &pb.UpdateApplicationRequest{Id: applicationID,
+		Input:      &pb.ApplicationInput{Status: text("screening")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"status"}}})
+	if status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("screening via CRUD: %v", err)
+	}
+	if _, err := client.DeleteApplication(ctx, &common.IDRequest{Id: applicationID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete application without retention workflow: %v", err)
+	}
+	if _, err := client.DeleteCandidate(ctx, &common.IDRequest{Id: linkedCandidate.GetItem().GetId()}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete linked candidate: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", applicationID).Count(&outboxCount).Error; err != nil || outboxCount != 1 {
+		t.Fatalf("application outbox count = %d, err = %v", outboxCount, err)
 	}
 }
