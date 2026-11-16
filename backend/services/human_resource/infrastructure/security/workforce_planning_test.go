@@ -74,7 +74,10 @@ func TestJobValidatorLocksParentAndProtectsReferencedJob(t *testing.T) {
 	positions := &positionCounterStub{}
 	requirements := &positionCounterStub{}
 	developmentPlans := &positionCounterStub{}
-	validator := &jobValidator{families: families, jobs: jobs, positions: positions, requirements: requirements, developmentPlans: developmentPlans}
+	aspirations := &positionCounterStub{}
+	transitions := &positionCounterStub{}
+	validator := &jobValidator{families: families, jobs: jobs, positions: positions, requirements: requirements,
+		developmentPlans: developmentPlans, aspirations: aspirations, transitions: transitions}
 	proposed := &entity.Job{ID: "job", JobFamilyID: "family", JobCode: "STORE"}
 	if err := validator.ValidateMutation(t.Context(), "hr_jobs", nil, proposed); !errors.Is(err, hrerrors.ErrReferenceConflict) || !families.locked {
 		t.Fatalf("inactive parent was not locked and rejected: %v", err)
@@ -107,5 +110,15 @@ func TestJobValidatorLocksParentAndProtectsReferencedJob(t *testing.T) {
 	developmentPlans.count = 1
 	if err := validator.ValidateMutation(t.Context(), "hr_jobs", proposed, &inactive); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("deactivate job used by development plan: %v", err)
+	}
+	developmentPlans.count = 0
+	aspirations.count = 1
+	if err := validator.ValidateMutation(t.Context(), "hr_jobs", proposed, &inactive); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("deactivate job used by career aspiration: %v", err)
+	}
+	aspirations.count = 0
+	transitions.count = 1
+	if err := validator.ValidateMutation(t.Context(), "hr_jobs", proposed, nil); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("delete job used by career transition: %v", err)
 	}
 }

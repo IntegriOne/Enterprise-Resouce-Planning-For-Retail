@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -39,12 +40,27 @@ type developmentActionValidator struct {
 	actions      careerActionReader
 }
 
-// CareerValidators memasang aturan rencana dan tindakan pengembangan HRM.
+type careerTransitionReader interface {
+	FindByIDForUpdate(context.Context, string) (*entity.CareerPathTransition, error)
+}
+
+type careerPathReader interface {
+	FindByIDForUpdate(context.Context, string) (*entity.CareerPath, error)
+}
+
+type workerCareerAspirationValidator struct {
+	workers     lockedWorkerReader
+	jobs        lockedJobReader
+	transitions careerTransitionReader
+	paths       careerPathReader
+}
+
+// CareerValidators memasang aturan pengembangan dan aspirasi karier HRM.
 func CareerValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
 	if repos == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	for _, dependency := range []any{repos.Worker, repos.Job, repos.DevelopmentPlan, repos.DevelopmentAction, repos.LearningCourse, repos.Competency} {
+	for _, dependency := range []any{repos.Worker, repos.Job, repos.DevelopmentPlan, repos.DevelopmentAction, repos.LearningCourse, repos.Competency, repos.CareerPathTransition, repos.CareerPath} {
 		if operation.RequireDependency(dependency) != nil {
 			return nil, hrerrors.ErrUnavailable
 		}
@@ -57,7 +73,102 @@ func CareerValidators(repos *repository.Registry) (map[string]MutationValidator,
 			plans: repos.DevelopmentPlan, courses: repos.LearningCourse,
 			competencies: repos.Competency, actions: repos.DevelopmentAction,
 		},
+		"hr_worker_career_aspirations": &workerCareerAspirationValidator{
+			workers: repos.Worker, jobs: repos.Job,
+			transitions: repos.CareerPathTransition, paths: repos.CareerPath,
+		},
 	}, nil
+}
+
+// ValidateMutation menjaga pemilik aspirasi, job tujuan, dan transisi jalur yang disetujui.
+func (v *workerCareerAspirationValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
+	if v == nil || table != "hr_worker_career_aspirations" ||
+		operation.RequireDependency(v.workers) != nil || operation.RequireDependency(v.jobs) != nil ||
+		operation.RequireDependency(v.transitions) != nil || operation.RequireDependency(v.paths) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	var previous *entity.WorkerCareerAspiration
+	if before != nil {
+		var ok bool
+		previous, ok = before.(*entity.WorkerCareerAspiration)
+		if !ok || previous == nil {
+			return hrerrors.ErrInvalidInput
+		}
+	}
+	if after == nil {
+		if previous == nil {
+			return hrerrors.ErrInvalidInput
+		}
+		return nil
+	}
+	aspiration, ok := after.(*entity.WorkerCareerAspiration)
+	if !ok || aspiration == nil {
+		return hrerrors.ErrInvalidInput
+	}
+	if previous != nil && (previous.ID != aspiration.ID || previous.WorkerID != aspiration.WorkerID ||
+		previous.TargetJobID != aspiration.TargetJobID || !previous.RecordedAt.Equal(aspiration.RecordedAt) ||
+		previous.RecordedByPrincipalID != aspiration.RecordedByPrincipalID) {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if (previous == nil && aspiration.WithdrawnAt != nil) || (previous != nil && previous.WithdrawnAt != nil) {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if aspiration.PreferredLocationReferenceID != nil {
+		if previous == nil || previous.PreferredLocationReferenceID == nil ||
+			*previous.PreferredLocationReferenceID != *aspiration.PreferredLocationReferenceID {
+			return hrerrors.ErrUnavailable
+		}
+	}
+	worker, err := v.workers.FindByIDForUpdate(ctx, aspiration.WorkerID)
+	if err != nil {
+		return err
+	}
+	if worker == nil || worker.Status != entity.WorkerStatusActive {
+		return hrerrors.ErrReferenceConflict
+	}
+	job, err := v.jobs.FindByIDForUpdate(ctx, aspiration.TargetJobID)
+	if err != nil {
+		return err
+	}
+	if job == nil || !job.IsActive {
+		return hrerrors.ErrReferenceConflict
+	}
+	targetDate := aspiration.RecordedAt
+	if aspiration.TargetDate != nil {
+		targetDate = *aspiration.TargetDate
+		if entity.CompareDates(targetDate, aspiration.RecordedAt) < 0 {
+			return hrerrors.ErrInvalidInput
+		}
+	}
+	if entity.CompareDates(job.ValidFrom, targetDate) > 0 ||
+		(job.ValidTo != nil && entity.CompareDates(*job.ValidTo, targetDate) < 0) {
+		return hrerrors.ErrReferenceConflict
+	}
+	if aspiration.CareerPathTransitionID == nil {
+		return nil
+	}
+	transition, err := v.transitions.FindByIDForUpdate(ctx, *aspiration.CareerPathTransitionID)
+	if err != nil {
+		return err
+	}
+	if transition == nil || !strings.EqualFold(transition.ToJobID, aspiration.TargetJobID) {
+		return hrerrors.ErrReferenceConflict
+	}
+	path, err := v.paths.FindByIDForUpdate(ctx, transition.CareerPathID)
+	if err != nil {
+		return err
+	}
+	if path == nil || path.ApprovedByPrincipalID == "" || path.ApprovedAt.IsZero() || path.ApprovedAt.After(aspiration.RecordedAt) ||
+		entity.CompareDates(path.ValidFrom, aspiration.RecordedAt) > 0 ||
+		entity.CompareDates(path.ValidFrom, targetDate) > 0 ||
+		(path.ValidTo != nil && (entity.CompareDates(*path.ValidTo, aspiration.RecordedAt) < 0 ||
+			entity.CompareDates(*path.ValidTo, targetDate) < 0)) {
+		return hrerrors.ErrReferenceConflict
+	}
+	return nil
 }
 
 // ValidateMutation menjaga versi rencana dan pekerja yang menjadi pihaknya.
