@@ -20,6 +20,12 @@ type failingOutboxRuntime struct {
 	err error
 }
 
+type passthroughTransactor struct{}
+
+func (passthroughTransactor) WithinTransaction(ctx context.Context, fn func(context.Context) error) error {
+	return fn(ctx)
+}
+
 func TestAuthenticateRejectsInactiveSessionOwner(t *testing.T) {
 	clock := &mutableClock{now: time.Now()}
 	idGen := crypto.NewUUIDGenerator()
@@ -120,8 +126,14 @@ func TestSessionMutationFailsWhenOutboxInsertFails(t *testing.T) {
 
 	outboxErr := errors.New("outbox insert failed")
 	coordinator := redisstore.NewCoordinator(failingOutboxRuntime{err: outboxErr}, nil, idGen, clock, nil)
-	withOutbox, err := session.NewService(session.Dependencies{
+	if _, err := session.NewService(session.Dependencies{
 		Sessions: sessions, Users: users, Clock: clock, IDGen: idGen, Tokens: tokens, OutboxCoord: coordinator,
+	}); err == nil || iamerrors.CodeOf(err) != iamerrors.Code("iam.service.nil_transactor") {
+		t.Fatalf("NewService() error = %v, want missing transactor", err)
+	}
+	withOutbox, err := session.NewService(session.Dependencies{
+		Sessions: sessions, Users: users, Clock: clock, IDGen: idGen, Tokens: tokens,
+		Transactor: passthroughTransactor{}, OutboxCoord: coordinator,
 	})
 	if err != nil {
 		t.Fatal(err)

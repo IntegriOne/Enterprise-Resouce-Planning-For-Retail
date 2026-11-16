@@ -2,6 +2,7 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Audit ulang 17 November 2026 (audit nomor 12):** enam service/81 RPC, 16 tabel, wiring dan jalur domain–repository–service–handler dicocokkan lagi. `session.NewService` kini menolak outbox aktif tanpa transaktor; tes mock, format, vet, build dan race test lulus. Coverage statement empat lapisan 51,8%; bukan bukti E2E semua alur.
 - **Grant scope eksternal 17 November 2026 (audit nomor 11):** assignment role pengguna/grup kini gagal tertutup dengan `Unavailable` untuk scope non-global/non-self sampai ada pembuktian objek dari owner. Tes domain, service, dan bufconn mengonfirmasi penolakan sebelum penulisan; kebutuhan kontrak tercatat pada `agents/notes/enterprise_foundation/1-iam.md`.
 - **Hardening RBAC 17 November 2026 (audit nomor 10):** service role/group sekarang mewajibkan `SecurityRuntime` dan `OutboxCoord`; koordinator outbox gagal tertutup bila dependency internalnya tidak siap. Pencabutan assignment langsung/grup tidak dapat melewati resolusi subjek dan revisi akses. Tes PostgreSQL pada database disposable membuktikan kegagalan insert outbox me-rollback DELETE dan revisi, sedangkan jalur sukses menyimpan dua event. `go fmt`, `go vet`, `go build`, dan race test IAM lulus.
 - **Audit ulang seluruh business flow 17 November 2026 (audit nomor 9):** enam kelompok/81 RPC dicocokkan dengan lapisan domain–repository–service–handler dan dibedakan dari pembuktian transaksi nyata. `go vet`, race test, dan pengukuran coverage gabungan lulus; coverage statement gabungan empat lapisan 51,1%. Audit ini tidak mengubah source IAM.
@@ -26,6 +27,7 @@
 
 ## Apa yang belum dikerjakan
 
+- Model `principals`/`attributes`/access request pada pedoman konseptual HEAD berbeda dari skema `users` dan 16 tabel runtime IAM; perlu keputusan penyelarasan desain sebelum migrasi. `agents/principals.md` sedang terhapus dalam working tree oleh perubahan lain pada audit nomor 12.
 - Enam RPC list relasi belum memakai limit/offset; kontrak dan query repository perlu pagination.
 - Tes PostgreSQL terisolasi sudah ada untuk repository sesi, tetapi tes gRPC→PostgreSQL bagi seluruh alur auth/role/group belum lengkap.
 - Tes bufconn 81 RPC masih memakai transactor mock; belum ada pembuktian RPC→PostgreSQL untuk rollback sesi/outbox, concurrent MFA, dan perubahan grant/revoke sampai Redis lintas instance. Klaim "seluruh RPC tersentuh tes" tidak berarti seluruh business flow sudah terverifikasi.

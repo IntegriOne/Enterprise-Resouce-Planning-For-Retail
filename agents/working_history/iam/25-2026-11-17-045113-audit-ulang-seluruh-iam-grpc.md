@@ -1,0 +1,3 @@
+# Audit ulang seluruh IAM gRPC
+
+Audit enam service/81 RPC dan 16 tabel IAM diperbarui sampai domain, repository, service, handler, serta wiring. Ditemukan konfigurasi sesi dengan outbox tetapi tanpa transaktor; konstruktor kini menolaknya dan tes mock ditambahkan. Format, vet, build, race test lulus; coverage gabungan empat lapisan 51,8%. Docker Compose menunjukkan IAM/PostgreSQL/Redis sehat. Temuan terbuka: perbedaan model `principals` desain versus `users` runtime, email tanpa outbox persisten, enam list relasi tanpa pagination, dan kurangnya E2E PostgreSQL/Redis untuk seluruh cabang. Detail dan batas bukti di audit nomor 12.

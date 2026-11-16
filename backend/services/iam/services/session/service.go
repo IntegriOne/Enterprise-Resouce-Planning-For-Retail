@@ -41,6 +41,9 @@ func NewService(deps Dependencies) (*Service, error) {
 	if deps.Users == nil {
 		return nil, iamerrors.NewValidation("users", iamerrors.Code("iam.service.nil_user_repo"), "user repository is required")
 	}
+	if deps.OutboxCoord != nil && deps.Transactor == nil {
+		return nil, iamerrors.NewValidation("transactor", iamerrors.Code("iam.service.nil_transactor"), "transactor is required when outbox is enabled")
+	}
 	if deps.IDGen == nil {
 		return nil, iamerrors.NewValidation("id_gen", iamerrors.Code("iam.service.nil_id_generator"), "id generator is required")
 	}
