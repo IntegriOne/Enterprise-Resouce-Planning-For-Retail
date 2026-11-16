@@ -32,6 +32,8 @@ Delete(ctx, key) error // alias DeleteByID
 
 **Keputusan maintenance owner 16 November 2026:** seluruh repository konkret memakai pola eksplisit seperti IAM dan Enterprise Foundation. Untuk meninjau worker, buka `repository/personnel/workers_repository.go`: field DB, constructor, SELECT, INSERT, UPDATE dan DELETE ada pada tipe tersebut. Method alias hanya memanggil method lokal bertipe yang sama. Interface port boleh memakai generic untuk mendefinisikan kontrak bersama; ini tidak menyediakan atau menyembunyikan implementasi CRUD. Service dan registry menggunakan kontrak yang sama seperti sebelum refactor.
 
+**Susunan berkas:** satu objek memakai satu `*_repository.go` dalam folder domainnya, mengikuti pola `iam/repository/user/user_repository.go` dan repository objek lain pada folder IAM yang sama. Constructor, CRUD, finder, method bernama objek dan alias kompatibilitas berada bersama. Contoh seluruh operasi kebijakan cuti ada di `repository/leave/leave_policies_repository.go`. Jangan memisahkan method ke `operations.go` atau `*_operations.go`; seluruh 26 berkas operasi terpisah sudah digabung dan dihapus. Helper teknis bersama tetap berada di `pgstore`.
+
 **Penamaan objek dan kolom sesuai arahan lanjutan owner:** API repository juga menyebut nama objek/tabel, misalnya:
 
 ```go

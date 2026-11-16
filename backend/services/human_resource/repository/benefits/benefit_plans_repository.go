@@ -20,6 +20,53 @@ type BenefitPlanRepository struct {
 
 var _ domainrepo.BenefitPlanRepository = (*BenefitPlanRepository)(nil)
 
+// Operasi berikut menyebut objek dan kolom secara eksplisit untuk memudahkan penelusuran.
+func (r *BenefitPlanRepository) InsertBenefitPlans(ctx context.Context, value *entity.BenefitPlan) error {
+	return r.Insert(ctx, value)
+}
+func (r *BenefitPlanRepository) UpdateBenefitPlans(ctx context.Context, value *entity.BenefitPlan) error {
+	return r.Update(ctx, value)
+}
+func (r *BenefitPlanRepository) DeleteBenefitPlansByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByUUID(ctx context.Context, id string) (*entity.BenefitPlan, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByUUIDForUpdate(ctx context.Context, id string) (*entity.BenefitPlan, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *BenefitPlanRepository) GetAllBenefitPlans(ctx context.Context, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *BenefitPlanRepository) CountBenefitPlans(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *BenefitPlanRepository) SelectBenefitPlansWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *BenefitPlanRepository) CountBenefitPlansWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByPlanCode(ctx context.Context, value string, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.FindByPlanCode(ctx, value, limit, offset)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByBenefitType(ctx context.Context, value string, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.FindByBenefitType(ctx, value, limit, offset)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByProviderPartyReferenceID(ctx context.Context, value *string, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.FindByProviderPartyReferenceID(ctx, value, limit, offset)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByJurisdictionCode(ctx context.Context, value string, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.FindByJurisdictionCode(ctx, value, limit, offset)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByEmployeeContributionRuleReferenceID(ctx context.Context, value *string, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.FindByEmployeeContributionRuleReferenceID(ctx, value, limit, offset)
+}
+func (r *BenefitPlanRepository) FindBenefitPlansByEmployerContributionRuleReferenceID(ctx context.Context, value *string, limit, offset int) ([]entity.BenefitPlan, error) {
+	return r.FindByEmployerContributionRuleReferenceID(ctx, value, limit, offset)
+}
+
 // NewBenefitPlanRepository memvalidasi koneksi dan menyiapkan repository.
 func NewBenefitPlanRepository(db *gorm.DB) (*BenefitPlanRepository, error) {
 	if err := pgstore.CheckDB(db); err != nil {

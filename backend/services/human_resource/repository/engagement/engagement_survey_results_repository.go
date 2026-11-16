@@ -28,6 +28,43 @@ func NewEngagementSurveyResultRepository(db *gorm.DB) (*EngagementSurveyResultRe
 	return &EngagementSurveyResultRepository{db: db}, nil
 }
 
+func (r *EngagementSurveyResultRepository) InsertEngagementSurveyResults(ctx context.Context, value *entity.EngagementSurveyResult) error {
+	return r.Insert(ctx, value)
+}
+func (r *EngagementSurveyResultRepository) UpdateEngagementSurveyResults(ctx context.Context, value *entity.EngagementSurveyResult) error {
+	return r.Update(ctx, value)
+}
+func (r *EngagementSurveyResultRepository) DeleteEngagementSurveyResultsByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *EngagementSurveyResultRepository) FindEngagementSurveyResultsByUUID(ctx context.Context, id string) (*entity.EngagementSurveyResult, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *EngagementSurveyResultRepository) FindEngagementSurveyResultsByUUIDForUpdate(ctx context.Context, id string) (*entity.EngagementSurveyResult, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *EngagementSurveyResultRepository) GetAllEngagementSurveyResults(ctx context.Context, limit, offset int) ([]entity.EngagementSurveyResult, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *EngagementSurveyResultRepository) CountEngagementSurveyResults(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *EngagementSurveyResultRepository) SelectEngagementSurveyResultsWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.EngagementSurveyResult, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *EngagementSurveyResultRepository) CountEngagementSurveyResultsWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *EngagementSurveyResultRepository) FindEngagementSurveyResultsBySurveyID(ctx context.Context, value string, limit, offset int) ([]entity.EngagementSurveyResult, error) {
+	return r.FindBySurveyID(ctx, value, limit, offset)
+}
+func (r *EngagementSurveyResultRepository) FindEngagementSurveyResultsByOrganizationUnitReferenceID(ctx context.Context, value *string, limit, offset int) ([]entity.EngagementSurveyResult, error) {
+	return r.FindByOrganizationUnitReferenceID(ctx, value, limit, offset)
+}
+func (r *EngagementSurveyResultRepository) FindEngagementSurveyResultsByQuestionCode(ctx context.Context, value string, limit, offset int) ([]entity.EngagementSurveyResult, error) {
+	return r.FindByQuestionCode(ctx, value, limit, offset)
+}
+
 func (r *EngagementSurveyResultRepository) query(ctx context.Context) (*gorm.DB, error) {
 	if r == nil {
 		return nil, pgstore.CheckDB(nil)

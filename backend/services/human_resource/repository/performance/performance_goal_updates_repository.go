@@ -28,6 +28,49 @@ func NewPerformanceGoalUpdateRepository(db *gorm.DB) (*PerformanceGoalUpdateRepo
 	return &PerformanceGoalUpdateRepository{db: db}, nil
 }
 
+func (r *PerformanceGoalUpdateRepository) InsertPerformanceGoalUpdates(ctx context.Context, v *entity.PerformanceGoalUpdate) error {
+	return r.Insert(ctx, v)
+}
+func (r *PerformanceGoalUpdateRepository) UpdatePerformanceGoalUpdates(ctx context.Context, v *entity.PerformanceGoalUpdate) error {
+	return r.Update(ctx, v)
+}
+func (r *PerformanceGoalUpdateRepository) DeletePerformanceGoalUpdatesByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *PerformanceGoalUpdateRepository) FindPerformanceGoalUpdatesByUUID(ctx context.Context, id string) (*entity.PerformanceGoalUpdate, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *PerformanceGoalUpdateRepository) FindPerformanceGoalUpdatesByUUIDForUpdate(ctx context.Context, id string) (*entity.PerformanceGoalUpdate, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *PerformanceGoalUpdateRepository) GetAllPerformanceGoalUpdates(ctx context.Context, limit, offset int) ([]entity.PerformanceGoalUpdate, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *PerformanceGoalUpdateRepository) CountPerformanceGoalUpdates(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *PerformanceGoalUpdateRepository) SelectPerformanceGoalUpdatesWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.PerformanceGoalUpdate, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *PerformanceGoalUpdateRepository) CountPerformanceGoalUpdatesWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *PerformanceGoalUpdateRepository) FindPerformanceGoalUpdatesByGoalID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceGoalUpdate, error) {
+	return r.FindByGoalID(ctx, v, limit, offset)
+}
+func (r *PerformanceGoalUpdateRepository) FindPerformanceGoalUpdatesByEvidenceDocumentVersionReferenceID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceGoalUpdate, error) {
+	return r.FindByEvidenceDocumentVersionReferenceID(ctx, v, limit, offset)
+}
+func (r *PerformanceGoalUpdateRepository) FindPerformanceGoalUpdatesByRecordedByPrincipalID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceGoalUpdate, error) {
+	return r.FindByRecordedByPrincipalID(ctx, v, limit, offset)
+}
+func (r *PerformanceGoalUpdateRepository) FindPerformanceGoalUpdatesBySupersedesUpdateID(ctx context.Context, v *string, limit, offset int) ([]entity.PerformanceGoalUpdate, error) {
+	return r.FindBySupersedesUpdateID(ctx, v, limit, offset)
+}
+func (r *PerformanceGoalUpdateRepository) FindPerformanceGoalUpdatesByIdempotencyKey(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceGoalUpdate, error) {
+	return r.FindByIdempotencyKey(ctx, v, limit, offset)
+}
+
 func (r *PerformanceGoalUpdateRepository) query(ctx context.Context) (*gorm.DB, error) {
 	if r == nil {
 		return nil, pgstore.CheckDB(nil)

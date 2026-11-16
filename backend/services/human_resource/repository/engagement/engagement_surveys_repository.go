@@ -28,6 +28,47 @@ func NewEngagementSurveyRepository(db *gorm.DB) (*EngagementSurveyRepository, er
 	return &EngagementSurveyRepository{db: db}, nil
 }
 
+// Operasi berikut menyebut objek dan kolom secara eksplisit untuk memudahkan penelusuran.
+func (r *EngagementSurveyRepository) InsertEngagementSurveys(ctx context.Context, value *entity.EngagementSurvey) error {
+	return r.Insert(ctx, value)
+}
+func (r *EngagementSurveyRepository) UpdateEngagementSurveys(ctx context.Context, value *entity.EngagementSurvey) error {
+	return r.Update(ctx, value)
+}
+func (r *EngagementSurveyRepository) DeleteEngagementSurveysByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *EngagementSurveyRepository) FindEngagementSurveysByUUID(ctx context.Context, id string) (*entity.EngagementSurvey, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *EngagementSurveyRepository) FindEngagementSurveysByUUIDForUpdate(ctx context.Context, id string) (*entity.EngagementSurvey, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *EngagementSurveyRepository) GetAllEngagementSurveys(ctx context.Context, limit, offset int) ([]entity.EngagementSurvey, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *EngagementSurveyRepository) CountEngagementSurveys(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *EngagementSurveyRepository) SelectEngagementSurveysWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.EngagementSurvey, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *EngagementSurveyRepository) CountEngagementSurveysWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *EngagementSurveyRepository) FindEngagementSurveysBySurveyCode(ctx context.Context, value string, limit, offset int) ([]entity.EngagementSurvey, error) {
+	return r.FindBySurveyCode(ctx, value, limit, offset)
+}
+func (r *EngagementSurveyRepository) FindEngagementSurveysByLegalEntityReferenceID(ctx context.Context, value string, limit, offset int) ([]entity.EngagementSurvey, error) {
+	return r.FindByLegalEntityReferenceID(ctx, value, limit, offset)
+}
+func (r *EngagementSurveyRepository) FindEngagementSurveysByTopicCode(ctx context.Context, value string, limit, offset int) ([]entity.EngagementSurvey, error) {
+	return r.FindByTopicCode(ctx, value, limit, offset)
+}
+func (r *EngagementSurveyRepository) FindEngagementSurveysByQuestionnaireDocumentVersionReferenceID(ctx context.Context, value string, limit, offset int) ([]entity.EngagementSurvey, error) {
+	return r.FindByQuestionnaireDocumentVersionReferenceID(ctx, value, limit, offset)
+}
+
 func (r *EngagementSurveyRepository) query(ctx context.Context) (*gorm.DB, error) {
 	if r == nil {
 		return nil, pgstore.CheckDB(nil)

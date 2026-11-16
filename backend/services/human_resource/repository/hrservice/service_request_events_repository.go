@@ -28,6 +28,49 @@ func NewServiceRequestEventRepository(db *gorm.DB) (*ServiceRequestEventReposito
 	return &ServiceRequestEventRepository{db: db}, nil
 }
 
+func (r *ServiceRequestEventRepository) InsertServiceRequestEvents(ctx context.Context, value *entity.ServiceRequestEvent) error {
+	return r.Insert(ctx, value)
+}
+func (r *ServiceRequestEventRepository) UpdateServiceRequestEvents(ctx context.Context, value *entity.ServiceRequestEvent) error {
+	return r.Update(ctx, value)
+}
+func (r *ServiceRequestEventRepository) DeleteServiceRequestEventsByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *ServiceRequestEventRepository) FindServiceRequestEventsByUUID(ctx context.Context, id string) (*entity.ServiceRequestEvent, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *ServiceRequestEventRepository) FindServiceRequestEventsByUUIDForUpdate(ctx context.Context, id string) (*entity.ServiceRequestEvent, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *ServiceRequestEventRepository) GetAllServiceRequestEvents(ctx context.Context, limit, offset int) ([]entity.ServiceRequestEvent, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *ServiceRequestEventRepository) CountServiceRequestEvents(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *ServiceRequestEventRepository) SelectServiceRequestEventsWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.ServiceRequestEvent, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *ServiceRequestEventRepository) CountServiceRequestEventsWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *ServiceRequestEventRepository) FindServiceRequestEventsByServiceRequestID(ctx context.Context, value string, limit, offset int) ([]entity.ServiceRequestEvent, error) {
+	return r.FindByServiceRequestID(ctx, value, limit, offset)
+}
+func (r *ServiceRequestEventRepository) FindServiceRequestEventsByEventType(ctx context.Context, value string, limit, offset int) ([]entity.ServiceRequestEvent, error) {
+	return r.FindByEventType(ctx, value, limit, offset)
+}
+func (r *ServiceRequestEventRepository) FindServiceRequestEventsByActorPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.ServiceRequestEvent, error) {
+	return r.FindByActorPrincipalID(ctx, value, limit, offset)
+}
+func (r *ServiceRequestEventRepository) FindServiceRequestEventsByEvidenceDocumentVersionReferenceID(ctx context.Context, value *string, limit, offset int) ([]entity.ServiceRequestEvent, error) {
+	return r.FindByEvidenceDocumentVersionReferenceID(ctx, value, limit, offset)
+}
+func (r *ServiceRequestEventRepository) FindServiceRequestEventsByIdempotencyKey(ctx context.Context, value string, limit, offset int) ([]entity.ServiceRequestEvent, error) {
+	return r.FindByIdempotencyKey(ctx, value, limit, offset)
+}
+
 func (r *ServiceRequestEventRepository) query(ctx context.Context) (*gorm.DB, error) {
 	if r == nil {
 		return nil, pgstore.CheckDB(nil)

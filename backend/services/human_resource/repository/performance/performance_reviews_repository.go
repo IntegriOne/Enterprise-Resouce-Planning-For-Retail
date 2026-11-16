@@ -28,6 +28,49 @@ func NewPerformanceReviewRepository(db *gorm.DB) (*PerformanceReviewRepository, 
 	return &PerformanceReviewRepository{db: db}, nil
 }
 
+func (r *PerformanceReviewRepository) InsertPerformanceReviews(ctx context.Context, v *entity.PerformanceReview) error {
+	return r.Insert(ctx, v)
+}
+func (r *PerformanceReviewRepository) UpdatePerformanceReviews(ctx context.Context, v *entity.PerformanceReview) error {
+	return r.Update(ctx, v)
+}
+func (r *PerformanceReviewRepository) DeletePerformanceReviewsByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *PerformanceReviewRepository) FindPerformanceReviewsByUUID(ctx context.Context, id string) (*entity.PerformanceReview, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *PerformanceReviewRepository) FindPerformanceReviewsByUUIDForUpdate(ctx context.Context, id string) (*entity.PerformanceReview, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *PerformanceReviewRepository) GetAllPerformanceReviews(ctx context.Context, limit, offset int) ([]entity.PerformanceReview, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *PerformanceReviewRepository) CountPerformanceReviews(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *PerformanceReviewRepository) SelectPerformanceReviewsWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.PerformanceReview, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *PerformanceReviewRepository) CountPerformanceReviewsWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *PerformanceReviewRepository) FindPerformanceReviewsByWorkerID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReview, error) {
+	return r.FindByWorkerID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewRepository) FindPerformanceReviewsByPerformanceCycleID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReview, error) {
+	return r.FindByPerformanceCycleID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewRepository) FindPerformanceReviewsByReviewerPrincipalID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReview, error) {
+	return r.FindByReviewerPrincipalID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewRepository) FindPerformanceReviewsByOverallRatingCode(ctx context.Context, v *string, limit, offset int) ([]entity.PerformanceReview, error) {
+	return r.FindByOverallRatingCode(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewRepository) FindPerformanceReviewsByDevelopmentPlanID(ctx context.Context, v *string, limit, offset int) ([]entity.PerformanceReview, error) {
+	return r.FindByDevelopmentPlanID(ctx, v, limit, offset)
+}
+
 func (r *PerformanceReviewRepository) query(ctx context.Context) (*gorm.DB, error) {
 	if r == nil {
 		return nil, pgstore.CheckDB(nil)

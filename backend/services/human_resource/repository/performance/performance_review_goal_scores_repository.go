@@ -28,6 +28,52 @@ func NewPerformanceReviewGoalScoreRepository(db *gorm.DB) (*PerformanceReviewGoa
 	return &PerformanceReviewGoalScoreRepository{db: db}, nil
 }
 
+func (r *PerformanceReviewGoalScoreRepository) InsertPerformanceReviewGoalScores(ctx context.Context, v *entity.PerformanceReviewGoalScore) error {
+	return r.Insert(ctx, v)
+}
+func (r *PerformanceReviewGoalScoreRepository) UpdatePerformanceReviewGoalScores(ctx context.Context, v *entity.PerformanceReviewGoalScore) error {
+	return r.Update(ctx, v)
+}
+func (r *PerformanceReviewGoalScoreRepository) DeletePerformanceReviewGoalScoresByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByUUID(ctx context.Context, id string) (*entity.PerformanceReviewGoalScore, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByUUIDForUpdate(ctx context.Context, id string) (*entity.PerformanceReviewGoalScore, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *PerformanceReviewGoalScoreRepository) GetAllPerformanceReviewGoalScores(ctx context.Context, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *PerformanceReviewGoalScoreRepository) CountPerformanceReviewGoalScores(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *PerformanceReviewGoalScoreRepository) SelectPerformanceReviewGoalScoresWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *PerformanceReviewGoalScoreRepository) CountPerformanceReviewGoalScoresWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByPerformanceReviewID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.FindByPerformanceReviewID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByGoalID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.FindByGoalID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByWorkerID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.FindByWorkerID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByPerformanceCycleID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.FindByPerformanceCycleID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByRubricDocumentVersionReferenceID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.FindByRubricDocumentVersionReferenceID(ctx, v, limit, offset)
+}
+func (r *PerformanceReviewGoalScoreRepository) FindPerformanceReviewGoalScoresByEvidenceDocumentVersionReferenceID(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceReviewGoalScore, error) {
+	return r.FindByEvidenceDocumentVersionReferenceID(ctx, v, limit, offset)
+}
+
 func (r *PerformanceReviewGoalScoreRepository) query(ctx context.Context) (*gorm.DB, error) {
 	if r == nil {
 		return nil, pgstore.CheckDB(nil)

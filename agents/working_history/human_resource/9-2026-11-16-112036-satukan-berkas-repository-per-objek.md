@@ -1,0 +1,5 @@
+# Satu berkas repository per objek
+
+Membaca ulang struktur IAM pada repository user dan role. Sesuai arahan owner, memindahkan 516 method dari 26 `operations.go`/`*_operations.go` ke 34 `*_repository.go` penerima berdasarkan tipe objek, kemudian menghapus seluruh berkas operasi terpisah. Kini constructor, CRUD, finder dan alias kompatibilitas berada pada satu berkas per objek; seluruh 86 repository tetap tanpa embedding.
+
+Pemeriksaan read-only memakai parser/token Go membandingkan seluruh repository dengan commit `02064f5`: 3.257 deklarasi sebelum/sesudah, 516 berpindah, nol signature/body berubah, hilang atau ditambah. Pemeriksaan AST memastikan 86 tipe beserta constructor dan seluruh method repository berada di berkas objek masing-masing, tanpa pelanggaran. `GOWORK=off go fmt ./...`, `go vet ./...`, `go test -race ./...`, `go build ./...` dan diff check lulus. Tidak menjalankan ulang PostgreSQL/benchmark karena query dan body identik. Port, service, model, skema, migrasi dan management lain tidak diubah. Dokumentasi dan konteks maintenance diperjelas; perubahan kode melalui patch langsung.

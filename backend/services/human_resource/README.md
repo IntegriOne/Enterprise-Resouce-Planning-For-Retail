@@ -82,6 +82,8 @@ Setiap nama di bawah mempunyai implementasi pada **`internal/service/` dan `repo
 
 `hr_outbox_events` dan `hr_inbox_events` ditangani repository/infrastruktur khusus tersebut. Pemetaan mencakup seluruh **86 tabel** tanpa kepemilikan tabel ganda. Nama subdomain merupakan pedoman awal; nama package protobuf dan versi kontrak ditetapkan saat kontrak benar-benar dirancang.
 
+Repository mengikuti susunan IAM: satu objek satu `*_repository.go` di folder domain, berisi constructor, CRUD dan seluruh finder. Tidak ada pemisahan `operations.go`/`*_operations.go`. Contoh kebijakan cuti cukup dibaca pada `repository/leave/leave_policies_repository.go`.
+
 Talent Management mencakup `competency`, `performance`, `talent`, `career`, `succession`, `promotion`, dan `learning`. Rekrutmen tetap pada `recruitment`; perubahan resmi hubungan kerja tetap pada `personnel`.
 
 ## Alur dan batas implementasi

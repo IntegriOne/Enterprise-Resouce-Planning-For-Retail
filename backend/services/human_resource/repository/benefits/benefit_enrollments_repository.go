@@ -20,6 +20,46 @@ type BenefitEnrollmentRepository struct {
 
 var _ domainrepo.BenefitEnrollmentRepository = (*BenefitEnrollmentRepository)(nil)
 
+func (r *BenefitEnrollmentRepository) InsertBenefitEnrollments(ctx context.Context, value *entity.BenefitEnrollment) error {
+	return r.Insert(ctx, value)
+}
+func (r *BenefitEnrollmentRepository) UpdateBenefitEnrollments(ctx context.Context, value *entity.BenefitEnrollment) error {
+	return r.Update(ctx, value)
+}
+func (r *BenefitEnrollmentRepository) DeleteBenefitEnrollmentsByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *BenefitEnrollmentRepository) FindBenefitEnrollmentsByUUID(ctx context.Context, id string) (*entity.BenefitEnrollment, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *BenefitEnrollmentRepository) FindBenefitEnrollmentsByUUIDForUpdate(ctx context.Context, id string) (*entity.BenefitEnrollment, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *BenefitEnrollmentRepository) GetAllBenefitEnrollments(ctx context.Context, limit, offset int) ([]entity.BenefitEnrollment, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *BenefitEnrollmentRepository) CountBenefitEnrollments(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *BenefitEnrollmentRepository) SelectBenefitEnrollmentsWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.BenefitEnrollment, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *BenefitEnrollmentRepository) CountBenefitEnrollmentsWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *BenefitEnrollmentRepository) FindBenefitEnrollmentsByWorkerID(ctx context.Context, value string, limit, offset int) ([]entity.BenefitEnrollment, error) {
+	return r.FindByWorkerID(ctx, value, limit, offset)
+}
+func (r *BenefitEnrollmentRepository) FindBenefitEnrollmentsByBenefitPlanID(ctx context.Context, value string, limit, offset int) ([]entity.BenefitEnrollment, error) {
+	return r.FindByBenefitPlanID(ctx, value, limit, offset)
+}
+func (r *BenefitEnrollmentRepository) FindBenefitEnrollmentsByEnrollmentStatus(ctx context.Context, value string, limit, offset int) ([]entity.BenefitEnrollment, error) {
+	return r.FindByEnrollmentStatus(ctx, value, limit, offset)
+}
+func (r *BenefitEnrollmentRepository) FindBenefitEnrollmentsByCurrencyCode(ctx context.Context, value *string, limit, offset int) ([]entity.BenefitEnrollment, error) {
+	return r.FindByCurrencyCode(ctx, value, limit, offset)
+}
+
 // NewBenefitEnrollmentRepository memvalidasi koneksi dan menyiapkan repository.
 func NewBenefitEnrollmentRepository(db *gorm.DB) (*BenefitEnrollmentRepository, error) {
 	if err := pgstore.CheckDB(db); err != nil {

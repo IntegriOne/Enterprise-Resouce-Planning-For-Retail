@@ -28,6 +28,47 @@ func NewPerformanceCycleRepository(db *gorm.DB) (*PerformanceCycleRepository, er
 	return &PerformanceCycleRepository{db: db}, nil
 }
 
+// Operasi berikut menyebut objek dan kolom secara eksplisit untuk memudahkan penelusuran.
+func (r *PerformanceCycleRepository) InsertPerformanceCycles(ctx context.Context, v *entity.PerformanceCycle) error {
+	return r.Insert(ctx, v)
+}
+func (r *PerformanceCycleRepository) UpdatePerformanceCycles(ctx context.Context, v *entity.PerformanceCycle) error {
+	return r.Update(ctx, v)
+}
+func (r *PerformanceCycleRepository) DeletePerformanceCyclesByUUID(ctx context.Context, id string) error {
+	return r.DeleteByID(ctx, id)
+}
+func (r *PerformanceCycleRepository) FindPerformanceCyclesByUUID(ctx context.Context, id string) (*entity.PerformanceCycle, error) {
+	return r.FindByID(ctx, id)
+}
+func (r *PerformanceCycleRepository) FindPerformanceCyclesByUUIDForUpdate(ctx context.Context, id string) (*entity.PerformanceCycle, error) {
+	return r.FindByIDForUpdate(ctx, id)
+}
+func (r *PerformanceCycleRepository) GetAllPerformanceCycles(ctx context.Context, limit, offset int) ([]entity.PerformanceCycle, error) {
+	return r.GetAll(ctx, limit, offset)
+}
+func (r *PerformanceCycleRepository) CountPerformanceCycles(ctx context.Context) (int64, error) {
+	return r.Count(ctx)
+}
+func (r *PerformanceCycleRepository) SelectPerformanceCyclesWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.PerformanceCycle, error) {
+	return r.SelectWhere(ctx, filters, limit, offset)
+}
+func (r *PerformanceCycleRepository) CountPerformanceCyclesWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
+	return r.CountWhere(ctx, filters)
+}
+func (r *PerformanceCycleRepository) FindPerformanceCyclesByCycleCode(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceCycle, error) {
+	return r.FindByCycleCode(ctx, v, limit, offset)
+}
+func (r *PerformanceCycleRepository) FindPerformanceCyclesByCycleType(ctx context.Context, v string, limit, offset int) ([]entity.PerformanceCycle, error) {
+	return r.FindByCycleType(ctx, v, limit, offset)
+}
+func (r *PerformanceCycleRepository) FindPerformanceCyclesByStatus(ctx context.Context, v entity.PerformanceCycleStatus, limit, offset int) ([]entity.PerformanceCycle, error) {
+	return r.FindByStatus(ctx, v, limit, offset)
+}
+func (r *PerformanceCycleRepository) FindPerformanceCyclesByLaunchedByPrincipalID(ctx context.Context, v *string, limit, offset int) ([]entity.PerformanceCycle, error) {
+	return r.FindByLaunchedByPrincipalID(ctx, v, limit, offset)
+}
+
 func (r *PerformanceCycleRepository) query(ctx context.Context) (*gorm.DB, error) {
 	if r == nil {
 		return nil, pgstore.CheckDB(nil)
