@@ -1,0 +1,7 @@
+# Handoff katalog izin Human Resource Management untuk IAM
+
+Keputusan developer HRM per 16 November 2026: katalog resmi ada di [roles-permissions HRM](../../roles-permissions/human_resource/1-roles-permissions.md). Format kode `human_resource.<resource>.<action>`; matriks pada dokumen itu memuat 84 resource dan tindakan yang berlaku per resource. Ada 321 kode unik: 84 `read`, 78 `create`, 78 `update`, 78 `delete`, serta `human_resource.leave_entitlements.post`, `human_resource.payroll_runs.approve`, dan `human_resource.talent_assessments.finalize`. `list`, `GetByID`, `FindBy*`, dan `count` menggunakan `read`. Alias `write` tidak dipakai.
+
+Permintaan untuk IAM adalah mendaftarkan katalog kode, resource, action, sensitivitas, dan template role yang tercantum di dokumen HRM melalui proses katalog resmi. Catatan ini **bukan** instruksi membuat assignment atau grant otomatis. Seluruh `delete`, tiga command khusus, serta data kompensasi/payroll dan kasus hubungan industrial yang ditandai sensitif membutuhkan step-up. Template role umum tidak memberi `delete`. Tidak ada wildcard bisnis untuk Super Admin IAM.
+
+Runtime HRM saat ini hanya aman untuk grant `global` yang eksplisit dan sebagian validator integritas. Grant `legal_entity`, `organization_unit`, atau `self` harus tetap tidak efektif sampai filtering objek dan E2E lintas Gateway–gRPC–DB lulus. Kandidat approval lain belum mempunyai command gRPC khusus; jangan buat permission aktif atau pakai `.update` untuk menyetujui status bisnis sebelum kontrak dan workflow-nya disepakati.

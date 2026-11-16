@@ -37,6 +37,99 @@ GetByID, GetAll, FindBy dan count memakai `read` yang sama; filter scope diterap
 
 Inventaris ini dicocokkan dengan `TableName()` entity HRM pada 16 November 2026: 84 resource bisnis pada 22 domain. Setiap nama resource menghasilkan `human_resource.<resource>.read`. Sebanyak 78 resource juga menghasilkan `.create`, `.update`, dan `.delete` sebagai kode terpisah. Enam resource berikut **hanya memiliki `.read`** karena merupakan riwayat, ledger, atau hasil yang dihasilkan workflow: `worker_lifecycle_events`, `application_stage_history`, `payroll_results`, `payroll_result_lines`, `leave_ledger_entries`, dan `engagement_survey_results`. Total dasar: 318 kode (84 read + 78 create + 78 update + 78 delete), ditambah tiga command khusus di bawah = **321 kode**. Permission `.delete` tersedia dalam katalog tetapi tidak diberikan dalam template role umum; pemakaiannya memerlukan mandat retensi dan workflow per resource. Dua tabel integrasi (`hr_inbox_events`, `hr_outbox_events`) tidak menjadi permission CRUD pengguna. Kode adalah katalog untuk provisioning resmi IAM, bukan seed atau grant.
 
+### Matriks izin eksplisit per resource
+
+Setiap sel tindakan adalah **kode permission tersendiri** dengan awalan `human_resource.` dan nama resource pada baris itu. Misalnya baris `workers` berarti `human_resource.workers.read`, `human_resource.workers.create`, `human_resource.workers.update`, dan `human_resource.workers.delete`. Tanda `—` berarti tindakan tersebut tidak ada dalam katalog; `list`, `GetByID`, `FindBy*`, dan `count` selalu memakai `read`. Kolom khusus hanya memuat command yang sudah ada pada kontrak gRPC dan application service.
+
+| Domain | Resource | Tindakan umum | Command khusus |
+| --- | --- | --- | --- |
+| workforceplanning | `job_families` | read, create, update, delete | — |
+| workforceplanning | `jobs` | read, create, update, delete | — |
+| workforceplanning | `positions` | read, create, update, delete | — |
+| workforceplanning | `workforce_plans` | read, create, update, delete | — |
+| workforceplanning | `workforce_plan_lines` | read, create, update, delete | — |
+| personnel | `workers` | read, create, update, delete | — |
+| personnel | `employment_contracts` | read, create, update, delete | — |
+| personnel | `worker_assignments` | read, create, update, delete | — |
+| personnel | `worker_lifecycle_events` | read | — |
+| personnel | `worker_documents` | read, create, update, delete | — |
+| personnel | `emergency_contacts` | read, create, update, delete | — |
+| recruitment | `requisitions` | read, create, update, delete | — |
+| recruitment | `candidates` | read, create, update, delete | — |
+| recruitment | `applications` | read, create, update, delete | — |
+| recruitment | `application_stage_history` | read | — |
+| recruitment | `interviews` | read, create, update, delete | — |
+| recruitment | `interview_panelists` | read, create, update, delete | — |
+| recruitment | `interview_feedback` | read, create, update, delete | — |
+| recruitment | `offers` | read, create, update, delete | — |
+| recruitment | `job_postings` | read, create, update, delete | — |
+| recruitment | `application_assessments` | read, create, update, delete | — |
+| onboarding | `onboarding_plans` | read, create, update, delete | — |
+| onboarding | `onboarding_tasks` | read, create, update, delete | — |
+| compensation | `compensation_bands` | read, create, update, delete | — |
+| compensation | `compensation_records` | read, create, update, delete | — |
+| benefits | `benefit_plans` | read, create, update, delete | — |
+| benefits | `benefit_enrollments` | read, create, update, delete | — |
+| payroll | `pay_components` | read, create, update, delete | — |
+| payroll | `payroll_rule_sets` | read, create, update, delete | — |
+| payroll | `payroll_groups` | read, create, update, delete | — |
+| payroll | `payroll_periods` | read, create, update, delete | — |
+| payroll | `payroll_profiles` | read, create, update, delete | — |
+| payroll | `payroll_runs` | read, create, update, delete | approve |
+| payroll | `payroll_results` | read | — |
+| payroll | `payroll_result_lines` | read | — |
+| payroll | `payroll_adjustments` | read, create, update, delete | — |
+| leave | `leave_policies` | read, create, update, delete | — |
+| leave | `leave_entitlements` | read, create, update, delete | post |
+| leave | `leave_adjustments` | read, create, update, delete | — |
+| leave | `leave_ledger_entries` | read | — |
+| competency | `competencies` | read, create, update, delete | — |
+| competency | `worker_qualifications` | read, create, update, delete | — |
+| competency | `job_competencies` | read, create, update, delete | — |
+| competency | `worker_competency_assessments` | read, create, update, delete | — |
+| performance | `performance_cycles` | read, create, update, delete | — |
+| performance | `performance_goals` | read, create, update, delete | — |
+| performance | `performance_goal_updates` | read, create, update, delete | — |
+| performance | `performance_reviews` | read, create, update, delete | — |
+| performance | `performance_review_goal_scores` | read, create, update, delete | — |
+| learning | `learning_courses` | read, create, update, delete | — |
+| learning | `learning_course_competencies` | read, create, update, delete | — |
+| learning | `learning_enrollments` | read, create, update, delete | — |
+| succession | `succession_plans` | read, create, update, delete | — |
+| succession | `succession_candidates` | read, create, update, delete | — |
+| employeerelations | `employee_relations_cases` | read, create, update, delete | — |
+| employeerelations | `employee_relations_events` | read, create, update, delete | — |
+| employeerelations | `collective_agreements` | read, create, update, delete | — |
+| offboarding | `offboarding_plans` | read, create, update, delete | — |
+| offboarding | `offboarding_tasks` | read, create, update, delete | — |
+| career | `development_plans` | read, create, update, delete | — |
+| career | `development_actions` | read, create, update, delete | — |
+| career | `career_paths` | read, create, update, delete | — |
+| career | `career_path_transitions` | read, create, update, delete | — |
+| career | `worker_career_aspirations` | read, create, update, delete | — |
+| policy | `policies` | read, create, update, delete | — |
+| policy | `policy_acknowledgements` | read, create, update, delete | — |
+| hrservice | `service_requests` | read, create, update, delete | — |
+| hrservice | `service_request_events` | read, create, update, delete | — |
+| engagement | `engagement_surveys` | read, create, update, delete | — |
+| engagement | `engagement_survey_results` | read | — |
+| accessrequest | `access_requests` | read, create, update, delete | — |
+| analytics | `human_capital_metric_definitions` | read, create, update, delete | — |
+| analytics | `human_capital_metric_snapshots` | read, create, update, delete | — |
+| talent | `talent_frameworks` | read, create, update, delete | — |
+| talent | `talent_dimensions` | read, create, update, delete | — |
+| talent | `talent_review_cycles` | read, create, update, delete | — |
+| talent | `talent_assessments` | read, create, update, delete | finalize |
+| talent | `talent_assessment_scores` | read, create, update, delete | — |
+| talent | `talent_calibration_sessions` | read, create, update, delete | — |
+| talent | `talent_calibration_decisions` | read, create, update, delete | — |
+| talent | `talent_pools` | read, create, update, delete | — |
+| talent | `talent_pool_memberships` | read, create, update, delete | — |
+| promotion | `promotion_recommendations` | read, create, update, delete | — |
+| promotion | `promotion_decisions` | read, create, update, delete | — |
+
+`approve` untuk `payroll_runs`, `post` untuk `leave_entitlements`, dan `finalize` untuk `talent_assessments` tidak dapat diganti oleh izin `update`. Kebutuhan approval lain seperti offer, workforce plan, cuti, kalibrasi, dan promosi belum mempunyai RPC command khusus pada kontrak saat ini. Bila command tersebut dikembangkan, setiap tindakan bisnis harus mendapat permission tersendiri serta pemeriksaan state, pemisahan tugas, scope objek, dan recheck dekat commit. Jangan menafsirkan keberadaan kolom status atau `approved_by` sebagai izin untuk menyetujui lewat CRUD generik.
+
 ## Arti tindakan dan pengecualian
 
 | Tindakan | Operasi aplikasi | Batas |

@@ -1,0 +1,3 @@
+# Matriks izin HRM eksplisit
+
+Owner meminta permission HRM lengkap dan tidak ambigu: `read`, `create`, `update`, `delete`, `approve`, serta aksi khusus sesuai proses. Katalog runtime yang telah ada memiliki 321 kode unik untuk 84 resource dan tiga command gRPC khusus. Dokumen katalog kini mencantumkan seluruh resource berikut tindakannya secara eksplisit, termasuk enam resource hanya baca. Handoff untuk IAM dibuat dengan jumlah kode, sensitivitas, template role, dan batas aktivasi. Tidak ada perubahan grant IAM atau kode runtime. Approval lain menunggu command dan workflow khusus; `.update` tidak ditafsirkan sebagai persetujuan bisnis.
