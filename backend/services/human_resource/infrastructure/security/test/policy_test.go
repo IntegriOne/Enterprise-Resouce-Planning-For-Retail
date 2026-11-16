@@ -27,21 +27,22 @@ func (r *sessionReader) ReadSessionContext(context.Context, string, time.Time) (
 
 func TestPolicyRejectsUnverifiedState(t *testing.T) {
 	t.Parallel()
-	for _, name := range []string{"allowed", "revoked", "redis unavailable", "stale snapshot", "wrong principal", "wrong revision", "wrong recovery", "missing permission", "missing mfa", "scoped grant"} {
+	for _, name := range []string{"allowed", "revoked", "redis unavailable", "stale snapshot", "wrong principal", "wrong revision", "wrong recovery", "missing caller kind", "wrong caller kind", "wrong token kind", "wrong snapshot kind", "customer kind", "missing permission", "missing mfa", "scoped grant"} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			now := time.Now().Unix()
 			reader := &sessionReader{state: &authsession.SessionValidationContext{
 				Gate:     &authsession.SecurityGateRecord{Open: true, RecoveryEpoch: 1},
-				Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session"},
+				Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", UserKind: "employee"},
 				Security: &authsession.UserSecurityRecord{UserID: "principal", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1},
 				Snapshot: &authz.AccessSnapshot{
-					PrincipalID: "principal", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
+					PrincipalID: "principal", UserKind: "employee", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
 					SyncedAtUnix: now, FreshUntilUnix: now + 30,
 					Permissions: []authz.PermissionGrant{{Code: "hrm.jobs:read", Scope: authz.ScopeGrant{Type: "global"}}},
 				},
 			}}
 			want := hrerrors.ErrForbidden
+			callerKind := "employee"
 			switch name {
 			case "allowed":
 				want = nil
@@ -60,6 +61,18 @@ func TestPolicyRejectsUnverifiedState(t *testing.T) {
 				reader.state.Security.PermRevision++
 			case "wrong recovery":
 				reader.state.Gate.RecoveryEpoch++
+			case "missing caller kind":
+				callerKind = ""
+			case "wrong caller kind":
+				callerKind = "vendor"
+			case "wrong token kind":
+				reader.state.Token.UserKind = "customer"
+			case "wrong snapshot kind":
+				reader.state.Snapshot.UserKind = "supplier"
+			case "customer kind":
+				callerKind = "customer"
+				reader.state.Token.UserKind = callerKind
+				reader.state.Snapshot.UserKind = callerKind
 			case "missing permission":
 				reader.state.Snapshot.Permissions = nil
 			case "missing mfa":
@@ -73,7 +86,7 @@ func TestPolicyRejectsUnverifiedState(t *testing.T) {
 			}
 			ctx := metadata.NewIncomingContext(t.Context(), metadata.Pairs("x-ig-session-token-hash", strings.Repeat("a", 64)))
 			ctx = authcontext.WithCaller(ctx, authcontext.CallerContext{
-				Authenticated: true, PrincipalID: "principal", SessionID: "session", AuthEpoch: 1, PermRevision: 2,
+				Authenticated: true, PrincipalID: "principal", SessionID: "session", UserKind: callerKind, AuthEpoch: 1, PermRevision: 2,
 			})
 			_, err = policy.Authorize(ctx, operation.Access{Resource: "hr_jobs", Action: "read"})
 			if !errors.Is(err, want) {
@@ -112,10 +125,10 @@ func TestPolicyRequiresRecentAuthenticationForSensitiveOperations(t *testing.T) 
 			}
 			reader := &sessionReader{state: &authsession.SessionValidationContext{
 				Gate:     &authsession.SecurityGateRecord{Open: true, RecoveryEpoch: 1},
-				Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", MFAAuthenticated: test.mfa, IssuedAtUnix: issuedAt},
+				Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", UserKind: "employee", MFAAuthenticated: test.mfa, IssuedAtUnix: issuedAt},
 				Security: &authsession.UserSecurityRecord{UserID: "principal", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1},
 				Snapshot: &authz.AccessSnapshot{
-					PrincipalID: "principal", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
+					PrincipalID: "principal", UserKind: "employee", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
 					SyncedAtUnix: now.Unix(), FreshUntilUnix: now.Unix() + 30,
 					Permissions: []authz.PermissionGrant{{Code: "human_resource.jobs." + test.catalogAction, IsSensitive: test.grantFlag, Scope: authz.ScopeGrant{Type: "global"}}},
 				},
@@ -128,7 +141,7 @@ func TestPolicyRequiresRecentAuthenticationForSensitiveOperations(t *testing.T) 
 			}
 			ctx := metadata.NewIncomingContext(t.Context(), metadata.Pairs("x-ig-session-token-hash", strings.Repeat("a", 64)))
 			ctx = authcontext.WithCaller(ctx, authcontext.CallerContext{
-				Authenticated: true, PrincipalID: "principal", SessionID: "session", AuthEpoch: 1, PermRevision: 2,
+				Authenticated: true, PrincipalID: "principal", SessionID: "session", UserKind: "employee", AuthEpoch: 1, PermRevision: 2,
 			})
 			_, err = policy.Authorize(ctx, operation.Access{Resource: "hr_jobs", Action: test.catalogAction})
 			if test.wantForbidden && !errors.Is(err, hrerrors.ErrForbidden) {
@@ -149,10 +162,10 @@ func TestPolicyWorkerLegalEntityScope(t *testing.T) {
 	now := time.Now().Unix()
 	reader := &sessionReader{state: &authsession.SessionValidationContext{
 		Gate:     &authsession.SecurityGateRecord{Open: true, RecoveryEpoch: 1},
-		Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session"},
+		Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", UserKind: "employee"},
 		Security: &authsession.UserSecurityRecord{UserID: "principal", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1},
 		Snapshot: &authz.AccessSnapshot{
-			PrincipalID: "principal", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
+			PrincipalID: "principal", UserKind: "employee", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
 			SyncedAtUnix: now, FreshUntilUnix: now + 30,
 			Permissions: []authz.PermissionGrant{
 				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
@@ -167,7 +180,7 @@ func TestPolicyWorkerLegalEntityScope(t *testing.T) {
 	}
 	ctx := metadata.NewIncomingContext(t.Context(), metadata.Pairs("x-ig-session-token-hash", strings.Repeat("a", 64)))
 	ctx = authcontext.WithCaller(ctx, authcontext.CallerContext{
-		Authenticated: true, PrincipalID: "principal", SessionID: "session", AuthEpoch: 1, PermRevision: 2,
+		Authenticated: true, PrincipalID: "principal", SessionID: "session", UserKind: "employee", AuthEpoch: 1, PermRevision: 2,
 	})
 	for _, id := range []string{legalA, legalB} {
 		if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": id}}); err != nil {

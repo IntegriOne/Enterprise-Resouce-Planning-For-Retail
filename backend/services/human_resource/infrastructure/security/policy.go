@@ -101,6 +101,10 @@ func (p *Policy) authorize(ctx context.Context, access operation.Access) (operat
 	if state.Gate == nil || !state.Gate.Open || !state.Snapshot.IsFresh(now) {
 		return operation.Actor{}, nil, hrerrors.ErrUnavailable
 	}
+	if caller.UserKind != "employee" || state.Token.UserKind != caller.UserKind ||
+		state.Snapshot.UserKind != caller.UserKind {
+		return operation.Actor{}, nil, hrerrors.ErrForbidden
+	}
 	matchedSnapshot := state.Snapshot.PrincipalID == caller.PrincipalID &&
 		state.Snapshot.AuthEpoch == caller.AuthEpoch && state.Snapshot.PermRevision == caller.PermRevision
 	matchedRecovery := state.Gate.RecoveryEpoch == state.Security.RecoveryEpoch &&

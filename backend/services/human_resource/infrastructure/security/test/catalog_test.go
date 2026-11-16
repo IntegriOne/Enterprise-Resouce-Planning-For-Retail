@@ -101,10 +101,10 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 	now := time.Now().Unix()
 	reader := &sessionReader{state: &authsession.SessionValidationContext{
 		Gate:     &authsession.SecurityGateRecord{Open: true, RecoveryEpoch: 1},
-		Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", IssuedAtUnix: now},
+		Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", UserKind: "employee", IssuedAtUnix: now},
 		Security: &authsession.UserSecurityRecord{UserID: "principal", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1},
 		Snapshot: &authz.AccessSnapshot{
-			PrincipalID: "principal", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
+			PrincipalID: "principal", UserKind: "employee", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
 			SyncedAtUnix: now, FreshUntilUnix: now + 30,
 			Permissions: []authz.PermissionGrant{
 				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "global"}},
@@ -121,7 +121,7 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 	}
 	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("x-ig-session-token-hash", strings.Repeat("a", 64)))
 	ctx = authcontext.WithCaller(ctx, authcontext.CallerContext{
-		Authenticated: true, PrincipalID: "principal", SessionID: "session", AuthEpoch: 1, PermRevision: 2,
+		Authenticated: true, PrincipalID: "principal", SessionID: "session", UserKind: "employee", AuthEpoch: 1, PermRevision: 2,
 	})
 	for _, action := range []string{"read", "list"} {
 		if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: action}); err != nil {
