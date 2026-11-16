@@ -172,15 +172,43 @@ func TestSuccessionPlanRPCWithPostgreSQL(t *testing.T) {
 	code := "SUCCESSION-" + positionID
 	version := int32(1)
 	reviewDate := timestamppb.New(time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
-	request := &pb.CreateSuccessionPlanRequest{Input: &pb.SuccessionPlanInput{
-		PositionId: &positionID, PlanCode: &code, PlanVersion: &version, ReviewDate: reviewDate,
-	}}
-	created, err := client.CreateSuccessionPlan(ctx, request)
-	if err != nil || created.GetValue().GetId() == "" || created.Value.GetConfidentialityClass() != "highly_restricted" {
-		t.Fatalf("create draft succession plan: %v", err)
+	createRequest := func() *pb.CreateSuccessionPlanRequest {
+		return &pb.CreateSuccessionPlanRequest{Input: &pb.SuccessionPlanInput{
+			PositionId: &positionID, PlanCode: &code, PlanVersion: &version, ReviewDate: reviewDate,
+		}}
+	}
+	type createResult struct {
+		response *pb.SuccessionPlanResponse
+		err      error
+	}
+	results := make(chan createResult, 2)
+	for range 2 {
+		go func() {
+			response, err := client.CreateSuccessionPlan(ctx, createRequest())
+			results <- createResult{response: response, err: err}
+		}()
+	}
+	var created *pb.SuccessionPlanResponse
+	var duplicateCount int
+	for range 2 {
+		result := <-results
+		switch status.Code(result.err) {
+		case codes.OK:
+			if created != nil {
+				t.Fatal("concurrent create persisted more than one plan")
+			}
+			created = result.response
+		case codes.AlreadyExists:
+			duplicateCount++
+		default:
+			t.Fatalf("concurrent create returned unexpected error: %v", result.err)
+		}
+	}
+	if created == nil || created.GetValue().GetId() == "" || created.Value.GetConfidentialityClass() != "highly_restricted" || duplicateCount != 1 {
+		t.Fatalf("concurrent create did not produce one draft and one duplicate: duplicates=%d", duplicateCount)
 	}
 	planID = created.Value.Id
-	if _, err := client.CreateSuccessionPlan(ctx, request); status.Code(err) != codes.AlreadyExists {
+	if _, err := client.CreateSuccessionPlan(ctx, createRequest()); status.Code(err) != codes.AlreadyExists {
 		t.Fatalf("duplicate position/code/version: %v", err)
 	}
 	found, err := client.FindSuccessionPlanByPositionID(ctx, &commonv1.StringFinderRequest{Value: &positionID, Limit: 1})
