@@ -26,6 +26,7 @@ func (r *Resource[T, K, P]) Command(
 	approvesCareerPath := r.spec.Table == "hr_career_paths" && action == "approve"
 	approvesWorkerAssignment := r.spec.Table == "hr_worker_assignments" && action == "approve"
 	activatesPosition := r.spec.Table == "hr_positions" && action == "activate"
+	activatesWorker := r.spec.Table == "hr_workers" && action == "activate"
 	appliesPrimaryAssignment := r.spec.Table == "hr_workers" && action == "apply_primary_assignment"
 	launchesPerformanceCycle := r.spec.Table == "hr_performance_cycles" && action == "launch"
 	startsOnboardingPlan := r.spec.Table == "hr_onboarding_plans" && action == "start"
@@ -43,7 +44,7 @@ func (r *Resource[T, K, P]) Command(
 	publishesJobPosting := r.spec.Table == "hr_job_postings" && action == "publish"
 	closesJobPosting := r.spec.Table == "hr_job_postings" && action == "close"
 	withdrawsJobPosting := r.spec.Table == "hr_job_postings" && action == "withdraw"
-	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || approvesWorkerAssignment || activatesPosition || appliesPrimaryAssignment || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || rejectsRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
+	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || approvesWorkerAssignment || activatesPosition || activatesWorker || appliesPrimaryAssignment || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || rejectsRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
 	if !allowed || change == nil {
 		return nil, hrerrors.ErrWorkflowRequired
 	}

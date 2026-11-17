@@ -58,6 +58,14 @@ func (h *Handler) CreateWorker(ctx context.Context, request *pb.CreateWorkerRequ
 		TerminationReasonCode: in.TerminationReasonCode, PrimaryLegalEntityReferenceID: in.GetPrimaryLegalEntityReferenceId(), PrimaryAssignmentID: in.PrimaryAssignmentId, IAMPrincipalReferenceID: in.IamPrincipalReferenceId}))
 }
 
+// ActivateWorker meneruskan aktivasi hubungan kerja ke command HRM.
+func (h *Handler) ActivateWorker(ctx context.Context, request *common.IDRequest) (*pb.WorkerResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return workerResponse(h.service.ActivateWorker(ctx, request.Id))
+}
+
 // ApplyPrimaryAssignment meneruskan penetapan assignment primer ke command HRM.
 func (h *Handler) ApplyPrimaryAssignment(ctx context.Context, request *pb.ApplyPrimaryAssignmentRequest) (*pb.WorkerResponse, error) {
 	if request == nil {

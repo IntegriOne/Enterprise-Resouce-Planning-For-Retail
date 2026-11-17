@@ -23,6 +23,19 @@ func (s *workerChildStub) CountWhere(context.Context, []domainrepo.Filter) (int6
 	return s.count, nil
 }
 
+type workerContractLookupStub struct{ rows []entity.EmploymentContract }
+
+func (s *workerContractLookupStub) FindByWorkerID(_ context.Context, _ string, limit, offset int) ([]entity.EmploymentContract, error) {
+	if offset >= len(s.rows) {
+		return nil, nil
+	}
+	end := offset + limit
+	if end > len(s.rows) {
+		end = len(s.rows)
+	}
+	return s.rows[offset:end], nil
+}
+
 type workerAssignmentLookupStub struct {
 	rows map[string]*entity.WorkerAssignment
 }
@@ -55,7 +68,7 @@ func TestWorkerValidatorKeepsPreboardingDraftSeparateFromIdentityAndEmployment(t
 	rows := &workerNumberStub{}
 	contracts, assignments, onboarding := &workerChildStub{}, &workerChildStub{}, &workerChildStub{}
 	owner := &workerOwnerStub{}
-	v := &workerValidator{workers: rows, contracts: contracts, assignments: assignments, onboarding: onboarding, owner: owner}
+	v := &workerValidator{workers: rows, contracts: contracts, contractLookup: &workerContractLookupStub{}, assignments: assignments, onboarding: onboarding, owner: owner}
 	now := time.Now()
 	hire := now.AddDate(0, 0, 5)
 	serviceStart := now.AddDate(0, 0, 6)
@@ -96,8 +109,8 @@ func TestWorkerValidatorKeepsPreboardingDraftSeparateFromIdentityAndEmployment(t
 	}
 	active := *worker
 	active.Status = entity.WorkerStatusActive
-	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
-		t.Fatalf("activation through CRUD: %v", err)
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("activation without a signed contract: %v", err)
 	}
 	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("delete employment history: %v", err)
@@ -120,6 +133,68 @@ func TestWorkerValidatorKeepsPreboardingDraftSeparateFromIdentityAndEmployment(t
 	cancel()
 	if err := v.ValidateMutation(ctx, "hr_workers", nil, worker); !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancelled validation: %v", err)
+	}
+}
+
+func TestWorkerValidatorRequiresSignedEffectiveContractForActivation(t *testing.T) {
+	t.Parallel()
+	now := time.Date(2026, 11, 22, 12, 0, 0, 0, time.UTC)
+	start := now.AddDate(0, 0, -1)
+	worker := &entity.Worker{ID: "00000000-0000-4000-8000-000000000001", WorkerNumber: "WORKER-1",
+		PersonPartyReferenceID:        "00000000-0000-4000-8000-000000000002",
+		PrimaryLegalEntityReferenceID: "00000000-0000-4000-8000-000000000003",
+		WorkerCategory:                entity.WorkerCategoryEmployee, Status: entity.WorkerStatusPreboarding,
+		HireDate: &start, ServiceStartDate: &start, CreatedAt: start, UpdatedAt: start}
+	active := *worker
+	active.Status = entity.WorkerStatusActive
+	active.UpdatedAt = now
+	count := &workerChildStub{count: 1}
+	contract := entity.EmploymentContract{ID: "00000000-0000-4000-8000-000000000004", WorkerID: worker.ID,
+		ContractStatus: "signed", EmployingLegalEntityReferenceID: worker.PrimaryLegalEntityReferenceID,
+		EffectiveFrom: start, SignedAt: &start,
+		SignedDocumentReferenceID:        &worker.PersonPartyReferenceID,
+		SignedDocumentVersionReferenceID: &worker.PersonPartyReferenceID,
+		SignedContentDigest:              []byte{1}}
+	lookup := &workerContractLookupStub{rows: []entity.EmploymentContract{contract}}
+	v := &workerValidator{workers: &workerNumberStub{}, contracts: count, contractLookup: lookup,
+		assignments: &workerChildStub{}, onboarding: &workerChildStub{}, owner: &workerOwnerStub{}}
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); err != nil {
+		t.Fatalf("valid signed contract: %v", err)
+	}
+	count.count = 0
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("missing contract: %v", err)
+	}
+	count.count = 1
+	lookup.rows[0].ContractStatus = "draft"
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("unsigned draft: %v", err)
+	}
+	lookup.rows[0] = contract
+	lookup.rows[0].SignedContentDigest = nil
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("missing digest: %v", err)
+	}
+	lookup.rows[0] = contract
+	lookup.rows[0].EmployingLegalEntityReferenceID = "00000000-0000-4000-8000-000000000099"
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("wrong legal entity: %v", err)
+	}
+	lookup.rows[0] = contract
+	future := now.AddDate(0, 0, 1)
+	lookup.rows[0].EffectiveFrom = future
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("future contract: %v", err)
+	}
+	lookup.rows[0] = contract
+	forged := active
+	forged.WorkerNumber = "FORGED"
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &forged); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("other field changed during activation: %v", err)
+	}
+	v.owner = nil
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrUnavailable) {
+		t.Fatalf("missing Foundation proof: %v", err)
 	}
 }
 

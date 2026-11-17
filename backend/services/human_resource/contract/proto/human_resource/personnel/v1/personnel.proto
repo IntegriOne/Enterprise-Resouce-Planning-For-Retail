@@ -8,6 +8,7 @@ import "human_resource/common/v1/common.proto";
 
 service PersonnelService {
   rpc CreateWorker(CreateWorkerRequest) returns (WorkerResponse);
+  rpc ActivateWorker(human_resource.common.v1.IDRequest) returns (WorkerResponse);
   rpc ApplyPrimaryAssignment(ApplyPrimaryAssignmentRequest) returns (WorkerResponse);
   rpc UpdateWorker(UpdateWorkerRequest) returns (WorkerResponse);
   rpc DeleteWorker(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);

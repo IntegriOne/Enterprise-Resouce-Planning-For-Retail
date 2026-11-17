@@ -381,8 +381,30 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.ApproveWorkerAssignment(ctx, &common.IDRequest{Id: assignmentID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("approve planned position or preboarding worker = %v", err)
 	}
-	if err := database.WithContext(ctx).Exec("UPDATE hr_workers SET status = 'active' WHERE id = ?", newWorkerID).Error; err != nil {
-		t.Fatalf("activate worker test fixture: %v", err)
+	if _, err := client.ActivateWorker(ctx, &common.IDRequest{Id: newWorkerID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("activate worker without signed contract = %v", err)
+	}
+	signedContractID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec("INSERT INTO hr_employment_contracts (id, worker_id, contract_number, contract_type, contract_status, employing_legal_entity_reference_id, effective_from, signed_at, signed_document_reference_id, signed_document_version_reference_id, signed_content_digest, work_country_code, governing_jurisdiction_code) VALUES (?, ?, ?, 'permanent', 'signed', ?, ?, ?, ?, ?, ?, 'ID', 'ID')",
+		signedContractID, newWorkerID, "SIGNED-"+signedContractID, legalA, "2026-11-20", testNow.Add(-time.Hour), insideID, outsideID, []byte{1, 2, 3}).Error; err != nil {
+		t.Fatalf("insert signed contract fixture: %v", err)
+	}
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cleanupCancel()
+		if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_employment_contracts WHERE id = ?", signedContractID).Error; err != nil {
+			t.Errorf("clean signed contract fixture: %v", err)
+		}
+	})
+	activatedWorker, err := client.ActivateWorker(ctx, &common.IDRequest{Id: newWorkerID})
+	if err != nil || activatedWorker.GetItem().GetStatus() != "active" {
+		t.Fatalf("activate worker = %+v, %v", activatedWorker, err)
+	}
+	if _, err := client.ActivateWorker(ctx, &common.IDRequest{Id: newWorkerID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat worker activation = %v", err)
 	}
 	if err := database.WithContext(ctx).Exec("UPDATE hr_positions SET position_status = 'active', headcount_authorized = 1 WHERE id = ?", assignmentPositionID).Error; err != nil {
 		t.Fatalf("activate position test fixture: %v", err)
@@ -504,7 +526,7 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.DeleteWorker(ctx, &common.IDRequest{Id: newWorkerID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete employment history = %v", err)
 	}
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", newWorkerID).Count(&events).Error; err != nil || events != 3 {
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", newWorkerID).Count(&events).Error; err != nil || events != 4 {
 		t.Fatalf("worker outbox events = %d, %v", events, err)
 	}
 }

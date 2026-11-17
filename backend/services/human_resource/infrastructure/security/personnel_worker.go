@@ -31,6 +31,10 @@ type workerReferenceCounter interface {
 	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 }
 
+type workerContractLookup interface {
+	FindByWorkerID(context.Context, string, int, int) ([]entity.EmploymentContract, error)
+}
+
 type workerAssignmentLookup interface {
 	FindByID(context.Context, string) (*entity.WorkerAssignment, error)
 }
@@ -42,6 +46,7 @@ type workerPositionLookup interface {
 type workerValidator struct {
 	workers          workerNumberReader
 	contracts        workerReferenceCounter
+	contractLookup   workerContractLookup
 	assignments      workerReferenceCounter
 	assignmentLookup workerAssignmentLookup
 	positions        workerPositionLookup
@@ -60,7 +65,7 @@ func WorkerValidators(repos *repository.Registry, owner WorkerReferenceVerifier)
 	}
 	return map[string]MutationValidator{
 		"hr_workers": &workerValidator{
-			workers: repos.Worker, contracts: repos.EmploymentContract,
+			workers: repos.Worker, contracts: repos.EmploymentContract, contractLookup: repos.EmploymentContract,
 			assignments: repos.WorkerAssignment, assignmentLookup: repos.WorkerAssignment,
 			positions: repos.Position, onboarding: repos.OnboardingPlan, owner: owner,
 		},
@@ -98,6 +103,9 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 	if previous != nil && previous.Status == entity.WorkerStatusActive && worker.Status == entity.WorkerStatusActive &&
 		!reflect.DeepEqual(previous.PrimaryAssignmentID, worker.PrimaryAssignmentID) {
 		return v.validatePrimaryAssignment(ctx, previous, worker)
+	}
+	if previous != nil && previous.Status == entity.WorkerStatusPreboarding && worker.Status == entity.WorkerStatusActive {
+		return v.validateActivation(ctx, previous, worker)
 	}
 	if previous != nil && previous.Status != entity.WorkerStatusPreboarding {
 		return hrerrors.ErrWorkflowRequired
@@ -146,6 +154,65 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 		}
 	}
 	return nil
+}
+
+func (v *workerValidator) validateActivation(ctx context.Context, previous, worker *entity.Worker) error {
+	if operation.RequireDependency(v.contractLookup) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	if worker.HireDate == nil || worker.ServiceStartDate == nil || worker.PrimaryAssignmentID != nil ||
+		worker.IAMPrincipalReferenceID != nil || worker.TerminationDate != nil ||
+		worker.TerminationReasonCode != nil || worker.UpdatedAt.Before(previous.UpdatedAt) {
+		return hrerrors.ErrReferenceConflict
+	}
+	unchanged := *worker
+	unchanged.Status = previous.Status
+	unchanged.UpdatedAt = previous.UpdatedAt
+	if !reflect.DeepEqual(previous, &unchanged) {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if entity.CompareDates(*worker.HireDate, worker.UpdatedAt) > 0 ||
+		entity.CompareDates(*worker.ServiceStartDate, worker.UpdatedAt) > 0 {
+		return hrerrors.ErrReferenceConflict
+	}
+	if err := v.verifyWorkerReferences(ctx, worker); err != nil {
+		return err
+	}
+	count, err := v.contracts.CountWhere(ctx, []domainrepo.Filter{{Column: "worker_id", Values: []any{worker.ID}}})
+	if err != nil {
+		return err
+	}
+	if count <= 0 {
+		return hrerrors.ErrReferenceConflict
+	}
+	if count > 10000 {
+		return hrerrors.ErrConflict
+	}
+	seen := int64(0)
+	for offset := 0; seen < count; offset += domainrepo.MaxLimit {
+		contracts, err := v.contractLookup.FindByWorkerID(ctx, worker.ID, domainrepo.MaxLimit, offset)
+		if err != nil {
+			return err
+		}
+		if len(contracts) == 0 || int64(len(contracts))+seen > count {
+			return hrerrors.ErrConflict
+		}
+		for i := range contracts {
+			contract := &contracts[i]
+			if contract.WorkerID != worker.ID || contract.ContractStatus != "signed" ||
+				contract.EmployingLegalEntityReferenceID != worker.PrimaryLegalEntityReferenceID ||
+				contract.SignedAt == nil || contract.SignedAt.After(worker.UpdatedAt) ||
+				contract.SignedDocumentReferenceID == nil || contract.SignedDocumentVersionReferenceID == nil ||
+				len(contract.SignedContentDigest) == 0 ||
+				entity.CompareDates(contract.EffectiveFrom, worker.UpdatedAt) > 0 ||
+				(contract.EffectiveTo != nil && entity.CompareDates(*contract.EffectiveTo, worker.UpdatedAt) < 0) {
+				continue
+			}
+			return nil
+		}
+		seen += int64(len(contracts))
+	}
+	return hrerrors.ErrReferenceConflict
 }
 
 func (v *workerValidator) validatePrimaryAssignment(ctx context.Context, previous, worker *entity.Worker) error {
