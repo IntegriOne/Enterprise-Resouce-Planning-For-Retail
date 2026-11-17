@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -32,9 +33,25 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-type candidateIntegrationPolicy struct{}
+type candidateIntegrationPolicy struct{ principalID string }
 
 type requisitionIntegrationVerifier struct{}
+
+type requisitionApprovalIntegrationVerifier struct {
+	mu       sync.Mutex
+	budgetID string
+	check    service.RequisitionApprovalCheck
+}
+
+func (v *requisitionApprovalIntegrationVerifier) VerifyRequisitionApproval(_ context.Context, check service.RequisitionApprovalCheck) (string, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.check = check
+	if check.RequisitionID == "" || check.Headcount <= 0 || check.CreatedByPrincipalID == check.ApproverPrincipalID {
+		return "", hrerrors.ErrReferenceConflict
+	}
+	return v.budgetID, nil
+}
 
 func (requisitionIntegrationVerifier) VerifyPositionReferences(_ context.Context, check security.PositionReferenceCheck) error {
 	if check.OrganizationUnitID == "" || check.LegalEntityID == "" || check.ValidFrom.IsZero() {
@@ -43,11 +60,11 @@ func (requisitionIntegrationVerifier) VerifyPositionReferences(_ context.Context
 	return nil
 }
 
-func (candidateIntegrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
-	return operation.Actor{PrincipalID: "00000000-0000-4000-8000-000000000001", SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human"}, nil
+func (p *candidateIntegrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
+	return operation.Actor{PrincipalID: p.principalID, SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human"}, nil
 }
 
-func (candidateIntegrationPolicy) ReadScope(context.Context, operation.Access) (operation.Scope, error) {
+func (*candidateIntegrationPolicy) ReadScope(context.Context, operation.Access) (operation.Scope, error) {
 	return operation.Scope{All: true}, nil
 }
 
@@ -103,10 +120,13 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	for resource, validator := range interviewValidators {
 		validators[resource] = validator
 	}
+	policy := &candidateIntegrationPolicy{principalID: "00000000-0000-4000-8000-000000000001"}
+	approvalVerifier := &requisitionApprovalIntegrationVerifier{budgetID: "00000000-0000-4000-8000-000000000099"}
 	svc, err := service.NewService(service.Dependencies{
 		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-			Policy: candidateIntegrationPolicy{}, Integrity: security.NewIntegrity(validators)},
-		Requisition: repos.Requisition, Candidate: repos.Candidate, Application: repos.Application,
+			Policy: policy, Integrity: security.NewIntegrity(validators)},
+		ApprovalVerifier: approvalVerifier,
+		Requisition:      repos.Requisition, Candidate: repos.Candidate, Application: repos.Application,
 		ApplicationStageHistory: repos.ApplicationStageHistory, Interview: repos.Interview,
 		InterviewPanelist: repos.InterviewPanelist, InterviewFeedback: repos.InterviewFeedback,
 		Offer: repos.Offer, JobPosting: repos.JobPosting, ApplicationAssessment: repos.ApplicationAssessment,
@@ -292,6 +312,63 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 2 {
 		t.Fatalf("submitted requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
+	if _, err := client.ApproveRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("self approval status = %v", status.Code(err))
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000098"
+	approved, err := client.ApproveRequisition(ctx, &common.IDRequest{Id: submittedID})
+	if err != nil || approved.GetItem().GetStatus() != "approved" || approved.GetItem().GetApprovedAt() == nil ||
+		approved.GetItem().GetApprovedByPrincipalId() != policy.principalID ||
+		approved.GetItem().GetBudgetReferenceId() != approvalVerifier.budgetID ||
+		approvalVerifier.check.RequisitionID != submittedID || approvalVerifier.check.Headcount != 1 {
+		t.Fatalf("approve requisition: %+v, %v, check %+v", approved, err, approvalVerifier.check)
+	}
+	if _, err := client.ApproveRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat approval status = %v", status.Code(err))
+	}
+	policy.principalID = managerPrincipalID
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 3 {
+		t.Fatalf("approved requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
+	concurrentNumber, concurrentKey := "REQ-CONCURRENT-1", "REQ-CONCURRENT-1"
+	concurrentInput := &pb.RequisitionInput{RequisitionNumber: &concurrentNumber, JobId: text(jobID),
+		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),
+		RequisitionType: &draftType, EmploymentCategory: &category, IdempotencyKey: &concurrentKey}
+	concurrentDraft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: concurrentInput})
+	if err != nil {
+		t.Fatal(err)
+	}
+	concurrentID := concurrentDraft.GetItem().GetId()
+	if _, err := client.SubmitRequisition(ctx, &common.IDRequest{Id: concurrentID}); err != nil {
+		t.Fatal(err)
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000098"
+	approvals := make(chan error, 2)
+	for range 2 {
+		go func() {
+			_, approvalErr := client.ApproveRequisition(ctx, &common.IDRequest{Id: concurrentID})
+			approvals <- approvalErr
+		}()
+	}
+	successes, conflicts := 0, 0
+	for range 2 {
+		approvalErr := <-approvals
+		switch status.Code(approvalErr) {
+		case codes.OK:
+			successes++
+		case codes.FailedPrecondition:
+			conflicts++
+		default:
+			t.Fatalf("concurrent approval status = %v", status.Code(approvalErr))
+		}
+	}
+	policy.principalID = managerPrincipalID
+	if successes != 1 || conflicts != 1 {
+		t.Fatalf("concurrent approvals: success %d, conflict %d", successes, conflicts)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", concurrentID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 3 {
+		t.Fatalf("concurrent approval outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
 	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_requisitions
 		(id, requisition_number, job_id, organization_unit_reference_id, hiring_manager_principal_id,

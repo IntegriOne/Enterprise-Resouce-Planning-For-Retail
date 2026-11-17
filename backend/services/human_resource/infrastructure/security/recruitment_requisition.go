@@ -75,7 +75,7 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.Requisition)
-		if !ok || previous == nil || previous.Status != "draft" {
+		if !ok || previous == nil || (previous.Status != "draft" && previous.Status != "submitted") {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -87,6 +87,9 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 			return err
 		}
 		if after == nil {
+			if previous.Status != "draft" {
+				return hrerrors.ErrWorkflowRequired
+			}
 			return nil
 		}
 	}
@@ -94,7 +97,11 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	if !ok || value == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	submitting := previous != nil && value.Status == "submitted"
+	submitting := previous != nil && previous.Status == "draft" && value.Status == "submitted"
+	approving := previous != nil && previous.Status == "submitted" && value.Status == "approved"
+	if previous != nil && previous.Status == "submitted" && !approving {
+		return hrerrors.ErrWorkflowRequired
+	}
 	if submitting {
 		original := *value
 		original.Status = "draft"
@@ -106,15 +113,30 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
-	if (!submitting && (value.Status != "draft" || value.SubmittedAt != nil || value.SubmittedByPrincipalID != nil)) ||
-		value.CreatedByPrincipalID == nil || value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil ||
+	if approving {
+		original := *value
+		original.Status = "submitted"
+		original.BudgetReferenceID = nil
+		original.ApprovedAt = nil
+		original.ApprovedByPrincipalID = nil
+		if previous.CreatedByPrincipalID == nil || previous.SubmittedAt == nil ||
+			previous.SubmittedByPrincipalID == nil || previous.BudgetReferenceID != nil ||
+			value.BudgetReferenceID == nil || value.ApprovedAt == nil || value.ApprovedByPrincipalID == nil ||
+			*value.ApprovedByPrincipalID == *previous.CreatedByPrincipalID ||
+			*value.ApprovedByPrincipalID == *previous.SubmittedByPrincipalID ||
+			!reflect.DeepEqual(previous, &original) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	}
+	if (!submitting && !approving && (value.Status != "draft" || value.SubmittedAt != nil || value.SubmittedByPrincipalID != nil)) ||
+		value.CreatedByPrincipalID == nil || (!approving && (value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil)) ||
 		value.OpenedAt != nil || value.ClosedAt != nil ||
 		(previous != nil && (previous.ID != value.ID || previous.RequisitionNumber != value.RequisitionNumber ||
 			previous.HiringManagerPrincipalID != value.HiringManagerPrincipalID || previous.IdempotencyKey != value.IdempotencyKey ||
 			!reflect.DeepEqual(previous.CreatedByPrincipalID, value.CreatedByPrincipalID))) {
 		return hrerrors.ErrWorkflowRequired
 	}
-	if value.WorkforcePlanLineID != nil || value.BudgetReferenceID != nil || value.RecruiterPrincipalID != nil {
+	if value.WorkforcePlanLineID != nil || (!approving && value.BudgetReferenceID != nil) || value.RecruiterPrincipalID != nil {
 		return hrerrors.ErrUnavailable
 	}
 	switch value.RequisitionType {

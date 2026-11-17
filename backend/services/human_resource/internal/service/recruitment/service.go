@@ -13,6 +13,7 @@ import (
 
 type Dependencies struct {
 	Runtime                 operation.Dependencies
+	ApprovalVerifier        RequisitionApprovalVerifier
 	Requisition             domainrepo.RecordRepository[entity.Requisition, string]
 	Candidate               domainrepo.RecordRepository[entity.Candidate, string]
 	Application             domainrepo.RecordRepository[entity.Application, string]
@@ -28,6 +29,7 @@ type Dependencies struct {
 // Service mengoordinasikan operasi domain recruitment.
 type Service struct {
 	requisition             *operation.Resource[entity.Requisition, string, *entity.Requisition]
+	approvalVerifier        RequisitionApprovalVerifier
 	candidate               *operation.Resource[entity.Candidate, string, *entity.Candidate]
 	application             *operation.Resource[entity.Application, string, *entity.Application]
 	applicationStageHistory *operation.Resource[entity.ApplicationStageHistory, int64, *entity.ApplicationStageHistory]
@@ -42,7 +44,7 @@ type Service struct {
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{approvalVerifier: deps.ApprovalVerifier}
 	var err error
 	s.requisition, err = operation.NewResource[entity.Requisition, string, *entity.Requisition](
 		deps.Requisition,

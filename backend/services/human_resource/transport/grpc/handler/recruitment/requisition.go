@@ -142,6 +142,13 @@ func (h *Handler) SubmitRequisition(ctx context.Context, r *common.IDRequest) (*
 	}
 	return requisitionResponse(h.service.SubmitRequisition(ctx, r.Id))
 }
+
+func (h *Handler) ApproveRequisition(ctx context.Context, r *common.IDRequest) (*pb.RequisitionResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return requisitionResponse(h.service.ApproveRequisition(ctx, r.Id))
+}
 func (h *Handler) GetRequisitionByID(ctx context.Context, r *common.IDRequest) (*pb.RequisitionResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

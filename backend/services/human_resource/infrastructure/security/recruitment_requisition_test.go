@@ -104,6 +104,29 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &otherSubmitter); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("submit by another principal: %v", err)
 	}
+	approved := submitted
+	approved.Status = "approved"
+	budgetProof := "00000000-0000-4000-8000-000000000020"
+	approver := "00000000-0000-4000-8000-000000000021"
+	approved.BudgetReferenceID = &budgetProof
+	approved.ApprovedAt = &submittedAt
+	approved.ApprovedByPrincipalID = &approver
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, &approved); err != nil {
+		t.Fatalf("approve submitted requisition: %v", err)
+	}
+	selfApproved := approved
+	selfApproved.ApprovedByPrincipalID = &principal
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, &selfApproved); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("self approval: %v", err)
+	}
+	changedDuringApproval := approved
+	changedDuringApproval.Headcount++
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, &changedDuringApproval); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed headcount during approval: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete submitted requisition: %v", err)
+	}
 	changedCreator := updated
 	changedCreator.CreatedByPrincipalID = &otherPrincipal
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &changedCreator); !errors.Is(err, hrerrors.ErrWorkflowRequired) {

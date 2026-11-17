@@ -10,7 +10,7 @@ import (
 	mockdb "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/testsupport"
 )
 
-func setup(tb testing.TB) (*mockdb.Harness, *service.Service, *mockdb.Store[entity.Requisition, string]) {
+func setup(tb testing.TB, verifier ...service.RequisitionApprovalVerifier) (*mockdb.Harness, *service.Service, *mockdb.Store[entity.Requisition, string]) {
 	tb.Helper()
 	h := mockdb.New()
 	pRequisition := mockdb.NewStore[entity.Requisition, string](h, func(v *entity.Requisition) string { return v.ID })
@@ -23,7 +23,11 @@ func setup(tb testing.TB) (*mockdb.Harness, *service.Service, *mockdb.Store[enti
 	pOffer := mockdb.NewStore[entity.Offer, string](h, func(v *entity.Offer) string { return v.ID })
 	pJobPosting := mockdb.NewStore[entity.JobPosting, string](h, func(v *entity.JobPosting) string { return v.ID })
 	pApplicationAssessment := mockdb.NewStore[entity.ApplicationAssessment, string](h, func(v *entity.ApplicationAssessment) string { return v.ID })
-	svc, err := service.NewService(service.Dependencies{Runtime: h.Runtime(), Requisition: pRequisition, Candidate: pCandidate, Application: pApplication, ApplicationStageHistory: pApplicationStageHistory, Interview: pInterview, InterviewPanelist: pInterviewPanelist, InterviewFeedback: pInterviewFeedback, Offer: pOffer, JobPosting: pJobPosting, ApplicationAssessment: pApplicationAssessment})
+	deps := service.Dependencies{Runtime: h.Runtime(), Requisition: pRequisition, Candidate: pCandidate, Application: pApplication, ApplicationStageHistory: pApplicationStageHistory, Interview: pInterview, InterviewPanelist: pInterviewPanelist, InterviewFeedback: pInterviewFeedback, Offer: pOffer, JobPosting: pJobPosting, ApplicationAssessment: pApplicationAssessment}
+	if len(verifier) != 0 {
+		deps.ApprovalVerifier = verifier[0]
+	}
+	svc, err := service.NewService(deps)
 	if err != nil {
 		tb.Fatal(err)
 	}
