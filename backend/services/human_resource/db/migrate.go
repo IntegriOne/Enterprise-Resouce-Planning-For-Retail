@@ -15,6 +15,9 @@ import (
 //go:embed migrations/000001_hrm.up.sql
 var baselineSQL string
 
+//go:embed migrations/000002_hrm_requisition_provenance.up.sql
+var requisitionProvenanceSQL string
+
 // Kunci transaksi advisory khusus HRM; lock dilepas otomatis saat commit/rollback.
 const migrationLockID int64 = 718291825
 
@@ -25,6 +28,7 @@ type migration struct {
 
 var migrations = []migration{
 	{version: 1, sql: baselineSQL},
+	{version: 2, sql: requisitionProvenanceSQL},
 }
 
 // RunMigrationsUp memasang migrasi berurutan secara atomik dan idempoten.

@@ -114,7 +114,7 @@ GOWORK=off go test -race ./...
 GOWORK=off go build ./...
 ```
 
-Generator memeriksa kesamaan tabel/kolom baseline SQL dengan DBML serta pemetaan README sebelum menghasilkan entity, enum dan registry. Hanya hasil generasi tersebut yang mengikuti aturan file generated; port/repository konkret tetap manual. Perubahan skema mengikuti generator baseline SQL yang sudah tersedia lebih dahulu.
+Generator mengekspor skema terkini dari DBML, memeriksa kesamaan tabel/kolom serta pemetaan README, lalu menghasilkan entity, enum, validasi dan registry. Hanya hasil generasi tersebut yang mengikuti aturan file generated; port/repository konkret tetap manual. Perubahan skema memerlukan migrasi aditif berversi; baseline `000001` tidak ditulis ulang.
 
 Verifikasi 16 November 2026 memakai PostgreSQL Docker 18.6 dan dua database sementara `hrm_repository_*_test`, kemudian dibuang. Kedua fixture integritas SQL dijalankan dengan commit pada database sementara agar data valid dapat dibaca Go; seluruh 70 penolakan SQL tetap lulus. Pemeriksaan bukan E2E service/Gateway dan tidak menjadi suite repository wajib tambahan.
 

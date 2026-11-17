@@ -71,7 +71,8 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	draft := &entity.Requisition{ID: "00000000-0000-4000-8000-000000000007", RequisitionNumber: "REQ-1",
 		JobID: job.job.ID, PositionID: &positionID, OrganizationUnitReferenceID: unitID,
 		HiringManagerPrincipalID: principal, RequisitionType: "replacement", Status: "draft",
-		Headcount: 1, TargetStartDate: &target, EmploymentCategory: entity.WorkerCategoryEmployee,
+		CreatedByPrincipalID: &principal,
+		Headcount:            1, TargetStartDate: &target, EmploymentCategory: entity.WorkerCategoryEmployee,
 		MinimumQualifications: entity.JSON(`{}`), DesiredQualifications: entity.JSON(`{}`), IdempotencyKey: "REQ-1"}
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", nil, draft); err != nil {
 		t.Fatalf("create valid draft: %v", err)
@@ -83,6 +84,18 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	updated.Headcount = 2
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &updated); err != nil {
 		t.Fatalf("update valid draft: %v", err)
+	}
+	changedCreator := updated
+	otherPrincipal := "00000000-0000-4000-8000-000000000010"
+	changedCreator.CreatedByPrincipalID = &otherPrincipal
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &changedCreator); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed creator: %v", err)
+	}
+	withSubmission := updated
+	withSubmission.SubmittedAt = &target
+	withSubmission.SubmittedByPrincipalID = &principal
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &withSubmission); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("submission through CRUD: %v", err)
 	}
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, nil); err != nil {
 		t.Fatalf("delete unreferenced draft: %v", err)

@@ -94,10 +94,12 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	if !ok || value == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	if value.Status != "draft" || value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil ||
+	if value.Status != "draft" || value.CreatedByPrincipalID == nil || value.SubmittedAt != nil ||
+		value.SubmittedByPrincipalID != nil || value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil ||
 		value.OpenedAt != nil || value.ClosedAt != nil ||
 		(previous != nil && (previous.ID != value.ID || previous.RequisitionNumber != value.RequisitionNumber ||
-			previous.HiringManagerPrincipalID != value.HiringManagerPrincipalID || previous.IdempotencyKey != value.IdempotencyKey)) {
+			previous.HiringManagerPrincipalID != value.HiringManagerPrincipalID || previous.IdempotencyKey != value.IdempotencyKey ||
+			!reflect.DeepEqual(previous.CreatedByPrincipalID, value.CreatedByPrincipalID))) {
 		return hrerrors.ErrWorkflowRequired
 	}
 	if value.WorkforcePlanLineID != nil || value.BudgetReferenceID != nil || value.RecruiterPrincipalID != nil {

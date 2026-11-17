@@ -223,6 +223,16 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("create requisition draft: %+v, %v", draft, err)
 	}
 	draftID := draft.GetItem().GetId()
+	var creatorID string
+	if err := database.WithContext(ctx).Raw("SELECT created_by_principal_id FROM hr_requisitions WHERE id = ?", draftID).Scan(&creatorID).Error; err != nil || creatorID != "00000000-0000-4000-8000-000000000001" {
+		t.Fatalf("requisition creator = %q, error %v", creatorID, err)
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_requisitions SET submitted_at = NOW() WHERE id = ?", draftID).Error; err == nil {
+		t.Fatal("submission timestamp without principal was accepted")
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_requisitions SET approved_by_principal_id = ? WHERE id = ?", creatorID, draftID).Error; err == nil {
+		t.Fatal("self approval was accepted")
+	}
 	if _, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: draftInput}); status.Code(err) != codes.AlreadyExists {
 		t.Fatalf("duplicate requisition status = %v, want AlreadyExists", status.Code(err))
 	}

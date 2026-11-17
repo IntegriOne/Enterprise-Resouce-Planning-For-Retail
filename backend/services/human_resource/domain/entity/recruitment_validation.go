@@ -4,6 +4,7 @@ package entity
 
 import (
 	"fmt"
+	"strings"
 
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 )
@@ -73,6 +74,21 @@ func (x *Requisition) Validate() error {
 	if err := validateJSON("desired_qualifications", x.DesiredQualifications, true); err != nil {
 		return hrerrors.Invalid("desired_qualifications", "has invalid value")
 	}
+	if x.CreatedByPrincipalID != nil {
+		if err := ValidateUUID("created_by_principal_id", (*x.CreatedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("created_by_principal_id", "has invalid value")
+		}
+	}
+	if x.SubmittedAt != nil {
+		if err := validateTime("submitted_at", (*x.SubmittedAt)); err != nil {
+			return hrerrors.Invalid("submitted_at", "has invalid value")
+		}
+	}
+	if x.SubmittedByPrincipalID != nil {
+		if err := ValidateUUID("submitted_by_principal_id", (*x.SubmittedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("submitted_by_principal_id", "has invalid value")
+		}
+	}
 	if x.ApprovedAt != nil {
 		if err := validateTime("approved_at", (*x.ApprovedAt)); err != nil {
 			return hrerrors.Invalid("approved_at", "has invalid value")
@@ -98,6 +114,12 @@ func (x *Requisition) Validate() error {
 	}
 	if ruleAnd(ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.Headcount)), ruleNumber("0"), ">")), ruleOr(ruleOr(ruleKnown(x.ClosedAt == nil), ruleKnown(x.OpenedAt == nil)), rulePresent(x.ClosedAt != nil && x.OpenedAt != nil, func() bool { return ruleCompareResult((*x.ClosedAt).Compare((*x.OpenedAt)), ">=") }))) == ruleFalse {
 		return hrerrors.Invalid("hr_requisitions", "ck_hr_requisition_values")
+	}
+	if ruleTruthCompare(ruleKnown(x.SubmittedAt == nil), ruleKnown(x.SubmittedByPrincipalID == nil), "=") == ruleFalse {
+		return hrerrors.Invalid("hr_requisitions", "ck_hr_requisition_submission_pair")
+	}
+	if ruleAnd(ruleOr(ruleOr(ruleKnown(x.ApprovedByPrincipalID == nil), ruleKnown(x.CreatedByPrincipalID == nil)), rulePresent(x.ApprovedByPrincipalID != nil && x.CreatedByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.ApprovedByPrincipalID), (*x.CreatedByPrincipalID)) })), ruleOr(ruleOr(ruleKnown(x.ApprovedByPrincipalID == nil), ruleKnown(x.SubmittedByPrincipalID == nil)), rulePresent(x.ApprovedByPrincipalID != nil && x.SubmittedByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.ApprovedByPrincipalID), (*x.SubmittedByPrincipalID)) }))) == ruleFalse {
+		return hrerrors.Invalid("hr_requisitions", "ck_hr_requisition_approval_separation")
 	}
 	return nil
 }

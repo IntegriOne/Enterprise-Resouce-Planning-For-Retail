@@ -163,6 +163,7 @@ func specRequisition() operation.Specification[entity.Requisition, string] {
 		AggregateID: func(v *entity.Requisition) string { return v.ID },
 		Initialize: func(v *entity.Requisition, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
+			v.CreatedByPrincipalID = &actor.PrincipalID
 		},
 		Touch: func(v *entity.Requisition, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.Requisition) map[string]string {
@@ -177,6 +178,9 @@ func specRequisition() operation.Specification[entity.Requisition, string] {
 			a["job_id"] = fmt.Sprint(v.JobID)
 			a["organization_unit_reference_id"] = fmt.Sprint(v.OrganizationUnitReferenceID)
 			a["hiring_manager_principal_id"] = fmt.Sprint(v.HiringManagerPrincipalID)
+			if v.CreatedByPrincipalID != nil {
+				a["created_by_principal_id"] = *v.CreatedByPrincipalID
+			}
 			if v.RecruiterPrincipalID != nil {
 				a["recruiter_principal_id"] = fmt.Sprint(*v.RecruiterPrincipalID)
 			}
@@ -193,6 +197,14 @@ func specRequisition() operation.Specification[entity.Requisition, string] {
 			return a
 		},
 		Guard: func(action string, old, next *entity.Requisition) error {
+			if action == "create" && (next.CreatedByPrincipalID == nil || next.SubmittedAt != nil || next.SubmittedByPrincipalID != nil) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			if action == "update" && (!reflect.DeepEqual(old.CreatedByPrincipalID, next.CreatedByPrincipalID) ||
+				!reflect.DeepEqual(old.SubmittedAt, next.SubmittedAt) ||
+				!reflect.DeepEqual(old.SubmittedByPrincipalID, next.SubmittedByPrincipalID)) {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if action != "create" && old.Status != "draft" {
 				return hrerrors.ErrWorkflowRequired
 			}
