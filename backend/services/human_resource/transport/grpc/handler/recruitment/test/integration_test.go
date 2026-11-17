@@ -512,15 +512,38 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: concurrentID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("close with active application status = %v", status.Code(err))
 	}
-	if err := database.WithContext(ctx).Table("hr_applications").Where("id = ?", activeApplicationID).
-		Update("status", "rejected").Error; err != nil {
-		t.Fatal(err)
+	rejectedApplication, err := client.RejectApplication(ctx, &pb.RejectApplicationRequest{
+		Id: activeApplicationID, ReasonCode: "POSITION_CANCELLED",
+	})
+	if err != nil || rejectedApplication.GetItem().GetStatus() != "rejected" ||
+		rejectedApplication.GetItem().GetDispositionReasonCode() != "POSITION_CANCELLED" ||
+		rejectedApplication.GetItem().GetDecisionAt() == nil ||
+		rejectedApplication.GetItem().GetDecisionByPrincipalId() != policy.principalID {
+		t.Fatalf("reject active application: %+v, %v", rejectedApplication, err)
+	}
+	if _, err := client.RejectApplication(ctx, &pb.RejectApplicationRequest{
+		Id: activeApplicationID, ReasonCode: "POSITION_CANCELLED",
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat application rejection status = %v", status.Code(err))
+	}
+	var rejectionHistoryCount, rejectionOutboxCount int64
+	if err := database.WithContext(ctx).Table("hr_application_stage_history").Where("application_id = ?", activeApplicationID).Count(&rejectionHistoryCount).Error; err != nil || rejectionHistoryCount != 1 {
+		t.Fatalf("rejection history count = %d, err = %v", rejectionHistoryCount, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", activeApplicationID).Count(&rejectionOutboxCount).Error; err != nil || rejectionOutboxCount != 1 {
+		t.Fatalf("rejection outbox count = %d, err = %v", rejectionOutboxCount, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_applications").Where("id = ?", activeApplicationID).Update("disposition_reason_code", nil).Error; err == nil {
+		t.Fatal("database accepted rejected application without reason")
 	}
 	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: concurrentID}); err != nil {
 		t.Fatalf("close with terminal application: %v", err)
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", concurrentID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 5 {
 		t.Fatalf("closed requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
+	if err := database.WithContext(ctx).Exec("DELETE FROM hr_application_stage_history WHERE application_id = ?", activeApplicationID).Error; err != nil {
+		t.Fatal(err)
 	}
 	if err := database.WithContext(ctx).Exec("DELETE FROM hr_applications WHERE id = ?", activeApplicationID).Error; err != nil {
 		t.Fatal(err)
@@ -703,5 +726,19 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", interviewID).Count(&outboxCount).Error; err != nil || outboxCount != 3 {
 		t.Fatalf("interview outbox count after delete = %d, err = %v", outboxCount, err)
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000098"
+	if _, err := client.RejectApplication(ctx, &pb.RejectApplicationRequest{Id: applicationID, ReasonCode: "NOT_ELIGIBLE"}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("other recruiter rejection status = %v", status.Code(err))
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000001"
+	if _, err := client.RejectApplication(ctx, &pb.RejectApplicationRequest{Id: applicationID, ReasonCode: "NOT_ELIGIBLE"}); err != nil {
+		t.Fatalf("assigned recruiter rejection: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_application_stage_history").Where("application_id = ?", applicationID).Count(&stageCount).Error; err != nil || stageCount != 2 {
+		t.Fatalf("screening rejection history count = %d, err = %v", stageCount, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", applicationID).Count(&outboxCount).Error; err != nil || outboxCount != 3 {
+		t.Fatalf("screening rejection outbox count = %d, err = %v", outboxCount, err)
 	}
 }

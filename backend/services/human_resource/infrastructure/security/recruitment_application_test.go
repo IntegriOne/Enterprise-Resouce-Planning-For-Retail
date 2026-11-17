@@ -73,6 +73,30 @@ func TestApplicationValidatorReceivedOnly(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_applications", application, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("delete through CRUD: %v", err)
 	}
+	rejectionStage := "rejected"
+	rejectionReason := "POSITION_CANCELLED"
+	rejected := *application
+	rejected.Status = entity.ApplicationStatusRejected
+	rejected.CurrentStageCode = &rejectionStage
+	rejected.DispositionReasonCode = &rejectionReason
+	rejected.DecisionAt = &now
+	rejected.DecisionByPrincipalID = &approver
+	if err := v.ValidateMutation(t.Context(), "hr_applications", application, &rejected); err != nil {
+		t.Fatalf("reject received application: %v", err)
+	}
+	invalidRejection := rejected
+	invalidRejection.DispositionReasonCode = nil
+	if err := v.ValidateMutation(t.Context(), "hr_applications", application, &invalidRejection); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("reject without reason: %v", err)
+	}
+	invalidRejection = rejected
+	invalidRejection.CandidateID = "00000000-0000-4000-8000-000000000009"
+	if err := v.ValidateMutation(t.Context(), "hr_applications", application, &invalidRejection); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("change candidate during rejection: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_applications", &rejected, &rejected); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("edit rejected application: %v", err)
+	}
 	candidate.DataRetentionUntil = &now
 	if err := v.ValidateMutation(t.Context(), "hr_applications", nil, application); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("expired retention: %v", err)

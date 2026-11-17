@@ -288,6 +288,13 @@ func (x *Application) Validate() error {
 	if ruleOr(ruleKnown(string(x.Status) != string("hired")), ruleAnd(ruleAnd(ruleKnown(x.HiredWorkerID != nil), ruleKnown(x.DecisionAt != nil)), ruleKnown(x.DecisionByPrincipalID != nil))) == ruleFalse {
 		return hrerrors.Invalid("hr_applications", "ck_hr_application_hired")
 	}
+	if x.Status == ApplicationStatusRejected &&
+		(x.CurrentStageCode == nil || *x.CurrentStageCode != "rejected" ||
+			x.DispositionReasonCode == nil || strings.TrimSpace(*x.DispositionReasonCode) == "" ||
+			x.DecisionAt == nil || x.DecisionAt.Before(x.AppliedAt) ||
+			x.DecisionByPrincipalID == nil || x.HiredWorkerID != nil) {
+		return hrerrors.Invalid("hr_applications", "ck_hr_application_rejected")
+	}
 	return nil
 }
 

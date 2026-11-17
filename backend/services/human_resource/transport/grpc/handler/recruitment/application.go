@@ -81,6 +81,13 @@ func (h *Handler) StartApplicationScreening(ctx context.Context, r *common.IDReq
 	}
 	return applicationResponse(h.service.StartApplicationScreening(ctx, r.Id))
 }
+
+func (h *Handler) RejectApplication(ctx context.Context, r *pb.RejectApplicationRequest) (*pb.ApplicationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return applicationResponse(h.service.RejectApplication(ctx, r.Id, r.ReasonCode))
+}
 func (h *Handler) GetApplicationByID(ctx context.Context, r *common.IDRequest) (*pb.ApplicationResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

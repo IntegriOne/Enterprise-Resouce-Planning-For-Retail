@@ -26,7 +26,14 @@ func setupWithVerifiers(tb testing.TB, approval service.RequisitionApprovalVerif
 	pRequisition := mockdb.NewStore[entity.Requisition, string](h, func(v *entity.Requisition) string { return v.ID })
 	pCandidate := mockdb.NewStore[entity.Candidate, string](h, func(v *entity.Candidate) string { return v.ID })
 	pApplication := mockdb.NewStore[entity.Application, string](h, func(v *entity.Application) string { return v.ID })
-	pApplicationStageHistory := mockdb.NewStore[entity.ApplicationStageHistory, int64](h, func(v *entity.ApplicationStageHistory) int64 { return v.ID })
+	var historySequence int64
+	pApplicationStageHistory := mockdb.NewStore[entity.ApplicationStageHistory, int64](h, func(v *entity.ApplicationStageHistory) int64 {
+		if v.ID == 0 {
+			historySequence++
+			v.ID = historySequence
+		}
+		return v.ID
+	})
 	pInterview := mockdb.NewStore[entity.Interview, string](h, func(v *entity.Interview) string { return v.ID })
 	pInterviewPanelist := mockdb.NewStore[entity.InterviewPanelist, string](h, func(v *entity.InterviewPanelist) string { return v.ID })
 	pInterviewFeedback := mockdb.NewStore[entity.InterviewFeedback, string](h, func(v *entity.InterviewFeedback) string { return v.ID })
