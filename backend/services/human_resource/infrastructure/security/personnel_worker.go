@@ -31,12 +31,22 @@ type workerReferenceCounter interface {
 	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 }
 
+type workerAssignmentLookup interface {
+	FindByID(context.Context, string) (*entity.WorkerAssignment, error)
+}
+
+type workerPositionLookup interface {
+	FindByID(context.Context, string) (*entity.Position, error)
+}
+
 type workerValidator struct {
-	workers     workerNumberReader
-	contracts   workerReferenceCounter
-	assignments workerReferenceCounter
-	onboarding  workerReferenceCounter
-	owner       WorkerReferenceVerifier
+	workers          workerNumberReader
+	contracts        workerReferenceCounter
+	assignments      workerReferenceCounter
+	assignmentLookup workerAssignmentLookup
+	positions        workerPositionLookup
+	onboarding       workerReferenceCounter
+	owner            WorkerReferenceVerifier
 }
 
 // WorkerValidators mendaftarkan aturan worker preboarding tanpa mengambil alih identitas IAM.
@@ -44,13 +54,15 @@ func WorkerValidators(repos *repository.Registry, owner WorkerReferenceVerifier)
 	if repos == nil || operation.RequireDependency(repos.Worker) != nil ||
 		operation.RequireDependency(repos.EmploymentContract) != nil ||
 		operation.RequireDependency(repos.WorkerAssignment) != nil ||
+		operation.RequireDependency(repos.Position) != nil ||
 		operation.RequireDependency(repos.OnboardingPlan) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
 		"hr_workers": &workerValidator{
 			workers: repos.Worker, contracts: repos.EmploymentContract,
-			assignments: repos.WorkerAssignment, onboarding: repos.OnboardingPlan, owner: owner,
+			assignments: repos.WorkerAssignment, assignmentLookup: repos.WorkerAssignment,
+			positions: repos.Position, onboarding: repos.OnboardingPlan, owner: owner,
 		},
 	}, nil
 }
@@ -72,9 +84,6 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 		if !ok || previous == nil {
 			return hrerrors.ErrInvalidInput
 		}
-		if previous.Status != entity.WorkerStatusPreboarding {
-			return hrerrors.ErrWorkflowRequired
-		}
 	}
 	if after == nil {
 		if previous == nil {
@@ -85,6 +94,13 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 	worker, ok := after.(*entity.Worker)
 	if !ok || worker == nil {
 		return hrerrors.ErrInvalidInput
+	}
+	if previous != nil && previous.Status == entity.WorkerStatusActive && worker.Status == entity.WorkerStatusActive &&
+		!reflect.DeepEqual(previous.PrimaryAssignmentID, worker.PrimaryAssignmentID) {
+		return v.validatePrimaryAssignment(ctx, previous, worker)
+	}
+	if previous != nil && previous.Status != entity.WorkerStatusPreboarding {
+		return hrerrors.ErrWorkflowRequired
 	}
 	if worker.Status != entity.WorkerStatusPreboarding || worker.PrimaryAssignmentID != nil ||
 		worker.IAMPrincipalReferenceID != nil || worker.TerminationDate != nil ||
@@ -117,6 +133,71 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 			entity.CompareDates(*worker.ServiceStartDate, *worker.HireDate) < 0 {
 		return hrerrors.ErrReferenceConflict
 	}
+	if err := v.verifyWorkerReferences(ctx, worker); err != nil {
+		return err
+	}
+	matches, err := v.workers.FindByWorkerNumber(ctx, worker.WorkerNumber, 2, 0)
+	if err != nil {
+		return err
+	}
+	for _, match := range matches {
+		if match.ID != worker.ID {
+			return hrerrors.ErrAlreadyExists
+		}
+	}
+	return nil
+}
+
+func (v *workerValidator) validatePrimaryAssignment(ctx context.Context, previous, worker *entity.Worker) error {
+	if operation.RequireDependency(v.assignmentLookup) != nil || operation.RequireDependency(v.positions) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	if worker.PrimaryAssignmentID == nil || worker.TerminationDate != nil ||
+		worker.UpdatedAt.Before(previous.UpdatedAt) ||
+		(worker.HireDate != nil && entity.CompareDates(worker.UpdatedAt, *worker.HireDate) < 0) {
+		return hrerrors.ErrReferenceConflict
+	}
+	unchanged := *worker
+	unchanged.PrimaryAssignmentID = previous.PrimaryAssignmentID
+	unchanged.UpdatedAt = previous.UpdatedAt
+	if !reflect.DeepEqual(previous, &unchanged) {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if previous.PrimaryAssignmentID != nil {
+		prior, err := v.assignmentLookup.FindByID(ctx, *previous.PrimaryAssignmentID)
+		if err != nil {
+			return workerAssessmentReferenceError(err)
+		}
+		if prior == nil || prior.WorkerID != worker.ID || prior.AssignmentType != "primary" ||
+			prior.ApprovedAt == nil || prior.ValidTo == nil || entity.CompareDates(*prior.ValidTo, worker.UpdatedAt) >= 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
+	assignment, err := v.assignmentLookup.FindByID(ctx, *worker.PrimaryAssignmentID)
+	if err != nil {
+		return workerAssessmentReferenceError(err)
+	}
+	if assignment == nil || assignment.WorkerID != worker.ID || assignment.AssignmentType != "primary" ||
+		assignment.ApprovedByPrincipalID == nil || assignment.ApprovedAt == nil ||
+		assignment.EmploymentStatusSnapshot == nil || *assignment.EmploymentStatusSnapshot != string(entity.WorkerStatusActive) ||
+		worker.UpdatedAt.Before(*assignment.ApprovedAt) ||
+		!assignmentContainsDate(assignment, worker.UpdatedAt) {
+		return hrerrors.ErrReferenceConflict
+	}
+	position, err := v.positions.FindByID(ctx, assignment.PositionID)
+	if err != nil {
+		return workerAssessmentReferenceError(err)
+	}
+	if position == nil || position.PositionStatus != "active" ||
+		position.LegalEntityReferenceID != worker.PrimaryLegalEntityReferenceID ||
+		entity.CompareDates(worker.UpdatedAt, position.ValidFrom) < 0 ||
+		(position.ValidTo != nil && entity.CompareDates(worker.UpdatedAt, *position.ValidTo) > 0) {
+		return hrerrors.ErrReferenceConflict
+	}
+	return v.verifyWorkerReferences(ctx, worker)
+}
+
+func (v *workerValidator) verifyWorkerReferences(ctx context.Context, worker *entity.Worker) error {
 	if operation.RequireDependency(v.owner) != nil {
 		return hrerrors.ErrUnavailable
 	}
@@ -131,15 +212,6 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 			return hrerrors.ErrReferenceConflict
 		}
 		return hrerrors.ErrUnavailable
-	}
-	matches, err := v.workers.FindByWorkerNumber(ctx, worker.WorkerNumber, 2, 0)
-	if err != nil {
-		return err
-	}
-	for _, match := range matches {
-		if match.ID != worker.ID {
-			return hrerrors.ErrAlreadyExists
-		}
 	}
 	return nil
 }

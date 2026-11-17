@@ -38,6 +38,10 @@ type workerScopePolicy struct {
 	principalID   *string
 }
 
+type workerFixedClock struct{ now time.Time }
+
+func (c workerFixedClock) Now() time.Time { return c.now }
+
 type workerReferenceVerifier struct{}
 
 func (workerReferenceVerifier) VerifyWorkerReferences(_ context.Context, check security.WorkerReferenceCheck) error {
@@ -141,10 +145,12 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 		}
 	})
 	principalID := "00000000-0000-4000-8000-000000000001"
+	testNow := time.Date(2026, 11, 22, 12, 0, 0, 0, time.UTC)
 	svc, err := service.NewService(service.Dependencies{
 		Runtime: operation.Dependencies{
 			Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-			Policy: workerScopePolicy{legalEntityID: legalA, principalID: &principalID}, Integrity: security.NewIntegrity(validators),
+			Policy:    workerScopePolicy{legalEntityID: legalA, principalID: &principalID},
+			Integrity: security.NewIntegrity(validators), Clock: workerFixedClock{now: testNow},
 		},
 		Worker: repos.Worker, EmploymentContract: repos.EmploymentContract,
 		WorkerAssignment: repos.WorkerAssignment, WorkerLifecycleEvent: repos.WorkerLifecycleEvent,
@@ -313,6 +319,9 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
 		if assignmentID != "" {
+			if err := database.WithContext(cleanupCtx).Exec("UPDATE hr_workers SET primary_assignment_id = NULL WHERE id = ?", newWorkerID).Error; err != nil {
+				t.Errorf("clear primary assignment fixture link: %v", err)
+			}
 			if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_worker_assignments WHERE id = ?", assignmentID).Error; err != nil {
 				t.Errorf("clean assignment: %v", err)
 			}
@@ -338,7 +347,7 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.CreateWorkerAssignment(ctx, &pb.CreateWorkerAssignmentRequest{Input: &forgedApproval}); status.Code(err) != codes.InvalidArgument {
 		t.Fatalf("incomplete assignment approval = %v", err)
 	}
-	forgedApproval.ApprovedAt = timestamppb.New(time.Now().Add(time.Hour))
+	forgedApproval.ApprovedAt = timestamppb.New(testNow.Add(time.Hour))
 	if _, err := client.CreateWorkerAssignment(ctx, &pb.CreateWorkerAssignmentRequest{Input: &forgedApproval}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("forged assignment approval = %v", err)
 	}
@@ -456,10 +465,46 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 	if successes != 1 || capacityRejections != 1 {
 		t.Fatalf("concurrent capacity approvals: success=%d rejected=%d", successes, capacityRejections)
 	}
+	if _, err := client.ApplyPrimaryAssignment(ctx, &pb.ApplyPrimaryAssignmentRequest{WorkerId: newWorkerID,
+		AssignmentId: capacityPositionID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("apply non-assignment reference = %v", err)
+	}
+	applyResults := make(chan error, 2)
+	for range 2 {
+		go func() {
+			_, err := client.ApplyPrimaryAssignment(ctx, &pb.ApplyPrimaryAssignmentRequest{
+				WorkerId: newWorkerID, AssignmentId: assignmentID,
+			})
+			applyResults <- err
+		}()
+	}
+	applied, repeated := 0, 0
+	for range 2 {
+		switch code := status.Code(<-applyResults); code {
+		case codes.OK:
+			applied++
+		case codes.FailedPrecondition:
+			repeated++
+		default:
+			t.Fatalf("unexpected primary application status = %v", code)
+		}
+	}
+	if applied != 1 || repeated != 1 {
+		t.Fatalf("parallel primary application: applied=%d repeated=%d", applied, repeated)
+	}
+	appliedWorker, err := client.GetWorkerByID(ctx, &common.IDRequest{Id: newWorkerID})
+	if err != nil || appliedWorker.GetItem().GetPrimaryAssignmentId() != assignmentID {
+		t.Fatalf("persisted primary assignment = %+v, %v", appliedWorker, err)
+	}
+	if _, err := client.UpdateWorker(ctx, &pb.UpdateWorkerRequest{Id: newWorkerID,
+		Input:      &pb.WorkerInput{PrimaryAssignmentId: &capacityPositionID},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"primary_assignment_id"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("generic primary assignment update = %v", err)
+	}
 	if _, err := client.DeleteWorker(ctx, &common.IDRequest{Id: newWorkerID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete employment history = %v", err)
 	}
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", newWorkerID).Count(&events).Error; err != nil || events != 2 {
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", newWorkerID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("worker outbox events = %d, %v", events, err)
 	}
 }

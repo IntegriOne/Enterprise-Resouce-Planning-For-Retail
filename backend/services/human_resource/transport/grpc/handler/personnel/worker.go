@@ -57,6 +57,14 @@ func (h *Handler) CreateWorker(ctx context.Context, request *pb.CreateWorkerRequ
 		WorkerCategory: entity.WorkerCategory(in.GetWorkerCategory()), Status: statusPointer(in.Status), HireDate: hire, ServiceStartDate: start, TerminationDate: termination,
 		TerminationReasonCode: in.TerminationReasonCode, PrimaryLegalEntityReferenceID: in.GetPrimaryLegalEntityReferenceId(), PrimaryAssignmentID: in.PrimaryAssignmentId, IAMPrincipalReferenceID: in.IamPrincipalReferenceId}))
 }
+
+// ApplyPrimaryAssignment meneruskan penetapan assignment primer ke command HRM.
+func (h *Handler) ApplyPrimaryAssignment(ctx context.Context, request *pb.ApplyPrimaryAssignmentRequest) (*pb.WorkerResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return workerResponse(h.service.ApplyPrimaryAssignment(ctx, request.WorkerId, request.AssignmentId))
+}
 func (h *Handler) UpdateWorker(ctx context.Context, request *pb.UpdateWorkerRequest) (*pb.WorkerResponse, error) {
 	if request == nil || request.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

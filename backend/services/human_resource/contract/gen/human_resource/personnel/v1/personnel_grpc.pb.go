@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	PersonnelService_CreateWorker_FullMethodName                                             = "/human_resource.personnel.v1.PersonnelService/CreateWorker"
+	PersonnelService_ApplyPrimaryAssignment_FullMethodName                                   = "/human_resource.personnel.v1.PersonnelService/ApplyPrimaryAssignment"
 	PersonnelService_UpdateWorker_FullMethodName                                             = "/human_resource.personnel.v1.PersonnelService/UpdateWorker"
 	PersonnelService_DeleteWorker_FullMethodName                                             = "/human_resource.personnel.v1.PersonnelService/DeleteWorker"
 	PersonnelService_GetWorkerByID_FullMethodName                                            = "/human_resource.personnel.v1.PersonnelService/GetWorkerByID"
@@ -98,6 +99,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PersonnelServiceClient interface {
 	CreateWorker(ctx context.Context, in *CreateWorkerRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
+	ApplyPrimaryAssignment(ctx context.Context, in *ApplyPrimaryAssignmentRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
 	UpdateWorker(ctx context.Context, in *UpdateWorkerRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
 	DeleteWorker(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetWorkerByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
@@ -182,6 +184,16 @@ func (c *personnelServiceClient) CreateWorker(ctx context.Context, in *CreateWor
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkerResponse)
 	err := c.cc.Invoke(ctx, PersonnelService_CreateWorker_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *personnelServiceClient) ApplyPrimaryAssignment(ctx context.Context, in *ApplyPrimaryAssignmentRequest, opts ...grpc.CallOption) (*WorkerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkerResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_ApplyPrimaryAssignment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -893,6 +905,7 @@ func (c *personnelServiceClient) FindEmergencyContactByRelationshipCode(ctx cont
 // for forward compatibility.
 type PersonnelServiceServer interface {
 	CreateWorker(context.Context, *CreateWorkerRequest) (*WorkerResponse, error)
+	ApplyPrimaryAssignment(context.Context, *ApplyPrimaryAssignmentRequest) (*WorkerResponse, error)
 	UpdateWorker(context.Context, *UpdateWorkerRequest) (*WorkerResponse, error)
 	DeleteWorker(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetWorkerByID(context.Context, *v1.IDRequest) (*WorkerResponse, error)
@@ -975,6 +988,9 @@ type UnimplementedPersonnelServiceServer struct{}
 
 func (UnimplementedPersonnelServiceServer) CreateWorker(context.Context, *CreateWorkerRequest) (*WorkerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateWorker not implemented")
+}
+func (UnimplementedPersonnelServiceServer) ApplyPrimaryAssignment(context.Context, *ApplyPrimaryAssignmentRequest) (*WorkerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApplyPrimaryAssignment not implemented")
 }
 func (UnimplementedPersonnelServiceServer) UpdateWorker(context.Context, *UpdateWorkerRequest) (*WorkerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateWorker not implemented")
@@ -1221,6 +1237,24 @@ func _PersonnelService_CreateWorker_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PersonnelServiceServer).CreateWorker(ctx, req.(*CreateWorkerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PersonnelService_ApplyPrimaryAssignment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyPrimaryAssignmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).ApplyPrimaryAssignment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_ApplyPrimaryAssignment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).ApplyPrimaryAssignment(ctx, req.(*ApplyPrimaryAssignmentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2495,6 +2529,10 @@ var PersonnelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateWorker",
 			Handler:    _PersonnelService_CreateWorker_Handler,
+		},
+		{
+			MethodName: "ApplyPrimaryAssignment",
+			Handler:    _PersonnelService_ApplyPrimaryAssignment_Handler,
 		},
 		{
 			MethodName: "UpdateWorker",
