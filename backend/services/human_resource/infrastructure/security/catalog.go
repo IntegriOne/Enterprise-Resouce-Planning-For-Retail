@@ -65,6 +65,7 @@ func PermissionCatalog() map[string]string {
 	permissions["hr_requisitions.open"] = "human_resource.requisitions.open"
 	permissions["hr_requisitions.close"] = "human_resource.requisitions.close"
 	permissions["hr_job_postings.publish"] = "human_resource.job_postings.publish"
+	permissions["hr_job_postings.close"] = "human_resource.job_postings.close"
 	return permissions
 }
 

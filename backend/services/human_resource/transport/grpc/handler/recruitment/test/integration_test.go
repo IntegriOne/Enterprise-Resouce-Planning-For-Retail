@@ -390,9 +390,16 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("close with published posting status = %v", status.Code(err))
 	}
-	if err := database.WithContext(ctx).Table("hr_job_postings").Where("id = ?", posting.GetItem().GetId()).
-		Updates(map[string]any{"status": "draft", "published_at": nil}).Error; err != nil {
-		t.Fatal(err)
+	closedPosting, err := client.CloseJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()})
+	if err != nil || closedPosting.GetItem().GetStatus() != "closed" || closedPosting.GetItem().GetClosesAt() == nil ||
+		!closedPosting.GetItem().GetClosesAt().AsTime().After(published.GetItem().GetPublishedAt().AsTime()) {
+		t.Fatalf("close posting: %+v, %v", closedPosting, err)
+	}
+	if _, err := client.CloseJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat posting close status = %v", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", posting.GetItem().GetId()).Count(&postingOutboxCount).Error; err != nil || postingOutboxCount != 3 {
+		t.Fatalf("closed posting outbox count = %d, err = %v", postingOutboxCount, err)
 	}
 	closed, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID})
 	if err != nil || closed.GetItem().GetStatus() != "closed" || closed.GetItem().GetClosedAt() == nil {
@@ -408,8 +415,8 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.CreateJobPosting(ctx, &pb.CreateJobPostingRequest{Input: postingInput}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("create posting after close status = %v", status.Code(err))
 	}
-	if _, err := client.DeleteJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()}); err != nil {
-		t.Fatalf("delete draft posting after close: %v", err)
+	if _, err := client.DeleteJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete closed posting status = %v", status.Code(err))
 	}
 	concurrentNumber, concurrentKey := "REQ-CONCURRENT-1", "REQ-CONCURRENT-1"
 	concurrentInput := &pb.RequisitionInput{RequisitionNumber: &concurrentNumber, JobId: text(jobID),

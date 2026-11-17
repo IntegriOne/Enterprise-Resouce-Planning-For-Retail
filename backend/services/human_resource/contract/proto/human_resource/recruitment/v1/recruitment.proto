@@ -113,6 +113,7 @@ service RecruitmentService {
   rpc FindOfferByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffersResponse);
   rpc CreateJobPosting(CreateJobPostingRequest) returns (JobPostingResponse);
   rpc PublishJobPosting(human_resource.common.v1.IDRequest) returns (JobPostingResponse);
+  rpc CloseJobPosting(human_resource.common.v1.IDRequest) returns (JobPostingResponse);
   rpc UpdateJobPosting(UpdateJobPostingRequest) returns (JobPostingResponse);
   rpc DeleteJobPosting(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetJobPostingByID(human_resource.common.v1.IDRequest) returns (JobPostingResponse);

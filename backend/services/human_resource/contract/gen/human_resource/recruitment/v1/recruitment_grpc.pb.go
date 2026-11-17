@@ -125,6 +125,7 @@ const (
 	RecruitmentService_FindOfferByApprovedByPrincipalID_FullMethodName                              = "/human_resource.recruitment.v1.RecruitmentService/FindOfferByApprovedByPrincipalID"
 	RecruitmentService_CreateJobPosting_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/CreateJobPosting"
 	RecruitmentService_PublishJobPosting_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/PublishJobPosting"
+	RecruitmentService_CloseJobPosting_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/CloseJobPosting"
 	RecruitmentService_UpdateJobPosting_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/UpdateJobPosting"
 	RecruitmentService_DeleteJobPosting_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/DeleteJobPosting"
 	RecruitmentService_GetJobPostingByID_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/GetJobPostingByID"
@@ -258,6 +259,7 @@ type RecruitmentServiceClient interface {
 	FindOfferByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*OffersResponse, error)
 	CreateJobPosting(ctx context.Context, in *CreateJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
 	PublishJobPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
+	CloseJobPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
 	UpdateJobPosting(ctx context.Context, in *UpdateJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
 	DeleteJobPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetJobPostingByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
@@ -1340,6 +1342,16 @@ func (c *recruitmentServiceClient) PublishJobPosting(ctx context.Context, in *v1
 	return out, nil
 }
 
+func (c *recruitmentServiceClient) CloseJobPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobPostingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobPostingResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_CloseJobPosting_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *recruitmentServiceClient) UpdateJobPosting(ctx context.Context, in *UpdateJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(JobPostingResponse)
@@ -1669,6 +1681,7 @@ type RecruitmentServiceServer interface {
 	FindOfferByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*OffersResponse, error)
 	CreateJobPosting(context.Context, *CreateJobPostingRequest) (*JobPostingResponse, error)
 	PublishJobPosting(context.Context, *v1.IDRequest) (*JobPostingResponse, error)
+	CloseJobPosting(context.Context, *v1.IDRequest) (*JobPostingResponse, error)
 	UpdateJobPosting(context.Context, *UpdateJobPostingRequest) (*JobPostingResponse, error)
 	DeleteJobPosting(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetJobPostingByID(context.Context, *v1.IDRequest) (*JobPostingResponse, error)
@@ -2015,6 +2028,9 @@ func (UnimplementedRecruitmentServiceServer) CreateJobPosting(context.Context, *
 }
 func (UnimplementedRecruitmentServiceServer) PublishJobPosting(context.Context, *v1.IDRequest) (*JobPostingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PublishJobPosting not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) CloseJobPosting(context.Context, *v1.IDRequest) (*JobPostingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CloseJobPosting not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) UpdateJobPosting(context.Context, *UpdateJobPostingRequest) (*JobPostingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateJobPosting not implemented")
@@ -3993,6 +4009,24 @@ func _RecruitmentService_PublishJobPosting_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RecruitmentService_CloseJobPosting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).CloseJobPosting(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_CloseJobPosting_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).CloseJobPosting(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RecruitmentService_UpdateJobPosting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateJobPostingRequest)
 	if err := dec(in); err != nil {
@@ -4815,6 +4849,10 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PublishJobPosting",
 			Handler:    _RecruitmentService_PublishJobPosting_Handler,
+		},
+		{
+			MethodName: "CloseJobPosting",
+			Handler:    _RecruitmentService_CloseJobPosting_Handler,
 		},
 		{
 			MethodName: "UpdateJobPosting",

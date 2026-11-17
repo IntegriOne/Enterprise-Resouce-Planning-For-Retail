@@ -60,6 +60,13 @@ func (h *Handler) PublishJobPosting(ctx context.Context, r *common.IDRequest) (*
 	}
 	return jobPostingResponse(h.service.PublishJobPosting(ctx, r.Id))
 }
+
+func (h *Handler) CloseJobPosting(ctx context.Context, r *common.IDRequest) (*pb.JobPostingResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return jobPostingResponse(h.service.CloseJobPosting(ctx, r.Id))
+}
 func (h *Handler) UpdateJobPosting(ctx context.Context, r *pb.UpdateJobPostingRequest) (*pb.JobPostingResponse, error) {
 	if r == nil || r.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

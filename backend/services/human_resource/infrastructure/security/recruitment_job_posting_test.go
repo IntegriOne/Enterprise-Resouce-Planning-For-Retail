@@ -73,6 +73,28 @@ func TestJobPostingValidatorLocksOpenRequisitionAndFreezesWorkflow(t *testing.T)
 	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &publishDraft, &published); err != nil {
 		t.Fatalf("publish verified draft: %v", err)
 	}
+	closedAt := now.Add(time.Hour)
+	closed := published
+	closed.Status = "closed"
+	closed.ClosesAt = &closedAt
+	applications.count = 1
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &published, &closed); err != nil {
+		t.Fatalf("close posting with existing application: %v", err)
+	}
+	applications.count = 0
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &closed, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete closed posting: %v", err)
+	}
+	tamperedClose := closed
+	tamperedClose.ChannelCode = "different_channel"
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &published, &tamperedClose); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed channel during close: %v", err)
+	}
+	missingPublishedAt := closed
+	missingPublishedAt.PublishedAt = nil
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &published, &missingPublishedAt); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("missing published time during close: %v", err)
+	}
 	tamperedPublish := published
 	tamperedPublish.ContentDigest = bytes.Repeat([]byte{0x43}, 32)
 	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &publishDraft, &tamperedPublish); !errors.Is(err, hrerrors.ErrWorkflowRequired) {

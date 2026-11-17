@@ -24,7 +24,7 @@ type jobPostingValidator struct {
 	applications postingApplicationCounter
 }
 
-// RecruitmentJobPostingValidators menjaga draf posting pada requisition yang terbuka.
+// RecruitmentJobPostingValidators menjaga transisi posting pada requisition yang terbuka.
 func RecruitmentJobPostingValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
 	if repos == nil || operation.RequireDependency(repos.Requisition) != nil ||
 		operation.RequireDependency(repos.Application) != nil {
@@ -47,8 +47,16 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.JobPosting)
-		if !ok || previous == nil || previous.Status != "draft" || previous.PublishedAt != nil ||
-			previous.ExternalPostingReference != nil || previous.ClosesAt != nil {
+		if !ok || previous == nil || previous.ClosesAt != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		if previous.Status == "draft" && (previous.PublishedAt != nil || previous.ExternalPostingReference != nil) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		if previous.Status == "published" && previous.PublishedAt == nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		if previous.Status != "draft" && previous.Status != "published" {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -57,22 +65,34 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 	}
 	posting := previous
 	publishing := false
+	closing := false
 	if after != nil {
 		var ok bool
 		posting, ok = after.(*entity.JobPosting)
-		if !ok || posting == nil || posting.ExternalPostingReference != nil || posting.ClosesAt != nil {
+		if !ok || posting == nil {
 			return hrerrors.ErrWorkflowRequired
 		}
-		publishing = previous != nil && posting.Status == "published"
+		publishing = previous != nil && previous.Status == "draft" && posting.Status == "published"
+		closing = previous != nil && previous.Status == "published" && posting.Status == "closed"
 		if publishing {
 			original := *posting
 			original.Status = "draft"
 			original.PublishedAt = nil
-			if posting.PublishedAt == nil || len(posting.ContentDigest) != 32 ||
+			if posting.PublishedAt == nil || posting.ClosesAt != nil || posting.ExternalPostingReference != nil || len(posting.ContentDigest) != 32 ||
 				!reflect.DeepEqual(previous, &original) {
 				return hrerrors.ErrWorkflowRequired
 			}
-		} else if posting.Status != "draft" || posting.PublishedAt != nil {
+		} else if closing {
+			original := *posting
+			original.Status = "published"
+			original.ClosesAt = nil
+			if posting.PublishedAt == nil || posting.ClosesAt == nil || !posting.ClosesAt.After(*posting.PublishedAt) ||
+				!reflect.DeepEqual(previous, &original) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if previous != nil && previous.Status == "published" {
+			return hrerrors.ErrWorkflowRequired
+		} else if posting.Status != "draft" || posting.PublishedAt != nil || posting.ClosesAt != nil || posting.ExternalPostingReference != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 		if previous != nil && (previous.ID != posting.ID || previous.RequisitionID != posting.RequisitionID ||
@@ -81,6 +101,8 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 			(!publishing && !reflect.DeepEqual(previous.PublishedAt, posting.PublishedAt))) {
 			return hrerrors.ErrWorkflowRequired
 		}
+	} else if previous != nil && previous.Status != "draft" {
+		return hrerrors.ErrWorkflowRequired
 	}
 	requisition, err := v.requisitions.FindByIDForUpdate(ctx, posting.RequisitionID)
 	if err != nil {
@@ -100,7 +122,7 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 	if after == nil && requisition.Status != "open" && requisition.Status != "closed" {
 		return hrerrors.ErrWorkflowRequired
 	}
-	if previous != nil {
+	if previous != nil && previous.Status == "draft" {
 		count, err := v.applications.CountWhere(ctx, []domainrepo.Filter{{Column: "source_posting_id", Values: []any{previous.ID}}})
 		if err != nil {
 			return err
