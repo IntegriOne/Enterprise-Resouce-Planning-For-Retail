@@ -75,23 +75,23 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.Requisition)
-		if !ok || previous == nil || (previous.Status != "draft" && previous.Status != "submitted" && previous.Status != "approved") {
+		if !ok || previous == nil || (previous.Status != "draft" && previous.Status != "submitted" && previous.Status != "approved" && previous.Status != "open") {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
 	if previous == nil && after == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	if previous != nil {
+	if previous != nil && previous.Status != "open" {
 		if err := v.rejectIfReferenced(ctx, previous.ID); err != nil {
 			return err
 		}
-		if after == nil {
-			if previous.Status != "draft" {
-				return hrerrors.ErrWorkflowRequired
-			}
-			return nil
+	}
+	if previous != nil && after == nil {
+		if previous.Status != "draft" {
+			return hrerrors.ErrWorkflowRequired
 		}
+		return nil
 	}
 	value, ok := after.(*entity.Requisition)
 	if !ok || value == nil {
@@ -100,10 +100,14 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	submitting := previous != nil && previous.Status == "draft" && value.Status == "submitted"
 	approving := previous != nil && previous.Status == "submitted" && value.Status == "approved"
 	opening := previous != nil && previous.Status == "approved" && value.Status == "open"
+	closing := previous != nil && previous.Status == "open" && value.Status == "closed"
 	if previous != nil && previous.Status == "submitted" && !approving {
 		return hrerrors.ErrWorkflowRequired
 	}
 	if previous != nil && previous.Status == "approved" && !opening {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if previous != nil && previous.Status == "open" && !closing {
 		return hrerrors.ErrWorkflowRequired
 	}
 	if submitting {
@@ -143,6 +147,19 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 			!reflect.DeepEqual(previous, &original) {
 			return hrerrors.ErrWorkflowRequired
 		}
+	}
+	if closing {
+		original := *value
+		original.Status = "open"
+		original.ClosedAt = nil
+		if previous.CreatedByPrincipalID == nil || previous.SubmittedAt == nil ||
+			previous.SubmittedByPrincipalID == nil || previous.ApprovedAt == nil ||
+			previous.ApprovedByPrincipalID == nil || previous.BudgetReferenceID == nil ||
+			previous.OpenedAt == nil || previous.ClosedAt != nil || value.ClosedAt == nil ||
+			value.ClosedAt.Before(*previous.OpenedAt) || !reflect.DeepEqual(previous, &original) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		return v.rejectIfActive(ctx, previous.ID)
 	}
 	if (!submitting && !approving && !opening && (value.Status != "draft" || value.SubmittedAt != nil || value.SubmittedByPrincipalID != nil)) ||
 		value.CreatedByPrincipalID == nil || (!approving && !opening && (value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil)) ||
@@ -245,6 +262,33 @@ func (v *requisitionValidator) activeManager(ctx context.Context, principalID st
 func (v *requisitionValidator) rejectIfReferenced(ctx context.Context, id string) error {
 	for _, counter := range []requisitionReferenceCounter{v.applications, v.postings} {
 		count, err := counter.CountWhere(ctx, []domainrepo.Filter{{Column: "requisition_id", Values: []any{id}}})
+		if err != nil {
+			return err
+		}
+		if count != 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
+	return nil
+}
+
+func (v *requisitionValidator) rejectIfActive(ctx context.Context, id string) error {
+	checks := []struct {
+		counter  requisitionReferenceCounter
+		statuses []any
+	}{
+		{v.postings, []any{"published"}},
+		{v.applications, []any{
+			entity.ApplicationStatusReceived, entity.ApplicationStatusScreening,
+			entity.ApplicationStatusShortlisted, entity.ApplicationStatusInterview,
+			entity.ApplicationStatusAssessment, entity.ApplicationStatusOffer,
+		}},
+	}
+	for _, check := range checks {
+		count, err := check.counter.CountWhere(ctx, []domainrepo.Filter{
+			{Column: "requisition_id", Values: []any{id}},
+			{Column: "status", Values: check.statuses},
+		})
 		if err != nil {
 			return err
 		}

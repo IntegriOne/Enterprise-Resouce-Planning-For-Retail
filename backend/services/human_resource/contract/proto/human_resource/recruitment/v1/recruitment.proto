@@ -13,6 +13,7 @@ service RecruitmentService {
   rpc SubmitRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
   rpc ApproveRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
   rpc OpenRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
+  rpc CloseRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
   rpc DeleteRequisition(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetRequisitionByID(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
   rpc GetAllRequisitions(human_resource.common.v1.PageRequest) returns (RequisitionsResponse);

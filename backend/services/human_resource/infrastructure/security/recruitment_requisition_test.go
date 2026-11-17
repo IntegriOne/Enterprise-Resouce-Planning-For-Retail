@@ -148,6 +148,31 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &approved, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("delete approved requisition: %v", err)
 	}
+	closed := opened
+	closed.Status = "closed"
+	closedAt := openedAt.Add(time.Second)
+	closed.ClosedAt = &closedAt
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &opened, &closed); err != nil {
+		t.Fatalf("close open requisition: %v", err)
+	}
+	applications.count = 1
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &opened, &closed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("close with active application: %v", err)
+	}
+	applications.count = 0
+	postings.count = 1
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &opened, &closed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("close with published posting: %v", err)
+	}
+	postings.count = 0
+	changedDuringClose := closed
+	changedDuringClose.Headcount++
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &opened, &changedDuringClose); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed headcount during close: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &opened, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete open requisition: %v", err)
+	}
 	changedCreator := updated
 	changedCreator.CreatedByPrincipalID = &otherPrincipal
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &changedCreator); !errors.Is(err, hrerrors.ErrWorkflowRequired) {

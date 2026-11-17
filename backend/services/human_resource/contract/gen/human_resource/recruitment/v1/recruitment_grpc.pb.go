@@ -25,6 +25,7 @@ const (
 	RecruitmentService_SubmitRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/SubmitRequisition"
 	RecruitmentService_ApproveRequisition_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/ApproveRequisition"
 	RecruitmentService_OpenRequisition_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/OpenRequisition"
+	RecruitmentService_CloseRequisition_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/CloseRequisition"
 	RecruitmentService_DeleteRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/DeleteRequisition"
 	RecruitmentService_GetRequisitionByID_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/GetRequisitionByID"
 	RecruitmentService_GetAllRequisitions_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/GetAllRequisitions"
@@ -156,6 +157,7 @@ type RecruitmentServiceClient interface {
 	SubmitRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	ApproveRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	OpenRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
+	CloseRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	DeleteRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetRequisitionByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	GetAllRequisitions(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
@@ -330,6 +332,16 @@ func (c *recruitmentServiceClient) OpenRequisition(ctx context.Context, in *v1.I
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RequisitionResponse)
 	err := c.cc.Invoke(ctx, RecruitmentService_OpenRequisition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) CloseRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequisitionResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_CloseRequisition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1545,6 +1557,7 @@ type RecruitmentServiceServer interface {
 	SubmitRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	ApproveRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	OpenRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
+	CloseRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	DeleteRequisition(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetRequisitionByID(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	GetAllRequisitions(context.Context, *v1.PageRequest) (*RequisitionsResponse, error)
@@ -1689,6 +1702,9 @@ func (UnimplementedRecruitmentServiceServer) ApproveRequisition(context.Context,
 }
 func (UnimplementedRecruitmentServiceServer) OpenRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method OpenRequisition not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) CloseRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CloseRequisition not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) DeleteRequisition(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteRequisition not implemented")
@@ -2157,6 +2173,24 @@ func _RecruitmentService_OpenRequisition_Handler(srv interface{}, ctx context.Co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RecruitmentServiceServer).OpenRequisition(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_CloseRequisition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).CloseRequisition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_CloseRequisition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).CloseRequisition(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4347,6 +4381,10 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OpenRequisition",
 			Handler:    _RecruitmentService_OpenRequisition_Handler,
+		},
+		{
+			MethodName: "CloseRequisition",
+			Handler:    _RecruitmentService_CloseRequisition_Handler,
 		},
 		{
 			MethodName: "DeleteRequisition",

@@ -113,6 +113,13 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	for resource, validator := range requisitionValidators {
 		validators[resource] = validator
 	}
+	postingValidators, err := security.RecruitmentJobPostingValidators(repos)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for resource, validator := range postingValidators {
+		validators[resource] = validator
+	}
 	interviewValidators, err := security.RecruitmentInterviewValidators(repos)
 	if err != nil {
 		t.Fatal(err)
@@ -342,6 +349,42 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 4 {
 		t.Fatalf("opened requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
+	postingVersion := int32(1)
+	postingInput := &pb.JobPostingInput{RequisitionId: text(submittedID), ChannelCode: text("career_site"),
+		PostingVersion: &postingVersion, ContentDocumentVersionReferenceId: text("00000000-0000-4000-8000-000000000200"),
+		ContentDigest: []byte("draft content")}
+	posting, err := client.CreateJobPosting(ctx, &pb.CreateJobPostingRequest{Input: postingInput})
+	if err != nil || posting.GetItem().GetStatus() != "draft" || posting.GetItem().GetCreatedByPrincipalId() != policy.principalID {
+		t.Fatalf("create draft posting: %+v, %v", posting, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_job_postings").Where("id = ?", posting.GetItem().GetId()).
+		Updates(map[string]any{"status": "published", "published_at": time.Now()}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("close with published posting status = %v", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_job_postings").Where("id = ?", posting.GetItem().GetId()).
+		Updates(map[string]any{"status": "draft", "published_at": nil}).Error; err != nil {
+		t.Fatal(err)
+	}
+	closed, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID})
+	if err != nil || closed.GetItem().GetStatus() != "closed" || closed.GetItem().GetClosedAt() == nil {
+		t.Fatalf("close requisition: %+v, %v", closed, err)
+	}
+	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat closing status = %v", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 5 {
+		t.Fatalf("closed requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
+	postingInput.ChannelCode = text("external_board")
+	if _, err := client.CreateJobPosting(ctx, &pb.CreateJobPostingRequest{Input: postingInput}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("create posting after close status = %v", status.Code(err))
+	}
+	if _, err := client.DeleteJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()}); err != nil {
+		t.Fatalf("delete draft posting after close: %v", err)
+	}
 	concurrentNumber, concurrentKey := "REQ-CONCURRENT-1", "REQ-CONCURRENT-1"
 	concurrentInput := &pb.RequisitionInput{RequisitionNumber: &concurrentNumber, JobId: text(jobID),
 		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),
@@ -380,6 +423,32 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", concurrentID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 3 {
 		t.Fatalf("concurrent approval outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
+	if _, err := client.OpenRequisition(ctx, &common.IDRequest{Id: concurrentID}); err != nil {
+		t.Fatal(err)
+	}
+	activeApplicationID := "00000000-0000-4000-8000-000000000400"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_applications
+		(id, candidate_id, requisition_id, application_number, status, idempotency_key)
+		VALUES (?, ?, ?, 'APP-CLOSE-1', 'received', 'APP-CLOSE-1')`,
+		activeApplicationID, linkedCandidate.GetItem().GetId(), concurrentID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: concurrentID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("close with active application status = %v", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_applications").Where("id = ?", activeApplicationID).
+		Update("status", "rejected").Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: concurrentID}); err != nil {
+		t.Fatalf("close with terminal application: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", concurrentID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 5 {
+		t.Fatalf("closed requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
+	if err := database.WithContext(ctx).Exec("DELETE FROM hr_applications WHERE id = ?", activeApplicationID).Error; err != nil {
+		t.Fatal(err)
 	}
 	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_requisitions
 		(id, requisition_number, job_id, organization_unit_reference_id, hiring_manager_principal_id,

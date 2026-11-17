@@ -156,6 +156,13 @@ func (h *Handler) OpenRequisition(ctx context.Context, r *common.IDRequest) (*pb
 	}
 	return requisitionResponse(h.service.OpenRequisition(ctx, r.Id))
 }
+
+func (h *Handler) CloseRequisition(ctx context.Context, r *common.IDRequest) (*pb.RequisitionResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return requisitionResponse(h.service.CloseRequisition(ctx, r.Id))
+}
 func (h *Handler) GetRequisitionByID(ctx context.Context, r *common.IDRequest) (*pb.RequisitionResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

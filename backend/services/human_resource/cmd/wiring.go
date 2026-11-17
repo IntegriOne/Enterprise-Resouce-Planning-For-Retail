@@ -187,6 +187,13 @@ func BuildDependencies(
 	for resource, validator := range requisitionValidators {
 		validators[resource] = validator
 	}
+	recruitmentPostingValidators, err := security.RecruitmentJobPostingValidators(repos)
+	if err != nil {
+		return fail(fmt.Errorf("initialize HRM recruitment posting validators: %w", err))
+	}
+	for resource, validator := range recruitmentPostingValidators {
+		validators[resource] = validator
+	}
 	recruitmentApplicationValidators, err := security.RecruitmentApplicationValidators(repos)
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM recruitment application validators: %w", err))
