@@ -123,8 +123,10 @@ func TestCompensationRecordValidatorRequiresMatchingActiveParents(t *testing.T) 
 	level, bandID, currency := "L2", "band-1", "IDR"
 	worker := &entity.Worker{ID: "worker-1", Status: entity.WorkerStatusActive,
 		HireDate: &from, PrimaryLegalEntityReferenceID: "legal-1"}
+	approver, approvedAt := "approver-1", from
 	assignment := &entity.WorkerAssignment{ID: "assignment-1", WorkerID: worker.ID,
-		PositionID: "position-1", ValidFrom: from, ValidTo: &until}
+		PositionID: "position-1", ValidFrom: from, ValidTo: &until,
+		ApprovedByPrincipalID: &approver, ApprovedAt: &approvedAt}
 	position := &entity.Position{ID: assignment.PositionID, JobID: "job-1",
 		LegalEntityReferenceID: worker.PrimaryLegalEntityReferenceID, ValidFrom: from, ValidTo: &until}
 	job := &entity.Job{ID: position.JobID, JobLevelCode: &level, ValidFrom: from, ValidTo: &until, IsActive: true}
@@ -175,6 +177,16 @@ func TestCompensationRecordValidatorRequiresMatchingActiveParents(t *testing.T) 
 		t.Fatalf("inactive worker: %v", err)
 	}
 	worker.Status = entity.WorkerStatusActive
+	assignment.ApprovedAt = nil
+	if err := validator.ValidateMutation(t.Context(), "hr_compensation_records", nil, record); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("unapproved assignment timestamp: %v", err)
+	}
+	assignment.ApprovedAt = &approvedAt
+	assignment.ApprovedByPrincipalID = nil
+	if err := validator.ValidateMutation(t.Context(), "hr_compensation_records", nil, record); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("unapproved assignment actor: %v", err)
+	}
+	assignment.ApprovedByPrincipalID = &approver
 	assignment.WorkerID = "worker-2"
 	if err := validator.ValidateMutation(t.Context(), "hr_compensation_records", nil, record); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("assignment owner mismatch: %v", err)

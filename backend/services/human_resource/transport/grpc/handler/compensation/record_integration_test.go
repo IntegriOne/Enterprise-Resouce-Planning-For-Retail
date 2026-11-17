@@ -194,6 +194,13 @@ func TestCompensationProposalRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("amount outside band status = %v, want FailedPrecondition", status.Code(err))
 	}
 	recordInput.Amount = &amount
+	if _, err := compensationClient.CreateCompensationRecord(ctx, &compensationpb.CreateCompensationRecordRequest{Input: recordInput}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("unapproved assignment status = %v, want FailedPrecondition", status.Code(err))
+	}
+	approver := newID()
+	if err := database.WithContext(ctx).Exec("UPDATE hr_worker_assignments SET approved_by_principal_id = ?, approved_at = now() WHERE id = ?", approver, assignmentID).Error; err != nil {
+		t.Fatalf("approve assignment fixture: %v", err)
+	}
 	record, err := compensationClient.CreateCompensationRecord(ctx, &compensationpb.CreateCompensationRecordRequest{Input: recordInput})
 	if err != nil || record.GetItem().GetId() == "" || record.GetItem().GetStatus() != "proposed" {
 		t.Fatalf("create proposal: %+v, %v", record, err)

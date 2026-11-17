@@ -196,6 +196,7 @@ func (v *compensationRecordValidator) ValidateMutation(ctx context.Context, tabl
 		return compensationReferenceError(err)
 	}
 	if assignment == nil || assignment.WorkerID != record.WorkerID ||
+		assignment.ApprovedByPrincipalID == nil || assignment.ApprovedAt == nil ||
 		!compensationPeriodWithin(record.EffectiveFrom, record.EffectiveTo, assignment.ValidFrom, assignment.ValidTo) {
 		return hrerrors.ErrReferenceConflict
 	}
