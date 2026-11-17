@@ -55,6 +55,14 @@ func (h *Handler) CreatePosition(ctx context.Context, request *pb.CreatePosition
 		WorkLocationReferenceID: in.WorkLocationReferenceId, CostCenterReferenceID: in.CostCenterReferenceId, ValidFrom: from, ValidTo: to,
 	}))
 }
+
+// ActivatePosition meneruskan aktivasi posisi ke command HRM.
+func (h *Handler) ActivatePosition(ctx context.Context, request *common.IDRequest) (*pb.PositionResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return positionResponse(h.service.ActivatePosition(ctx, request.Id))
+}
 func (h *Handler) UpdatePosition(ctx context.Context, request *pb.UpdatePositionRequest) (*pb.PositionResponse, error) {
 	if request == nil || request.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

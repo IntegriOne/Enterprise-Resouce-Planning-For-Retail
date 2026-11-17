@@ -35,6 +35,7 @@ const (
 	WorkforcePlanningService_FindJobByJobCode_FullMethodName                                   = "/human_resource.workforceplanning.v1.WorkforcePlanningService/FindJobByJobCode"
 	WorkforcePlanningService_FindJobByJobLevelCode_FullMethodName                              = "/human_resource.workforceplanning.v1.WorkforcePlanningService/FindJobByJobLevelCode"
 	WorkforcePlanningService_CreatePosition_FullMethodName                                     = "/human_resource.workforceplanning.v1.WorkforcePlanningService/CreatePosition"
+	WorkforcePlanningService_ActivatePosition_FullMethodName                                   = "/human_resource.workforceplanning.v1.WorkforcePlanningService/ActivatePosition"
 	WorkforcePlanningService_UpdatePosition_FullMethodName                                     = "/human_resource.workforceplanning.v1.WorkforcePlanningService/UpdatePosition"
 	WorkforcePlanningService_DeletePosition_FullMethodName                                     = "/human_resource.workforceplanning.v1.WorkforcePlanningService/DeletePosition"
 	WorkforcePlanningService_GetPositionByID_FullMethodName                                    = "/human_resource.workforceplanning.v1.WorkforcePlanningService/GetPositionByID"
@@ -92,6 +93,7 @@ type WorkforcePlanningServiceClient interface {
 	FindJobByJobCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobsResponse, error)
 	FindJobByJobLevelCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobsResponse, error)
 	CreatePosition(ctx context.Context, in *CreatePositionRequest, opts ...grpc.CallOption) (*PositionResponse, error)
+	ActivatePosition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PositionResponse, error)
 	UpdatePosition(ctx context.Context, in *UpdatePositionRequest, opts ...grpc.CallOption) (*PositionResponse, error)
 	DeletePosition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetPositionByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PositionResponse, error)
@@ -282,6 +284,16 @@ func (c *workforcePlanningServiceClient) CreatePosition(ctx context.Context, in 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PositionResponse)
 	err := c.cc.Invoke(ctx, WorkforcePlanningService_CreatePosition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workforcePlanningServiceClient) ActivatePosition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PositionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PositionResponse)
+	err := c.cc.Invoke(ctx, WorkforcePlanningService_ActivatePosition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -667,6 +679,7 @@ type WorkforcePlanningServiceServer interface {
 	FindJobByJobCode(context.Context, *v1.StringFinderRequest) (*JobsResponse, error)
 	FindJobByJobLevelCode(context.Context, *v1.StringFinderRequest) (*JobsResponse, error)
 	CreatePosition(context.Context, *CreatePositionRequest) (*PositionResponse, error)
+	ActivatePosition(context.Context, *v1.IDRequest) (*PositionResponse, error)
 	UpdatePosition(context.Context, *UpdatePositionRequest) (*PositionResponse, error)
 	DeletePosition(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetPositionByID(context.Context, *v1.IDRequest) (*PositionResponse, error)
@@ -757,6 +770,9 @@ func (UnimplementedWorkforcePlanningServiceServer) FindJobByJobLevelCode(context
 }
 func (UnimplementedWorkforcePlanningServiceServer) CreatePosition(context.Context, *CreatePositionRequest) (*PositionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreatePosition not implemented")
+}
+func (UnimplementedWorkforcePlanningServiceServer) ActivatePosition(context.Context, *v1.IDRequest) (*PositionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ActivatePosition not implemented")
 }
 func (UnimplementedWorkforcePlanningServiceServer) UpdatePosition(context.Context, *UpdatePositionRequest) (*PositionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdatePosition not implemented")
@@ -1154,6 +1170,24 @@ func _WorkforcePlanningService_CreatePosition_Handler(srv interface{}, ctx conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WorkforcePlanningServiceServer).CreatePosition(ctx, req.(*CreatePositionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WorkforcePlanningService_ActivatePosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkforcePlanningServiceServer).ActivatePosition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WorkforcePlanningService_ActivatePosition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkforcePlanningServiceServer).ActivatePosition(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1872,6 +1906,10 @@ var WorkforcePlanningService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePosition",
 			Handler:    _WorkforcePlanningService_CreatePosition_Handler,
+		},
+		{
+			MethodName: "ActivatePosition",
+			Handler:    _WorkforcePlanningService_ActivatePosition_Handler,
 		},
 		{
 			MethodName: "UpdatePosition",

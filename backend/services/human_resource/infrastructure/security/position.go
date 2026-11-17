@@ -98,12 +98,22 @@ func (v *positionValidator) ValidateMutation(ctx context.Context, table string, 
 	if !ok || position == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	if position.PositionStatus != "planned" || (previous != nil &&
+	activation := previous != nil && position.PositionStatus == "active"
+	if activation {
+		unchanged := *position
+		unchanged.PositionStatus = "planned"
+		if !reflect.DeepEqual(previous, &unchanged) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else if position.PositionStatus != "planned" {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if previous != nil &&
 		(previous.ID != position.ID || previous.PositionCode != position.PositionCode ||
 			previous.JobID != position.JobID ||
 			previous.OrganizationUnitReferenceID != position.OrganizationUnitReferenceID ||
 			previous.LegalEntityReferenceID != position.LegalEntityReferenceID ||
-			!reflect.DeepEqual(previous.ReportsToPositionID, position.ReportsToPositionID))) {
+			!reflect.DeepEqual(previous.ReportsToPositionID, position.ReportsToPositionID)) {
 		return hrerrors.ErrWorkflowRequired
 	}
 	if position.CostCenterReferenceID != nil || operation.RequireDependency(v.owner) != nil {
@@ -127,6 +137,7 @@ func (v *positionValidator) ValidateMutation(ctx context.Context, table string, 
 		}
 		if parent == nil || parent.LegalEntityReferenceID != position.LegalEntityReferenceID ||
 			(parent.PositionStatus != "active" && parent.PositionStatus != "planned") ||
+			(activation && parent.PositionStatus != "active") ||
 			entity.CompareDates(position.ValidFrom, parent.ValidFrom) < 0 ||
 			(parent.ValidTo != nil && (position.ValidTo == nil || entity.CompareDates(*position.ValidTo, *parent.ValidTo) > 0)) {
 			return hrerrors.ErrReferenceConflict
@@ -155,7 +166,7 @@ func (v *positionValidator) ValidateMutation(ctx context.Context, table string, 
 			return hrerrors.ErrAlreadyExists
 		}
 	}
-	if previous != nil && !reflect.DeepEqual(previous, position) {
+	if previous != nil && !activation && !reflect.DeepEqual(previous, position) {
 		return v.rejectIfReferenced(ctx, position.ID)
 	}
 	return nil

@@ -2539,7 +2539,7 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"\x04item\x18\x01 \x01(\v26.human_resource.workforceplanning.v1.WorkforcePlanLineR\x04item\"\xa2\x01\n" +
 	"\x1aWorkforcePlanLinesResponse\x12L\n" +
 	"\x05items\x18\x01 \x03(\v26.human_resource.workforceplanning.v1.WorkforcePlanLineR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xa05\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x906\n" +
 	"\x18WorkforcePlanningService\x12\x86\x01\n" +
 	"\x0fCreateJobFamily\x12;.human_resource.workforceplanning.v1.CreateJobFamilyRequest\x1a6.human_resource.workforceplanning.v1.JobFamilyResponse\x12\x86\x01\n" +
 	"\x0fUpdateJobFamily\x12;.human_resource.workforceplanning.v1.UpdateJobFamilyRequest\x1a6.human_resource.workforceplanning.v1.JobFamilyResponse\x12_\n" +
@@ -2557,7 +2557,8 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"\x14FindJobByJobFamilyID\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.workforceplanning.v1.JobsResponse\x12t\n" +
 	"\x10FindJobByJobCode\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.workforceplanning.v1.JobsResponse\x12y\n" +
 	"\x15FindJobByJobLevelCode\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.workforceplanning.v1.JobsResponse\x12\x83\x01\n" +
-	"\x0eCreatePosition\x12:.human_resource.workforceplanning.v1.CreatePositionRequest\x1a5.human_resource.workforceplanning.v1.PositionResponse\x12\x83\x01\n" +
+	"\x0eCreatePosition\x12:.human_resource.workforceplanning.v1.CreatePositionRequest\x1a5.human_resource.workforceplanning.v1.PositionResponse\x12n\n" +
+	"\x10ActivatePosition\x12#.human_resource.common.v1.IDRequest\x1a5.human_resource.workforceplanning.v1.PositionResponse\x12\x83\x01\n" +
 	"\x0eUpdatePosition\x12:.human_resource.workforceplanning.v1.UpdatePositionRequest\x1a5.human_resource.workforceplanning.v1.PositionResponse\x12^\n" +
 	"\x0eDeletePosition\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12m\n" +
 	"\x0fGetPositionByID\x12#.human_resource.common.v1.IDRequest\x1a5.human_resource.workforceplanning.v1.PositionResponse\x12p\n" +
@@ -2702,95 +2703,97 @@ var file_human_resource_workforceplanning_v1_workforceplanning_proto_depIdxs = [
 	36, // 49: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobCode:input_type -> human_resource.common.v1.StringFinderRequest
 	36, // 50: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobLevelCode:input_type -> human_resource.common.v1.StringFinderRequest
 	14, // 51: human_resource.workforceplanning.v1.WorkforcePlanningService.CreatePosition:input_type -> human_resource.workforceplanning.v1.CreatePositionRequest
-	15, // 52: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:input_type -> human_resource.workforceplanning.v1.UpdatePositionRequest
-	34, // 53: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:input_type -> human_resource.common.v1.IDRequest
-	34, // 54: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 55: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:input_type -> human_resource.common.v1.PageRequest
-	36, // 56: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 57: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 58: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 59: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 60: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 61: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 62: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 63: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	20, // 64: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanRequest
-	21, // 65: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest
-	34, // 66: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:input_type -> human_resource.common.v1.IDRequest
-	34, // 67: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 68: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:input_type -> human_resource.common.v1.PageRequest
-	36, // 69: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 70: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 71: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 72: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 73: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 74: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 75: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	26, // 76: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest
-	27, // 77: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest
-	34, // 78: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:input_type -> human_resource.common.v1.IDRequest
-	34, // 79: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 80: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:input_type -> human_resource.common.v1.PageRequest
-	36, // 81: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	37, // 82: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:input_type -> human_resource.common.v1.Int32FinderRequest
-	36, // 83: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 84: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 85: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 86: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 87: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 88: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
-	4,  // 89: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
-	38, // 90: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJobFamily:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 91: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobFamilyByID:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
-	5,  // 92: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobFamilies:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
-	5,  // 93: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobFamilyByFamilyCode:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
-	10, // 94: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
-	10, // 95: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
-	38, // 96: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJob:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 97: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobByID:output_type -> human_resource.workforceplanning.v1.JobResponse
-	11, // 98: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobs:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	11, // 99: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobFamilyID:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	11, // 100: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	11, // 101: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobLevelCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	16, // 102: human_resource.workforceplanning.v1.WorkforcePlanningService.CreatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
-	16, // 103: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
-	38, // 104: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:output_type -> human_resource.common.v1.EmptyResponse
-	16, // 105: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:output_type -> human_resource.workforceplanning.v1.PositionResponse
-	17, // 106: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 107: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 108: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 109: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 110: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 111: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 112: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 113: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 114: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	22, // 115: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
-	22, // 116: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
-	38, // 117: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:output_type -> human_resource.common.v1.EmptyResponse
-	22, // 118: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
-	23, // 119: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 120: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 121: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 122: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 123: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 124: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 125: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 126: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	28, // 127: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
-	28, // 128: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
-	38, // 129: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:output_type -> human_resource.common.v1.EmptyResponse
-	28, // 130: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
-	29, // 131: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 132: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 133: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 134: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 135: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 136: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 137: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 138: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	88, // [88:139] is the sub-list for method output_type
-	37, // [37:88] is the sub-list for method input_type
+	34, // 52: human_resource.workforceplanning.v1.WorkforcePlanningService.ActivatePosition:input_type -> human_resource.common.v1.IDRequest
+	15, // 53: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:input_type -> human_resource.workforceplanning.v1.UpdatePositionRequest
+	34, // 54: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:input_type -> human_resource.common.v1.IDRequest
+	34, // 55: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:input_type -> human_resource.common.v1.IDRequest
+	35, // 56: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:input_type -> human_resource.common.v1.PageRequest
+	36, // 57: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 58: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 59: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 60: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 61: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 62: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 63: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 64: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	20, // 65: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanRequest
+	21, // 66: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest
+	34, // 67: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:input_type -> human_resource.common.v1.IDRequest
+	34, // 68: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:input_type -> human_resource.common.v1.IDRequest
+	35, // 69: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:input_type -> human_resource.common.v1.PageRequest
+	36, // 70: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 71: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 72: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 73: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 74: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 75: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 76: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	26, // 77: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest
+	27, // 78: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest
+	34, // 79: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:input_type -> human_resource.common.v1.IDRequest
+	34, // 80: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:input_type -> human_resource.common.v1.IDRequest
+	35, // 81: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:input_type -> human_resource.common.v1.PageRequest
+	36, // 82: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	37, // 83: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:input_type -> human_resource.common.v1.Int32FinderRequest
+	36, // 84: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 85: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 86: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 87: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 88: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 89: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
+	4,  // 90: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
+	38, // 91: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJobFamily:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 92: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobFamilyByID:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
+	5,  // 93: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobFamilies:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
+	5,  // 94: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobFamilyByFamilyCode:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
+	10, // 95: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
+	10, // 96: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
+	38, // 97: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJob:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 98: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobByID:output_type -> human_resource.workforceplanning.v1.JobResponse
+	11, // 99: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobs:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	11, // 100: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobFamilyID:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	11, // 101: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	11, // 102: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobLevelCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	16, // 103: human_resource.workforceplanning.v1.WorkforcePlanningService.CreatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	16, // 104: human_resource.workforceplanning.v1.WorkforcePlanningService.ActivatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	16, // 105: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	38, // 106: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:output_type -> human_resource.common.v1.EmptyResponse
+	16, // 107: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	17, // 108: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 109: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 110: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 111: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 112: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 113: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 114: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 115: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	17, // 116: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	22, // 117: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	22, // 118: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	38, // 119: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:output_type -> human_resource.common.v1.EmptyResponse
+	22, // 120: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	23, // 121: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	23, // 122: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	23, // 123: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	23, // 124: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	23, // 125: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	23, // 126: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	23, // 127: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	23, // 128: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	28, // 129: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
+	28, // 130: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
+	38, // 131: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:output_type -> human_resource.common.v1.EmptyResponse
+	28, // 132: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
+	29, // 133: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	29, // 134: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	29, // 135: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	29, // 136: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	29, // 137: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	29, // 138: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	29, // 139: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	29, // 140: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	89, // [89:141] is the sub-list for method output_type
+	37, // [37:89] is the sub-list for method input_type
 	37, // [37:37] is the sub-list for extension type_name
 	37, // [37:37] is the sub-list for extension extendee
 	0,  // [0:37] is the sub-list for field type_name

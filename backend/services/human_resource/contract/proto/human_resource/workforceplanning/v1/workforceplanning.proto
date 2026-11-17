@@ -24,6 +24,7 @@ service WorkforcePlanningService {
   rpc FindJobByJobCode(human_resource.common.v1.StringFinderRequest) returns (JobsResponse);
   rpc FindJobByJobLevelCode(human_resource.common.v1.StringFinderRequest) returns (JobsResponse);
   rpc CreatePosition(CreatePositionRequest) returns (PositionResponse);
+  rpc ActivatePosition(human_resource.common.v1.IDRequest) returns (PositionResponse);
   rpc UpdatePosition(UpdatePositionRequest) returns (PositionResponse);
   rpc DeletePosition(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetPositionByID(human_resource.common.v1.IDRequest) returns (PositionResponse);

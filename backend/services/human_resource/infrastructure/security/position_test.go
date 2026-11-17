@@ -124,8 +124,8 @@ func TestPositionValidatorRejectsUnverifiedAndWorkflowMutation(t *testing.T) {
 	}
 	active := *draft
 	active.PositionStatus = "active"
-	if err := validator.ValidateMutation(t.Context(), "hr_positions", draft, &active); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
-		t.Fatalf("activate through CRUD = %v", err)
+	if err := validator.ValidateMutation(t.Context(), "hr_positions", draft, &active); !errors.Is(err, hrerrors.ErrUnavailable) {
+		t.Fatalf("activation without owner verifier = %v", err)
 	}
 	changedParent := *draft
 	parentID := "parent"
@@ -154,5 +154,42 @@ func TestPositionValidatorRejectsUnverifiedAndWorkflowMutation(t *testing.T) {
 	cancel()
 	if err := validator.ValidateMutation(ctx, "hr_positions", nil, draft); !errors.Is(err, context.Canceled) {
 		t.Fatalf("canceled context = %v", err)
+	}
+}
+
+func TestPositionValidatorActivationRechecksReferences(t *testing.T) {
+	t.Parallel()
+	start := time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC)
+	parentID := "parent"
+	positions := &positionReaderStub{parent: &entity.Position{ID: parentID, LegalEntityReferenceID: "legal",
+		PositionStatus: "planned", ValidFrom: start}}
+	owner := &positionOwnerStub{}
+	validator := &positionValidator{
+		jobs:      &positionJobStub{job: &entity.Job{ID: "job", IsActive: true, ValidFrom: start}},
+		positions: positions, assignments: &positionCountStub{count: 1}, requisitions: &positionCountStub{},
+		succession: &positionCountStub{}, owner: owner,
+	}
+	draft := &entity.Position{ID: "position", PositionCode: "SEAT", PositionTitle: "Store associate",
+		JobID: "job", OrganizationUnitReferenceID: "unit", LegalEntityReferenceID: "legal",
+		ReportsToPositionID: &parentID, PositionStatus: "planned", HeadcountAuthorized: "1", ValidFrom: start}
+	active := *draft
+	active.PositionStatus = "active"
+	if err := validator.ValidateMutation(t.Context(), "hr_positions", draft, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("planned parent activation: %v", err)
+	}
+	positions.parent.PositionStatus = "active"
+	if err := validator.ValidateMutation(t.Context(), "hr_positions", draft, &active); err != nil {
+		t.Fatalf("activation with verified references: %v", err)
+	}
+	if owner.check.LegalEntityID != "legal" || owner.check.OrganizationUnitID != "unit" {
+		t.Fatalf("activation skipped owner verification: %+v", owner.check)
+	}
+	changed := active
+	changed.HeadcountAuthorized = "2"
+	if err := validator.ValidateMutation(t.Context(), "hr_positions", draft, &changed); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("activation changed seat capacity: %v", err)
+	}
+	if err := validator.ValidateMutation(t.Context(), "hr_positions", &active, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete active position: %v", err)
 	}
 }

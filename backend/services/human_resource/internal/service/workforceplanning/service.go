@@ -201,6 +201,9 @@ func (s *Service) UpdatePosition(ctx context.Context, key string, in UpdatePosit
 	if s == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
+	if in.PositionStatus.Set && (in.PositionStatus.Value == nil || *in.PositionStatus.Value != "planned") {
+		return nil, hrerrors.ErrWorkflowRequired
+	}
 	return s.position.Update(ctx, key, func(value *entity.Position) error { return patchPosition(value, in) })
 }
 

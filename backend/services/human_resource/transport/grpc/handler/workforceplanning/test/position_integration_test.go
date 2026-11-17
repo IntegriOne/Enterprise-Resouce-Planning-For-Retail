@@ -35,7 +35,7 @@ type positionPolicy struct{}
 func (positionPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
 	return operation.Actor{
 		PrincipalID: "00000000-0000-4000-8000-000000000001",
-		SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human",
+		SessionID:   "00000000-0000-4000-8000-000000000002", Kind: "human",
 	}, nil
 }
 
@@ -43,11 +43,14 @@ func (positionPolicy) ReadScope(context.Context, operation.Access) (operation.Sc
 	return operation.Scope{All: true}, nil
 }
 
-type foundationPositionStub struct{ checked security.PositionReferenceCheck }
+type foundationPositionStub struct {
+	checked security.PositionReferenceCheck
+	err     error
+}
 
 func (s *foundationPositionStub) VerifyPositionReferences(_ context.Context, check security.PositionReferenceCheck) error {
 	s.checked = check
-	return nil
+	return s.err
 }
 
 func TestPlannedPositionRPCWithPostgreSQL(t *testing.T) {
@@ -214,6 +217,44 @@ func TestPlannedPositionRPCWithPostgreSQL(t *testing.T) {
 	var events int64
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", positionID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("position outbox events = %d, %v", events, err)
+	}
+	activeCode := "ACTIVE-SEAT-" + jobID
+	activeInput := *input
+	activeInput.PositionCode = &activeCode
+	planned, err := client.CreatePosition(ctx, &pb.CreatePositionRequest{Input: &activeInput})
+	if err != nil {
+		t.Fatalf("create position for activation: %v", err)
+	}
+	activeID := planned.GetItem().GetId()
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cleanupCancel()
+		if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_positions WHERE id = ?", activeID).Error; err != nil {
+			t.Errorf("clean active position fixture: %v", err)
+		}
+	})
+	if _, err := client.UpdatePosition(ctx, &pb.UpdatePositionRequest{Id: activeID,
+		Input:      &pb.PositionInput{PositionStatus: stringPointer("active")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"position_status"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("activation through generic update = %v", err)
+	}
+	owner.err = context.DeadlineExceeded
+	if _, err := client.ActivatePosition(ctx, &common.IDRequest{Id: activeID}); status.Code(err) != codes.Unavailable {
+		t.Fatalf("activation with owner unavailable = %v", err)
+	}
+	owner.err = nil
+	activated, err := client.ActivatePosition(ctx, &common.IDRequest{Id: activeID})
+	if err != nil || activated.GetItem().GetPositionStatus() != "active" {
+		t.Fatalf("activate position = %+v, %v", activated, err)
+	}
+	if _, err := client.ActivatePosition(ctx, &common.IDRequest{Id: activeID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat activation = %v", err)
+	}
+	if _, err := client.DeletePosition(ctx, &common.IDRequest{Id: activeID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete active position = %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", activeID).Count(&events).Error; err != nil || events != 2 {
+		t.Fatalf("active position outbox events = %d, %v", events, err)
 	}
 }
 
