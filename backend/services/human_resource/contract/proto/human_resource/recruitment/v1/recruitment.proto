@@ -44,6 +44,7 @@ service RecruitmentService {
   rpc CreateApplication(CreateApplicationRequest) returns (ApplicationResponse);
   rpc UpdateApplication(UpdateApplicationRequest) returns (ApplicationResponse);
   rpc StartApplicationScreening(human_resource.common.v1.IDRequest) returns (ApplicationResponse);
+  rpc ShortlistApplication(ShortlistApplicationRequest) returns (ApplicationResponse);
   rpc RejectApplication(RejectApplicationRequest) returns (ApplicationResponse);
   rpc DeleteApplication(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetApplicationByID(human_resource.common.v1.IDRequest) returns (ApplicationResponse);
@@ -294,6 +295,10 @@ message UpdateApplicationRequest {
   google.protobuf.FieldMask update_mask = 3;
 }
 message RejectApplicationRequest {
+  string id = 1;
+  string reason_code = 2;
+}
+message ShortlistApplicationRequest {
   string id = 1;
   string reason_code = 2;
 }

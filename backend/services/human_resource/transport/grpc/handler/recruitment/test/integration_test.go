@@ -536,6 +536,9 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_applications").Where("id = ?", activeApplicationID).Update("disposition_reason_code", nil).Error; err == nil {
 		t.Fatal("database accepted rejected application without reason")
 	}
+	if err := database.WithContext(ctx).Table("hr_applications").Where("id = ?", activeApplicationID).Update("current_stage_code", nil).Error; err == nil {
+		t.Fatal("database accepted rejected application without stage")
+	}
 	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: concurrentID}); err != nil {
 		t.Fatalf("close with terminal application: %v", err)
 	}
@@ -740,5 +743,74 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", applicationID).Count(&outboxCount).Error; err != nil || outboxCount != 3 {
 		t.Fatalf("screening rejection outbox count = %d, err = %v", outboxCount, err)
+	}
+	shortlistCandidate, err := create("CAND-SHORTLIST-1")
+	if err != nil {
+		t.Fatalf("create shortlist candidate: %v", err)
+	}
+	shortlistNumber := "APP-SHORTLIST-1"
+	shortlistApplication, err := client.CreateApplication(ctx, &pb.CreateApplicationRequest{Input: &pb.ApplicationInput{
+		CandidateId: text(shortlistCandidate.GetItem().GetId()), RequisitionId: text(requisitionID),
+		ApplicationNumber: &shortlistNumber, IdempotencyKey: &shortlistNumber,
+	}})
+	if err != nil {
+		t.Fatalf("create shortlist application: %v", err)
+	}
+	shortlistID := shortlistApplication.GetItem().GetId()
+	if _, err := client.ShortlistApplication(ctx, &pb.ShortlistApplicationRequest{
+		Id: shortlistID, ReasonCode: "MEETS_REQUIREMENTS",
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("shortlist before screening status = %v", status.Code(err))
+	}
+	if _, err := client.StartApplicationScreening(ctx, &common.IDRequest{Id: shortlistID}); err != nil {
+		t.Fatalf("start shortlist screening: %v", err)
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000098"
+	if _, err := client.ShortlistApplication(ctx, &pb.ShortlistApplicationRequest{
+		Id: shortlistID, ReasonCode: "MEETS_REQUIREMENTS",
+	}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("other recruiter shortlist status = %v", status.Code(err))
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000001"
+	if _, err := client.ShortlistApplication(ctx, &pb.ShortlistApplicationRequest{Id: shortlistID}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("shortlist without reason status = %v", status.Code(err))
+	}
+	shortlisted, err := client.ShortlistApplication(ctx, &pb.ShortlistApplicationRequest{
+		Id: shortlistID, ReasonCode: "MEETS_REQUIREMENTS",
+	})
+	if err != nil || shortlisted.GetItem().GetStatus() != "shortlisted" ||
+		shortlisted.GetItem().GetCurrentStageCode() != "shortlisted" ||
+		shortlisted.GetItem().GetScreeningScore() != "" || shortlisted.GetItem().GetScorecardVersion() != "" {
+		t.Fatalf("shortlist application: %+v, %v", shortlisted, err)
+	}
+	if _, err := client.ShortlistApplication(ctx, &pb.ShortlistApplicationRequest{
+		Id: shortlistID, ReasonCode: "MEETS_REQUIREMENTS",
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat shortlist status = %v", status.Code(err))
+	}
+	shortlistHistory, err := client.FindApplicationStageHistoryByApplicationID(ctx, &common.StringFinderRequest{Value: &shortlistID, Limit: 10})
+	if err != nil || len(shortlistHistory.GetItems()) != 2 ||
+		shortlistHistory.GetItems()[1].GetNewStatus() != "shortlisted" ||
+		shortlistHistory.GetItems()[1].GetReasonCode() != "MEETS_REQUIREMENTS" ||
+		shortlistHistory.GetItems()[1].GetChangedByPrincipalId() != policy.principalID {
+		t.Fatalf("shortlist stage history: %+v, %v", shortlistHistory, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", shortlistID).Count(&outboxCount).Error; err != nil || outboxCount != 3 {
+		t.Fatalf("shortlist outbox count = %d, err = %v", outboxCount, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_applications").Where("id = ?", shortlistID).Update("current_stage_code", nil).Error; err == nil {
+		t.Fatal("database accepted shortlisted application without stage")
+	}
+	shortlistRejection, err := client.RejectApplication(ctx, &pb.RejectApplicationRequest{
+		Id: shortlistID, ReasonCode: "NO_LONGER_AVAILABLE",
+	})
+	if err != nil || shortlistRejection.GetItem().GetStatus() != "rejected" {
+		t.Fatalf("reject shortlisted application: %+v, %v", shortlistRejection, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_application_stage_history").Where("application_id = ?", shortlistID).Count(&stageCount).Error; err != nil || stageCount != 3 {
+		t.Fatalf("shortlist rejection history count = %d, err = %v", stageCount, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", shortlistID).Count(&outboxCount).Error; err != nil || outboxCount != 4 {
+		t.Fatalf("shortlist rejection outbox count = %d, err = %v", outboxCount, err)
 	}
 }

@@ -53,13 +53,16 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 	}
 	mutating := before != nil
 	rejecting := false
+	shortlisting := false
 	if mutating {
 		previous, ok := before.(*entity.Application)
 		if !ok || previous == nil {
 			return hrerrors.ErrInvalidInput
 		}
 		screening := previous.Status == entity.ApplicationStatusReceived && application.Status == entity.ApplicationStatusScreening
-		rejecting = (previous.Status == entity.ApplicationStatusReceived || previous.Status == entity.ApplicationStatusScreening) &&
+		shortlisting = previous.Status == entity.ApplicationStatusScreening && application.Status == entity.ApplicationStatusShortlisted
+		rejecting = (previous.Status == entity.ApplicationStatusReceived || previous.Status == entity.ApplicationStatusScreening ||
+			previous.Status == entity.ApplicationStatusShortlisted) &&
 			application.Status == entity.ApplicationStatusRejected
 		switch {
 		case screening:
@@ -85,6 +88,11 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 					previous.AssignedRecruiterPrincipalID == nil) {
 				return hrerrors.ErrWorkflowRequired
 			}
+			if previous.Status == entity.ApplicationStatusShortlisted &&
+				(previous.CurrentStageCode == nil || *previous.CurrentStageCode != "shortlisted" ||
+					previous.AssignedRecruiterPrincipalID == nil) {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if application.CurrentStageCode == nil || *application.CurrentStageCode != "rejected" ||
 				application.DispositionReasonCode == nil || strings.TrimSpace(*application.DispositionReasonCode) == "" ||
 				application.DecisionAt == nil || application.DecisionAt.Before(application.AppliedAt) ||
@@ -97,6 +105,18 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 			expected.DispositionReasonCode = application.DispositionReasonCode
 			expected.DecisionAt = application.DecisionAt
 			expected.DecisionByPrincipalID = application.DecisionByPrincipalID
+			if !reflect.DeepEqual(&expected, application) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		case shortlisting:
+			if previous.CurrentStageCode == nil || *previous.CurrentStageCode != "screening" ||
+				previous.AssignedRecruiterPrincipalID == nil || application.CurrentStageCode == nil ||
+				*application.CurrentStageCode != "shortlisted" {
+				return hrerrors.ErrWorkflowRequired
+			}
+			expected := *previous
+			expected.Status = entity.ApplicationStatusShortlisted
+			expected.CurrentStageCode = application.CurrentStageCode
 			if !reflect.DeepEqual(&expected, application) {
 				return hrerrors.ErrWorkflowRequired
 			}

@@ -97,6 +97,35 @@ func TestApplicationValidatorReceivedOnly(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_applications", &rejected, &rejected); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("edit rejected application: %v", err)
 	}
+	screeningStage := "screening"
+	screening := *application
+	screening.Status = entity.ApplicationStatusScreening
+	screening.CurrentStageCode = &screeningStage
+	screening.AssignedRecruiterPrincipalID = &approver
+	shortlistedStage := "shortlisted"
+	shortlisted := screening
+	shortlisted.Status = entity.ApplicationStatusShortlisted
+	shortlisted.CurrentStageCode = &shortlistedStage
+	if err := v.ValidateMutation(t.Context(), "hr_applications", &screening, &shortlisted); err != nil {
+		t.Fatalf("shortlist screening application: %v", err)
+	}
+	invalidShortlist := shortlisted
+	invalidShortlist.CandidateID = "00000000-0000-4000-8000-000000000009"
+	if err := v.ValidateMutation(t.Context(), "hr_applications", &screening, &invalidShortlist); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("change candidate during shortlist: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_applications", &shortlisted, &shortlisted); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("edit shortlisted application: %v", err)
+	}
+	rejectedShortlist := shortlisted
+	rejectedShortlist.Status = entity.ApplicationStatusRejected
+	rejectedShortlist.CurrentStageCode = &rejectionStage
+	rejectedShortlist.DispositionReasonCode = &rejectionReason
+	rejectedShortlist.DecisionAt = &now
+	rejectedShortlist.DecisionByPrincipalID = &approver
+	if err := v.ValidateMutation(t.Context(), "hr_applications", &shortlisted, &rejectedShortlist); err != nil {
+		t.Fatalf("reject shortlisted application: %v", err)
+	}
 	candidate.DataRetentionUntil = &now
 	if err := v.ValidateMutation(t.Context(), "hr_applications", nil, application); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("expired retention: %v", err)

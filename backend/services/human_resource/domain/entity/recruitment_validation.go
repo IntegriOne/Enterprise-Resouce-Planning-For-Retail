@@ -295,6 +295,13 @@ func (x *Application) Validate() error {
 			x.DecisionByPrincipalID == nil || x.HiredWorkerID != nil) {
 		return hrerrors.Invalid("hr_applications", "ck_hr_application_rejected")
 	}
+	if x.Status == ApplicationStatusShortlisted &&
+		(x.CurrentStageCode == nil || *x.CurrentStageCode != "shortlisted" ||
+			x.AssignedRecruiterPrincipalID == nil || x.ScreeningScore != nil ||
+			x.ScorecardVersion != nil || x.DispositionReasonCode != nil ||
+			x.DecisionAt != nil || x.DecisionByPrincipalID != nil || x.HiredWorkerID != nil) {
+		return hrerrors.Invalid("hr_applications", "ck_hr_application_shortlisted")
+	}
 	return nil
 }
 

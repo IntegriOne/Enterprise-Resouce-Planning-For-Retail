@@ -88,6 +88,12 @@ func (h *Handler) RejectApplication(ctx context.Context, r *pb.RejectApplication
 	}
 	return applicationResponse(h.service.RejectApplication(ctx, r.Id, r.ReasonCode))
 }
+func (h *Handler) ShortlistApplication(ctx context.Context, r *pb.ShortlistApplicationRequest) (*pb.ApplicationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return applicationResponse(h.service.ShortlistApplication(ctx, r.Id, r.ReasonCode))
+}
 func (h *Handler) GetApplicationByID(ctx context.Context, r *common.IDRequest) (*pb.ApplicationResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

@@ -56,6 +56,7 @@ const (
 	RecruitmentService_CreateApplication_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/CreateApplication"
 	RecruitmentService_UpdateApplication_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/UpdateApplication"
 	RecruitmentService_StartApplicationScreening_FullMethodName                                     = "/human_resource.recruitment.v1.RecruitmentService/StartApplicationScreening"
+	RecruitmentService_ShortlistApplication_FullMethodName                                          = "/human_resource.recruitment.v1.RecruitmentService/ShortlistApplication"
 	RecruitmentService_RejectApplication_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/RejectApplication"
 	RecruitmentService_DeleteApplication_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/DeleteApplication"
 	RecruitmentService_GetApplicationByID_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/GetApplicationByID"
@@ -194,6 +195,7 @@ type RecruitmentServiceClient interface {
 	CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...grpc.CallOption) (*ApplicationResponse, error)
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*ApplicationResponse, error)
 	StartApplicationScreening(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ApplicationResponse, error)
+	ShortlistApplication(ctx context.Context, in *ShortlistApplicationRequest, opts ...grpc.CallOption) (*ApplicationResponse, error)
 	RejectApplication(ctx context.Context, in *RejectApplicationRequest, opts ...grpc.CallOption) (*ApplicationResponse, error)
 	DeleteApplication(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetApplicationByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ApplicationResponse, error)
@@ -654,6 +656,16 @@ func (c *recruitmentServiceClient) StartApplicationScreening(ctx context.Context
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApplicationResponse)
 	err := c.cc.Invoke(ctx, RecruitmentService_StartApplicationScreening_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) ShortlistApplication(ctx context.Context, in *ShortlistApplicationRequest, opts ...grpc.CallOption) (*ApplicationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplicationResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_ShortlistApplication_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1660,6 +1672,7 @@ type RecruitmentServiceServer interface {
 	CreateApplication(context.Context, *CreateApplicationRequest) (*ApplicationResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*ApplicationResponse, error)
 	StartApplicationScreening(context.Context, *v1.IDRequest) (*ApplicationResponse, error)
+	ShortlistApplication(context.Context, *ShortlistApplicationRequest) (*ApplicationResponse, error)
 	RejectApplication(context.Context, *RejectApplicationRequest) (*ApplicationResponse, error)
 	DeleteApplication(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetApplicationByID(context.Context, *v1.IDRequest) (*ApplicationResponse, error)
@@ -1873,6 +1886,9 @@ func (UnimplementedRecruitmentServiceServer) UpdateApplication(context.Context, 
 }
 func (UnimplementedRecruitmentServiceServer) StartApplicationScreening(context.Context, *v1.IDRequest) (*ApplicationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method StartApplicationScreening not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) ShortlistApplication(context.Context, *ShortlistApplicationRequest) (*ApplicationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ShortlistApplication not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) RejectApplication(context.Context, *RejectApplicationRequest) (*ApplicationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RejectApplication not implemented")
@@ -2827,6 +2843,24 @@ func _RecruitmentService_StartApplicationScreening_Handler(srv interface{}, ctx 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RecruitmentServiceServer).StartApplicationScreening(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_ShortlistApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShortlistApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).ShortlistApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_ShortlistApplication_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).ShortlistApplication(ctx, req.(*ShortlistApplicationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4709,6 +4743,10 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartApplicationScreening",
 			Handler:    _RecruitmentService_StartApplicationScreening_Handler,
+		},
+		{
+			MethodName: "ShortlistApplication",
+			Handler:    _RecruitmentService_ShortlistApplication_Handler,
 		},
 		{
 			MethodName: "RejectApplication",

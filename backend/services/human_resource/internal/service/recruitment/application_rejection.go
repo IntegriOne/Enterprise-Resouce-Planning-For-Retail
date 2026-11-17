@@ -23,10 +23,11 @@ func (s *Service) RejectApplication(ctx context.Context, applicationID, reasonCo
 		if actor.Kind != "human" {
 			return nil, hrerrors.ErrForbidden
 		}
-		if application.Status != entity.ApplicationStatusReceived && application.Status != entity.ApplicationStatusScreening {
+		if application.Status != entity.ApplicationStatusReceived && application.Status != entity.ApplicationStatusScreening &&
+			application.Status != entity.ApplicationStatusShortlisted {
 			return nil, hrerrors.ErrWorkflowRequired
 		}
-		if application.Status == entity.ApplicationStatusScreening &&
+		if (application.Status == entity.ApplicationStatusScreening || application.Status == entity.ApplicationStatusShortlisted) &&
 			(application.AssignedRecruiterPrincipalID == nil || *application.AssignedRecruiterPrincipalID != actor.PrincipalID) {
 			return nil, hrerrors.ErrForbidden
 		}
