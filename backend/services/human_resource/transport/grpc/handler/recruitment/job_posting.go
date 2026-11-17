@@ -53,6 +53,13 @@ func (h *Handler) CreateJobPosting(ctx context.Context, r *pb.CreateJobPostingRe
 		ContentDocumentVersionReferenceID: in.GetContentDocumentVersionReferenceId(), ContentDigest: append([]byte(nil), in.ContentDigest...), Status: in.Status, PublishedAt: published, ClosesAt: closes,
 	}))
 }
+
+func (h *Handler) PublishJobPosting(ctx context.Context, r *common.IDRequest) (*pb.JobPostingResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return jobPostingResponse(h.service.PublishJobPosting(ctx, r.Id))
+}
 func (h *Handler) UpdateJobPosting(ctx context.Context, r *pb.UpdateJobPostingRequest) (*pb.JobPostingResponse, error) {
 	if r == nil || r.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

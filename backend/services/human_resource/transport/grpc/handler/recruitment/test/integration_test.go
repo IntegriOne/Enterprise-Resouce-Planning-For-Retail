@@ -3,6 +3,7 @@
 package recruitment_test
 
 import (
+	"bytes"
 	"context"
 	"net"
 	"net/url"
@@ -41,6 +42,18 @@ type requisitionApprovalIntegrationVerifier struct {
 	mu       sync.Mutex
 	budgetID string
 	check    service.RequisitionApprovalCheck
+}
+
+type postingDocumentIntegrationVerifier struct{}
+
+func (postingDocumentIntegrationVerifier) VerifyJobPostingDocument(_ context.Context, request service.PostingDocumentRequest) (service.PostingDocumentProof, error) {
+	if request.PostingID == "" || request.RequisitionID == "" || request.PrincipalID == "" || len(request.Digest) != 32 {
+		return service.PostingDocumentProof{}, hrerrors.ErrReferenceConflict
+	}
+	return service.PostingDocumentProof{
+		VersionID: request.VersionID, Digest: append([]byte(nil), request.Digest...),
+		Verified: true, Immutable: true, OwnerManagement: "human_resource", Purpose: "recruitment_job_posting",
+	}, nil
 }
 
 func (v *requisitionApprovalIntegrationVerifier) VerifyRequisitionApproval(_ context.Context, check service.RequisitionApprovalCheck) (string, error) {
@@ -133,6 +146,7 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
 			Policy: policy, Integrity: security.NewIntegrity(validators)},
 		ApprovalVerifier: approvalVerifier,
+		PostingVerifier:  postingDocumentIntegrationVerifier{},
 		Requisition:      repos.Requisition, Candidate: repos.Candidate, Application: repos.Application,
 		ApplicationStageHistory: repos.ApplicationStageHistory, Interview: repos.Interview,
 		InterviewPanelist: repos.InterviewPanelist, InterviewFeedback: repos.InterviewFeedback,
@@ -352,14 +366,26 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	postingVersion := int32(1)
 	postingInput := &pb.JobPostingInput{RequisitionId: text(submittedID), ChannelCode: text("career_site"),
 		PostingVersion: &postingVersion, ContentDocumentVersionReferenceId: text("00000000-0000-4000-8000-000000000200"),
-		ContentDigest: []byte("draft content")}
+		ContentDigest: bytes.Repeat([]byte{0x42}, 32)}
 	posting, err := client.CreateJobPosting(ctx, &pb.CreateJobPostingRequest{Input: postingInput})
 	if err != nil || posting.GetItem().GetStatus() != "draft" || posting.GetItem().GetCreatedByPrincipalId() != policy.principalID {
 		t.Fatalf("create draft posting: %+v, %v", posting, err)
 	}
-	if err := database.WithContext(ctx).Table("hr_job_postings").Where("id = ?", posting.GetItem().GetId()).
-		Updates(map[string]any{"status": "published", "published_at": time.Now()}).Error; err != nil {
-		t.Fatal(err)
+	published, err := client.PublishJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()})
+	if err != nil || published.GetItem().GetStatus() != "published" || published.GetItem().GetPublishedAt() == nil {
+		t.Fatalf("publish posting: %+v, %v", published, err)
+	}
+	if _, err := client.PublishJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat publication status = %v", status.Code(err))
+	}
+	var postingOutboxCount int64
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", posting.GetItem().GetId()).Count(&postingOutboxCount).Error; err != nil || postingOutboxCount != 2 {
+		t.Fatalf("published posting outbox count = %d, err = %v", postingOutboxCount, err)
+	}
+	if _, err := client.UpdateJobPosting(ctx, &pb.UpdateJobPostingRequest{Id: posting.GetItem().GetId(),
+		Input:      &pb.JobPostingInput{Status: text("draft")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"status"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("edit published posting status = %v", status.Code(err))
 	}
 	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("close with published posting status = %v", status.Code(err))

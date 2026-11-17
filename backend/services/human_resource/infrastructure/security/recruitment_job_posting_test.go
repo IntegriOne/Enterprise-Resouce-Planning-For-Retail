@@ -1,6 +1,7 @@
 package security
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"testing"
@@ -62,7 +63,20 @@ func TestJobPostingValidatorLocksOpenRequisitionAndFreezesWorkflow(t *testing.T)
 	published.Status = "published"
 	published.PublishedAt = &now
 	if err := v.ValidateMutation(t.Context(), "hr_job_postings", posting, &published); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
-		t.Fatalf("publish through CRUD: %v", err)
+		t.Fatalf("publish with invalid digest: %v", err)
+	}
+	publishDraft := updated
+	publishDraft.ContentDigest = bytes.Repeat([]byte{0x42}, 32)
+	published = publishDraft
+	published.Status = "published"
+	published.PublishedAt = &now
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &publishDraft, &published); err != nil {
+		t.Fatalf("publish verified draft: %v", err)
+	}
+	tamperedPublish := published
+	tamperedPublish.ContentDigest = bytes.Repeat([]byte{0x43}, 32)
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &publishDraft, &tamperedPublish); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed content during publication: %v", err)
 	}
 	changedParent := updated
 	changedParent.RequisitionID = "00000000-0000-4000-8000-000000000006"

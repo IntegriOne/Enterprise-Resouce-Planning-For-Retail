@@ -56,17 +56,29 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 		return hrerrors.ErrInvalidInput
 	}
 	posting := previous
+	publishing := false
 	if after != nil {
 		var ok bool
 		posting, ok = after.(*entity.JobPosting)
-		if !ok || posting == nil || posting.Status != "draft" || posting.PublishedAt != nil ||
-			posting.ExternalPostingReference != nil || posting.ClosesAt != nil {
+		if !ok || posting == nil || posting.ExternalPostingReference != nil || posting.ClosesAt != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		publishing = previous != nil && posting.Status == "published"
+		if publishing {
+			original := *posting
+			original.Status = "draft"
+			original.PublishedAt = nil
+			if posting.PublishedAt == nil || len(posting.ContentDigest) != 32 ||
+				!reflect.DeepEqual(previous, &original) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if posting.Status != "draft" || posting.PublishedAt != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 		if previous != nil && (previous.ID != posting.ID || previous.RequisitionID != posting.RequisitionID ||
 			previous.CreatedByPrincipalID != posting.CreatedByPrincipalID ||
 			previous.ChannelCode != posting.ChannelCode || previous.PostingVersion != posting.PostingVersion ||
-			!reflect.DeepEqual(previous.PublishedAt, posting.PublishedAt)) {
+			(!publishing && !reflect.DeepEqual(previous.PublishedAt, posting.PublishedAt))) {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -80,6 +92,9 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 		return hrerrors.ErrReferenceConflict
 	}
 	if after != nil && (requisition.Status != "open" || requisition.ClosedAt != nil) {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if publishing && posting.PublishedAt.Before(*requisition.OpenedAt) {
 		return hrerrors.ErrWorkflowRequired
 	}
 	if after == nil && requisition.Status != "open" && requisition.Status != "closed" {
