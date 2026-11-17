@@ -276,6 +276,22 @@ func (s *Service) FindRequisitionByApprovedByPrincipalID(ctx context.Context, va
 	return s.requisition.List(ctx, []domainrepo.Filter{{Column: "approved_by_principal_id", Values: []any{value}}}, limit, offset)
 }
 
+// FindRequisitionByRejectionReasonCode mencari alasan penolakan sesuai scope actor.
+func (s *Service) FindRequisitionByRejectionReasonCode(ctx context.Context, value *string, limit, offset int) (operation.Page[entity.Requisition], error) {
+	if s == nil {
+		return operation.Page[entity.Requisition]{}, hrerrors.ErrUnavailable
+	}
+	return s.requisition.List(ctx, []domainrepo.Filter{{Column: "rejection_reason_code", Values: []any{value}}}, limit, offset)
+}
+
+// FindRequisitionByRejectedByPrincipalID mencari pengambil keputusan sesuai scope actor.
+func (s *Service) FindRequisitionByRejectedByPrincipalID(ctx context.Context, value *string, limit, offset int) (operation.Page[entity.Requisition], error) {
+	if s == nil {
+		return operation.Page[entity.Requisition]{}, hrerrors.ErrUnavailable
+	}
+	return s.requisition.List(ctx, []domainrepo.Filter{{Column: "rejected_by_principal_id", Values: []any{value}}}, limit, offset)
+}
+
 // FindRequisitionByIdempotencyKey menjalankan operasi aplikasi dengan validasi dan scope server.
 func (s *Service) FindRequisitionByIdempotencyKey(ctx context.Context, value string, limit, offset int) (operation.Page[entity.Requisition], error) {
 	if s == nil {

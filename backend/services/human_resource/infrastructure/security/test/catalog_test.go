@@ -17,8 +17,8 @@ import (
 func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 	t.Parallel()
 	catalog := security.PermissionCatalog()
-	if len(catalog) != 421 {
-		t.Fatalf("operation mapping count = %d, want 421", len(catalog))
+	if len(catalog) != 422 {
+		t.Fatalf("operation mapping count = %d, want 422", len(catalog))
 	}
 	codes := make(map[string]struct{}, len(catalog))
 	for operation, code := range catalog {
@@ -27,8 +27,8 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		}
 		codes[code] = struct{}{}
 	}
-	if len(codes) != 337 {
-		t.Fatalf("permission count = %d, want 337", len(codes))
+	if len(codes) != 338 {
+		t.Fatalf("permission count = %d, want 338", len(codes))
 	}
 	for operation, want := range map[string]string{
 		"hr_workers.list":                        "human_resource.workers.read",
@@ -49,6 +49,7 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		"hr_applications.reject":                 "human_resource.applications.reject",
 		"hr_requisitions.submit":                 "human_resource.requisitions.submit",
 		"hr_requisitions.approve":                "human_resource.requisitions.approve",
+		"hr_requisitions.reject":                 "human_resource.requisitions.reject",
 		"hr_requisitions.open":                   "human_resource.requisitions.open",
 		"hr_requisitions.close":                  "human_resource.requisitions.close",
 		"hr_job_postings.publish":                "human_resource.job_postings.publish",
@@ -89,6 +90,7 @@ func TestSensitiveOperationsRequireIndependentStepUp(t *testing.T) {
 		{"hr_onboarding_plans", "complete", true},
 		{"hr_requisitions", "submit", true},
 		{"hr_requisitions", "approve", true},
+		{"hr_requisitions", "reject", true},
 		{"hr_requisitions", "open", true},
 		{"hr_requisitions", "close", true},
 		{"hr_job_postings", "publish", true},

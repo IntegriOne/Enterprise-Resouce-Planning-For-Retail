@@ -28,6 +28,7 @@ func requisition(v *entity.Requisition) (*pb.Requisition, error) {
 		WorkLocationReferenceId: v.WorkLocationReferenceID, EmploymentCategory: string(v.EmploymentCategory), MinimumQualifications: minimum, DesiredQualifications: desired,
 		ApprovedAt: timestamp(v.ApprovedAt), ApprovedByPrincipalId: v.ApprovedByPrincipalID, OpenedAt: timestamp(v.OpenedAt), ClosedAt: timestamp(v.ClosedAt), IdempotencyKey: v.IdempotencyKey,
 		CreatedByPrincipalId: v.CreatedByPrincipalID, SubmittedAt: timestamp(v.SubmittedAt), SubmittedByPrincipalId: v.SubmittedByPrincipalID,
+		RejectedAt: timestamp(v.RejectedAt), RejectionReasonCode: v.RejectionReasonCode, RejectedByPrincipalId: v.RejectedByPrincipalID,
 	}, nil
 }
 func requisitionResponse(v *entity.Requisition, err error) (*pb.RequisitionResponse, error) {
@@ -150,6 +151,13 @@ func (h *Handler) ApproveRequisition(ctx context.Context, r *common.IDRequest) (
 	return requisitionResponse(h.service.ApproveRequisition(ctx, r.Id))
 }
 
+func (h *Handler) RejectRequisition(ctx context.Context, r *pb.RejectRequisitionRequest) (*pb.RequisitionResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return requisitionResponse(h.service.RejectRequisition(ctx, r.GetId(), r.GetReasonCode()))
+}
+
 func (h *Handler) OpenRequisition(ctx context.Context, r *common.IDRequest) (*pb.RequisitionResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)
@@ -246,6 +254,18 @@ func (h *Handler) FindRequisitionByApprovedByPrincipalID(ctx context.Context, r 
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return requisitions(h.service.FindRequisitionByApprovedByPrincipalID(ctx, r.Value, int(r.Limit), int(r.Offset)))
+}
+func (h *Handler) FindRequisitionByRejectionReasonCode(ctx context.Context, r *common.StringFinderRequest) (*pb.RequisitionsResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return requisitions(h.service.FindRequisitionByRejectionReasonCode(ctx, r.Value, int(r.Limit), int(r.Offset)))
+}
+func (h *Handler) FindRequisitionByRejectedByPrincipalID(ctx context.Context, r *common.StringFinderRequest) (*pb.RequisitionsResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return requisitions(h.service.FindRequisitionByRejectedByPrincipalID(ctx, r.Value, int(r.Limit), int(r.Offset)))
 }
 func (h *Handler) FindRequisitionByIdempotencyKey(ctx context.Context, r *common.StringFinderRequest) (*pb.RequisitionsResponse, error) {
 	if r == nil || r.Value == nil {

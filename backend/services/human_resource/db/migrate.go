@@ -27,6 +27,9 @@ var applicationRejectionSQL string
 //go:embed migrations/000005_hrm_application_shortlisting.up.sql
 var applicationShortlistingSQL string
 
+//go:embed migrations/000006_hrm_requisition_rejection.up.sql
+var requisitionRejectionSQL string
+
 // Kunci transaksi advisory khusus HRM; lock dilepas otomatis saat commit/rollback.
 const migrationLockID int64 = 718291825
 
@@ -41,6 +44,7 @@ var migrations = []migration{
 	{version: 3, sql: jobPostingWithdrawalSQL},
 	{version: 4, sql: applicationRejectionSQL},
 	{version: 5, sql: applicationShortlistingSQL},
+	{version: 6, sql: requisitionRejectionSQL},
 }
 
 // RunMigrationsUp memasang migrasi berurutan secara atomik dan idempoten.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -99,9 +100,10 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	}
 	submitting := previous != nil && previous.Status == "draft" && value.Status == "submitted"
 	approving := previous != nil && previous.Status == "submitted" && value.Status == "approved"
+	rejecting := previous != nil && previous.Status == "submitted" && value.Status == "rejected"
 	opening := previous != nil && previous.Status == "approved" && value.Status == "open"
 	closing := previous != nil && previous.Status == "open" && value.Status == "closed"
-	if previous != nil && previous.Status == "submitted" && !approving {
+	if previous != nil && previous.Status == "submitted" && !approving && !rejecting {
 		return hrerrors.ErrWorkflowRequired
 	}
 	if previous != nil && previous.Status == "approved" && !opening {
@@ -136,6 +138,27 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
+	if rejecting {
+		original := *value
+		original.Status = "submitted"
+		original.RejectedAt = nil
+		original.RejectionReasonCode = nil
+		original.RejectedByPrincipalID = nil
+		if previous.CreatedByPrincipalID == nil || previous.SubmittedAt == nil ||
+			previous.SubmittedByPrincipalID == nil || previous.RejectedAt != nil ||
+			previous.RejectionReasonCode != nil || previous.RejectedByPrincipalID != nil ||
+			previous.BudgetReferenceID != nil || previous.ApprovedAt != nil ||
+			previous.ApprovedByPrincipalID != nil || previous.OpenedAt != nil || previous.ClosedAt != nil ||
+			value.RejectedAt == nil || value.RejectedAt.Before(*previous.SubmittedAt) ||
+			value.RejectionReasonCode == nil || strings.TrimSpace(*value.RejectionReasonCode) == "" ||
+			value.RejectedByPrincipalID == nil ||
+			*value.RejectedByPrincipalID == *previous.CreatedByPrincipalID ||
+			*value.RejectedByPrincipalID == *previous.SubmittedByPrincipalID ||
+			!reflect.DeepEqual(previous, &original) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		return nil
+	}
 	if opening {
 		original := *value
 		original.Status = "approved"
@@ -164,6 +187,7 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	if (!submitting && !approving && !opening && (value.Status != "draft" || value.SubmittedAt != nil || value.SubmittedByPrincipalID != nil)) ||
 		value.CreatedByPrincipalID == nil || (!approving && !opening && (value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil)) ||
 		(!opening && value.OpenedAt != nil) || value.ClosedAt != nil ||
+		value.RejectedAt != nil || value.RejectionReasonCode != nil || value.RejectedByPrincipalID != nil ||
 		(previous != nil && (previous.ID != value.ID || previous.RequisitionNumber != value.RequisitionNumber ||
 			previous.HiringManagerPrincipalID != value.HiringManagerPrincipalID || previous.IdempotencyKey != value.IdempotencyKey ||
 			!reflect.DeepEqual(previous.CreatedByPrincipalID, value.CreatedByPrincipalID))) {

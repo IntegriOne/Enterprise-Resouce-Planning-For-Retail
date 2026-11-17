@@ -124,6 +124,28 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, &changedDuringApproval); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("changed headcount during approval: %v", err)
 	}
+	rejected := submitted
+	rejected.Status = "rejected"
+	reason := "BUDGET_DENIED"
+	rejected.RejectedAt = &submittedAt
+	rejected.RejectionReasonCode = &reason
+	rejected.RejectedByPrincipalID = &approver
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, &rejected); err != nil {
+		t.Fatalf("reject submitted requisition: %v", err)
+	}
+	selfRejected := rejected
+	selfRejected.RejectedByPrincipalID = &principal
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, &selfRejected); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("self rejection: %v", err)
+	}
+	tamperedRejection := rejected
+	tamperedRejection.Headcount++
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, &tamperedRejection); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed headcount during rejection: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &rejected, &approved); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("reopen rejected requisition: %v", err)
+	}
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("delete submitted requisition: %v", err)
 	}

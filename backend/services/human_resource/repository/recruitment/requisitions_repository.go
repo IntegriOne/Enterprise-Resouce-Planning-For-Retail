@@ -84,6 +84,12 @@ func (r *RequisitionRepository) FindRequisitionsByWorkLocationReferenceID(ctx co
 func (r *RequisitionRepository) FindRequisitionsByApprovedByPrincipalID(ctx context.Context, v *string, limit, offset int) ([]entity.Requisition, error) {
 	return r.FindByApprovedByPrincipalID(ctx, v, limit, offset)
 }
+func (r *RequisitionRepository) FindRequisitionsByRejectionReasonCode(ctx context.Context, v *string, limit, offset int) ([]entity.Requisition, error) {
+	return r.FindByRejectionReasonCode(ctx, v, limit, offset)
+}
+func (r *RequisitionRepository) FindRequisitionsByRejectedByPrincipalID(ctx context.Context, v *string, limit, offset int) ([]entity.Requisition, error) {
+	return r.FindByRejectedByPrincipalID(ctx, v, limit, offset)
+}
 func (r *RequisitionRepository) FindRequisitionsByIdempotencyKey(ctx context.Context, v string, limit, offset int) ([]entity.Requisition, error) {
 	return r.FindByIdempotencyKey(ctx, v, limit, offset)
 }
@@ -293,6 +299,16 @@ func (r *RequisitionRepository) FindByWorkLocationReferenceID(ctx context.Contex
 // FindByApprovedByPrincipalID mencari kecocokan approved_by_principal_id dengan paginasi dan urutan primary key.
 func (r *RequisitionRepository) FindByApprovedByPrincipalID(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error) {
 	return r.SelectBy(ctx, "approved_by_principal_id", value, limit, offset)
+}
+
+// FindByRejectionReasonCode mencari alasan penolakan dengan paginasi.
+func (r *RequisitionRepository) FindByRejectionReasonCode(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error) {
+	return r.SelectBy(ctx, "rejection_reason_code", value, limit, offset)
+}
+
+// FindByRejectedByPrincipalID mencari pengambil keputusan dengan paginasi.
+func (r *RequisitionRepository) FindByRejectedByPrincipalID(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error) {
+	return r.SelectBy(ctx, "rejected_by_principal_id", value, limit, offset)
 }
 
 // FindByIdempotencyKey mencari kecocokan idempotency_key dengan paginasi dan urutan primary key.

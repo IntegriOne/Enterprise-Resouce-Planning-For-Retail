@@ -12,6 +12,7 @@ service RecruitmentService {
   rpc UpdateRequisition(UpdateRequisitionRequest) returns (RequisitionResponse);
   rpc SubmitRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
   rpc ApproveRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
+  rpc RejectRequisition(RejectRequisitionRequest) returns (RequisitionResponse);
   rpc OpenRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
   rpc CloseRequisition(human_resource.common.v1.IDRequest) returns (RequisitionResponse);
   rpc DeleteRequisition(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -29,6 +30,8 @@ service RecruitmentService {
   rpc FindRequisitionByBudgetReferenceID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
   rpc FindRequisitionByWorkLocationReferenceID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
   rpc FindRequisitionByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByRejectionReasonCode(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
+  rpc FindRequisitionByRejectedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
   rpc FindRequisitionByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (RequisitionsResponse);
   rpc CreateCandidate(CreateCandidateRequest) returns (CandidateResponse);
   rpc UpdateCandidate(UpdateCandidateRequest) returns (CandidateResponse);
@@ -169,6 +172,9 @@ message Requisition {
   optional string created_by_principal_id = 23;
   google.protobuf.Timestamp submitted_at = 24;
   optional string submitted_by_principal_id = 25;
+  google.protobuf.Timestamp rejected_at = 26;
+  optional string rejection_reason_code = 27;
+  optional string rejected_by_principal_id = 28;
 }
 message RequisitionInput {
   optional string requisition_number = 1;
@@ -604,4 +610,9 @@ message ApplicationAssessmentResponse {
 message ApplicationAssessmentsResponse {
   repeated ApplicationAssessment items = 1;
   human_resource.common.v1.PageInfo page = 2;
+}
+
+message RejectRequisitionRequest {
+  string id = 1;
+  string reason_code = 2;
 }

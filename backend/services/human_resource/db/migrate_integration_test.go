@@ -68,13 +68,13 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 		t.Fatalf("repeat HRM schema: %v", err)
 	}
 	var installed int
-	if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM hrm_schema_migrations").Scan(&installed); err != nil || installed != 2 {
+	if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM hrm_schema_migrations").Scan(&installed); err != nil || installed != 6 {
 		t.Fatalf("installed migration count: got %d, error %v", installed, err)
 	}
-	if _, err := pool.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version = 2"); err != nil {
+	if _, err := pool.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version = 6"); err != nil {
 		t.Fatal(err)
 	}
-	downSQL, err := os.ReadFile("migrations/000002_hrm_requisition_provenance.down.sql")
+	downSQL, err := os.ReadFile("migrations/000006_hrm_requisition_rejection.down.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,21 +82,21 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := hrdb.RunMigrationsUp(ctx, pool); err != nil {
-		t.Fatalf("upgrade baseline to version 2: %v", err)
+		t.Fatalf("upgrade HRM schema to version 6: %v", err)
 	}
 	var columns int
 	if err := pool.QueryRowContext(ctx, `SELECT count(*) FROM information_schema.columns
 		WHERE table_schema = current_schema() AND table_name = 'hr_requisitions'
-		AND column_name IN ('created_by_principal_id', 'submitted_at', 'submitted_by_principal_id')`).Scan(&columns); err != nil || columns != 3 {
-		t.Fatalf("requisition provenance columns: got %d, error %v", columns, err)
+		AND column_name IN ('rejected_at', 'rejection_reason_code', 'rejected_by_principal_id')`).Scan(&columns); err != nil || columns != 3 {
+		t.Fatalf("requisition rejection columns: got %d, error %v", columns, err)
 	}
-	if _, err := pool.ExecContext(ctx, "INSERT INTO hrm_schema_migrations (version, checksum) VALUES (3, repeat('0', 64))"); err != nil {
+	if _, err := pool.ExecContext(ctx, "INSERT INTO hrm_schema_migrations (version, checksum) VALUES (7, repeat('0', 64))"); err != nil {
 		t.Fatal(err)
 	}
 	if err := hrdb.RunMigrationsUp(ctx, pool); !errors.Is(err, hrerrors.ErrConflict) {
 		t.Fatalf("unknown version: got %v, want conflict", err)
 	}
-	if _, err := pool.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version = 3"); err != nil {
+	if _, err := pool.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version = 7"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := pool.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = repeat('0', 64) WHERE version = 1"); err != nil {

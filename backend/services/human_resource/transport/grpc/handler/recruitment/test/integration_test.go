@@ -334,10 +334,66 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 2 {
 		t.Fatalf("submitted requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
+	rejectedNumber := "REQ-REJECT-1"
+	rejectedKey := "REQ-REJECT-1"
+	rejectionDraft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: &pb.RequisitionInput{
+		RequisitionNumber: &rejectedNumber, JobId: text(jobID), OrganizationUnitReferenceId: text(familyID),
+		HiringManagerPrincipalId: text(managerPrincipalID), RequisitionType: &draftType,
+		EmploymentCategory: &category, IdempotencyKey: &rejectedKey,
+	}})
+	if err != nil {
+		t.Fatalf("create requisition for rejection: %v", err)
+	}
+	rejectedID := rejectionDraft.GetItem().GetId()
+	if _, err := client.SubmitRequisition(ctx, &common.IDRequest{Id: rejectedID}); err != nil {
+		t.Fatalf("submit requisition for rejection: %v", err)
+	}
+	if _, err := client.RejectRequisition(ctx, &pb.RejectRequisitionRequest{Id: rejectedID, ReasonCode: "BUDGET_DENIED"}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("self rejection status = %v", status.Code(err))
+	}
 	if _, err := client.ApproveRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.PermissionDenied {
 		t.Fatalf("self approval status = %v", status.Code(err))
 	}
 	policy.principalID = "00000000-0000-4000-8000-000000000098"
+	if _, err := client.RejectRequisition(ctx, &pb.RejectRequisitionRequest{Id: rejectedID, ReasonCode: " "}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("blank rejection reason status = %v", status.Code(err))
+	}
+	rejected, err := client.RejectRequisition(ctx, &pb.RejectRequisitionRequest{Id: rejectedID, ReasonCode: "BUDGET_DENIED"})
+	if err != nil || rejected.GetItem().GetStatus() != "rejected" || rejected.GetItem().GetRejectedAt() == nil ||
+		rejected.GetItem().GetRejectionReasonCode() != "BUDGET_DENIED" ||
+		rejected.GetItem().GetRejectedByPrincipalId() != policy.principalID {
+		t.Fatalf("reject requisition: %+v, %v", rejected, err)
+	}
+	rejectedByReason, err := client.FindRequisitionByRejectionReasonCode(ctx, &common.StringFinderRequest{
+		Value: text("BUDGET_DENIED"), Limit: 1,
+	})
+	if err != nil || rejectedByReason.GetPage().GetTotal() != 1 || len(rejectedByReason.GetItems()) != 1 ||
+		rejectedByReason.GetItems()[0].GetId() != rejectedID {
+		t.Fatalf("find rejected requisition by reason: %+v, %v", rejectedByReason, err)
+	}
+	rejectedByActor, err := client.FindRequisitionByRejectedByPrincipalID(ctx, &common.StringFinderRequest{
+		Value: text(policy.principalID), Limit: 1,
+	})
+	if err != nil || rejectedByActor.GetPage().GetTotal() != 1 || len(rejectedByActor.GetItems()) != 1 ||
+		rejectedByActor.GetItems()[0].GetId() != rejectedID {
+		t.Fatalf("find rejected requisition by actor: %+v, %v", rejectedByActor, err)
+	}
+	if _, err := client.RejectRequisition(ctx, &pb.RejectRequisitionRequest{Id: rejectedID, ReasonCode: "BUDGET_DENIED"}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat rejection status = %v", status.Code(err))
+	}
+	if _, err := client.ApproveRequisition(ctx, &common.IDRequest{Id: rejectedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("approval after rejection status = %v", status.Code(err))
+	}
+	var rejectedOutboxCount int64
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", rejectedID).Count(&rejectedOutboxCount).Error; err != nil || rejectedOutboxCount != 3 {
+		t.Fatalf("rejected requisition outbox count = %d, err = %v", rejectedOutboxCount, err)
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_requisitions SET rejected_by_principal_id = NULL WHERE id = ?", rejectedID).Error; err == nil {
+		t.Fatal("database accepted rejected requisition without decision actor")
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_requisitions SET rejection_reason_code = NULL WHERE id = ?", rejectedID).Error; err == nil {
+		t.Fatal("database accepted rejected requisition without reason")
+	}
 	approved, err := client.ApproveRequisition(ctx, &common.IDRequest{Id: submittedID})
 	if err != nil || approved.GetItem().GetStatus() != "approved" || approved.GetItem().GetApprovedAt() == nil ||
 		approved.GetItem().GetApprovedByPrincipalId() != policy.principalID ||

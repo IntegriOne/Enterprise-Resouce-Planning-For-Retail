@@ -31,6 +31,8 @@ type RequisitionRepository interface {
 	FindRequisitionsByBudgetReferenceID(context.Context, *string, int, int) ([]entity.Requisition, error)
 	FindRequisitionsByWorkLocationReferenceID(context.Context, *string, int, int) ([]entity.Requisition, error)
 	FindRequisitionsByApprovedByPrincipalID(context.Context, *string, int, int) ([]entity.Requisition, error)
+	FindRequisitionsByRejectionReasonCode(context.Context, *string, int, int) ([]entity.Requisition, error)
+	FindRequisitionsByRejectedByPrincipalID(context.Context, *string, int, int) ([]entity.Requisition, error)
 	FindRequisitionsByIdempotencyKey(context.Context, string, int, int) ([]entity.Requisition, error)
 	FindByRequisitionNumber(ctx context.Context, value string, limit, offset int) ([]entity.Requisition, error)
 	FindByWorkforcePlanLineID(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error)
@@ -44,6 +46,8 @@ type RequisitionRepository interface {
 	FindByBudgetReferenceID(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error)
 	FindByWorkLocationReferenceID(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error)
 	FindByApprovedByPrincipalID(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error)
+	FindByRejectionReasonCode(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error)
+	FindByRejectedByPrincipalID(ctx context.Context, value *string, limit, offset int) ([]entity.Requisition, error)
 	FindByIdempotencyKey(ctx context.Context, value string, limit, offset int) ([]entity.Requisition, error)
 }
 

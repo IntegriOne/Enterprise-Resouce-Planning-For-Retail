@@ -34,12 +34,13 @@ func (r *Resource[T, K, P]) Command(
 	rejectsApplication := r.spec.Table == "hr_applications" && action == "reject"
 	submitsRequisition := r.spec.Table == "hr_requisitions" && action == "submit"
 	approvesRequisition := r.spec.Table == "hr_requisitions" && action == "approve"
+	rejectsRequisition := r.spec.Table == "hr_requisitions" && action == "reject"
 	opensRequisition := r.spec.Table == "hr_requisitions" && action == "open"
 	closesRequisition := r.spec.Table == "hr_requisitions" && action == "close"
 	publishesJobPosting := r.spec.Table == "hr_job_postings" && action == "publish"
 	closesJobPosting := r.spec.Table == "hr_job_postings" && action == "close"
 	withdrawsJobPosting := r.spec.Table == "hr_job_postings" && action == "withdraw"
-	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
+	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || rejectsRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
 	if !allowed || change == nil {
 		return nil, hrerrors.ErrWorkflowRequired
 	}

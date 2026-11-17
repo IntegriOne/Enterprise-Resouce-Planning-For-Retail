@@ -197,12 +197,16 @@ func specRequisition() operation.Specification[entity.Requisition, string] {
 			return a
 		},
 		Guard: func(action string, old, next *entity.Requisition) error {
-			if action == "create" && (next.CreatedByPrincipalID == nil || next.SubmittedAt != nil || next.SubmittedByPrincipalID != nil) {
+			if action == "create" && (next.CreatedByPrincipalID == nil || next.SubmittedAt != nil || next.SubmittedByPrincipalID != nil ||
+				next.RejectedAt != nil || next.RejectionReasonCode != nil || next.RejectedByPrincipalID != nil) {
 				return hrerrors.ErrWorkflowRequired
 			}
 			if action == "update" && (!reflect.DeepEqual(old.CreatedByPrincipalID, next.CreatedByPrincipalID) ||
 				!reflect.DeepEqual(old.SubmittedAt, next.SubmittedAt) ||
-				!reflect.DeepEqual(old.SubmittedByPrincipalID, next.SubmittedByPrincipalID)) {
+				!reflect.DeepEqual(old.SubmittedByPrincipalID, next.SubmittedByPrincipalID) ||
+				!reflect.DeepEqual(old.RejectedAt, next.RejectedAt) ||
+				!reflect.DeepEqual(old.RejectionReasonCode, next.RejectionReasonCode) ||
+				!reflect.DeepEqual(old.RejectedByPrincipalID, next.RejectedByPrincipalID)) {
 				return hrerrors.ErrWorkflowRequired
 			}
 			if action != "create" && old.Status != "draft" {

@@ -24,6 +24,7 @@ const (
 	RecruitmentService_UpdateRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/UpdateRequisition"
 	RecruitmentService_SubmitRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/SubmitRequisition"
 	RecruitmentService_ApproveRequisition_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/ApproveRequisition"
+	RecruitmentService_RejectRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/RejectRequisition"
 	RecruitmentService_OpenRequisition_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/OpenRequisition"
 	RecruitmentService_CloseRequisition_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/CloseRequisition"
 	RecruitmentService_DeleteRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/DeleteRequisition"
@@ -41,6 +42,8 @@ const (
 	RecruitmentService_FindRequisitionByBudgetReferenceID_FullMethodName                            = "/human_resource.recruitment.v1.RecruitmentService/FindRequisitionByBudgetReferenceID"
 	RecruitmentService_FindRequisitionByWorkLocationReferenceID_FullMethodName                      = "/human_resource.recruitment.v1.RecruitmentService/FindRequisitionByWorkLocationReferenceID"
 	RecruitmentService_FindRequisitionByApprovedByPrincipalID_FullMethodName                        = "/human_resource.recruitment.v1.RecruitmentService/FindRequisitionByApprovedByPrincipalID"
+	RecruitmentService_FindRequisitionByRejectionReasonCode_FullMethodName                          = "/human_resource.recruitment.v1.RecruitmentService/FindRequisitionByRejectionReasonCode"
+	RecruitmentService_FindRequisitionByRejectedByPrincipalID_FullMethodName                        = "/human_resource.recruitment.v1.RecruitmentService/FindRequisitionByRejectedByPrincipalID"
 	RecruitmentService_FindRequisitionByIdempotencyKey_FullMethodName                               = "/human_resource.recruitment.v1.RecruitmentService/FindRequisitionByIdempotencyKey"
 	RecruitmentService_CreateCandidate_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/CreateCandidate"
 	RecruitmentService_UpdateCandidate_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/UpdateCandidate"
@@ -163,6 +166,7 @@ type RecruitmentServiceClient interface {
 	UpdateRequisition(ctx context.Context, in *UpdateRequisitionRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	SubmitRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	ApproveRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
+	RejectRequisition(ctx context.Context, in *RejectRequisitionRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	OpenRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	CloseRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	DeleteRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -180,6 +184,8 @@ type RecruitmentServiceClient interface {
 	FindRequisitionByBudgetReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
 	FindRequisitionByWorkLocationReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
 	FindRequisitionByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
+	FindRequisitionByRejectionReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
+	FindRequisitionByRejectedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
 	FindRequisitionByIdempotencyKey(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
 	CreateCandidate(ctx context.Context, in *CreateCandidateRequest, opts ...grpc.CallOption) (*CandidateResponse, error)
 	UpdateCandidate(ctx context.Context, in *UpdateCandidateRequest, opts ...grpc.CallOption) (*CandidateResponse, error)
@@ -336,6 +342,16 @@ func (c *recruitmentServiceClient) ApproveRequisition(ctx context.Context, in *v
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RequisitionResponse)
 	err := c.cc.Invoke(ctx, RecruitmentService_ApproveRequisition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) RejectRequisition(ctx context.Context, in *RejectRequisitionRequest, opts ...grpc.CallOption) (*RequisitionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequisitionResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_RejectRequisition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -506,6 +522,26 @@ func (c *recruitmentServiceClient) FindRequisitionByApprovedByPrincipalID(ctx co
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RequisitionsResponse)
 	err := c.cc.Invoke(ctx, RecruitmentService_FindRequisitionByApprovedByPrincipalID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) FindRequisitionByRejectionReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequisitionsResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_FindRequisitionByRejectionReasonCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) FindRequisitionByRejectedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequisitionsResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_FindRequisitionByRejectedByPrincipalID_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1640,6 +1676,7 @@ type RecruitmentServiceServer interface {
 	UpdateRequisition(context.Context, *UpdateRequisitionRequest) (*RequisitionResponse, error)
 	SubmitRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	ApproveRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
+	RejectRequisition(context.Context, *RejectRequisitionRequest) (*RequisitionResponse, error)
 	OpenRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	CloseRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	DeleteRequisition(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -1657,6 +1694,8 @@ type RecruitmentServiceServer interface {
 	FindRequisitionByBudgetReferenceID(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error)
 	FindRequisitionByWorkLocationReferenceID(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error)
 	FindRequisitionByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error)
+	FindRequisitionByRejectionReasonCode(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error)
+	FindRequisitionByRejectedByPrincipalID(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error)
 	FindRequisitionByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error)
 	CreateCandidate(context.Context, *CreateCandidateRequest) (*CandidateResponse, error)
 	UpdateCandidate(context.Context, *UpdateCandidateRequest) (*CandidateResponse, error)
@@ -1791,6 +1830,9 @@ func (UnimplementedRecruitmentServiceServer) SubmitRequisition(context.Context, 
 func (UnimplementedRecruitmentServiceServer) ApproveRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ApproveRequisition not implemented")
 }
+func (UnimplementedRecruitmentServiceServer) RejectRequisition(context.Context, *RejectRequisitionRequest) (*RequisitionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RejectRequisition not implemented")
+}
 func (UnimplementedRecruitmentServiceServer) OpenRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method OpenRequisition not implemented")
 }
@@ -1841,6 +1883,12 @@ func (UnimplementedRecruitmentServiceServer) FindRequisitionByWorkLocationRefere
 }
 func (UnimplementedRecruitmentServiceServer) FindRequisitionByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindRequisitionByApprovedByPrincipalID not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) FindRequisitionByRejectionReasonCode(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindRequisitionByRejectionReasonCode not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) FindRequisitionByRejectedByPrincipalID(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindRequisitionByRejectedByPrincipalID not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) FindRequisitionByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*RequisitionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindRequisitionByIdempotencyKey not implemented")
@@ -2271,6 +2319,24 @@ func _RecruitmentService_ApproveRequisition_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RecruitmentService_RejectRequisition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RejectRequisitionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).RejectRequisition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_RejectRequisition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).RejectRequisition(ctx, req.(*RejectRequisitionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RecruitmentService_OpenRequisition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(v1.IDRequest)
 	if err := dec(in); err != nil {
@@ -2573,6 +2639,42 @@ func _RecruitmentService_FindRequisitionByApprovedByPrincipalID_Handler(srv inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RecruitmentServiceServer).FindRequisitionByApprovedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_FindRequisitionByRejectionReasonCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.StringFinderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).FindRequisitionByRejectionReasonCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_FindRequisitionByRejectionReasonCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).FindRequisitionByRejectionReasonCode(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_FindRequisitionByRejectedByPrincipalID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.StringFinderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).FindRequisitionByRejectedByPrincipalID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_FindRequisitionByRejectedByPrincipalID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).FindRequisitionByRejectedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4617,6 +4719,10 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RecruitmentService_ApproveRequisition_Handler,
 		},
 		{
+			MethodName: "RejectRequisition",
+			Handler:    _RecruitmentService_RejectRequisition_Handler,
+		},
+		{
 			MethodName: "OpenRequisition",
 			Handler:    _RecruitmentService_OpenRequisition_Handler,
 		},
@@ -4683,6 +4789,14 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindRequisitionByApprovedByPrincipalID",
 			Handler:    _RecruitmentService_FindRequisitionByApprovedByPrincipalID_Handler,
+		},
+		{
+			MethodName: "FindRequisitionByRejectionReasonCode",
+			Handler:    _RecruitmentService_FindRequisitionByRejectionReasonCode_Handler,
+		},
+		{
+			MethodName: "FindRequisitionByRejectedByPrincipalID",
+			Handler:    _RecruitmentService_FindRequisitionByRejectedByPrincipalID_Handler,
 		},
 		{
 			MethodName: "FindRequisitionByIdempotencyKey",
