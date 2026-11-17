@@ -127,6 +127,27 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &submitted, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("delete submitted requisition: %v", err)
 	}
+	opened := approved
+	opened.Status = "open"
+	openedAt := submittedAt.Add(time.Second)
+	opened.OpenedAt = &openedAt
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &approved, &opened); err != nil {
+		t.Fatalf("open approved requisition: %v", err)
+	}
+	backdatedOpening := opened
+	beforeApproval := submittedAt.Add(-time.Second)
+	backdatedOpening.OpenedAt = &beforeApproval
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &approved, &backdatedOpening); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("opening before approval: %v", err)
+	}
+	changedDuringOpening := opened
+	changedDuringOpening.Headcount++
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &approved, &changedDuringOpening); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed headcount during open: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", &approved, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete approved requisition: %v", err)
+	}
 	changedCreator := updated
 	changedCreator.CreatedByPrincipalID = &otherPrincipal
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &changedCreator); !errors.Is(err, hrerrors.ErrWorkflowRequired) {

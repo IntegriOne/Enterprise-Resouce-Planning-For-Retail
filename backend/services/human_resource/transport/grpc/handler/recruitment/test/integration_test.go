@@ -331,6 +331,17 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 3 {
 		t.Fatalf("approved requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
+	opened, err := client.OpenRequisition(ctx, &common.IDRequest{Id: submittedID})
+	if err != nil || opened.GetItem().GetStatus() != "open" || opened.GetItem().GetOpenedAt() == nil ||
+		opened.GetItem().GetBudgetReferenceId() != approvalVerifier.budgetID {
+		t.Fatalf("open requisition: %+v, %v", opened, err)
+	}
+	if _, err := client.OpenRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat opening status = %v", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 4 {
+		t.Fatalf("opened requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
 	concurrentNumber, concurrentKey := "REQ-CONCURRENT-1", "REQ-CONCURRENT-1"
 	concurrentInput := &pb.RequisitionInput{RequisitionNumber: &concurrentNumber, JobId: text(jobID),
 		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),

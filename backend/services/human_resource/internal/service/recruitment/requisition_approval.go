@@ -53,17 +53,7 @@ func (s *Service) ApproveRequisition(ctx context.Context, requisitionID string) 
 			strings.EqualFold(actor.PrincipalID, *requisition.SubmittedByPrincipalID) {
 			return nil, hrerrors.ErrForbidden
 		}
-		budgetID, err := s.approvalVerifier.VerifyRequisitionApproval(txCtx, RequisitionApprovalCheck{
-			RequisitionID: requisition.ID, RequisitionType: requisition.RequisitionType,
-			OrganizationUnitReferenceID: requisition.OrganizationUnitReferenceID,
-			HiringManagerPrincipalID:    requisition.HiringManagerPrincipalID,
-			JobID:                       requisition.JobID, PositionID: requisition.PositionID,
-			WorkforcePlanLineID: requisition.WorkforcePlanLineID, Headcount: requisition.Headcount,
-			TargetStartDate: requisition.TargetStartDate, EmploymentCategory: requisition.EmploymentCategory,
-			CreatedByPrincipalID:   *requisition.CreatedByPrincipalID,
-			SubmittedByPrincipalID: *requisition.SubmittedByPrincipalID,
-			ApproverPrincipalID:    actor.PrincipalID,
-		})
+		budgetID, err := s.approvalVerifier.VerifyRequisitionApproval(txCtx, requisitionApprovalCheck(requisition, actor.PrincipalID))
 		if err != nil {
 			if txCtx.Err() != nil {
 				return nil, txCtx.Err()
@@ -82,4 +72,18 @@ func (s *Service) ApproveRequisition(ctx context.Context, requisitionID string) 
 		requisition.ApprovedByPrincipalID = &actor.PrincipalID
 		return requisition, nil
 	})
+}
+
+func requisitionApprovalCheck(requisition *entity.Requisition, approverID string) RequisitionApprovalCheck {
+	return RequisitionApprovalCheck{
+		RequisitionID: requisition.ID, RequisitionType: requisition.RequisitionType,
+		OrganizationUnitReferenceID: requisition.OrganizationUnitReferenceID,
+		HiringManagerPrincipalID:    requisition.HiringManagerPrincipalID,
+		JobID:                       requisition.JobID, PositionID: requisition.PositionID,
+		WorkforcePlanLineID: requisition.WorkforcePlanLineID, Headcount: requisition.Headcount,
+		TargetStartDate: requisition.TargetStartDate, EmploymentCategory: requisition.EmploymentCategory,
+		CreatedByPrincipalID:   *requisition.CreatedByPrincipalID,
+		SubmittedByPrincipalID: *requisition.SubmittedByPrincipalID,
+		ApproverPrincipalID:    approverID,
+	}
 }
