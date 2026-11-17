@@ -63,6 +63,12 @@ func (r *JobPostingRepository) FindJobPostingsByStatus(ctx context.Context, v st
 func (r *JobPostingRepository) FindJobPostingsByCreatedByPrincipalID(ctx context.Context, v string, limit, offset int) ([]entity.JobPosting, error) {
 	return r.FindByCreatedByPrincipalID(ctx, v, limit, offset)
 }
+func (r *JobPostingRepository) FindJobPostingsByWithdrawalReasonCode(ctx context.Context, v string, limit, offset int) ([]entity.JobPosting, error) {
+	return r.FindByWithdrawalReasonCode(ctx, v, limit, offset)
+}
+func (r *JobPostingRepository) FindJobPostingsByWithdrawnByPrincipalID(ctx context.Context, v string, limit, offset int) ([]entity.JobPosting, error) {
+	return r.FindByWithdrawnByPrincipalID(ctx, v, limit, offset)
+}
 
 // NewJobPostingRepository memvalidasi koneksi dan menyiapkan repository.
 func NewJobPostingRepository(db *gorm.DB) (*JobPostingRepository, error) {
@@ -234,4 +240,14 @@ func (r *JobPostingRepository) FindByStatus(ctx context.Context, value string, l
 // FindByCreatedByPrincipalID mencari kecocokan created_by_principal_id dengan paginasi dan urutan primary key.
 func (r *JobPostingRepository) FindByCreatedByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error) {
 	return r.SelectBy(ctx, "created_by_principal_id", value, limit, offset)
+}
+
+// FindByWithdrawalReasonCode mencari alasan penarikan dengan paginasi stabil.
+func (r *JobPostingRepository) FindByWithdrawalReasonCode(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error) {
+	return r.SelectBy(ctx, "withdrawal_reason_code", value, limit, offset)
+}
+
+// FindByWithdrawnByPrincipalID mencari actor penarikan dengan paginasi stabil.
+func (r *JobPostingRepository) FindByWithdrawnByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error) {
+	return r.SelectBy(ctx, "withdrawn_by_principal_id", value, limit, offset)
 }

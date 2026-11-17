@@ -1004,6 +1004,22 @@ func (s *Service) FindJobPostingByCreatedByPrincipalID(ctx context.Context, valu
 	return s.jobPosting.List(ctx, []domainrepo.Filter{{Column: "created_by_principal_id", Values: []any{value}}}, limit, offset)
 }
 
+// FindJobPostingByWithdrawalReasonCode menyaring alasan penarikan dengan scope server.
+func (s *Service) FindJobPostingByWithdrawalReasonCode(ctx context.Context, value string, limit, offset int) (operation.Page[entity.JobPosting], error) {
+	if s == nil {
+		return operation.Page[entity.JobPosting]{}, hrerrors.ErrUnavailable
+	}
+	return s.jobPosting.List(ctx, []domainrepo.Filter{{Column: "withdrawal_reason_code", Values: []any{value}}}, limit, offset)
+}
+
+// FindJobPostingByWithdrawnByPrincipalID menyaring actor penarikan dengan scope server.
+func (s *Service) FindJobPostingByWithdrawnByPrincipalID(ctx context.Context, value string, limit, offset int) (operation.Page[entity.JobPosting], error) {
+	if s == nil {
+		return operation.Page[entity.JobPosting]{}, hrerrors.ErrUnavailable
+	}
+	return s.jobPosting.List(ctx, []domainrepo.Filter{{Column: "withdrawn_by_principal_id", Values: []any{value}}}, limit, offset)
+}
+
 // CreateApplicationAssessment menjalankan operasi aplikasi dengan validasi dan scope server.
 func (s *Service) CreateApplicationAssessment(ctx context.Context, in CreateApplicationAssessmentInput) (*entity.ApplicationAssessment, error) {
 	if s == nil {

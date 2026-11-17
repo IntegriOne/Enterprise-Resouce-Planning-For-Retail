@@ -401,6 +401,48 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", posting.GetItem().GetId()).Count(&postingOutboxCount).Error; err != nil || postingOutboxCount != 3 {
 		t.Fatalf("closed posting outbox count = %d, err = %v", postingOutboxCount, err)
 	}
+	postingInput.ChannelCode = text("external_board")
+	withdrawalPosting, err := client.CreateJobPosting(ctx, &pb.CreateJobPostingRequest{Input: postingInput})
+	if err != nil {
+		t.Fatalf("create withdrawal posting: %v", err)
+	}
+	if _, err := client.PublishJobPosting(ctx, &common.IDRequest{Id: withdrawalPosting.GetItem().GetId()}); err != nil {
+		t.Fatalf("publish withdrawal posting: %v", err)
+	}
+	if _, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("close with second published posting status = %v", status.Code(err))
+	}
+	if _, err := client.WithdrawJobPosting(ctx, &pb.WithdrawJobPostingRequest{Id: withdrawalPosting.GetItem().GetId()}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("withdraw without reason status = %v", status.Code(err))
+	}
+	withdrawnPosting, err := client.WithdrawJobPosting(ctx, &pb.WithdrawJobPostingRequest{
+		Id: withdrawalPosting.GetItem().GetId(), ReasonCode: "DOCUMENT_REVOKED",
+	})
+	if err != nil || withdrawnPosting.GetItem().GetStatus() != "withdrawn" || withdrawnPosting.GetItem().GetWithdrawnAt() == nil ||
+		withdrawnPosting.GetItem().GetWithdrawalReasonCode() != "DOCUMENT_REVOKED" ||
+		withdrawnPosting.GetItem().GetWithdrawnByPrincipalId() != policy.principalID {
+		t.Fatalf("withdraw posting: %+v, %v", withdrawnPosting, err)
+	}
+	reasonCode := "DOCUMENT_REVOKED"
+	byReason, err := client.FindJobPostingByWithdrawalReasonCode(ctx, &common.StringFinderRequest{Value: &reasonCode, Limit: 1})
+	if err != nil || len(byReason.GetItems()) != 1 || byReason.GetItems()[0].GetId() != withdrawalPosting.GetItem().GetId() {
+		t.Fatalf("find withdrawn posting by reason: %+v, %v", byReason, err)
+	}
+	byActor, err := client.FindJobPostingByWithdrawnByPrincipalID(ctx, &common.StringFinderRequest{Value: &policy.principalID, Limit: 1})
+	if err != nil || len(byActor.GetItems()) != 1 || byActor.GetItems()[0].GetId() != withdrawalPosting.GetItem().GetId() {
+		t.Fatalf("find withdrawn posting by actor: %+v, %v", byActor, err)
+	}
+	if _, err := client.WithdrawJobPosting(ctx, &pb.WithdrawJobPostingRequest{
+		Id: withdrawalPosting.GetItem().GetId(), ReasonCode: "DOCUMENT_REVOKED",
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat posting withdrawal status = %v", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", withdrawalPosting.GetItem().GetId()).Count(&postingOutboxCount).Error; err != nil || postingOutboxCount != 3 {
+		t.Fatalf("withdrawn posting outbox count = %d, err = %v", postingOutboxCount, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_job_postings").Where("id = ?", withdrawalPosting.GetItem().GetId()).Update("withdrawal_reason_code", nil).Error; err == nil {
+		t.Fatal("database accepted withdrawn posting without reason")
+	}
 	closed, err := client.CloseRequisition(ctx, &common.IDRequest{Id: submittedID})
 	if err != nil || closed.GetItem().GetStatus() != "closed" || closed.GetItem().GetClosedAt() == nil {
 		t.Fatalf("close requisition: %+v, %v", closed, err)
@@ -411,7 +453,7 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 5 {
 		t.Fatalf("closed requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
-	postingInput.ChannelCode = text("external_board")
+	postingInput.ChannelCode = text("late_board")
 	if _, err := client.CreateJobPosting(ctx, &pb.CreateJobPostingRequest{Input: postingInput}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("create posting after close status = %v", status.Code(err))
 	}

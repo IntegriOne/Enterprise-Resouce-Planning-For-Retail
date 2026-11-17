@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"reflect"
+	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -47,7 +48,8 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.JobPosting)
-		if !ok || previous == nil || previous.ClosesAt != nil {
+		if !ok || previous == nil || previous.ClosesAt != nil || previous.WithdrawnAt != nil ||
+			previous.WithdrawalReasonCode != nil || previous.WithdrawnByPrincipalID != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 		if previous.Status == "draft" && (previous.PublishedAt != nil || previous.ExternalPostingReference != nil) {
@@ -66,6 +68,7 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 	posting := previous
 	publishing := false
 	closing := false
+	withdrawing := false
 	if after != nil {
 		var ok bool
 		posting, ok = after.(*entity.JobPosting)
@@ -74,6 +77,7 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 		}
 		publishing = previous != nil && previous.Status == "draft" && posting.Status == "published"
 		closing = previous != nil && previous.Status == "published" && posting.Status == "closed"
+		withdrawing = previous != nil && previous.Status == "published" && posting.Status == "withdrawn"
 		if publishing {
 			original := *posting
 			original.Status = "draft"
@@ -88,6 +92,18 @@ func (v *jobPostingValidator) ValidateMutation(ctx context.Context, table string
 			original.ClosesAt = nil
 			if posting.PublishedAt == nil || posting.ClosesAt == nil || !posting.ClosesAt.After(*posting.PublishedAt) ||
 				!reflect.DeepEqual(previous, &original) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if withdrawing {
+			original := *posting
+			original.Status = "published"
+			original.WithdrawnAt = nil
+			original.WithdrawalReasonCode = nil
+			original.WithdrawnByPrincipalID = nil
+			if posting.PublishedAt == nil || posting.WithdrawnAt == nil ||
+				!posting.WithdrawnAt.After(*posting.PublishedAt) || posting.ClosesAt != nil ||
+				posting.WithdrawalReasonCode == nil || strings.TrimSpace(*posting.WithdrawalReasonCode) == "" ||
+				posting.WithdrawnByPrincipalID == nil || !reflect.DeepEqual(previous, &original) {
 				return hrerrors.ErrWorkflowRequired
 			}
 		} else if previous != nil && previous.Status == "published" {

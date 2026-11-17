@@ -1186,6 +1186,9 @@ Table hr_job_postings {
   status varchar(30) [not null, default: 'draft']
   published_at timestamptz
   closes_at timestamptz
+  withdrawn_at timestamptz
+  withdrawal_reason_code varchar(80)
+  withdrawn_by_principal_id uuid
   created_by_principal_id uuid [not null]
   indexes {
     (requisition_id, channel_code, posting_version) [unique]
@@ -1194,6 +1197,8 @@ Table hr_job_postings {
   checks {
     `posting_version > 0 AND (closes_at IS NULL OR published_at IS NULL OR closes_at > published_at)` [name: 'ck_hr_posting_version_dates']
     `status IN ('draft','published','closed','withdrawn') AND (status <> 'published' OR published_at IS NOT NULL)` [name: 'ck_hr_posting_status']
+    `status <> 'withdrawn' OR (published_at IS NOT NULL AND withdrawn_at IS NOT NULL AND withdrawn_at > published_at AND closes_at IS NULL AND withdrawal_reason_code IS NOT NULL AND btrim(withdrawal_reason_code) <> '' AND withdrawn_by_principal_id IS NOT NULL)` [name: 'ck_hr_posting_withdrawn']
+    `status = 'withdrawn' OR (withdrawn_at IS NULL AND withdrawal_reason_code IS NULL AND withdrawn_by_principal_id IS NULL)` [name: 'ck_hr_posting_withdrawn_only']
   }
 }
 

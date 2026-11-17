@@ -647,6 +647,21 @@ func (x *JobPosting) Validate() error {
 			return hrerrors.Invalid("closes_at", "has invalid value")
 		}
 	}
+	if x.WithdrawnAt != nil {
+		if err := validateTime("withdrawn_at", *x.WithdrawnAt); err != nil {
+			return hrerrors.Invalid("withdrawn_at", "has invalid value")
+		}
+	}
+	if x.WithdrawalReasonCode != nil {
+		if err := validateText("withdrawal_reason_code", *x.WithdrawalReasonCode, true, 80, 0); err != nil {
+			return hrerrors.Invalid("withdrawal_reason_code", "has invalid value")
+		}
+	}
+	if x.WithdrawnByPrincipalID != nil {
+		if err := ValidateUUID("withdrawn_by_principal_id", *x.WithdrawnByPrincipalID); err != nil {
+			return hrerrors.Invalid("withdrawn_by_principal_id", "has invalid value")
+		}
+	}
 	if err := ValidateUUID("created_by_principal_id", x.CreatedByPrincipalID); err != nil {
 		return hrerrors.Invalid("created_by_principal_id", "has invalid value")
 	}
@@ -655,6 +670,14 @@ func (x *JobPosting) Validate() error {
 	}
 	if ruleAnd(ruleOr(ruleOr(ruleOr(ruleKnown(string(x.Status) == string("draft")), ruleKnown(string(x.Status) == string("published"))), ruleKnown(string(x.Status) == string("closed"))), ruleKnown(string(x.Status) == string("withdrawn"))), ruleOr(ruleKnown(string(x.Status) != string("published")), ruleKnown(x.PublishedAt != nil))) == ruleFalse {
 		return hrerrors.Invalid("hr_job_postings", "ck_hr_posting_status")
+	}
+	if x.Status == "withdrawn" {
+		if x.PublishedAt == nil || x.WithdrawnAt == nil || !x.WithdrawnAt.After(*x.PublishedAt) ||
+			x.ClosesAt != nil || x.WithdrawalReasonCode == nil || x.WithdrawnByPrincipalID == nil {
+			return hrerrors.Invalid("hr_job_postings", "ck_hr_posting_withdrawn")
+		}
+	} else if x.WithdrawnAt != nil || x.WithdrawalReasonCode != nil || x.WithdrawnByPrincipalID != nil {
+		return hrerrors.Invalid("hr_job_postings", "ck_hr_posting_withdrawn_only")
 	}
 	return nil
 }

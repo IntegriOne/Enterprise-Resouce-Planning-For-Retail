@@ -126,6 +126,7 @@ const (
 	RecruitmentService_CreateJobPosting_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/CreateJobPosting"
 	RecruitmentService_PublishJobPosting_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/PublishJobPosting"
 	RecruitmentService_CloseJobPosting_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/CloseJobPosting"
+	RecruitmentService_WithdrawJobPosting_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/WithdrawJobPosting"
 	RecruitmentService_UpdateJobPosting_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/UpdateJobPosting"
 	RecruitmentService_DeleteJobPosting_FullMethodName                                              = "/human_resource.recruitment.v1.RecruitmentService/DeleteJobPosting"
 	RecruitmentService_GetJobPostingByID_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/GetJobPostingByID"
@@ -135,6 +136,8 @@ const (
 	RecruitmentService_FindJobPostingByContentDocumentVersionReferenceID_FullMethodName             = "/human_resource.recruitment.v1.RecruitmentService/FindJobPostingByContentDocumentVersionReferenceID"
 	RecruitmentService_FindJobPostingByStatus_FullMethodName                                        = "/human_resource.recruitment.v1.RecruitmentService/FindJobPostingByStatus"
 	RecruitmentService_FindJobPostingByCreatedByPrincipalID_FullMethodName                          = "/human_resource.recruitment.v1.RecruitmentService/FindJobPostingByCreatedByPrincipalID"
+	RecruitmentService_FindJobPostingByWithdrawalReasonCode_FullMethodName                          = "/human_resource.recruitment.v1.RecruitmentService/FindJobPostingByWithdrawalReasonCode"
+	RecruitmentService_FindJobPostingByWithdrawnByPrincipalID_FullMethodName                        = "/human_resource.recruitment.v1.RecruitmentService/FindJobPostingByWithdrawnByPrincipalID"
 	RecruitmentService_CreateApplicationAssessment_FullMethodName                                   = "/human_resource.recruitment.v1.RecruitmentService/CreateApplicationAssessment"
 	RecruitmentService_UpdateApplicationAssessment_FullMethodName                                   = "/human_resource.recruitment.v1.RecruitmentService/UpdateApplicationAssessment"
 	RecruitmentService_DeleteApplicationAssessment_FullMethodName                                   = "/human_resource.recruitment.v1.RecruitmentService/DeleteApplicationAssessment"
@@ -260,6 +263,7 @@ type RecruitmentServiceClient interface {
 	CreateJobPosting(ctx context.Context, in *CreateJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
 	PublishJobPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
 	CloseJobPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
+	WithdrawJobPosting(ctx context.Context, in *WithdrawJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
 	UpdateJobPosting(ctx context.Context, in *UpdateJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
 	DeleteJobPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetJobPostingByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobPostingResponse, error)
@@ -269,6 +273,8 @@ type RecruitmentServiceClient interface {
 	FindJobPostingByContentDocumentVersionReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error)
 	FindJobPostingByStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error)
 	FindJobPostingByCreatedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error)
+	FindJobPostingByWithdrawalReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error)
+	FindJobPostingByWithdrawnByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error)
 	CreateApplicationAssessment(ctx context.Context, in *CreateApplicationAssessmentRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error)
 	UpdateApplicationAssessment(ctx context.Context, in *UpdateApplicationAssessmentRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error)
 	DeleteApplicationAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -1352,6 +1358,16 @@ func (c *recruitmentServiceClient) CloseJobPosting(ctx context.Context, in *v1.I
 	return out, nil
 }
 
+func (c *recruitmentServiceClient) WithdrawJobPosting(ctx context.Context, in *WithdrawJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobPostingResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_WithdrawJobPosting_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *recruitmentServiceClient) UpdateJobPosting(ctx context.Context, in *UpdateJobPostingRequest, opts ...grpc.CallOption) (*JobPostingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(JobPostingResponse)
@@ -1436,6 +1452,26 @@ func (c *recruitmentServiceClient) FindJobPostingByCreatedByPrincipalID(ctx cont
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(JobPostingsResponse)
 	err := c.cc.Invoke(ctx, RecruitmentService_FindJobPostingByCreatedByPrincipalID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) FindJobPostingByWithdrawalReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobPostingsResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_FindJobPostingByWithdrawalReasonCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) FindJobPostingByWithdrawnByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobPostingsResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_FindJobPostingByWithdrawnByPrincipalID_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1682,6 +1718,7 @@ type RecruitmentServiceServer interface {
 	CreateJobPosting(context.Context, *CreateJobPostingRequest) (*JobPostingResponse, error)
 	PublishJobPosting(context.Context, *v1.IDRequest) (*JobPostingResponse, error)
 	CloseJobPosting(context.Context, *v1.IDRequest) (*JobPostingResponse, error)
+	WithdrawJobPosting(context.Context, *WithdrawJobPostingRequest) (*JobPostingResponse, error)
 	UpdateJobPosting(context.Context, *UpdateJobPostingRequest) (*JobPostingResponse, error)
 	DeleteJobPosting(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetJobPostingByID(context.Context, *v1.IDRequest) (*JobPostingResponse, error)
@@ -1691,6 +1728,8 @@ type RecruitmentServiceServer interface {
 	FindJobPostingByContentDocumentVersionReferenceID(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error)
 	FindJobPostingByStatus(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error)
 	FindJobPostingByCreatedByPrincipalID(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error)
+	FindJobPostingByWithdrawalReasonCode(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error)
+	FindJobPostingByWithdrawnByPrincipalID(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error)
 	CreateApplicationAssessment(context.Context, *CreateApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error)
 	UpdateApplicationAssessment(context.Context, *UpdateApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error)
 	DeleteApplicationAssessment(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -2032,6 +2071,9 @@ func (UnimplementedRecruitmentServiceServer) PublishJobPosting(context.Context, 
 func (UnimplementedRecruitmentServiceServer) CloseJobPosting(context.Context, *v1.IDRequest) (*JobPostingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CloseJobPosting not implemented")
 }
+func (UnimplementedRecruitmentServiceServer) WithdrawJobPosting(context.Context, *WithdrawJobPostingRequest) (*JobPostingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WithdrawJobPosting not implemented")
+}
 func (UnimplementedRecruitmentServiceServer) UpdateJobPosting(context.Context, *UpdateJobPostingRequest) (*JobPostingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateJobPosting not implemented")
 }
@@ -2058,6 +2100,12 @@ func (UnimplementedRecruitmentServiceServer) FindJobPostingByStatus(context.Cont
 }
 func (UnimplementedRecruitmentServiceServer) FindJobPostingByCreatedByPrincipalID(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindJobPostingByCreatedByPrincipalID not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) FindJobPostingByWithdrawalReasonCode(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindJobPostingByWithdrawalReasonCode not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) FindJobPostingByWithdrawnByPrincipalID(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindJobPostingByWithdrawnByPrincipalID not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) CreateApplicationAssessment(context.Context, *CreateApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateApplicationAssessment not implemented")
@@ -4027,6 +4075,24 @@ func _RecruitmentService_CloseJobPosting_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RecruitmentService_WithdrawJobPosting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawJobPostingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).WithdrawJobPosting(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_WithdrawJobPosting_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).WithdrawJobPosting(ctx, req.(*WithdrawJobPostingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RecruitmentService_UpdateJobPosting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateJobPostingRequest)
 	if err := dec(in); err != nil {
@@ -4185,6 +4251,42 @@ func _RecruitmentService_FindJobPostingByCreatedByPrincipalID_Handler(srv interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RecruitmentServiceServer).FindJobPostingByCreatedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_FindJobPostingByWithdrawalReasonCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.StringFinderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).FindJobPostingByWithdrawalReasonCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_FindJobPostingByWithdrawalReasonCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).FindJobPostingByWithdrawalReasonCode(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_FindJobPostingByWithdrawnByPrincipalID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.StringFinderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).FindJobPostingByWithdrawnByPrincipalID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_FindJobPostingByWithdrawnByPrincipalID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).FindJobPostingByWithdrawnByPrincipalID(ctx, req.(*v1.StringFinderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4855,6 +4957,10 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RecruitmentService_CloseJobPosting_Handler,
 		},
 		{
+			MethodName: "WithdrawJobPosting",
+			Handler:    _RecruitmentService_WithdrawJobPosting_Handler,
+		},
+		{
 			MethodName: "UpdateJobPosting",
 			Handler:    _RecruitmentService_UpdateJobPosting_Handler,
 		},
@@ -4889,6 +4995,14 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindJobPostingByCreatedByPrincipalID",
 			Handler:    _RecruitmentService_FindJobPostingByCreatedByPrincipalID_Handler,
+		},
+		{
+			MethodName: "FindJobPostingByWithdrawalReasonCode",
+			Handler:    _RecruitmentService_FindJobPostingByWithdrawalReasonCode_Handler,
+		},
+		{
+			MethodName: "FindJobPostingByWithdrawnByPrincipalID",
+			Handler:    _RecruitmentService_FindJobPostingByWithdrawnByPrincipalID_Handler,
 		},
 		{
 			MethodName: "CreateApplicationAssessment",

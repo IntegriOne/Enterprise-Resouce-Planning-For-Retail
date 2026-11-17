@@ -17,6 +17,7 @@ func jobPosting(v *entity.JobPosting) *pb.JobPosting {
 		Id: v.ID, RequisitionId: v.RequisitionID, ChannelCode: v.ChannelCode, PostingVersion: v.PostingVersion, ExternalPostingReference: v.ExternalPostingReference,
 		ContentDocumentVersionReferenceId: v.ContentDocumentVersionReferenceID, ContentDigest: append([]byte(nil), v.ContentDigest...),
 		Status: v.Status, PublishedAt: timestamp(v.PublishedAt), ClosesAt: timestamp(v.ClosesAt), CreatedByPrincipalId: v.CreatedByPrincipalID,
+		WithdrawnAt: timestamp(v.WithdrawnAt), WithdrawalReasonCode: v.WithdrawalReasonCode, WithdrawnByPrincipalId: v.WithdrawnByPrincipalID,
 	}
 }
 func jobPostingResponse(v *entity.JobPosting, err error) (*pb.JobPostingResponse, error) {
@@ -66,6 +67,13 @@ func (h *Handler) CloseJobPosting(ctx context.Context, r *common.IDRequest) (*pb
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return jobPostingResponse(h.service.CloseJobPosting(ctx, r.Id))
+}
+
+func (h *Handler) WithdrawJobPosting(ctx context.Context, r *pb.WithdrawJobPostingRequest) (*pb.JobPostingResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return jobPostingResponse(h.service.WithdrawJobPosting(ctx, r.Id, r.ReasonCode))
 }
 func (h *Handler) UpdateJobPosting(ctx context.Context, r *pb.UpdateJobPostingRequest) (*pb.JobPostingResponse, error) {
 	if r == nil || r.Input == nil {
@@ -134,4 +142,18 @@ func (h *Handler) FindJobPostingByCreatedByPrincipalID(ctx context.Context, r *c
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return jobPostings(h.service.FindJobPostingByCreatedByPrincipalID(ctx, *r.Value, int(r.Limit), int(r.Offset)))
+}
+
+func (h *Handler) FindJobPostingByWithdrawalReasonCode(ctx context.Context, r *common.StringFinderRequest) (*pb.JobPostingsResponse, error) {
+	if r == nil || r.Value == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return jobPostings(h.service.FindJobPostingByWithdrawalReasonCode(ctx, *r.Value, int(r.Limit), int(r.Offset)))
+}
+
+func (h *Handler) FindJobPostingByWithdrawnByPrincipalID(ctx context.Context, r *common.StringFinderRequest) (*pb.JobPostingsResponse, error) {
+	if r == nil || r.Value == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return jobPostings(h.service.FindJobPostingByWithdrawnByPrincipalID(ctx, *r.Value, int(r.Limit), int(r.Offset)))
 }

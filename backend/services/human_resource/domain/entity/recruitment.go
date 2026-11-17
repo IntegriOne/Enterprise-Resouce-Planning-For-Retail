@@ -181,6 +181,9 @@ type JobPosting struct {
 	Status                            string     `gorm:"column:status;type:varchar(30)" json:"status"`
 	PublishedAt                       *time.Time `gorm:"column:published_at;type:timestamptz" json:"published_at"`
 	ClosesAt                          *time.Time `gorm:"column:closes_at;type:timestamptz" json:"closes_at"`
+	WithdrawnAt                       *time.Time `gorm:"column:withdrawn_at;type:timestamptz" json:"withdrawn_at"`
+	WithdrawalReasonCode              *string    `gorm:"column:withdrawal_reason_code;type:varchar(80)" json:"withdrawal_reason_code"`
+	WithdrawnByPrincipalID            *string    `gorm:"column:withdrawn_by_principal_id;type:uuid" json:"withdrawn_by_principal_id"`
 	CreatedByPrincipalID              string     `gorm:"column:created_by_principal_id;type:uuid" json:"created_by_principal_id"`
 }
 

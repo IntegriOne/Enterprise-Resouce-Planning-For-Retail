@@ -252,11 +252,15 @@ type JobPostingRepository interface {
 	FindJobPostingsByContentDocumentVersionReferenceID(context.Context, string, int, int) ([]entity.JobPosting, error)
 	FindJobPostingsByStatus(context.Context, string, int, int) ([]entity.JobPosting, error)
 	FindJobPostingsByCreatedByPrincipalID(context.Context, string, int, int) ([]entity.JobPosting, error)
+	FindJobPostingsByWithdrawalReasonCode(context.Context, string, int, int) ([]entity.JobPosting, error)
+	FindJobPostingsByWithdrawnByPrincipalID(context.Context, string, int, int) ([]entity.JobPosting, error)
 	FindByRequisitionID(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error)
 	FindByChannelCode(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error)
 	FindByContentDocumentVersionReferenceID(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error)
 	FindByStatus(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error)
 	FindByCreatedByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error)
+	FindByWithdrawalReasonCode(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error)
+	FindByWithdrawnByPrincipalID(ctx context.Context, value string, limit, offset int) ([]entity.JobPosting, error)
 }
 
 // ApplicationAssessmentRepository adalah port persistensi hr_application_assessments.

@@ -114,6 +114,7 @@ service RecruitmentService {
   rpc CreateJobPosting(CreateJobPostingRequest) returns (JobPostingResponse);
   rpc PublishJobPosting(human_resource.common.v1.IDRequest) returns (JobPostingResponse);
   rpc CloseJobPosting(human_resource.common.v1.IDRequest) returns (JobPostingResponse);
+  rpc WithdrawJobPosting(WithdrawJobPostingRequest) returns (JobPostingResponse);
   rpc UpdateJobPosting(UpdateJobPostingRequest) returns (JobPostingResponse);
   rpc DeleteJobPosting(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetJobPostingByID(human_resource.common.v1.IDRequest) returns (JobPostingResponse);
@@ -123,6 +124,8 @@ service RecruitmentService {
   rpc FindJobPostingByContentDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
   rpc FindJobPostingByStatus(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
   rpc FindJobPostingByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
+  rpc FindJobPostingByWithdrawalReasonCode(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
+  rpc FindJobPostingByWithdrawnByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
   rpc CreateApplicationAssessment(CreateApplicationAssessmentRequest) returns (ApplicationAssessmentResponse);
   rpc UpdateApplicationAssessment(UpdateApplicationAssessmentRequest) returns (ApplicationAssessmentResponse);
   rpc DeleteApplicationAssessment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -511,6 +514,9 @@ message JobPosting {
   google.protobuf.Timestamp published_at = 9;
   google.protobuf.Timestamp closes_at = 10;
   string created_by_principal_id = 11;
+  google.protobuf.Timestamp withdrawn_at = 12;
+  optional string withdrawal_reason_code = 13;
+  optional string withdrawn_by_principal_id = 14;
 }
 message JobPostingInput {
   optional string requisition_id = 1;
@@ -530,6 +536,10 @@ message UpdateJobPostingRequest {
   string id = 1;
   JobPostingInput input = 2;
   google.protobuf.FieldMask update_mask = 3;
+}
+message WithdrawJobPostingRequest {
+  string id = 1;
+  string reason_code = 2;
 }
 message JobPostingResponse {
   JobPosting item = 1;

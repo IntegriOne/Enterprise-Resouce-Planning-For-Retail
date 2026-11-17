@@ -81,6 +81,24 @@ func TestJobPostingValidatorLocksOpenRequisitionAndFreezesWorkflow(t *testing.T)
 	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &published, &closed); err != nil {
 		t.Fatalf("close posting with existing application: %v", err)
 	}
+	reasonCode := "DOCUMENT_REVOKED"
+	withdrawnActorID := "00000000-0000-4000-8000-000000000007"
+	withdrawn := published
+	withdrawn.Status = "withdrawn"
+	withdrawn.WithdrawnAt = &closedAt
+	withdrawn.WithdrawalReasonCode = &reasonCode
+	withdrawn.WithdrawnByPrincipalID = &withdrawnActorID
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &published, &withdrawn); err != nil {
+		t.Fatalf("withdraw posting with existing application: %v", err)
+	}
+	tamperedWithdrawal := withdrawn
+	tamperedWithdrawal.ContentDigest = bytes.Repeat([]byte{0x43}, 32)
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &published, &tamperedWithdrawal); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed content during withdrawal: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &withdrawn, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete withdrawn posting: %v", err)
+	}
 	applications.count = 0
 	if err := v.ValidateMutation(t.Context(), "hr_job_postings", &closed, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("delete closed posting: %v", err)
