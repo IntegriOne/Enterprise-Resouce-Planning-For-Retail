@@ -94,8 +94,20 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	if !ok || value == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	if value.Status != "draft" || value.CreatedByPrincipalID == nil || value.SubmittedAt != nil ||
-		value.SubmittedByPrincipalID != nil || value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil ||
+	submitting := previous != nil && value.Status == "submitted"
+	if submitting {
+		original := *value
+		original.Status = "draft"
+		original.SubmittedAt = nil
+		original.SubmittedByPrincipalID = nil
+		if previous.CreatedByPrincipalID == nil || previous.SubmittedAt != nil || previous.SubmittedByPrincipalID != nil ||
+			value.SubmittedAt == nil || value.SubmittedByPrincipalID == nil ||
+			*value.SubmittedByPrincipalID != *previous.CreatedByPrincipalID || !reflect.DeepEqual(previous, &original) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	}
+	if (!submitting && (value.Status != "draft" || value.SubmittedAt != nil || value.SubmittedByPrincipalID != nil)) ||
+		value.CreatedByPrincipalID == nil || value.ApprovedAt != nil || value.ApprovedByPrincipalID != nil ||
 		value.OpenedAt != nil || value.ClosedAt != nil ||
 		(previous != nil && (previous.ID != value.ID || previous.RequisitionNumber != value.RequisitionNumber ||
 			previous.HiringManagerPrincipalID != value.HiringManagerPrincipalID || previous.IdempotencyKey != value.IdempotencyKey ||

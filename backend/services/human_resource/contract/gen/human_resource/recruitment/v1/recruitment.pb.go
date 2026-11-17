@@ -48,6 +48,9 @@ type Requisition struct {
 	OpenedAt                    *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=opened_at,json=openedAt,proto3" json:"opened_at,omitempty"`
 	ClosedAt                    *timestamppb.Timestamp `protobuf:"bytes,21,opt,name=closed_at,json=closedAt,proto3" json:"closed_at,omitempty"`
 	IdempotencyKey              string                 `protobuf:"bytes,22,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	CreatedByPrincipalId        *string                `protobuf:"bytes,23,opt,name=created_by_principal_id,json=createdByPrincipalId,proto3,oneof" json:"created_by_principal_id,omitempty"`
+	SubmittedAt                 *timestamppb.Timestamp `protobuf:"bytes,24,opt,name=submitted_at,json=submittedAt,proto3" json:"submitted_at,omitempty"`
+	SubmittedByPrincipalId      *string                `protobuf:"bytes,25,opt,name=submitted_by_principal_id,json=submittedByPrincipalId,proto3,oneof" json:"submitted_by_principal_id,omitempty"`
 	unknownFields               protoimpl.UnknownFields
 	sizeCache                   protoimpl.SizeCache
 }
@@ -232,6 +235,27 @@ func (x *Requisition) GetClosedAt() *timestamppb.Timestamp {
 func (x *Requisition) GetIdempotencyKey() string {
 	if x != nil {
 		return x.IdempotencyKey
+	}
+	return ""
+}
+
+func (x *Requisition) GetCreatedByPrincipalId() string {
+	if x != nil && x.CreatedByPrincipalId != nil {
+		return *x.CreatedByPrincipalId
+	}
+	return ""
+}
+
+func (x *Requisition) GetSubmittedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.SubmittedAt
+	}
+	return nil
+}
+
+func (x *Requisition) GetSubmittedByPrincipalId() string {
+	if x != nil && x.SubmittedByPrincipalId != nil {
+		return *x.SubmittedByPrincipalId
 	}
 	return ""
 }
@@ -4708,8 +4732,7 @@ var File_human_resource_recruitment_v1_recruitment_proto protoreflect.FileDescri
 
 const file_human_resource_recruitment_v1_recruitment_proto_rawDesc = "" +
 	"\n" +
-	"/human_resource/recruitment/v1/recruitment.proto\x12\x1dhuman_resource.recruitment.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"\xc0\n" +
-	"\n" +
+	"/human_resource/recruitment/v1/recruitment.proto\x12\x1dhuman_resource.recruitment.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"\xb5\f\n" +
 	"\vRequisition\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12-\n" +
 	"\x12requisition_number\x18\x02 \x01(\tR\x11requisitionNumber\x128\n" +
@@ -4735,14 +4758,19 @@ const file_human_resource_recruitment_v1_recruitment_proto_rawDesc = "" +
 	"\x18approved_by_principal_id\x18\x13 \x01(\tH\x06R\x15approvedByPrincipalId\x88\x01\x01\x127\n" +
 	"\topened_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\bopenedAt\x127\n" +
 	"\tclosed_at\x18\x15 \x01(\v2\x1a.google.protobuf.TimestampR\bclosedAt\x12'\n" +
-	"\x0fidempotency_key\x18\x16 \x01(\tR\x0eidempotencyKeyB\x19\n" +
+	"\x0fidempotency_key\x18\x16 \x01(\tR\x0eidempotencyKey\x12:\n" +
+	"\x17created_by_principal_id\x18\x17 \x01(\tH\aR\x14createdByPrincipalId\x88\x01\x01\x12=\n" +
+	"\fsubmitted_at\x18\x18 \x01(\v2\x1a.google.protobuf.TimestampR\vsubmittedAt\x12>\n" +
+	"\x19submitted_by_principal_id\x18\x19 \x01(\tH\bR\x16submittedByPrincipalId\x88\x01\x01B\x19\n" +
 	"\x17_workforce_plan_line_idB\x0e\n" +
 	"\f_position_idB\x19\n" +
 	"\x17_recruiter_principal_idB\x14\n" +
 	"\x12_target_start_dateB\x16\n" +
 	"\x14_budget_reference_idB\x1d\n" +
 	"\x1b_work_location_reference_idB\x1b\n" +
-	"\x19_approved_by_principal_id\"\xa1\f\n" +
+	"\x19_approved_by_principal_idB\x1a\n" +
+	"\x18_created_by_principal_idB\x1c\n" +
+	"\x1a_submitted_by_principal_id\"\xa1\f\n" +
 	"\x10RequisitionInput\x122\n" +
 	"\x12requisition_number\x18\x01 \x01(\tH\x00R\x11requisitionNumber\x88\x01\x01\x128\n" +
 	"\x16workforce_plan_line_id\x18\x02 \x01(\tH\x01R\x13workforcePlanLineId\x88\x01\x01\x12$\n" +
@@ -5276,10 +5304,11 @@ const file_human_resource_recruitment_v1_recruitment_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v24.human_resource.recruitment.v1.ApplicationAssessmentR\x04item\"\xa4\x01\n" +
 	"\x1eApplicationAssessmentsResponse\x12J\n" +
 	"\x05items\x18\x01 \x03(\v24.human_resource.recruitment.v1.ApplicationAssessmentR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xb5\x7f\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xa3\x80\x01\n" +
 	"\x12RecruitmentService\x12\x80\x01\n" +
 	"\x11CreateRequisition\x127.human_resource.recruitment.v1.CreateRequisitionRequest\x1a2.human_resource.recruitment.v1.RequisitionResponse\x12\x80\x01\n" +
-	"\x11UpdateRequisition\x127.human_resource.recruitment.v1.UpdateRequisitionRequest\x1a2.human_resource.recruitment.v1.RequisitionResponse\x12a\n" +
+	"\x11UpdateRequisition\x127.human_resource.recruitment.v1.UpdateRequisitionRequest\x1a2.human_resource.recruitment.v1.RequisitionResponse\x12l\n" +
+	"\x11SubmitRequisition\x12#.human_resource.common.v1.IDRequest\x1a2.human_resource.recruitment.v1.RequisitionResponse\x12a\n" +
 	"\x11DeleteRequisition\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12m\n" +
 	"\x12GetRequisitionByID\x12#.human_resource.common.v1.IDRequest\x1a2.human_resource.recruitment.v1.RequisitionResponse\x12p\n" +
 	"\x12GetAllRequisitions\x12%.human_resource.common.v1.PageRequest\x1a3.human_resource.recruitment.v1.RequisitionsResponse\x12\x88\x01\n" +
@@ -5492,352 +5521,355 @@ var file_human_resource_recruitment_v1_recruitment_proto_depIdxs = []int32{
 	61,  // 2: human_resource.recruitment.v1.Requisition.approved_at:type_name -> google.protobuf.Timestamp
 	61,  // 3: human_resource.recruitment.v1.Requisition.opened_at:type_name -> google.protobuf.Timestamp
 	61,  // 4: human_resource.recruitment.v1.Requisition.closed_at:type_name -> google.protobuf.Timestamp
-	60,  // 5: human_resource.recruitment.v1.RequisitionInput.minimum_qualifications:type_name -> human_resource.common.v1.JsonDocument
-	60,  // 6: human_resource.recruitment.v1.RequisitionInput.desired_qualifications:type_name -> human_resource.common.v1.JsonDocument
-	61,  // 7: human_resource.recruitment.v1.RequisitionInput.approved_at:type_name -> google.protobuf.Timestamp
-	61,  // 8: human_resource.recruitment.v1.RequisitionInput.opened_at:type_name -> google.protobuf.Timestamp
-	61,  // 9: human_resource.recruitment.v1.RequisitionInput.closed_at:type_name -> google.protobuf.Timestamp
-	1,   // 10: human_resource.recruitment.v1.CreateRequisitionRequest.input:type_name -> human_resource.recruitment.v1.RequisitionInput
-	1,   // 11: human_resource.recruitment.v1.UpdateRequisitionRequest.input:type_name -> human_resource.recruitment.v1.RequisitionInput
-	62,  // 12: human_resource.recruitment.v1.UpdateRequisitionRequest.update_mask:type_name -> google.protobuf.FieldMask
-	0,   // 13: human_resource.recruitment.v1.RequisitionResponse.item:type_name -> human_resource.recruitment.v1.Requisition
-	0,   // 14: human_resource.recruitment.v1.RequisitionsResponse.items:type_name -> human_resource.recruitment.v1.Requisition
-	63,  // 15: human_resource.recruitment.v1.RequisitionsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 16: human_resource.recruitment.v1.Candidate.notice_acknowledged_at:type_name -> google.protobuf.Timestamp
-	61,  // 17: human_resource.recruitment.v1.Candidate.created_at:type_name -> google.protobuf.Timestamp
-	61,  // 18: human_resource.recruitment.v1.CandidateInput.notice_acknowledged_at:type_name -> google.protobuf.Timestamp
-	7,   // 19: human_resource.recruitment.v1.CreateCandidateRequest.input:type_name -> human_resource.recruitment.v1.CandidateInput
-	7,   // 20: human_resource.recruitment.v1.UpdateCandidateRequest.input:type_name -> human_resource.recruitment.v1.CandidateInput
-	62,  // 21: human_resource.recruitment.v1.UpdateCandidateRequest.update_mask:type_name -> google.protobuf.FieldMask
-	6,   // 22: human_resource.recruitment.v1.CandidateResponse.item:type_name -> human_resource.recruitment.v1.Candidate
-	6,   // 23: human_resource.recruitment.v1.CandidatesResponse.items:type_name -> human_resource.recruitment.v1.Candidate
-	63,  // 24: human_resource.recruitment.v1.CandidatesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 25: human_resource.recruitment.v1.Application.applied_at:type_name -> google.protobuf.Timestamp
-	61,  // 26: human_resource.recruitment.v1.Application.decision_at:type_name -> google.protobuf.Timestamp
-	61,  // 27: human_resource.recruitment.v1.ApplicationInput.decision_at:type_name -> google.protobuf.Timestamp
-	13,  // 28: human_resource.recruitment.v1.CreateApplicationRequest.input:type_name -> human_resource.recruitment.v1.ApplicationInput
-	13,  // 29: human_resource.recruitment.v1.UpdateApplicationRequest.input:type_name -> human_resource.recruitment.v1.ApplicationInput
-	62,  // 30: human_resource.recruitment.v1.UpdateApplicationRequest.update_mask:type_name -> google.protobuf.FieldMask
-	12,  // 31: human_resource.recruitment.v1.ApplicationResponse.item:type_name -> human_resource.recruitment.v1.Application
-	12,  // 32: human_resource.recruitment.v1.ApplicationsResponse.items:type_name -> human_resource.recruitment.v1.Application
-	63,  // 33: human_resource.recruitment.v1.ApplicationsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 34: human_resource.recruitment.v1.ApplicationStageHistory.changed_at:type_name -> google.protobuf.Timestamp
-	19,  // 35: human_resource.recruitment.v1.CreateApplicationStageHistoryRequest.input:type_name -> human_resource.recruitment.v1.ApplicationStageHistoryInput
-	19,  // 36: human_resource.recruitment.v1.UpdateApplicationStageHistoryRequest.input:type_name -> human_resource.recruitment.v1.ApplicationStageHistoryInput
-	62,  // 37: human_resource.recruitment.v1.UpdateApplicationStageHistoryRequest.update_mask:type_name -> google.protobuf.FieldMask
-	18,  // 38: human_resource.recruitment.v1.ApplicationStageHistoryResponse.item:type_name -> human_resource.recruitment.v1.ApplicationStageHistory
-	18,  // 39: human_resource.recruitment.v1.ApplicationStageHistoriesResponse.items:type_name -> human_resource.recruitment.v1.ApplicationStageHistory
-	63,  // 40: human_resource.recruitment.v1.ApplicationStageHistoriesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 41: human_resource.recruitment.v1.Interview.scheduled_start:type_name -> google.protobuf.Timestamp
-	61,  // 42: human_resource.recruitment.v1.Interview.scheduled_end:type_name -> google.protobuf.Timestamp
-	61,  // 43: human_resource.recruitment.v1.InterviewInput.scheduled_start:type_name -> google.protobuf.Timestamp
-	61,  // 44: human_resource.recruitment.v1.InterviewInput.scheduled_end:type_name -> google.protobuf.Timestamp
-	25,  // 45: human_resource.recruitment.v1.CreateInterviewRequest.input:type_name -> human_resource.recruitment.v1.InterviewInput
-	25,  // 46: human_resource.recruitment.v1.UpdateInterviewRequest.input:type_name -> human_resource.recruitment.v1.InterviewInput
-	62,  // 47: human_resource.recruitment.v1.UpdateInterviewRequest.update_mask:type_name -> google.protobuf.FieldMask
-	24,  // 48: human_resource.recruitment.v1.InterviewResponse.item:type_name -> human_resource.recruitment.v1.Interview
-	24,  // 49: human_resource.recruitment.v1.InterviewsResponse.items:type_name -> human_resource.recruitment.v1.Interview
-	63,  // 50: human_resource.recruitment.v1.InterviewsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 51: human_resource.recruitment.v1.InterviewPanelist.feedback_due_at:type_name -> google.protobuf.Timestamp
-	61,  // 52: human_resource.recruitment.v1.InterviewPanelistInput.feedback_due_at:type_name -> google.protobuf.Timestamp
-	31,  // 53: human_resource.recruitment.v1.CreateInterviewPanelistRequest.input:type_name -> human_resource.recruitment.v1.InterviewPanelistInput
-	31,  // 54: human_resource.recruitment.v1.UpdateInterviewPanelistRequest.input:type_name -> human_resource.recruitment.v1.InterviewPanelistInput
-	62,  // 55: human_resource.recruitment.v1.UpdateInterviewPanelistRequest.update_mask:type_name -> google.protobuf.FieldMask
-	30,  // 56: human_resource.recruitment.v1.InterviewPanelistResponse.item:type_name -> human_resource.recruitment.v1.InterviewPanelist
-	30,  // 57: human_resource.recruitment.v1.InterviewPanelistsResponse.items:type_name -> human_resource.recruitment.v1.InterviewPanelist
-	63,  // 58: human_resource.recruitment.v1.InterviewPanelistsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 59: human_resource.recruitment.v1.InterviewFeedback.submitted_at:type_name -> google.protobuf.Timestamp
-	60,  // 60: human_resource.recruitment.v1.InterviewFeedback.competency_scores:type_name -> human_resource.common.v1.JsonDocument
-	60,  // 61: human_resource.recruitment.v1.InterviewFeedbackInput.competency_scores:type_name -> human_resource.common.v1.JsonDocument
-	37,  // 62: human_resource.recruitment.v1.CreateInterviewFeedbackRequest.input:type_name -> human_resource.recruitment.v1.InterviewFeedbackInput
-	37,  // 63: human_resource.recruitment.v1.UpdateInterviewFeedbackRequest.input:type_name -> human_resource.recruitment.v1.InterviewFeedbackInput
-	62,  // 64: human_resource.recruitment.v1.UpdateInterviewFeedbackRequest.update_mask:type_name -> google.protobuf.FieldMask
-	36,  // 65: human_resource.recruitment.v1.InterviewFeedbackResponse.item:type_name -> human_resource.recruitment.v1.InterviewFeedback
-	36,  // 66: human_resource.recruitment.v1.InterviewFeedbacksResponse.items:type_name -> human_resource.recruitment.v1.InterviewFeedback
-	63,  // 67: human_resource.recruitment.v1.InterviewFeedbacksResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 68: human_resource.recruitment.v1.Offer.issued_at:type_name -> google.protobuf.Timestamp
-	61,  // 69: human_resource.recruitment.v1.Offer.expires_at:type_name -> google.protobuf.Timestamp
-	61,  // 70: human_resource.recruitment.v1.Offer.responded_at:type_name -> google.protobuf.Timestamp
-	61,  // 71: human_resource.recruitment.v1.Offer.approved_at:type_name -> google.protobuf.Timestamp
-	61,  // 72: human_resource.recruitment.v1.OfferInput.issued_at:type_name -> google.protobuf.Timestamp
-	61,  // 73: human_resource.recruitment.v1.OfferInput.expires_at:type_name -> google.protobuf.Timestamp
-	61,  // 74: human_resource.recruitment.v1.OfferInput.responded_at:type_name -> google.protobuf.Timestamp
-	61,  // 75: human_resource.recruitment.v1.OfferInput.approved_at:type_name -> google.protobuf.Timestamp
-	43,  // 76: human_resource.recruitment.v1.CreateOfferRequest.input:type_name -> human_resource.recruitment.v1.OfferInput
-	43,  // 77: human_resource.recruitment.v1.UpdateOfferRequest.input:type_name -> human_resource.recruitment.v1.OfferInput
-	62,  // 78: human_resource.recruitment.v1.UpdateOfferRequest.update_mask:type_name -> google.protobuf.FieldMask
-	42,  // 79: human_resource.recruitment.v1.OfferResponse.item:type_name -> human_resource.recruitment.v1.Offer
-	42,  // 80: human_resource.recruitment.v1.OffersResponse.items:type_name -> human_resource.recruitment.v1.Offer
-	63,  // 81: human_resource.recruitment.v1.OffersResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 82: human_resource.recruitment.v1.JobPosting.published_at:type_name -> google.protobuf.Timestamp
-	61,  // 83: human_resource.recruitment.v1.JobPosting.closes_at:type_name -> google.protobuf.Timestamp
-	61,  // 84: human_resource.recruitment.v1.JobPostingInput.published_at:type_name -> google.protobuf.Timestamp
-	61,  // 85: human_resource.recruitment.v1.JobPostingInput.closes_at:type_name -> google.protobuf.Timestamp
-	49,  // 86: human_resource.recruitment.v1.CreateJobPostingRequest.input:type_name -> human_resource.recruitment.v1.JobPostingInput
-	49,  // 87: human_resource.recruitment.v1.UpdateJobPostingRequest.input:type_name -> human_resource.recruitment.v1.JobPostingInput
-	62,  // 88: human_resource.recruitment.v1.UpdateJobPostingRequest.update_mask:type_name -> google.protobuf.FieldMask
-	48,  // 89: human_resource.recruitment.v1.JobPostingResponse.item:type_name -> human_resource.recruitment.v1.JobPosting
-	48,  // 90: human_resource.recruitment.v1.JobPostingsResponse.items:type_name -> human_resource.recruitment.v1.JobPosting
-	63,  // 91: human_resource.recruitment.v1.JobPostingsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	61,  // 92: human_resource.recruitment.v1.ApplicationAssessment.scheduled_at:type_name -> google.protobuf.Timestamp
-	61,  // 93: human_resource.recruitment.v1.ApplicationAssessment.completed_at:type_name -> google.protobuf.Timestamp
-	61,  // 94: human_resource.recruitment.v1.ApplicationAssessmentInput.scheduled_at:type_name -> google.protobuf.Timestamp
-	61,  // 95: human_resource.recruitment.v1.ApplicationAssessmentInput.completed_at:type_name -> google.protobuf.Timestamp
-	55,  // 96: human_resource.recruitment.v1.CreateApplicationAssessmentRequest.input:type_name -> human_resource.recruitment.v1.ApplicationAssessmentInput
-	55,  // 97: human_resource.recruitment.v1.UpdateApplicationAssessmentRequest.input:type_name -> human_resource.recruitment.v1.ApplicationAssessmentInput
-	62,  // 98: human_resource.recruitment.v1.UpdateApplicationAssessmentRequest.update_mask:type_name -> google.protobuf.FieldMask
-	54,  // 99: human_resource.recruitment.v1.ApplicationAssessmentResponse.item:type_name -> human_resource.recruitment.v1.ApplicationAssessment
-	54,  // 100: human_resource.recruitment.v1.ApplicationAssessmentsResponse.items:type_name -> human_resource.recruitment.v1.ApplicationAssessment
-	63,  // 101: human_resource.recruitment.v1.ApplicationAssessmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	2,   // 102: human_resource.recruitment.v1.RecruitmentService.CreateRequisition:input_type -> human_resource.recruitment.v1.CreateRequisitionRequest
-	3,   // 103: human_resource.recruitment.v1.RecruitmentService.UpdateRequisition:input_type -> human_resource.recruitment.v1.UpdateRequisitionRequest
-	64,  // 104: human_resource.recruitment.v1.RecruitmentService.DeleteRequisition:input_type -> human_resource.common.v1.IDRequest
-	64,  // 105: human_resource.recruitment.v1.RecruitmentService.GetRequisitionByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 106: human_resource.recruitment.v1.RecruitmentService.GetAllRequisitions:input_type -> human_resource.common.v1.PageRequest
-	66,  // 107: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 108: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkforcePlanLineID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 109: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 110: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 111: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 112: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByHiringManagerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 113: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRecruiterPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 114: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionType:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 115: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 116: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByBudgetReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 117: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 118: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 119: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	8,   // 120: human_resource.recruitment.v1.RecruitmentService.CreateCandidate:input_type -> human_resource.recruitment.v1.CreateCandidateRequest
-	9,   // 121: human_resource.recruitment.v1.RecruitmentService.UpdateCandidate:input_type -> human_resource.recruitment.v1.UpdateCandidateRequest
-	64,  // 122: human_resource.recruitment.v1.RecruitmentService.DeleteCandidate:input_type -> human_resource.common.v1.IDRequest
-	64,  // 123: human_resource.recruitment.v1.RecruitmentService.GetCandidateByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 124: human_resource.recruitment.v1.RecruitmentService.GetAllCandidates:input_type -> human_resource.common.v1.PageRequest
-	66,  // 125: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 126: human_resource.recruitment.v1.RecruitmentService.FindCandidateByPersonPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 127: human_resource.recruitment.v1.RecruitmentService.FindCandidateByContactReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 128: human_resource.recruitment.v1.RecruitmentService.FindCandidateBySourceType:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 129: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 130: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	14,  // 131: human_resource.recruitment.v1.RecruitmentService.CreateApplication:input_type -> human_resource.recruitment.v1.CreateApplicationRequest
-	15,  // 132: human_resource.recruitment.v1.RecruitmentService.UpdateApplication:input_type -> human_resource.recruitment.v1.UpdateApplicationRequest
-	64,  // 133: human_resource.recruitment.v1.RecruitmentService.StartApplicationScreening:input_type -> human_resource.common.v1.IDRequest
-	64,  // 134: human_resource.recruitment.v1.RecruitmentService.DeleteApplication:input_type -> human_resource.common.v1.IDRequest
-	64,  // 135: human_resource.recruitment.v1.RecruitmentService.GetApplicationByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 136: human_resource.recruitment.v1.RecruitmentService.GetAllApplications:input_type -> human_resource.common.v1.PageRequest
-	66,  // 137: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCandidateID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 138: human_resource.recruitment.v1.RecruitmentService.FindApplicationByRequisitionID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 139: human_resource.recruitment.v1.RecruitmentService.FindApplicationByApplicationNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 140: human_resource.recruitment.v1.RecruitmentService.FindApplicationByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 141: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCurrentStageCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 142: human_resource.recruitment.v1.RecruitmentService.FindApplicationByAssignedRecruiterPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 143: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDispositionReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 144: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDecisionByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 145: human_resource.recruitment.v1.RecruitmentService.FindApplicationByHiredWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 146: human_resource.recruitment.v1.RecruitmentService.FindApplicationBySourcePostingID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 147: human_resource.recruitment.v1.RecruitmentService.FindApplicationByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	20,  // 148: human_resource.recruitment.v1.RecruitmentService.CreateApplicationStageHistory:input_type -> human_resource.recruitment.v1.CreateApplicationStageHistoryRequest
-	21,  // 149: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationStageHistory:input_type -> human_resource.recruitment.v1.UpdateApplicationStageHistoryRequest
-	67,  // 150: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationStageHistory:input_type -> human_resource.common.v1.IdentityIDRequest
-	67,  // 151: human_resource.recruitment.v1.RecruitmentService.GetApplicationStageHistoryByID:input_type -> human_resource.common.v1.IdentityIDRequest
-	65,  // 152: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationStageHistories:input_type -> human_resource.common.v1.PageRequest
-	66,  // 153: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 154: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByPreviousStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 155: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByNewStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 156: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByStageCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 157: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByChangedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 158: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	26,  // 159: human_resource.recruitment.v1.RecruitmentService.CreateInterview:input_type -> human_resource.recruitment.v1.CreateInterviewRequest
-	27,  // 160: human_resource.recruitment.v1.RecruitmentService.UpdateInterview:input_type -> human_resource.recruitment.v1.UpdateInterviewRequest
-	64,  // 161: human_resource.recruitment.v1.RecruitmentService.DeleteInterview:input_type -> human_resource.common.v1.IDRequest
-	64,  // 162: human_resource.recruitment.v1.RecruitmentService.GetInterviewByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 163: human_resource.recruitment.v1.RecruitmentService.GetAllInterviews:input_type -> human_resource.common.v1.PageRequest
-	66,  // 164: human_resource.recruitment.v1.RecruitmentService.FindInterviewByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 165: human_resource.recruitment.v1.RecruitmentService.FindInterviewByInterviewType:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 166: human_resource.recruitment.v1.RecruitmentService.FindInterviewByLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 167: human_resource.recruitment.v1.RecruitmentService.FindInterviewByMeetingReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 168: human_resource.recruitment.v1.RecruitmentService.FindInterviewByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 169: human_resource.recruitment.v1.RecruitmentService.FindInterviewByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	32,  // 170: human_resource.recruitment.v1.RecruitmentService.CreateInterviewPanelist:input_type -> human_resource.recruitment.v1.CreateInterviewPanelistRequest
-	33,  // 171: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewPanelist:input_type -> human_resource.recruitment.v1.UpdateInterviewPanelistRequest
-	64,  // 172: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewPanelist:input_type -> human_resource.common.v1.IDRequest
-	64,  // 173: human_resource.recruitment.v1.RecruitmentService.GetInterviewPanelistByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 174: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewPanelists:input_type -> human_resource.common.v1.PageRequest
-	66,  // 175: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 176: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 177: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByScorecardTemplateReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	38,  // 178: human_resource.recruitment.v1.RecruitmentService.CreateInterviewFeedback:input_type -> human_resource.recruitment.v1.CreateInterviewFeedbackRequest
-	39,  // 179: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewFeedback:input_type -> human_resource.recruitment.v1.UpdateInterviewFeedbackRequest
-	64,  // 180: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewFeedback:input_type -> human_resource.common.v1.IDRequest
-	64,  // 181: human_resource.recruitment.v1.RecruitmentService.GetInterviewFeedbackByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 182: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewFeedbacks:input_type -> human_resource.common.v1.PageRequest
-	66,  // 183: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 184: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	44,  // 185: human_resource.recruitment.v1.RecruitmentService.CreateOffer:input_type -> human_resource.recruitment.v1.CreateOfferRequest
-	45,  // 186: human_resource.recruitment.v1.RecruitmentService.UpdateOffer:input_type -> human_resource.recruitment.v1.UpdateOfferRequest
-	64,  // 187: human_resource.recruitment.v1.RecruitmentService.DeleteOffer:input_type -> human_resource.common.v1.IDRequest
-	64,  // 188: human_resource.recruitment.v1.RecruitmentService.GetOfferByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 189: human_resource.recruitment.v1.RecruitmentService.GetAllOffers:input_type -> human_resource.common.v1.PageRequest
-	66,  // 190: human_resource.recruitment.v1.RecruitmentService.FindOfferByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 191: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 192: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 193: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 194: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 195: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedContractType:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 196: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedCompensationDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 197: human_resource.recruitment.v1.RecruitmentService.FindOfferByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 198: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 199: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 200: human_resource.recruitment.v1.RecruitmentService.FindOfferByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	50,  // 201: human_resource.recruitment.v1.RecruitmentService.CreateJobPosting:input_type -> human_resource.recruitment.v1.CreateJobPostingRequest
-	51,  // 202: human_resource.recruitment.v1.RecruitmentService.UpdateJobPosting:input_type -> human_resource.recruitment.v1.UpdateJobPostingRequest
-	64,  // 203: human_resource.recruitment.v1.RecruitmentService.DeleteJobPosting:input_type -> human_resource.common.v1.IDRequest
-	64,  // 204: human_resource.recruitment.v1.RecruitmentService.GetJobPostingByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 205: human_resource.recruitment.v1.RecruitmentService.GetAllJobPostings:input_type -> human_resource.common.v1.PageRequest
-	66,  // 206: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByRequisitionID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 207: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByChannelCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 208: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByContentDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 209: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 210: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	56,  // 211: human_resource.recruitment.v1.RecruitmentService.CreateApplicationAssessment:input_type -> human_resource.recruitment.v1.CreateApplicationAssessmentRequest
-	57,  // 212: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationAssessment:input_type -> human_resource.recruitment.v1.UpdateApplicationAssessmentRequest
-	64,  // 213: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationAssessment:input_type -> human_resource.common.v1.IDRequest
-	64,  // 214: human_resource.recruitment.v1.RecruitmentService.GetApplicationAssessmentByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 215: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationAssessments:input_type -> human_resource.common.v1.PageRequest
-	66,  // 216: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 217: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessmentCode:input_type -> human_resource.common.v1.StringFinderRequest
-	68,  // 218: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAttemptNumber:input_type -> human_resource.common.v1.Int32FinderRequest
-	66,  // 219: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRubricDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 220: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 221: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 222: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRecommendationCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 223: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,   // 224: human_resource.recruitment.v1.RecruitmentService.CreateRequisition:output_type -> human_resource.recruitment.v1.RequisitionResponse
-	4,   // 225: human_resource.recruitment.v1.RecruitmentService.UpdateRequisition:output_type -> human_resource.recruitment.v1.RequisitionResponse
-	69,  // 226: human_resource.recruitment.v1.RecruitmentService.DeleteRequisition:output_type -> human_resource.common.v1.EmptyResponse
-	4,   // 227: human_resource.recruitment.v1.RecruitmentService.GetRequisitionByID:output_type -> human_resource.recruitment.v1.RequisitionResponse
-	5,   // 228: human_resource.recruitment.v1.RecruitmentService.GetAllRequisitions:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 229: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionNumber:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 230: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkforcePlanLineID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 231: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByPositionID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 232: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByJobID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 233: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByOrganizationUnitReferenceID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 234: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByHiringManagerPrincipalID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 235: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRecruiterPrincipalID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 236: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionType:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 237: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByStatus:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 238: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByBudgetReferenceID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 239: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkLocationReferenceID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 240: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByApprovedByPrincipalID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	5,   // 241: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByIdempotencyKey:output_type -> human_resource.recruitment.v1.RequisitionsResponse
-	10,  // 242: human_resource.recruitment.v1.RecruitmentService.CreateCandidate:output_type -> human_resource.recruitment.v1.CandidateResponse
-	10,  // 243: human_resource.recruitment.v1.RecruitmentService.UpdateCandidate:output_type -> human_resource.recruitment.v1.CandidateResponse
-	69,  // 244: human_resource.recruitment.v1.RecruitmentService.DeleteCandidate:output_type -> human_resource.common.v1.EmptyResponse
-	10,  // 245: human_resource.recruitment.v1.RecruitmentService.GetCandidateByID:output_type -> human_resource.recruitment.v1.CandidateResponse
-	11,  // 246: human_resource.recruitment.v1.RecruitmentService.GetAllCandidates:output_type -> human_resource.recruitment.v1.CandidatesResponse
-	11,  // 247: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateNumber:output_type -> human_resource.recruitment.v1.CandidatesResponse
-	11,  // 248: human_resource.recruitment.v1.RecruitmentService.FindCandidateByPersonPartyReferenceID:output_type -> human_resource.recruitment.v1.CandidatesResponse
-	11,  // 249: human_resource.recruitment.v1.RecruitmentService.FindCandidateByContactReferenceID:output_type -> human_resource.recruitment.v1.CandidatesResponse
-	11,  // 250: human_resource.recruitment.v1.RecruitmentService.FindCandidateBySourceType:output_type -> human_resource.recruitment.v1.CandidatesResponse
-	11,  // 251: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateStatus:output_type -> human_resource.recruitment.v1.CandidatesResponse
-	11,  // 252: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCreatedByPrincipalID:output_type -> human_resource.recruitment.v1.CandidatesResponse
-	16,  // 253: human_resource.recruitment.v1.RecruitmentService.CreateApplication:output_type -> human_resource.recruitment.v1.ApplicationResponse
-	16,  // 254: human_resource.recruitment.v1.RecruitmentService.UpdateApplication:output_type -> human_resource.recruitment.v1.ApplicationResponse
-	16,  // 255: human_resource.recruitment.v1.RecruitmentService.StartApplicationScreening:output_type -> human_resource.recruitment.v1.ApplicationResponse
-	69,  // 256: human_resource.recruitment.v1.RecruitmentService.DeleteApplication:output_type -> human_resource.common.v1.EmptyResponse
-	16,  // 257: human_resource.recruitment.v1.RecruitmentService.GetApplicationByID:output_type -> human_resource.recruitment.v1.ApplicationResponse
-	17,  // 258: human_resource.recruitment.v1.RecruitmentService.GetAllApplications:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 259: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCandidateID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 260: human_resource.recruitment.v1.RecruitmentService.FindApplicationByRequisitionID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 261: human_resource.recruitment.v1.RecruitmentService.FindApplicationByApplicationNumber:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 262: human_resource.recruitment.v1.RecruitmentService.FindApplicationByStatus:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 263: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCurrentStageCode:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 264: human_resource.recruitment.v1.RecruitmentService.FindApplicationByAssignedRecruiterPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 265: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDispositionReasonCode:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 266: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDecisionByPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 267: human_resource.recruitment.v1.RecruitmentService.FindApplicationByHiredWorkerID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 268: human_resource.recruitment.v1.RecruitmentService.FindApplicationBySourcePostingID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	17,  // 269: human_resource.recruitment.v1.RecruitmentService.FindApplicationByIdempotencyKey:output_type -> human_resource.recruitment.v1.ApplicationsResponse
-	22,  // 270: human_resource.recruitment.v1.RecruitmentService.CreateApplicationStageHistory:output_type -> human_resource.recruitment.v1.ApplicationStageHistoryResponse
-	22,  // 271: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationStageHistory:output_type -> human_resource.recruitment.v1.ApplicationStageHistoryResponse
-	69,  // 272: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationStageHistory:output_type -> human_resource.common.v1.EmptyResponse
-	22,  // 273: human_resource.recruitment.v1.RecruitmentService.GetApplicationStageHistoryByID:output_type -> human_resource.recruitment.v1.ApplicationStageHistoryResponse
-	23,  // 274: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationStageHistories:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
-	23,  // 275: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByApplicationID:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
-	23,  // 276: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByPreviousStatus:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
-	23,  // 277: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByNewStatus:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
-	23,  // 278: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByStageCode:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
-	23,  // 279: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByChangedByPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
-	23,  // 280: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByReasonCode:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
-	28,  // 281: human_resource.recruitment.v1.RecruitmentService.CreateInterview:output_type -> human_resource.recruitment.v1.InterviewResponse
-	28,  // 282: human_resource.recruitment.v1.RecruitmentService.UpdateInterview:output_type -> human_resource.recruitment.v1.InterviewResponse
-	69,  // 283: human_resource.recruitment.v1.RecruitmentService.DeleteInterview:output_type -> human_resource.common.v1.EmptyResponse
-	28,  // 284: human_resource.recruitment.v1.RecruitmentService.GetInterviewByID:output_type -> human_resource.recruitment.v1.InterviewResponse
-	29,  // 285: human_resource.recruitment.v1.RecruitmentService.GetAllInterviews:output_type -> human_resource.recruitment.v1.InterviewsResponse
-	29,  // 286: human_resource.recruitment.v1.RecruitmentService.FindInterviewByApplicationID:output_type -> human_resource.recruitment.v1.InterviewsResponse
-	29,  // 287: human_resource.recruitment.v1.RecruitmentService.FindInterviewByInterviewType:output_type -> human_resource.recruitment.v1.InterviewsResponse
-	29,  // 288: human_resource.recruitment.v1.RecruitmentService.FindInterviewByLocationReferenceID:output_type -> human_resource.recruitment.v1.InterviewsResponse
-	29,  // 289: human_resource.recruitment.v1.RecruitmentService.FindInterviewByMeetingReferenceID:output_type -> human_resource.recruitment.v1.InterviewsResponse
-	29,  // 290: human_resource.recruitment.v1.RecruitmentService.FindInterviewByStatus:output_type -> human_resource.recruitment.v1.InterviewsResponse
-	29,  // 291: human_resource.recruitment.v1.RecruitmentService.FindInterviewByCreatedByPrincipalID:output_type -> human_resource.recruitment.v1.InterviewsResponse
-	34,  // 292: human_resource.recruitment.v1.RecruitmentService.CreateInterviewPanelist:output_type -> human_resource.recruitment.v1.InterviewPanelistResponse
-	34,  // 293: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewPanelist:output_type -> human_resource.recruitment.v1.InterviewPanelistResponse
-	69,  // 294: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewPanelist:output_type -> human_resource.common.v1.EmptyResponse
-	34,  // 295: human_resource.recruitment.v1.RecruitmentService.GetInterviewPanelistByID:output_type -> human_resource.recruitment.v1.InterviewPanelistResponse
-	35,  // 296: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewPanelists:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
-	35,  // 297: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewID:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
-	35,  // 298: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewerPrincipalID:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
-	35,  // 299: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByScorecardTemplateReferenceID:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
-	40,  // 300: human_resource.recruitment.v1.RecruitmentService.CreateInterviewFeedback:output_type -> human_resource.recruitment.v1.InterviewFeedbackResponse
-	40,  // 301: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewFeedback:output_type -> human_resource.recruitment.v1.InterviewFeedbackResponse
-	69,  // 302: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewFeedback:output_type -> human_resource.common.v1.EmptyResponse
-	40,  // 303: human_resource.recruitment.v1.RecruitmentService.GetInterviewFeedbackByID:output_type -> human_resource.recruitment.v1.InterviewFeedbackResponse
-	41,  // 304: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewFeedbacks:output_type -> human_resource.recruitment.v1.InterviewFeedbacksResponse
-	41,  // 305: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewID:output_type -> human_resource.recruitment.v1.InterviewFeedbacksResponse
-	41,  // 306: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewerPrincipalID:output_type -> human_resource.recruitment.v1.InterviewFeedbacksResponse
-	46,  // 307: human_resource.recruitment.v1.RecruitmentService.CreateOffer:output_type -> human_resource.recruitment.v1.OfferResponse
-	46,  // 308: human_resource.recruitment.v1.RecruitmentService.UpdateOffer:output_type -> human_resource.recruitment.v1.OfferResponse
-	69,  // 309: human_resource.recruitment.v1.RecruitmentService.DeleteOffer:output_type -> human_resource.common.v1.EmptyResponse
-	46,  // 310: human_resource.recruitment.v1.RecruitmentService.GetOfferByID:output_type -> human_resource.recruitment.v1.OfferResponse
-	47,  // 311: human_resource.recruitment.v1.RecruitmentService.GetAllOffers:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 312: human_resource.recruitment.v1.RecruitmentService.FindOfferByApplicationID:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 313: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferNumber:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 314: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferStatus:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 315: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedJobID:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 316: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedLegalEntityReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 317: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedContractType:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 318: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedCompensationDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 319: human_resource.recruitment.v1.RecruitmentService.FindOfferByCurrencyCode:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 320: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 321: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
-	47,  // 322: human_resource.recruitment.v1.RecruitmentService.FindOfferByApprovedByPrincipalID:output_type -> human_resource.recruitment.v1.OffersResponse
-	52,  // 323: human_resource.recruitment.v1.RecruitmentService.CreateJobPosting:output_type -> human_resource.recruitment.v1.JobPostingResponse
-	52,  // 324: human_resource.recruitment.v1.RecruitmentService.UpdateJobPosting:output_type -> human_resource.recruitment.v1.JobPostingResponse
-	69,  // 325: human_resource.recruitment.v1.RecruitmentService.DeleteJobPosting:output_type -> human_resource.common.v1.EmptyResponse
-	52,  // 326: human_resource.recruitment.v1.RecruitmentService.GetJobPostingByID:output_type -> human_resource.recruitment.v1.JobPostingResponse
-	53,  // 327: human_resource.recruitment.v1.RecruitmentService.GetAllJobPostings:output_type -> human_resource.recruitment.v1.JobPostingsResponse
-	53,  // 328: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByRequisitionID:output_type -> human_resource.recruitment.v1.JobPostingsResponse
-	53,  // 329: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByChannelCode:output_type -> human_resource.recruitment.v1.JobPostingsResponse
-	53,  // 330: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByContentDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.JobPostingsResponse
-	53,  // 331: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByStatus:output_type -> human_resource.recruitment.v1.JobPostingsResponse
-	53,  // 332: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByCreatedByPrincipalID:output_type -> human_resource.recruitment.v1.JobPostingsResponse
-	58,  // 333: human_resource.recruitment.v1.RecruitmentService.CreateApplicationAssessment:output_type -> human_resource.recruitment.v1.ApplicationAssessmentResponse
-	58,  // 334: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationAssessment:output_type -> human_resource.recruitment.v1.ApplicationAssessmentResponse
-	69,  // 335: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationAssessment:output_type -> human_resource.common.v1.EmptyResponse
-	58,  // 336: human_resource.recruitment.v1.RecruitmentService.GetApplicationAssessmentByID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentResponse
-	59,  // 337: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationAssessments:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 338: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByApplicationID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 339: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessmentCode:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 340: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAttemptNumber:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 341: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRubricDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 342: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByStatus:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 343: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessorPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 344: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRecommendationCode:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	59,  // 345: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByEvidenceDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
-	224, // [224:346] is the sub-list for method output_type
-	102, // [102:224] is the sub-list for method input_type
-	102, // [102:102] is the sub-list for extension type_name
-	102, // [102:102] is the sub-list for extension extendee
-	0,   // [0:102] is the sub-list for field type_name
+	61,  // 5: human_resource.recruitment.v1.Requisition.submitted_at:type_name -> google.protobuf.Timestamp
+	60,  // 6: human_resource.recruitment.v1.RequisitionInput.minimum_qualifications:type_name -> human_resource.common.v1.JsonDocument
+	60,  // 7: human_resource.recruitment.v1.RequisitionInput.desired_qualifications:type_name -> human_resource.common.v1.JsonDocument
+	61,  // 8: human_resource.recruitment.v1.RequisitionInput.approved_at:type_name -> google.protobuf.Timestamp
+	61,  // 9: human_resource.recruitment.v1.RequisitionInput.opened_at:type_name -> google.protobuf.Timestamp
+	61,  // 10: human_resource.recruitment.v1.RequisitionInput.closed_at:type_name -> google.protobuf.Timestamp
+	1,   // 11: human_resource.recruitment.v1.CreateRequisitionRequest.input:type_name -> human_resource.recruitment.v1.RequisitionInput
+	1,   // 12: human_resource.recruitment.v1.UpdateRequisitionRequest.input:type_name -> human_resource.recruitment.v1.RequisitionInput
+	62,  // 13: human_resource.recruitment.v1.UpdateRequisitionRequest.update_mask:type_name -> google.protobuf.FieldMask
+	0,   // 14: human_resource.recruitment.v1.RequisitionResponse.item:type_name -> human_resource.recruitment.v1.Requisition
+	0,   // 15: human_resource.recruitment.v1.RequisitionsResponse.items:type_name -> human_resource.recruitment.v1.Requisition
+	63,  // 16: human_resource.recruitment.v1.RequisitionsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 17: human_resource.recruitment.v1.Candidate.notice_acknowledged_at:type_name -> google.protobuf.Timestamp
+	61,  // 18: human_resource.recruitment.v1.Candidate.created_at:type_name -> google.protobuf.Timestamp
+	61,  // 19: human_resource.recruitment.v1.CandidateInput.notice_acknowledged_at:type_name -> google.protobuf.Timestamp
+	7,   // 20: human_resource.recruitment.v1.CreateCandidateRequest.input:type_name -> human_resource.recruitment.v1.CandidateInput
+	7,   // 21: human_resource.recruitment.v1.UpdateCandidateRequest.input:type_name -> human_resource.recruitment.v1.CandidateInput
+	62,  // 22: human_resource.recruitment.v1.UpdateCandidateRequest.update_mask:type_name -> google.protobuf.FieldMask
+	6,   // 23: human_resource.recruitment.v1.CandidateResponse.item:type_name -> human_resource.recruitment.v1.Candidate
+	6,   // 24: human_resource.recruitment.v1.CandidatesResponse.items:type_name -> human_resource.recruitment.v1.Candidate
+	63,  // 25: human_resource.recruitment.v1.CandidatesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 26: human_resource.recruitment.v1.Application.applied_at:type_name -> google.protobuf.Timestamp
+	61,  // 27: human_resource.recruitment.v1.Application.decision_at:type_name -> google.protobuf.Timestamp
+	61,  // 28: human_resource.recruitment.v1.ApplicationInput.decision_at:type_name -> google.protobuf.Timestamp
+	13,  // 29: human_resource.recruitment.v1.CreateApplicationRequest.input:type_name -> human_resource.recruitment.v1.ApplicationInput
+	13,  // 30: human_resource.recruitment.v1.UpdateApplicationRequest.input:type_name -> human_resource.recruitment.v1.ApplicationInput
+	62,  // 31: human_resource.recruitment.v1.UpdateApplicationRequest.update_mask:type_name -> google.protobuf.FieldMask
+	12,  // 32: human_resource.recruitment.v1.ApplicationResponse.item:type_name -> human_resource.recruitment.v1.Application
+	12,  // 33: human_resource.recruitment.v1.ApplicationsResponse.items:type_name -> human_resource.recruitment.v1.Application
+	63,  // 34: human_resource.recruitment.v1.ApplicationsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 35: human_resource.recruitment.v1.ApplicationStageHistory.changed_at:type_name -> google.protobuf.Timestamp
+	19,  // 36: human_resource.recruitment.v1.CreateApplicationStageHistoryRequest.input:type_name -> human_resource.recruitment.v1.ApplicationStageHistoryInput
+	19,  // 37: human_resource.recruitment.v1.UpdateApplicationStageHistoryRequest.input:type_name -> human_resource.recruitment.v1.ApplicationStageHistoryInput
+	62,  // 38: human_resource.recruitment.v1.UpdateApplicationStageHistoryRequest.update_mask:type_name -> google.protobuf.FieldMask
+	18,  // 39: human_resource.recruitment.v1.ApplicationStageHistoryResponse.item:type_name -> human_resource.recruitment.v1.ApplicationStageHistory
+	18,  // 40: human_resource.recruitment.v1.ApplicationStageHistoriesResponse.items:type_name -> human_resource.recruitment.v1.ApplicationStageHistory
+	63,  // 41: human_resource.recruitment.v1.ApplicationStageHistoriesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 42: human_resource.recruitment.v1.Interview.scheduled_start:type_name -> google.protobuf.Timestamp
+	61,  // 43: human_resource.recruitment.v1.Interview.scheduled_end:type_name -> google.protobuf.Timestamp
+	61,  // 44: human_resource.recruitment.v1.InterviewInput.scheduled_start:type_name -> google.protobuf.Timestamp
+	61,  // 45: human_resource.recruitment.v1.InterviewInput.scheduled_end:type_name -> google.protobuf.Timestamp
+	25,  // 46: human_resource.recruitment.v1.CreateInterviewRequest.input:type_name -> human_resource.recruitment.v1.InterviewInput
+	25,  // 47: human_resource.recruitment.v1.UpdateInterviewRequest.input:type_name -> human_resource.recruitment.v1.InterviewInput
+	62,  // 48: human_resource.recruitment.v1.UpdateInterviewRequest.update_mask:type_name -> google.protobuf.FieldMask
+	24,  // 49: human_resource.recruitment.v1.InterviewResponse.item:type_name -> human_resource.recruitment.v1.Interview
+	24,  // 50: human_resource.recruitment.v1.InterviewsResponse.items:type_name -> human_resource.recruitment.v1.Interview
+	63,  // 51: human_resource.recruitment.v1.InterviewsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 52: human_resource.recruitment.v1.InterviewPanelist.feedback_due_at:type_name -> google.protobuf.Timestamp
+	61,  // 53: human_resource.recruitment.v1.InterviewPanelistInput.feedback_due_at:type_name -> google.protobuf.Timestamp
+	31,  // 54: human_resource.recruitment.v1.CreateInterviewPanelistRequest.input:type_name -> human_resource.recruitment.v1.InterviewPanelistInput
+	31,  // 55: human_resource.recruitment.v1.UpdateInterviewPanelistRequest.input:type_name -> human_resource.recruitment.v1.InterviewPanelistInput
+	62,  // 56: human_resource.recruitment.v1.UpdateInterviewPanelistRequest.update_mask:type_name -> google.protobuf.FieldMask
+	30,  // 57: human_resource.recruitment.v1.InterviewPanelistResponse.item:type_name -> human_resource.recruitment.v1.InterviewPanelist
+	30,  // 58: human_resource.recruitment.v1.InterviewPanelistsResponse.items:type_name -> human_resource.recruitment.v1.InterviewPanelist
+	63,  // 59: human_resource.recruitment.v1.InterviewPanelistsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 60: human_resource.recruitment.v1.InterviewFeedback.submitted_at:type_name -> google.protobuf.Timestamp
+	60,  // 61: human_resource.recruitment.v1.InterviewFeedback.competency_scores:type_name -> human_resource.common.v1.JsonDocument
+	60,  // 62: human_resource.recruitment.v1.InterviewFeedbackInput.competency_scores:type_name -> human_resource.common.v1.JsonDocument
+	37,  // 63: human_resource.recruitment.v1.CreateInterviewFeedbackRequest.input:type_name -> human_resource.recruitment.v1.InterviewFeedbackInput
+	37,  // 64: human_resource.recruitment.v1.UpdateInterviewFeedbackRequest.input:type_name -> human_resource.recruitment.v1.InterviewFeedbackInput
+	62,  // 65: human_resource.recruitment.v1.UpdateInterviewFeedbackRequest.update_mask:type_name -> google.protobuf.FieldMask
+	36,  // 66: human_resource.recruitment.v1.InterviewFeedbackResponse.item:type_name -> human_resource.recruitment.v1.InterviewFeedback
+	36,  // 67: human_resource.recruitment.v1.InterviewFeedbacksResponse.items:type_name -> human_resource.recruitment.v1.InterviewFeedback
+	63,  // 68: human_resource.recruitment.v1.InterviewFeedbacksResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 69: human_resource.recruitment.v1.Offer.issued_at:type_name -> google.protobuf.Timestamp
+	61,  // 70: human_resource.recruitment.v1.Offer.expires_at:type_name -> google.protobuf.Timestamp
+	61,  // 71: human_resource.recruitment.v1.Offer.responded_at:type_name -> google.protobuf.Timestamp
+	61,  // 72: human_resource.recruitment.v1.Offer.approved_at:type_name -> google.protobuf.Timestamp
+	61,  // 73: human_resource.recruitment.v1.OfferInput.issued_at:type_name -> google.protobuf.Timestamp
+	61,  // 74: human_resource.recruitment.v1.OfferInput.expires_at:type_name -> google.protobuf.Timestamp
+	61,  // 75: human_resource.recruitment.v1.OfferInput.responded_at:type_name -> google.protobuf.Timestamp
+	61,  // 76: human_resource.recruitment.v1.OfferInput.approved_at:type_name -> google.protobuf.Timestamp
+	43,  // 77: human_resource.recruitment.v1.CreateOfferRequest.input:type_name -> human_resource.recruitment.v1.OfferInput
+	43,  // 78: human_resource.recruitment.v1.UpdateOfferRequest.input:type_name -> human_resource.recruitment.v1.OfferInput
+	62,  // 79: human_resource.recruitment.v1.UpdateOfferRequest.update_mask:type_name -> google.protobuf.FieldMask
+	42,  // 80: human_resource.recruitment.v1.OfferResponse.item:type_name -> human_resource.recruitment.v1.Offer
+	42,  // 81: human_resource.recruitment.v1.OffersResponse.items:type_name -> human_resource.recruitment.v1.Offer
+	63,  // 82: human_resource.recruitment.v1.OffersResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 83: human_resource.recruitment.v1.JobPosting.published_at:type_name -> google.protobuf.Timestamp
+	61,  // 84: human_resource.recruitment.v1.JobPosting.closes_at:type_name -> google.protobuf.Timestamp
+	61,  // 85: human_resource.recruitment.v1.JobPostingInput.published_at:type_name -> google.protobuf.Timestamp
+	61,  // 86: human_resource.recruitment.v1.JobPostingInput.closes_at:type_name -> google.protobuf.Timestamp
+	49,  // 87: human_resource.recruitment.v1.CreateJobPostingRequest.input:type_name -> human_resource.recruitment.v1.JobPostingInput
+	49,  // 88: human_resource.recruitment.v1.UpdateJobPostingRequest.input:type_name -> human_resource.recruitment.v1.JobPostingInput
+	62,  // 89: human_resource.recruitment.v1.UpdateJobPostingRequest.update_mask:type_name -> google.protobuf.FieldMask
+	48,  // 90: human_resource.recruitment.v1.JobPostingResponse.item:type_name -> human_resource.recruitment.v1.JobPosting
+	48,  // 91: human_resource.recruitment.v1.JobPostingsResponse.items:type_name -> human_resource.recruitment.v1.JobPosting
+	63,  // 92: human_resource.recruitment.v1.JobPostingsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	61,  // 93: human_resource.recruitment.v1.ApplicationAssessment.scheduled_at:type_name -> google.protobuf.Timestamp
+	61,  // 94: human_resource.recruitment.v1.ApplicationAssessment.completed_at:type_name -> google.protobuf.Timestamp
+	61,  // 95: human_resource.recruitment.v1.ApplicationAssessmentInput.scheduled_at:type_name -> google.protobuf.Timestamp
+	61,  // 96: human_resource.recruitment.v1.ApplicationAssessmentInput.completed_at:type_name -> google.protobuf.Timestamp
+	55,  // 97: human_resource.recruitment.v1.CreateApplicationAssessmentRequest.input:type_name -> human_resource.recruitment.v1.ApplicationAssessmentInput
+	55,  // 98: human_resource.recruitment.v1.UpdateApplicationAssessmentRequest.input:type_name -> human_resource.recruitment.v1.ApplicationAssessmentInput
+	62,  // 99: human_resource.recruitment.v1.UpdateApplicationAssessmentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	54,  // 100: human_resource.recruitment.v1.ApplicationAssessmentResponse.item:type_name -> human_resource.recruitment.v1.ApplicationAssessment
+	54,  // 101: human_resource.recruitment.v1.ApplicationAssessmentsResponse.items:type_name -> human_resource.recruitment.v1.ApplicationAssessment
+	63,  // 102: human_resource.recruitment.v1.ApplicationAssessmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	2,   // 103: human_resource.recruitment.v1.RecruitmentService.CreateRequisition:input_type -> human_resource.recruitment.v1.CreateRequisitionRequest
+	3,   // 104: human_resource.recruitment.v1.RecruitmentService.UpdateRequisition:input_type -> human_resource.recruitment.v1.UpdateRequisitionRequest
+	64,  // 105: human_resource.recruitment.v1.RecruitmentService.SubmitRequisition:input_type -> human_resource.common.v1.IDRequest
+	64,  // 106: human_resource.recruitment.v1.RecruitmentService.DeleteRequisition:input_type -> human_resource.common.v1.IDRequest
+	64,  // 107: human_resource.recruitment.v1.RecruitmentService.GetRequisitionByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 108: human_resource.recruitment.v1.RecruitmentService.GetAllRequisitions:input_type -> human_resource.common.v1.PageRequest
+	66,  // 109: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 110: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkforcePlanLineID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 111: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 112: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 113: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 114: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByHiringManagerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 115: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRecruiterPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 116: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionType:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 117: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 118: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByBudgetReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 119: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 120: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 121: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	8,   // 122: human_resource.recruitment.v1.RecruitmentService.CreateCandidate:input_type -> human_resource.recruitment.v1.CreateCandidateRequest
+	9,   // 123: human_resource.recruitment.v1.RecruitmentService.UpdateCandidate:input_type -> human_resource.recruitment.v1.UpdateCandidateRequest
+	64,  // 124: human_resource.recruitment.v1.RecruitmentService.DeleteCandidate:input_type -> human_resource.common.v1.IDRequest
+	64,  // 125: human_resource.recruitment.v1.RecruitmentService.GetCandidateByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 126: human_resource.recruitment.v1.RecruitmentService.GetAllCandidates:input_type -> human_resource.common.v1.PageRequest
+	66,  // 127: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 128: human_resource.recruitment.v1.RecruitmentService.FindCandidateByPersonPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 129: human_resource.recruitment.v1.RecruitmentService.FindCandidateByContactReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 130: human_resource.recruitment.v1.RecruitmentService.FindCandidateBySourceType:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 131: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 132: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	14,  // 133: human_resource.recruitment.v1.RecruitmentService.CreateApplication:input_type -> human_resource.recruitment.v1.CreateApplicationRequest
+	15,  // 134: human_resource.recruitment.v1.RecruitmentService.UpdateApplication:input_type -> human_resource.recruitment.v1.UpdateApplicationRequest
+	64,  // 135: human_resource.recruitment.v1.RecruitmentService.StartApplicationScreening:input_type -> human_resource.common.v1.IDRequest
+	64,  // 136: human_resource.recruitment.v1.RecruitmentService.DeleteApplication:input_type -> human_resource.common.v1.IDRequest
+	64,  // 137: human_resource.recruitment.v1.RecruitmentService.GetApplicationByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 138: human_resource.recruitment.v1.RecruitmentService.GetAllApplications:input_type -> human_resource.common.v1.PageRequest
+	66,  // 139: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCandidateID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 140: human_resource.recruitment.v1.RecruitmentService.FindApplicationByRequisitionID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 141: human_resource.recruitment.v1.RecruitmentService.FindApplicationByApplicationNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 142: human_resource.recruitment.v1.RecruitmentService.FindApplicationByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 143: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCurrentStageCode:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 144: human_resource.recruitment.v1.RecruitmentService.FindApplicationByAssignedRecruiterPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 145: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDispositionReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 146: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDecisionByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 147: human_resource.recruitment.v1.RecruitmentService.FindApplicationByHiredWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 148: human_resource.recruitment.v1.RecruitmentService.FindApplicationBySourcePostingID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 149: human_resource.recruitment.v1.RecruitmentService.FindApplicationByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	20,  // 150: human_resource.recruitment.v1.RecruitmentService.CreateApplicationStageHistory:input_type -> human_resource.recruitment.v1.CreateApplicationStageHistoryRequest
+	21,  // 151: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationStageHistory:input_type -> human_resource.recruitment.v1.UpdateApplicationStageHistoryRequest
+	67,  // 152: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationStageHistory:input_type -> human_resource.common.v1.IdentityIDRequest
+	67,  // 153: human_resource.recruitment.v1.RecruitmentService.GetApplicationStageHistoryByID:input_type -> human_resource.common.v1.IdentityIDRequest
+	65,  // 154: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationStageHistories:input_type -> human_resource.common.v1.PageRequest
+	66,  // 155: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 156: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByPreviousStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 157: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByNewStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 158: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByStageCode:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 159: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByChangedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 160: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	26,  // 161: human_resource.recruitment.v1.RecruitmentService.CreateInterview:input_type -> human_resource.recruitment.v1.CreateInterviewRequest
+	27,  // 162: human_resource.recruitment.v1.RecruitmentService.UpdateInterview:input_type -> human_resource.recruitment.v1.UpdateInterviewRequest
+	64,  // 163: human_resource.recruitment.v1.RecruitmentService.DeleteInterview:input_type -> human_resource.common.v1.IDRequest
+	64,  // 164: human_resource.recruitment.v1.RecruitmentService.GetInterviewByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 165: human_resource.recruitment.v1.RecruitmentService.GetAllInterviews:input_type -> human_resource.common.v1.PageRequest
+	66,  // 166: human_resource.recruitment.v1.RecruitmentService.FindInterviewByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 167: human_resource.recruitment.v1.RecruitmentService.FindInterviewByInterviewType:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 168: human_resource.recruitment.v1.RecruitmentService.FindInterviewByLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 169: human_resource.recruitment.v1.RecruitmentService.FindInterviewByMeetingReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 170: human_resource.recruitment.v1.RecruitmentService.FindInterviewByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 171: human_resource.recruitment.v1.RecruitmentService.FindInterviewByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	32,  // 172: human_resource.recruitment.v1.RecruitmentService.CreateInterviewPanelist:input_type -> human_resource.recruitment.v1.CreateInterviewPanelistRequest
+	33,  // 173: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewPanelist:input_type -> human_resource.recruitment.v1.UpdateInterviewPanelistRequest
+	64,  // 174: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewPanelist:input_type -> human_resource.common.v1.IDRequest
+	64,  // 175: human_resource.recruitment.v1.RecruitmentService.GetInterviewPanelistByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 176: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewPanelists:input_type -> human_resource.common.v1.PageRequest
+	66,  // 177: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 178: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 179: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByScorecardTemplateReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38,  // 180: human_resource.recruitment.v1.RecruitmentService.CreateInterviewFeedback:input_type -> human_resource.recruitment.v1.CreateInterviewFeedbackRequest
+	39,  // 181: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewFeedback:input_type -> human_resource.recruitment.v1.UpdateInterviewFeedbackRequest
+	64,  // 182: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewFeedback:input_type -> human_resource.common.v1.IDRequest
+	64,  // 183: human_resource.recruitment.v1.RecruitmentService.GetInterviewFeedbackByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 184: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewFeedbacks:input_type -> human_resource.common.v1.PageRequest
+	66,  // 185: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 186: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 187: human_resource.recruitment.v1.RecruitmentService.CreateOffer:input_type -> human_resource.recruitment.v1.CreateOfferRequest
+	45,  // 188: human_resource.recruitment.v1.RecruitmentService.UpdateOffer:input_type -> human_resource.recruitment.v1.UpdateOfferRequest
+	64,  // 189: human_resource.recruitment.v1.RecruitmentService.DeleteOffer:input_type -> human_resource.common.v1.IDRequest
+	64,  // 190: human_resource.recruitment.v1.RecruitmentService.GetOfferByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 191: human_resource.recruitment.v1.RecruitmentService.GetAllOffers:input_type -> human_resource.common.v1.PageRequest
+	66,  // 192: human_resource.recruitment.v1.RecruitmentService.FindOfferByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 193: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 194: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 195: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 196: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 197: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedContractType:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 198: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedCompensationDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 199: human_resource.recruitment.v1.RecruitmentService.FindOfferByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 200: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 201: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 202: human_resource.recruitment.v1.RecruitmentService.FindOfferByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	50,  // 203: human_resource.recruitment.v1.RecruitmentService.CreateJobPosting:input_type -> human_resource.recruitment.v1.CreateJobPostingRequest
+	51,  // 204: human_resource.recruitment.v1.RecruitmentService.UpdateJobPosting:input_type -> human_resource.recruitment.v1.UpdateJobPostingRequest
+	64,  // 205: human_resource.recruitment.v1.RecruitmentService.DeleteJobPosting:input_type -> human_resource.common.v1.IDRequest
+	64,  // 206: human_resource.recruitment.v1.RecruitmentService.GetJobPostingByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 207: human_resource.recruitment.v1.RecruitmentService.GetAllJobPostings:input_type -> human_resource.common.v1.PageRequest
+	66,  // 208: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByRequisitionID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 209: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByChannelCode:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 210: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByContentDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 211: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 212: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	56,  // 213: human_resource.recruitment.v1.RecruitmentService.CreateApplicationAssessment:input_type -> human_resource.recruitment.v1.CreateApplicationAssessmentRequest
+	57,  // 214: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationAssessment:input_type -> human_resource.recruitment.v1.UpdateApplicationAssessmentRequest
+	64,  // 215: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationAssessment:input_type -> human_resource.common.v1.IDRequest
+	64,  // 216: human_resource.recruitment.v1.RecruitmentService.GetApplicationAssessmentByID:input_type -> human_resource.common.v1.IDRequest
+	65,  // 217: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationAssessments:input_type -> human_resource.common.v1.PageRequest
+	66,  // 218: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByApplicationID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 219: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessmentCode:input_type -> human_resource.common.v1.StringFinderRequest
+	68,  // 220: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAttemptNumber:input_type -> human_resource.common.v1.Int32FinderRequest
+	66,  // 221: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRubricDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 222: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 223: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 224: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRecommendationCode:input_type -> human_resource.common.v1.StringFinderRequest
+	66,  // 225: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,   // 226: human_resource.recruitment.v1.RecruitmentService.CreateRequisition:output_type -> human_resource.recruitment.v1.RequisitionResponse
+	4,   // 227: human_resource.recruitment.v1.RecruitmentService.UpdateRequisition:output_type -> human_resource.recruitment.v1.RequisitionResponse
+	4,   // 228: human_resource.recruitment.v1.RecruitmentService.SubmitRequisition:output_type -> human_resource.recruitment.v1.RequisitionResponse
+	69,  // 229: human_resource.recruitment.v1.RecruitmentService.DeleteRequisition:output_type -> human_resource.common.v1.EmptyResponse
+	4,   // 230: human_resource.recruitment.v1.RecruitmentService.GetRequisitionByID:output_type -> human_resource.recruitment.v1.RequisitionResponse
+	5,   // 231: human_resource.recruitment.v1.RecruitmentService.GetAllRequisitions:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 232: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionNumber:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 233: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkforcePlanLineID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 234: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByPositionID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 235: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByJobID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 236: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByOrganizationUnitReferenceID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 237: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByHiringManagerPrincipalID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 238: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRecruiterPrincipalID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 239: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByRequisitionType:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 240: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByStatus:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 241: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByBudgetReferenceID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 242: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByWorkLocationReferenceID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 243: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByApprovedByPrincipalID:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	5,   // 244: human_resource.recruitment.v1.RecruitmentService.FindRequisitionByIdempotencyKey:output_type -> human_resource.recruitment.v1.RequisitionsResponse
+	10,  // 245: human_resource.recruitment.v1.RecruitmentService.CreateCandidate:output_type -> human_resource.recruitment.v1.CandidateResponse
+	10,  // 246: human_resource.recruitment.v1.RecruitmentService.UpdateCandidate:output_type -> human_resource.recruitment.v1.CandidateResponse
+	69,  // 247: human_resource.recruitment.v1.RecruitmentService.DeleteCandidate:output_type -> human_resource.common.v1.EmptyResponse
+	10,  // 248: human_resource.recruitment.v1.RecruitmentService.GetCandidateByID:output_type -> human_resource.recruitment.v1.CandidateResponse
+	11,  // 249: human_resource.recruitment.v1.RecruitmentService.GetAllCandidates:output_type -> human_resource.recruitment.v1.CandidatesResponse
+	11,  // 250: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateNumber:output_type -> human_resource.recruitment.v1.CandidatesResponse
+	11,  // 251: human_resource.recruitment.v1.RecruitmentService.FindCandidateByPersonPartyReferenceID:output_type -> human_resource.recruitment.v1.CandidatesResponse
+	11,  // 252: human_resource.recruitment.v1.RecruitmentService.FindCandidateByContactReferenceID:output_type -> human_resource.recruitment.v1.CandidatesResponse
+	11,  // 253: human_resource.recruitment.v1.RecruitmentService.FindCandidateBySourceType:output_type -> human_resource.recruitment.v1.CandidatesResponse
+	11,  // 254: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCandidateStatus:output_type -> human_resource.recruitment.v1.CandidatesResponse
+	11,  // 255: human_resource.recruitment.v1.RecruitmentService.FindCandidateByCreatedByPrincipalID:output_type -> human_resource.recruitment.v1.CandidatesResponse
+	16,  // 256: human_resource.recruitment.v1.RecruitmentService.CreateApplication:output_type -> human_resource.recruitment.v1.ApplicationResponse
+	16,  // 257: human_resource.recruitment.v1.RecruitmentService.UpdateApplication:output_type -> human_resource.recruitment.v1.ApplicationResponse
+	16,  // 258: human_resource.recruitment.v1.RecruitmentService.StartApplicationScreening:output_type -> human_resource.recruitment.v1.ApplicationResponse
+	69,  // 259: human_resource.recruitment.v1.RecruitmentService.DeleteApplication:output_type -> human_resource.common.v1.EmptyResponse
+	16,  // 260: human_resource.recruitment.v1.RecruitmentService.GetApplicationByID:output_type -> human_resource.recruitment.v1.ApplicationResponse
+	17,  // 261: human_resource.recruitment.v1.RecruitmentService.GetAllApplications:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 262: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCandidateID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 263: human_resource.recruitment.v1.RecruitmentService.FindApplicationByRequisitionID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 264: human_resource.recruitment.v1.RecruitmentService.FindApplicationByApplicationNumber:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 265: human_resource.recruitment.v1.RecruitmentService.FindApplicationByStatus:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 266: human_resource.recruitment.v1.RecruitmentService.FindApplicationByCurrentStageCode:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 267: human_resource.recruitment.v1.RecruitmentService.FindApplicationByAssignedRecruiterPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 268: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDispositionReasonCode:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 269: human_resource.recruitment.v1.RecruitmentService.FindApplicationByDecisionByPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 270: human_resource.recruitment.v1.RecruitmentService.FindApplicationByHiredWorkerID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 271: human_resource.recruitment.v1.RecruitmentService.FindApplicationBySourcePostingID:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	17,  // 272: human_resource.recruitment.v1.RecruitmentService.FindApplicationByIdempotencyKey:output_type -> human_resource.recruitment.v1.ApplicationsResponse
+	22,  // 273: human_resource.recruitment.v1.RecruitmentService.CreateApplicationStageHistory:output_type -> human_resource.recruitment.v1.ApplicationStageHistoryResponse
+	22,  // 274: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationStageHistory:output_type -> human_resource.recruitment.v1.ApplicationStageHistoryResponse
+	69,  // 275: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationStageHistory:output_type -> human_resource.common.v1.EmptyResponse
+	22,  // 276: human_resource.recruitment.v1.RecruitmentService.GetApplicationStageHistoryByID:output_type -> human_resource.recruitment.v1.ApplicationStageHistoryResponse
+	23,  // 277: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationStageHistories:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
+	23,  // 278: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByApplicationID:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
+	23,  // 279: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByPreviousStatus:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
+	23,  // 280: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByNewStatus:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
+	23,  // 281: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByStageCode:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
+	23,  // 282: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByChangedByPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
+	23,  // 283: human_resource.recruitment.v1.RecruitmentService.FindApplicationStageHistoryByReasonCode:output_type -> human_resource.recruitment.v1.ApplicationStageHistoriesResponse
+	28,  // 284: human_resource.recruitment.v1.RecruitmentService.CreateInterview:output_type -> human_resource.recruitment.v1.InterviewResponse
+	28,  // 285: human_resource.recruitment.v1.RecruitmentService.UpdateInterview:output_type -> human_resource.recruitment.v1.InterviewResponse
+	69,  // 286: human_resource.recruitment.v1.RecruitmentService.DeleteInterview:output_type -> human_resource.common.v1.EmptyResponse
+	28,  // 287: human_resource.recruitment.v1.RecruitmentService.GetInterviewByID:output_type -> human_resource.recruitment.v1.InterviewResponse
+	29,  // 288: human_resource.recruitment.v1.RecruitmentService.GetAllInterviews:output_type -> human_resource.recruitment.v1.InterviewsResponse
+	29,  // 289: human_resource.recruitment.v1.RecruitmentService.FindInterviewByApplicationID:output_type -> human_resource.recruitment.v1.InterviewsResponse
+	29,  // 290: human_resource.recruitment.v1.RecruitmentService.FindInterviewByInterviewType:output_type -> human_resource.recruitment.v1.InterviewsResponse
+	29,  // 291: human_resource.recruitment.v1.RecruitmentService.FindInterviewByLocationReferenceID:output_type -> human_resource.recruitment.v1.InterviewsResponse
+	29,  // 292: human_resource.recruitment.v1.RecruitmentService.FindInterviewByMeetingReferenceID:output_type -> human_resource.recruitment.v1.InterviewsResponse
+	29,  // 293: human_resource.recruitment.v1.RecruitmentService.FindInterviewByStatus:output_type -> human_resource.recruitment.v1.InterviewsResponse
+	29,  // 294: human_resource.recruitment.v1.RecruitmentService.FindInterviewByCreatedByPrincipalID:output_type -> human_resource.recruitment.v1.InterviewsResponse
+	34,  // 295: human_resource.recruitment.v1.RecruitmentService.CreateInterviewPanelist:output_type -> human_resource.recruitment.v1.InterviewPanelistResponse
+	34,  // 296: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewPanelist:output_type -> human_resource.recruitment.v1.InterviewPanelistResponse
+	69,  // 297: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewPanelist:output_type -> human_resource.common.v1.EmptyResponse
+	34,  // 298: human_resource.recruitment.v1.RecruitmentService.GetInterviewPanelistByID:output_type -> human_resource.recruitment.v1.InterviewPanelistResponse
+	35,  // 299: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewPanelists:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
+	35,  // 300: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewID:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
+	35,  // 301: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByInterviewerPrincipalID:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
+	35,  // 302: human_resource.recruitment.v1.RecruitmentService.FindInterviewPanelistByScorecardTemplateReferenceID:output_type -> human_resource.recruitment.v1.InterviewPanelistsResponse
+	40,  // 303: human_resource.recruitment.v1.RecruitmentService.CreateInterviewFeedback:output_type -> human_resource.recruitment.v1.InterviewFeedbackResponse
+	40,  // 304: human_resource.recruitment.v1.RecruitmentService.UpdateInterviewFeedback:output_type -> human_resource.recruitment.v1.InterviewFeedbackResponse
+	69,  // 305: human_resource.recruitment.v1.RecruitmentService.DeleteInterviewFeedback:output_type -> human_resource.common.v1.EmptyResponse
+	40,  // 306: human_resource.recruitment.v1.RecruitmentService.GetInterviewFeedbackByID:output_type -> human_resource.recruitment.v1.InterviewFeedbackResponse
+	41,  // 307: human_resource.recruitment.v1.RecruitmentService.GetAllInterviewFeedbacks:output_type -> human_resource.recruitment.v1.InterviewFeedbacksResponse
+	41,  // 308: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewID:output_type -> human_resource.recruitment.v1.InterviewFeedbacksResponse
+	41,  // 309: human_resource.recruitment.v1.RecruitmentService.FindInterviewFeedbackByInterviewerPrincipalID:output_type -> human_resource.recruitment.v1.InterviewFeedbacksResponse
+	46,  // 310: human_resource.recruitment.v1.RecruitmentService.CreateOffer:output_type -> human_resource.recruitment.v1.OfferResponse
+	46,  // 311: human_resource.recruitment.v1.RecruitmentService.UpdateOffer:output_type -> human_resource.recruitment.v1.OfferResponse
+	69,  // 312: human_resource.recruitment.v1.RecruitmentService.DeleteOffer:output_type -> human_resource.common.v1.EmptyResponse
+	46,  // 313: human_resource.recruitment.v1.RecruitmentService.GetOfferByID:output_type -> human_resource.recruitment.v1.OfferResponse
+	47,  // 314: human_resource.recruitment.v1.RecruitmentService.GetAllOffers:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 315: human_resource.recruitment.v1.RecruitmentService.FindOfferByApplicationID:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 316: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferNumber:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 317: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferStatus:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 318: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedJobID:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 319: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedLegalEntityReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 320: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedContractType:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 321: human_resource.recruitment.v1.RecruitmentService.FindOfferByProposedCompensationDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 322: human_resource.recruitment.v1.RecruitmentService.FindOfferByCurrencyCode:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 323: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 324: human_resource.recruitment.v1.RecruitmentService.FindOfferByOfferDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.OffersResponse
+	47,  // 325: human_resource.recruitment.v1.RecruitmentService.FindOfferByApprovedByPrincipalID:output_type -> human_resource.recruitment.v1.OffersResponse
+	52,  // 326: human_resource.recruitment.v1.RecruitmentService.CreateJobPosting:output_type -> human_resource.recruitment.v1.JobPostingResponse
+	52,  // 327: human_resource.recruitment.v1.RecruitmentService.UpdateJobPosting:output_type -> human_resource.recruitment.v1.JobPostingResponse
+	69,  // 328: human_resource.recruitment.v1.RecruitmentService.DeleteJobPosting:output_type -> human_resource.common.v1.EmptyResponse
+	52,  // 329: human_resource.recruitment.v1.RecruitmentService.GetJobPostingByID:output_type -> human_resource.recruitment.v1.JobPostingResponse
+	53,  // 330: human_resource.recruitment.v1.RecruitmentService.GetAllJobPostings:output_type -> human_resource.recruitment.v1.JobPostingsResponse
+	53,  // 331: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByRequisitionID:output_type -> human_resource.recruitment.v1.JobPostingsResponse
+	53,  // 332: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByChannelCode:output_type -> human_resource.recruitment.v1.JobPostingsResponse
+	53,  // 333: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByContentDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.JobPostingsResponse
+	53,  // 334: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByStatus:output_type -> human_resource.recruitment.v1.JobPostingsResponse
+	53,  // 335: human_resource.recruitment.v1.RecruitmentService.FindJobPostingByCreatedByPrincipalID:output_type -> human_resource.recruitment.v1.JobPostingsResponse
+	58,  // 336: human_resource.recruitment.v1.RecruitmentService.CreateApplicationAssessment:output_type -> human_resource.recruitment.v1.ApplicationAssessmentResponse
+	58,  // 337: human_resource.recruitment.v1.RecruitmentService.UpdateApplicationAssessment:output_type -> human_resource.recruitment.v1.ApplicationAssessmentResponse
+	69,  // 338: human_resource.recruitment.v1.RecruitmentService.DeleteApplicationAssessment:output_type -> human_resource.common.v1.EmptyResponse
+	58,  // 339: human_resource.recruitment.v1.RecruitmentService.GetApplicationAssessmentByID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentResponse
+	59,  // 340: human_resource.recruitment.v1.RecruitmentService.GetAllApplicationAssessments:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 341: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByApplicationID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 342: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessmentCode:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 343: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAttemptNumber:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 344: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRubricDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 345: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByStatus:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 346: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByAssessorPrincipalID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 347: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByRecommendationCode:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	59,  // 348: human_resource.recruitment.v1.RecruitmentService.FindApplicationAssessmentByEvidenceDocumentVersionReferenceID:output_type -> human_resource.recruitment.v1.ApplicationAssessmentsResponse
+	226, // [226:349] is the sub-list for method output_type
+	103, // [103:226] is the sub-list for method input_type
+	103, // [103:103] is the sub-list for extension type_name
+	103, // [103:103] is the sub-list for extension extendee
+	0,   // [0:103] is the sub-list for field type_name
 }
 
 func init() { file_human_resource_recruitment_v1_recruitment_proto_init() }

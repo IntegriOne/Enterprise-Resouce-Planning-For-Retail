@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	RecruitmentService_CreateRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/CreateRequisition"
 	RecruitmentService_UpdateRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/UpdateRequisition"
+	RecruitmentService_SubmitRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/SubmitRequisition"
 	RecruitmentService_DeleteRequisition_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/DeleteRequisition"
 	RecruitmentService_GetRequisitionByID_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/GetRequisitionByID"
 	RecruitmentService_GetAllRequisitions_FullMethodName                                            = "/human_resource.recruitment.v1.RecruitmentService/GetAllRequisitions"
@@ -150,6 +151,7 @@ const (
 type RecruitmentServiceClient interface {
 	CreateRequisition(ctx context.Context, in *CreateRequisitionRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	UpdateRequisition(ctx context.Context, in *UpdateRequisitionRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
+	SubmitRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	DeleteRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetRequisitionByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error)
 	GetAllRequisitions(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*RequisitionsResponse, error)
@@ -294,6 +296,16 @@ func (c *recruitmentServiceClient) UpdateRequisition(ctx context.Context, in *Up
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RequisitionResponse)
 	err := c.cc.Invoke(ctx, RecruitmentService_UpdateRequisition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) SubmitRequisition(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*RequisitionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequisitionResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_SubmitRequisition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1506,6 +1518,7 @@ func (c *recruitmentServiceClient) FindApplicationAssessmentByEvidenceDocumentVe
 type RecruitmentServiceServer interface {
 	CreateRequisition(context.Context, *CreateRequisitionRequest) (*RequisitionResponse, error)
 	UpdateRequisition(context.Context, *UpdateRequisitionRequest) (*RequisitionResponse, error)
+	SubmitRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	DeleteRequisition(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetRequisitionByID(context.Context, *v1.IDRequest) (*RequisitionResponse, error)
 	GetAllRequisitions(context.Context, *v1.PageRequest) (*RequisitionsResponse, error)
@@ -1641,6 +1654,9 @@ func (UnimplementedRecruitmentServiceServer) CreateRequisition(context.Context, 
 }
 func (UnimplementedRecruitmentServiceServer) UpdateRequisition(context.Context, *UpdateRequisitionRequest) (*RequisitionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateRequisition not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) SubmitRequisition(context.Context, *v1.IDRequest) (*RequisitionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitRequisition not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) DeleteRequisition(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteRequisition not implemented")
@@ -2055,6 +2071,24 @@ func _RecruitmentService_UpdateRequisition_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RecruitmentServiceServer).UpdateRequisition(ctx, req.(*UpdateRequisitionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_SubmitRequisition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).SubmitRequisition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_SubmitRequisition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).SubmitRequisition(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4233,6 +4267,10 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateRequisition",
 			Handler:    _RecruitmentService_UpdateRequisition_Handler,
+		},
+		{
+			MethodName: "SubmitRequisition",
+			Handler:    _RecruitmentService_SubmitRequisition_Handler,
 		},
 		{
 			MethodName: "DeleteRequisition",

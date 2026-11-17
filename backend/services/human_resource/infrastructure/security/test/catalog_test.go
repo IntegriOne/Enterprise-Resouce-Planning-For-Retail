@@ -17,8 +17,8 @@ import (
 func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 	t.Parallel()
 	catalog := security.PermissionCatalog()
-	if len(catalog) != 412 {
-		t.Fatalf("operation mapping count = %d, want 412", len(catalog))
+	if len(catalog) != 413 {
+		t.Fatalf("operation mapping count = %d, want 413", len(catalog))
 	}
 	codes := make(map[string]struct{}, len(catalog))
 	for operation, code := range catalog {
@@ -27,8 +27,8 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		}
 		codes[code] = struct{}{}
 	}
-	if len(codes) != 328 {
-		t.Fatalf("permission count = %d, want 328", len(codes))
+	if len(codes) != 329 {
+		t.Fatalf("permission count = %d, want 329", len(codes))
 	}
 	for operation, want := range map[string]string{
 		"hr_workers.list":                        "human_resource.workers.read",
@@ -45,6 +45,7 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		"hr_onboarding_tasks.complete":           "human_resource.onboarding_tasks.complete",
 		"hr_talent_assessments.finalize":         "human_resource.talent_assessments.finalize",
 		"hr_applications.start_screening":        "human_resource.applications.start_screening",
+		"hr_requisitions.submit":                 "human_resource.requisitions.submit",
 		"hr_payroll_result_lines.read":           "human_resource.payroll_result_lines.read",
 		"hr_application_stage_history.list":      "human_resource.application_stage_history.read",
 		"hr_engagement_survey_results.read":      "human_resource.engagement_survey_results.read",
@@ -78,6 +79,7 @@ func TestSensitiveOperationsRequireIndependentStepUp(t *testing.T) {
 		{"hr_performance_cycles", "launch", true},
 		{"hr_onboarding_plans", "start", true},
 		{"hr_onboarding_plans", "complete", true},
+		{"hr_requisitions", "submit", true},
 		{"hr_leave_entitlements", "post_leave_entry", true},
 		{"hr_leave_adjustments", "approve", true},
 		{"hr_leave_policies", "create", true},

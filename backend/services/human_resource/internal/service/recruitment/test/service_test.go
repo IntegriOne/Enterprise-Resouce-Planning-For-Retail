@@ -110,3 +110,40 @@ func TestServiceCancellationAndScope(t *testing.T) {
 		t.Fatal("denied calls changed committed data")
 	}
 }
+
+func TestSubmitRequisitionRequiresCreatorAndRollsBack(t *testing.T) {
+	t.Parallel()
+	h, svc, store := setup(t)
+	created, err := svc.CreateRequisition(t.Context(), input())
+	if err != nil {
+		t.Fatal(err)
+	}
+	creator := h.Actor
+	h.Actor.PrincipalID = "00000000-0000-4000-8000-000000000999"
+	if _, err := svc.SubmitRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("another submitter: %v", err)
+	}
+	h.Actor = creator
+	h.Actor.Kind = "workload"
+	if _, err := svc.SubmitRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("nonhuman submitter: %v", err)
+	}
+	h.Actor = creator
+	cause := errors.New("injected integrity failure")
+	h.Failures["integrity"] = cause
+	if _, err := svc.SubmitRequisition(t.Context(), created.ID); !errors.Is(err, cause) {
+		t.Fatalf("failed integrity: %v", err)
+	}
+	if store.Rows[created.ID].Status != "draft" || len(h.Events) != 1 {
+		t.Fatal("failed submission changed committed requisition or outbox")
+	}
+	delete(h.Failures, "integrity")
+	submitted, err := svc.SubmitRequisition(t.Context(), created.ID)
+	if err != nil || submitted.Status != "submitted" || submitted.SubmittedAt == nil ||
+		submitted.SubmittedByPrincipalID == nil || *submitted.SubmittedByPrincipalID != creator.PrincipalID || len(h.Events) != 2 {
+		t.Fatalf("submitted requisition = %+v, error %v", submitted, err)
+	}
+	if _, err := svc.SubmitRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("repeated submission: %v", err)
+	}
+}

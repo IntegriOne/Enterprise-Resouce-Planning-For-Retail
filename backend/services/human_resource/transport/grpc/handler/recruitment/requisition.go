@@ -27,6 +27,7 @@ func requisition(v *entity.Requisition) (*pb.Requisition, error) {
 		RequisitionType: v.RequisitionType, Status: v.Status, Headcount: v.Headcount, TargetStartDate: dateString(v.TargetStartDate), BudgetReferenceId: v.BudgetReferenceID,
 		WorkLocationReferenceId: v.WorkLocationReferenceID, EmploymentCategory: string(v.EmploymentCategory), MinimumQualifications: minimum, DesiredQualifications: desired,
 		ApprovedAt: timestamp(v.ApprovedAt), ApprovedByPrincipalId: v.ApprovedByPrincipalID, OpenedAt: timestamp(v.OpenedAt), ClosedAt: timestamp(v.ClosedAt), IdempotencyKey: v.IdempotencyKey,
+		CreatedByPrincipalId: v.CreatedByPrincipalID, SubmittedAt: timestamp(v.SubmittedAt), SubmittedByPrincipalId: v.SubmittedByPrincipalID,
 	}, nil
 }
 func requisitionResponse(v *entity.Requisition, err error) (*pb.RequisitionResponse, error) {
@@ -133,6 +134,13 @@ func (h *Handler) UpdateRequisition(ctx context.Context, r *pb.UpdateRequisition
 }
 func (h *Handler) DeleteRequisition(ctx context.Context, r *common.IDRequest) (*common.EmptyResponse, error) {
 	return deleteRecord(ctx, r, h.service.DeleteRequisition)
+}
+
+func (h *Handler) SubmitRequisition(ctx context.Context, r *common.IDRequest) (*pb.RequisitionResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return requisitionResponse(h.service.SubmitRequisition(ctx, r.Id))
 }
 func (h *Handler) GetRequisitionByID(ctx context.Context, r *common.IDRequest) (*pb.RequisitionResponse, error) {
 	if r == nil {

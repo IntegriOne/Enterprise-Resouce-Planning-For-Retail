@@ -265,6 +265,34 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", draftID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 3 {
 		t.Fatalf("requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
+	submittedNumber, submittedKey := "REQ-SUBMITTED-1", "REQ-SUBMITTED-1"
+	submittedInput := &pb.RequisitionInput{RequisitionNumber: &submittedNumber, JobId: text(jobID),
+		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),
+		RequisitionType: &draftType, EmploymentCategory: &category, IdempotencyKey: &submittedKey}
+	submissionDraft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: submittedInput})
+	if err != nil {
+		t.Fatalf("create requisition for submission: %v", err)
+	}
+	submittedID := submissionDraft.GetItem().GetId()
+	submitted, err := client.SubmitRequisition(ctx, &common.IDRequest{Id: submittedID})
+	if err != nil || submitted.GetItem().GetStatus() != "submitted" || submitted.GetItem().GetSubmittedAt() == nil ||
+		submitted.GetItem().GetSubmittedByPrincipalId() != managerPrincipalID || submitted.GetItem().GetCreatedByPrincipalId() != managerPrincipalID {
+		t.Fatalf("submit requisition: %+v, %v", submitted, err)
+	}
+	if _, err := client.SubmitRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat requisition submission = %v", status.Code(err))
+	}
+	if _, err := client.UpdateRequisition(ctx, &pb.UpdateRequisitionRequest{Id: submittedID,
+		Input:      &pb.RequisitionInput{Headcount: &updatedHeadcount},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"headcount"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("edit submitted requisition through CRUD = %v", status.Code(err))
+	}
+	if _, err := client.DeleteRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete submitted requisition through CRUD = %v", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 2 {
+		t.Fatalf("submitted requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
 	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_requisitions
 		(id, requisition_number, job_id, organization_unit_reference_id, hiring_manager_principal_id,
 		requisition_type, status, employment_category, approved_at, approved_by_principal_id,

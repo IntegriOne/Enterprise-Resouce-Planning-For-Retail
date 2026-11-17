@@ -85,8 +85,26 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &updated); err != nil {
 		t.Fatalf("update valid draft: %v", err)
 	}
-	changedCreator := updated
+	submitted := *draft
+	submitted.Status = "submitted"
+	submittedAt := time.Now()
+	submitted.SubmittedAt = &submittedAt
+	submitted.SubmittedByPrincipalID = &principal
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &submitted); err != nil {
+		t.Fatalf("submit valid draft: %v", err)
+	}
+	tamperedSubmission := submitted
+	tamperedSubmission.Headcount++
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &tamperedSubmission); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("changed headcount during submit: %v", err)
+	}
+	otherSubmitter := submitted
 	otherPrincipal := "00000000-0000-4000-8000-000000000010"
+	otherSubmitter.SubmittedByPrincipalID = &otherPrincipal
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &otherSubmitter); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("submit by another principal: %v", err)
+	}
+	changedCreator := updated
 	changedCreator.CreatedByPrincipalID = &otherPrincipal
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &changedCreator); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("changed creator: %v", err)
@@ -118,6 +136,9 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 	v.owner = nil
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", nil, draft); !errors.Is(err, hrerrors.ErrUnavailable) {
 		t.Fatalf("missing owner verifier: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, &submitted); !errors.Is(err, hrerrors.ErrUnavailable) {
+		t.Fatalf("submission without owner verifier: %v", err)
 	}
 	if err := v.ValidateMutation(t.Context(), "hr_requisitions", draft, nil); err != nil {
 		t.Fatalf("delete unreferenced draft without owner verifier: %v", err)
