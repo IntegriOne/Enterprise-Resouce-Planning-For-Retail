@@ -124,6 +124,7 @@ func TestCompensationProposalRPCWithPostgreSQL(t *testing.T) {
 		return id
 	}
 	workerID, familyID, jobID, positionID, assignmentID := newID(), newID(), newID(), newID(), newID()
+	assignmentRequesterID := newID()
 	code := strings.ReplaceAll(workerID, "-", "")
 	legalID, organizationID, personID := newID(), newID(), newID()
 	from, to := "2026-01-01", "2026-12-31"
@@ -135,7 +136,7 @@ func TestCompensationProposalRPCWithPostgreSQL(t *testing.T) {
 		{"INSERT INTO hr_jobs (id, job_family_id, job_code, job_title, job_level_code, valid_from) VALUES (?, ?, ?, 'Supervisor', 'L2', ?)", []any{jobID, familyID, "JOB-" + code, from}},
 		{"INSERT INTO hr_positions (id, position_code, position_title, job_id, organization_unit_reference_id, legal_entity_reference_id, valid_from) VALUES (?, ?, 'Supervisor', ?, ?, ?, ?)", []any{positionID, "POS-" + code, jobID, organizationID, legalID, from}},
 		{"INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, hire_date, primary_legal_entity_reference_id) VALUES (?, ?, ?, 'employee', 'active', ?, ?)", []any{workerID, "WORKER-" + code, personID, from, legalID}},
-		{"INSERT INTO hr_worker_assignments (id, worker_id, position_id, assignment_type, valid_from, valid_to) VALUES (?, ?, ?, 'primary', ?, ?)", []any{assignmentID, workerID, positionID, from, to}},
+		{"INSERT INTO hr_worker_assignments (id, worker_id, position_id, assignment_type, valid_from, valid_to, requested_by_principal_id, requested_at) VALUES (?, ?, ?, 'primary', ?, ?, ?, now())", []any{assignmentID, workerID, positionID, from, to, assignmentRequesterID}},
 	}
 	for _, fixture := range fixtures {
 		if err := database.WithContext(ctx).Exec(fixture.query, fixture.args...).Error; err != nil {

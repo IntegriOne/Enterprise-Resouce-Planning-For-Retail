@@ -87,11 +87,13 @@ type WorkerAssignmentRepository interface {
 	FindWorkerAssignmentsByPositionID(context.Context, string, int, int) ([]entity.WorkerAssignment, error)
 	FindWorkerAssignmentsByManagerWorkerID(context.Context, *string, int, int) ([]entity.WorkerAssignment, error)
 	FindWorkerAssignmentsByAssignmentType(context.Context, string, int, int) ([]entity.WorkerAssignment, error)
+	FindWorkerAssignmentsByRequestedByPrincipalID(context.Context, *string, int, int) ([]entity.WorkerAssignment, error)
 	FindWorkerAssignmentsByApprovedByPrincipalID(context.Context, *string, int, int) ([]entity.WorkerAssignment, error)
 	FindByWorkerID(ctx context.Context, value string, limit, offset int) ([]entity.WorkerAssignment, error)
 	FindByPositionID(ctx context.Context, value string, limit, offset int) ([]entity.WorkerAssignment, error)
 	FindByManagerWorkerID(ctx context.Context, value *string, limit, offset int) ([]entity.WorkerAssignment, error)
 	FindByAssignmentType(ctx context.Context, value string, limit, offset int) ([]entity.WorkerAssignment, error)
+	FindByRequestedByPrincipalID(ctx context.Context, value *string, limit, offset int) ([]entity.WorkerAssignment, error)
 	FindByApprovedByPrincipalID(ctx context.Context, value *string, limit, offset int) ([]entity.WorkerAssignment, error)
 }
 

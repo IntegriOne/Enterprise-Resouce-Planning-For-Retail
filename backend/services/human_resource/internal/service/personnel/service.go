@@ -382,6 +382,14 @@ func (s *Service) FindWorkerAssignmentByAssignmentType(ctx context.Context, valu
 	return s.workerAssignment.List(ctx, []domainrepo.Filter{{Column: "assignment_type", Values: []any{value}}}, limit, offset)
 }
 
+// FindWorkerAssignmentByRequestedByPrincipalID menjalankan pencarian dengan scope server.
+func (s *Service) FindWorkerAssignmentByRequestedByPrincipalID(ctx context.Context, value *string, limit, offset int) (operation.Page[entity.WorkerAssignment], error) {
+	if s == nil {
+		return operation.Page[entity.WorkerAssignment]{}, hrerrors.ErrUnavailable
+	}
+	return s.workerAssignment.List(ctx, []domainrepo.Filter{{Column: "requested_by_principal_id", Values: []any{value}}}, limit, offset)
+}
+
 // FindWorkerAssignmentByApprovedByPrincipalID menjalankan operasi aplikasi dengan validasi dan scope server.
 func (s *Service) FindWorkerAssignmentByApprovedByPrincipalID(ctx context.Context, value *string, limit, offset int) (operation.Page[entity.WorkerAssignment], error) {
 	if s == nil {

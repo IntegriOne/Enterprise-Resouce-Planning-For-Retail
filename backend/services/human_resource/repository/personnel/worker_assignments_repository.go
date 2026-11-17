@@ -60,6 +60,9 @@ func (r *WorkerAssignmentRepository) FindWorkerAssignmentsByManagerWorkerID(ctx 
 func (r *WorkerAssignmentRepository) FindWorkerAssignmentsByAssignmentType(ctx context.Context, v string, limit, offset int) ([]entity.WorkerAssignment, error) {
 	return r.FindByAssignmentType(ctx, v, limit, offset)
 }
+func (r *WorkerAssignmentRepository) FindWorkerAssignmentsByRequestedByPrincipalID(ctx context.Context, v *string, limit, offset int) ([]entity.WorkerAssignment, error) {
+	return r.FindByRequestedByPrincipalID(ctx, v, limit, offset)
+}
 func (r *WorkerAssignmentRepository) FindWorkerAssignmentsByApprovedByPrincipalID(ctx context.Context, v *string, limit, offset int) ([]entity.WorkerAssignment, error) {
 	return r.FindByApprovedByPrincipalID(ctx, v, limit, offset)
 }
@@ -229,6 +232,11 @@ func (r *WorkerAssignmentRepository) FindByManagerWorkerID(ctx context.Context, 
 // FindByAssignmentType mencari kecocokan assignment_type dengan paginasi dan urutan primary key.
 func (r *WorkerAssignmentRepository) FindByAssignmentType(ctx context.Context, value string, limit, offset int) ([]entity.WorkerAssignment, error) {
 	return r.SelectBy(ctx, "assignment_type", value, limit, offset)
+}
+
+// FindByRequestedByPrincipalID mencari kecocokan requested_by_principal_id dengan paginasi.
+func (r *WorkerAssignmentRepository) FindByRequestedByPrincipalID(ctx context.Context, value *string, limit, offset int) ([]entity.WorkerAssignment, error) {
+	return r.SelectBy(ctx, "requested_by_principal_id", value, limit, offset)
 }
 
 // FindByApprovedByPrincipalID mencari kecocokan approved_by_principal_id dengan paginasi dan urutan primary key.

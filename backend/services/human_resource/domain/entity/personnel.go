@@ -63,6 +63,8 @@ type WorkerAssignment struct {
 	ValidFrom                time.Time  `gorm:"column:valid_from;type:date" json:"valid_from"`
 	ValidTo                  *time.Time `gorm:"column:valid_to;type:date" json:"valid_to"`
 	AssignmentReason         *string    `gorm:"column:assignment_reason;type:varchar(80)" json:"assignment_reason"`
+	RequestedByPrincipalID   *string    `gorm:"column:requested_by_principal_id;type:uuid" json:"requested_by_principal_id"`
+	RequestedAt              *time.Time `gorm:"column:requested_at;type:timestamptz" json:"requested_at"`
 	ApprovedByPrincipalID    *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
 	ApprovedAt               *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
 }

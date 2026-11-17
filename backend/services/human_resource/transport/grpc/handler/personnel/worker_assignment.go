@@ -16,7 +16,11 @@ import (
 func assignment(value *entity.WorkerAssignment) *pb.WorkerAssignment {
 	item := &pb.WorkerAssignment{Id: value.ID, WorkerId: value.WorkerID, PositionId: value.PositionID, ManagerWorkerId: value.ManagerWorkerID,
 		AssignmentType: value.AssignmentType, EmploymentStatusSnapshot: value.EmploymentStatusSnapshot, FtePercent: string(value.FTEPercent),
-		ValidFrom: value.ValidFrom.Format("2006-01-02"), ValidTo: dateString(value.ValidTo), AssignmentReason: value.AssignmentReason, ApprovedByPrincipalId: value.ApprovedByPrincipalID}
+		ValidFrom: value.ValidFrom.Format("2006-01-02"), ValidTo: dateString(value.ValidTo), AssignmentReason: value.AssignmentReason,
+		RequestedByPrincipalId: value.RequestedByPrincipalID, ApprovedByPrincipalId: value.ApprovedByPrincipalID}
+	if value.RequestedAt != nil {
+		item.RequestedAt = timestamppb.New(*value.RequestedAt)
+	}
 	if value.ApprovedAt != nil {
 		item.ApprovedAt = timestamppb.New(*value.ApprovedAt)
 	}
@@ -139,4 +143,12 @@ func (h *Handler) FindWorkerAssignmentByApprovedByPrincipalID(ctx context.Contex
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return assignments(h.service.FindWorkerAssignmentByApprovedByPrincipalID(ctx, request.Value, int(request.Limit), int(request.Offset)))
+}
+
+// FindWorkerAssignmentByRequestedByPrincipalID mencari pengajuan penempatan sesuai scope server.
+func (h *Handler) FindWorkerAssignmentByRequestedByPrincipalID(ctx context.Context, request *common.StringFinderRequest) (*pb.WorkerAssignmentsResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return assignments(h.service.FindWorkerAssignmentByRequestedByPrincipalID(ctx, request.Value, int(request.Limit), int(request.Offset)))
 }

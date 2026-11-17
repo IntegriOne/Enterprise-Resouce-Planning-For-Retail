@@ -71,6 +71,8 @@ def generate(tables, bodies, sql, enums, write):
     grouped={}
     total=0
     for t in tables:
+        # Validasi rekrutmen memuat aturan manual dari migrasi aditif.
+        if t['domain']=='recruitment':continue
         cols={c['column']:c for c in t['columns']}
         def expr(n):
             if n[0]=='field':

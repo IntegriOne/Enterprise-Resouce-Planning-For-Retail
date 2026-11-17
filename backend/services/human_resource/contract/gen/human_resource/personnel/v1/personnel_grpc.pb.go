@@ -57,6 +57,7 @@ const (
 	PersonnelService_FindWorkerAssignmentByPositionID_FullMethodName                         = "/human_resource.personnel.v1.PersonnelService/FindWorkerAssignmentByPositionID"
 	PersonnelService_FindWorkerAssignmentByManagerWorkerID_FullMethodName                    = "/human_resource.personnel.v1.PersonnelService/FindWorkerAssignmentByManagerWorkerID"
 	PersonnelService_FindWorkerAssignmentByAssignmentType_FullMethodName                     = "/human_resource.personnel.v1.PersonnelService/FindWorkerAssignmentByAssignmentType"
+	PersonnelService_FindWorkerAssignmentByRequestedByPrincipalID_FullMethodName             = "/human_resource.personnel.v1.PersonnelService/FindWorkerAssignmentByRequestedByPrincipalID"
 	PersonnelService_FindWorkerAssignmentByApprovedByPrincipalID_FullMethodName              = "/human_resource.personnel.v1.PersonnelService/FindWorkerAssignmentByApprovedByPrincipalID"
 	PersonnelService_CreateWorkerLifecycleEvent_FullMethodName                               = "/human_resource.personnel.v1.PersonnelService/CreateWorkerLifecycleEvent"
 	PersonnelService_UpdateWorkerLifecycleEvent_FullMethodName                               = "/human_resource.personnel.v1.PersonnelService/UpdateWorkerLifecycleEvent"
@@ -132,6 +133,7 @@ type PersonnelServiceClient interface {
 	FindWorkerAssignmentByPositionID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkerAssignmentsResponse, error)
 	FindWorkerAssignmentByManagerWorkerID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkerAssignmentsResponse, error)
 	FindWorkerAssignmentByAssignmentType(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkerAssignmentsResponse, error)
+	FindWorkerAssignmentByRequestedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkerAssignmentsResponse, error)
 	FindWorkerAssignmentByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkerAssignmentsResponse, error)
 	CreateWorkerLifecycleEvent(ctx context.Context, in *CreateWorkerLifecycleEventRequest, opts ...grpc.CallOption) (*WorkerLifecycleEventResponse, error)
 	UpdateWorkerLifecycleEvent(ctx context.Context, in *UpdateWorkerLifecycleEventRequest, opts ...grpc.CallOption) (*WorkerLifecycleEventResponse, error)
@@ -544,6 +546,16 @@ func (c *personnelServiceClient) FindWorkerAssignmentByAssignmentType(ctx contex
 	return out, nil
 }
 
+func (c *personnelServiceClient) FindWorkerAssignmentByRequestedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkerAssignmentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkerAssignmentsResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_FindWorkerAssignmentByRequestedByPrincipalID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *personnelServiceClient) FindWorkerAssignmentByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkerAssignmentsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkerAssignmentsResponse)
@@ -905,6 +917,7 @@ type PersonnelServiceServer interface {
 	FindWorkerAssignmentByPositionID(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error)
 	FindWorkerAssignmentByManagerWorkerID(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error)
 	FindWorkerAssignmentByAssignmentType(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error)
+	FindWorkerAssignmentByRequestedByPrincipalID(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error)
 	FindWorkerAssignmentByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error)
 	CreateWorkerLifecycleEvent(context.Context, *CreateWorkerLifecycleEventRequest) (*WorkerLifecycleEventResponse, error)
 	UpdateWorkerLifecycleEvent(context.Context, *UpdateWorkerLifecycleEventRequest) (*WorkerLifecycleEventResponse, error)
@@ -1057,6 +1070,9 @@ func (UnimplementedPersonnelServiceServer) FindWorkerAssignmentByManagerWorkerID
 }
 func (UnimplementedPersonnelServiceServer) FindWorkerAssignmentByAssignmentType(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindWorkerAssignmentByAssignmentType not implemented")
+}
+func (UnimplementedPersonnelServiceServer) FindWorkerAssignmentByRequestedByPrincipalID(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FindWorkerAssignmentByRequestedByPrincipalID not implemented")
 }
 func (UnimplementedPersonnelServiceServer) FindWorkerAssignmentByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*WorkerAssignmentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindWorkerAssignmentByApprovedByPrincipalID not implemented")
@@ -1841,6 +1857,24 @@ func _PersonnelService_FindWorkerAssignmentByAssignmentType_Handler(srv interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PersonnelService_FindWorkerAssignmentByRequestedByPrincipalID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.StringFinderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).FindWorkerAssignmentByRequestedByPrincipalID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_FindWorkerAssignmentByRequestedByPrincipalID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).FindWorkerAssignmentByRequestedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PersonnelService_FindWorkerAssignmentByApprovedByPrincipalID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(v1.StringFinderRequest)
 	if err := dec(in); err != nil {
@@ -2571,6 +2605,10 @@ var PersonnelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindWorkerAssignmentByAssignmentType",
 			Handler:    _PersonnelService_FindWorkerAssignmentByAssignmentType_Handler,
+		},
+		{
+			MethodName: "FindWorkerAssignmentByRequestedByPrincipalID",
+			Handler:    _PersonnelService_FindWorkerAssignmentByRequestedByPrincipalID_Handler,
 		},
 		{
 			MethodName: "FindWorkerAssignmentByApprovedByPrincipalID",

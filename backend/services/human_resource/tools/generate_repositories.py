@@ -68,13 +68,15 @@ for dom,ts in bydomain.items():
    if c['column'] in ('created_at','updated_at'):tag+=';autoCreateTime:false;autoUpdateTime:false'
    out+=f' {c["field"]} {c["type"]} `gorm:"{tag}" json:"{c["column"]}"`\n'
   out+='}\n'+f'\n// TableName menetapkan tabel HRM secara eksplisit.\nfunc ({t["name"]}) TableName() string {{ return "{t["table"]}" }}\n'
- write(Path('domain/entity')/(dom+'.go'),out)
+ # Model rekrutmen berisi aturan manual dari migrasi aditif dan dipelihara langsung.
+ if dom!='recruitment':write(Path('domain/entity')/(dom+'.go'),out)
  for t in ts:
   n=t['name'];cols=t['columns'];pks=[c for c in cols if c['pk']]
   key='string' if len(pks)==1 and pks[0]['type']=='string' else 'int64' if len(pks)==1 else 'entity.'+n+'Key'
   t['key']=key
   if len(pks)>1:
-   with (root/'domain/entity'/f'{dom}.go').open('a') as f:f.write(f'\n// {n}Key menyimpan seluruh bagian primary key.\ntype {n}Key struct {{\n'+''.join(f' {c["field"]} {c["type"]}\n' for c in pks)+'}\n')
+   if dom!='recruitment':
+    with (root/'domain/entity'/f'{dom}.go').open('a') as f:f.write(f'\n// {n}Key menyimpan seluruh bagian primary key.\ntype {n}Key struct {{\n'+''.join(f' {c["field"]} {c["type"]}\n' for c in pks)+'}\n')
   filters=[c for c in cols if not c['pk'] and (c['sql_type']=='uuid' or c['column'].endswith(('_code','_number','_status','_type')) or c['column'] in ('status','idempotency_key','source_event_id','source_management','aggregate_version') or (c['sql_type'].lower()=='bigint' and c['column'].endswith('_id')))]
   # Kedua bagian composite key juga mempunyai pencarian berhalaman.
   if len(pks)>1:filters=pks+filters

@@ -23,15 +23,20 @@ type employmentContractValidator struct {
 	contracts contractNumberReader
 }
 
-// PersonnelValidators mengaktifkan aturan kontrak draf yang hanya memakai referensi pekerja HRM.
+// PersonnelValidators mengaktifkan aturan kontrak dan permintaan penempatan draf HRM.
 func PersonnelValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
 	if repos == nil || operation.RequireDependency(repos.Worker) != nil ||
-		operation.RequireDependency(repos.EmploymentContract) != nil {
+		operation.RequireDependency(repos.EmploymentContract) != nil ||
+		operation.RequireDependency(repos.Position) != nil ||
+		operation.RequireDependency(repos.WorkerAssignment) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
 		"hr_employment_contracts": &employmentContractValidator{
 			workers: repos.Worker, contracts: repos.EmploymentContract,
+		},
+		"hr_worker_assignments": &workerAssignmentValidator{
+			workers: repos.Worker, positions: repos.Position,
 		},
 	}, nil
 }

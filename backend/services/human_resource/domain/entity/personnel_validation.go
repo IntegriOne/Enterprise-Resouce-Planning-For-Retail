@@ -224,6 +224,16 @@ func (x *WorkerAssignment) Validate() error {
 			return hrerrors.Invalid("assignment_reason", "has invalid value")
 		}
 	}
+	if x.RequestedByPrincipalID != nil {
+		if err := ValidateUUID("requested_by_principal_id", (*x.RequestedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("requested_by_principal_id", "has invalid value")
+		}
+	}
+	if x.RequestedAt != nil {
+		if err := validateTime("requested_at", (*x.RequestedAt)); err != nil {
+			return hrerrors.Invalid("requested_at", "has invalid value")
+		}
+	}
 	if x.ApprovedByPrincipalID != nil {
 		if err := ValidateUUID("approved_by_principal_id", (*x.ApprovedByPrincipalID)); err != nil {
 			return hrerrors.Invalid("approved_by_principal_id", "has invalid value")
@@ -239,6 +249,15 @@ func (x *WorkerAssignment) Validate() error {
 	}
 	if ruleAnd(ruleAnd(ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.FTEPercent)), ruleNumber("0"), ">")), ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.FTEPercent)), ruleNumber("100"), "<="))), ruleOr(ruleKnown(x.ValidTo == nil), rulePresent(x.ValidTo != nil, func() bool { return ruleCompareResult(CompareDates((*x.ValidTo), x.ValidFrom), ">=") }))) == ruleFalse {
 		return hrerrors.Invalid("hr_worker_assignments", "ck_hr_assignment_values")
+	}
+	if ruleOr(ruleAnd(ruleKnown(x.RequestedByPrincipalID == nil), ruleKnown(x.RequestedAt == nil)), ruleAnd(ruleKnown(x.RequestedByPrincipalID != nil), ruleKnown(x.RequestedAt != nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_worker_assignments", "ck_hr_assignment_request_pair")
+	}
+	if ruleOr(ruleAnd(ruleKnown(x.ApprovedByPrincipalID == nil), ruleKnown(x.ApprovedAt == nil)), ruleAnd(ruleKnown(x.ApprovedByPrincipalID != nil), ruleKnown(x.ApprovedAt != nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_worker_assignments", "ck_hr_assignment_approval_pair")
+	}
+	if ruleOr(ruleKnown(x.ApprovedAt == nil), ruleAnd(ruleAnd(ruleAnd(ruleKnown(x.RequestedByPrincipalID != nil), ruleKnown(x.RequestedAt != nil)), rulePresent(x.ApprovedByPrincipalID != nil && x.RequestedByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.ApprovedByPrincipalID), (*x.RequestedByPrincipalID)) })), rulePresent(x.ApprovedAt != nil && x.RequestedAt != nil, func() bool { return ruleCompareResult((*x.ApprovedAt).Compare((*x.RequestedAt)), ">=") }))) == ruleFalse {
+		return hrerrors.Invalid("hr_worker_assignments", "ck_hr_assignment_approval_provenance")
 	}
 	return nil
 }

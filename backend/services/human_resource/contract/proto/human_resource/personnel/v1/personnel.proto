@@ -44,6 +44,7 @@ service PersonnelService {
   rpc FindWorkerAssignmentByPositionID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
   rpc FindWorkerAssignmentByManagerWorkerID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
   rpc FindWorkerAssignmentByAssignmentType(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
+  rpc FindWorkerAssignmentByRequestedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
   rpc FindWorkerAssignmentByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkerAssignmentsResponse);
   rpc CreateWorkerLifecycleEvent(CreateWorkerLifecycleEventRequest) returns (WorkerLifecycleEventResponse);
   rpc UpdateWorkerLifecycleEvent(UpdateWorkerLifecycleEventRequest) returns (WorkerLifecycleEventResponse);
@@ -169,6 +170,8 @@ message WorkerAssignment {
   optional string assignment_reason = 10;
   optional string approved_by_principal_id = 11;
   google.protobuf.Timestamp approved_at = 12;
+  optional string requested_by_principal_id = 13;
+  google.protobuf.Timestamp requested_at = 14;
 }
 message WorkerAssignmentInput {
   optional string worker_id = 1;

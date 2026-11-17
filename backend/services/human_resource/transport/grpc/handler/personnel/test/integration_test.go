@@ -27,6 +27,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -273,6 +274,91 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"service_start_date"}}})
 	if err != nil || updatedWorker.GetItem().GetServiceStartDate() != "2026-11-22" {
 		t.Fatalf("correct preboarding date = %+v, %v", updatedWorker, err)
+	}
+	assignmentFamilyID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assignmentJobID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assignmentPositionID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assignmentStart := "2026-11-22"
+	for _, fixture := range []struct {
+		query string
+		args  []any
+	}{
+		{"INSERT INTO hr_job_families (id, family_code, family_name, job_domain) VALUES (?, ?, 'Store', 'operations')", []any{assignmentFamilyID, "FAMILY-" + assignmentFamilyID}},
+		{"INSERT INTO hr_jobs (id, job_family_id, job_code, job_title, valid_from) VALUES (?, ?, ?, 'Associate', ?)", []any{assignmentJobID, assignmentFamilyID, "JOB-" + assignmentJobID, assignmentStart}},
+		{"INSERT INTO hr_positions (id, position_code, position_title, job_id, organization_unit_reference_id, legal_entity_reference_id, valid_from) VALUES (?, ?, 'Associate', ?, ?, ?, ?)", []any{assignmentPositionID, "POSITION-" + assignmentPositionID, assignmentJobID, insideID, legalA, assignmentStart}},
+	} {
+		if err := database.WithContext(ctx).Exec(fixture.query, fixture.args...).Error; err != nil {
+			t.Fatalf("insert assignment fixture: %v", err)
+		}
+	}
+	assignmentID := ""
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cleanupCancel()
+		if assignmentID != "" {
+			if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_worker_assignments WHERE id = ?", assignmentID).Error; err != nil {
+				t.Errorf("clean assignment: %v", err)
+			}
+		}
+		for _, cleanup := range []struct {
+			query string
+			id    string
+		}{
+			{"DELETE FROM hr_positions WHERE id = ?", assignmentPositionID},
+			{"DELETE FROM hr_jobs WHERE id = ?", assignmentJobID},
+			{"DELETE FROM hr_job_families WHERE id = ?", assignmentFamilyID},
+		} {
+			if err := database.WithContext(cleanupCtx).Exec(cleanup.query, cleanup.id).Error; err != nil {
+				t.Errorf("clean assignment fixture: %v", err)
+			}
+		}
+	})
+	assignmentType := "primary"
+	assignmentInput := &pb.WorkerAssignmentInput{WorkerId: &newWorkerID,
+		PositionId: &assignmentPositionID, AssignmentType: &assignmentType, ValidFrom: &assignmentStart}
+	forgedApproval := *assignmentInput
+	forgedApproval.ApprovedByPrincipalId = &insideID
+	if _, err := client.CreateWorkerAssignment(ctx, &pb.CreateWorkerAssignmentRequest{Input: &forgedApproval}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("incomplete assignment approval = %v", err)
+	}
+	forgedApproval.ApprovedAt = timestamppb.New(time.Now().Add(time.Hour))
+	if _, err := client.CreateWorkerAssignment(ctx, &pb.CreateWorkerAssignmentRequest{Input: &forgedApproval}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("forged assignment approval = %v", err)
+	}
+	assignmentResponse, err := client.CreateWorkerAssignment(ctx, &pb.CreateWorkerAssignmentRequest{Input: assignmentInput})
+	if err != nil || assignmentResponse.GetItem().GetId() == "" ||
+		assignmentResponse.GetItem().GetRequestedByPrincipalId() != "00000000-0000-4000-8000-000000000001" ||
+		assignmentResponse.GetItem().GetRequestedAt() == nil || assignmentResponse.GetItem().GetApprovedAt() != nil {
+		t.Fatalf("create draft assignment = %+v, %v", assignmentResponse, err)
+	}
+	assignmentID = assignmentResponse.GetItem().GetId()
+	requesterID := "00000000-0000-4000-8000-000000000001"
+	assignmentPage, err := client.FindWorkerAssignmentByRequestedByPrincipalID(ctx, &common.StringFinderRequest{Value: &requesterID, Limit: 1})
+	if err != nil || assignmentPage.GetPage().GetTotal() != 1 || len(assignmentPage.GetItems()) != 1 {
+		t.Fatalf("assignment requester finder = %+v, %v", assignmentPage, err)
+	}
+	if _, err := client.UpdateWorkerAssignment(ctx, &pb.UpdateWorkerAssignmentRequest{Id: assignmentID,
+		Input: &pb.WorkerAssignmentInput{AssignmentType: stringPointer("secondary")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"assignment_type"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("generic assignment update = %v", err)
+	}
+	if _, err := client.DeleteWorkerAssignment(ctx, &common.IDRequest{Id: assignmentID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("generic assignment delete = %v", err)
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_worker_assignments SET approved_by_principal_id = ?, approved_at = now() WHERE id = ?", requesterID, assignmentID).Error; err == nil {
+		t.Fatal("self approval bypassed database provenance constraint")
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", assignmentID).Count(&events).Error; err != nil || events != 1 {
+		t.Fatalf("assignment outbox events = %d, %v", events, err)
 	}
 	if _, err := client.DeleteWorker(ctx, &common.IDRequest{Id: newWorkerID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete employment history = %v", err)

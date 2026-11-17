@@ -211,6 +211,8 @@ Table hr_worker_assignments {
   valid_from date [not null]
   valid_to date
   assignment_reason varchar(80)
+  requested_by_principal_id uuid
+  requested_at timestamptz
   approved_by_principal_id uuid
   approved_at timestamptz
   indexes {
@@ -219,12 +221,16 @@ Table hr_worker_assignments {
     (id, worker_id, position_id) [unique]
     (position_id, valid_from, valid_to) [name: 'ix_hr_assignment_position_period']
     (manager_worker_id, valid_from) [name: 'ix_hr_assignment_manager']
+    (requested_by_principal_id, requested_at) [name: 'ix_hr_assignment_requester']
   }
   checks {
     `manager_worker_id IS NULL OR manager_worker_id <> worker_id` [name: 'ck_hr_assignment_not_self_manager']
     `fte_percent > 0 AND fte_percent <= 100 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_assignment_values']
+    `(requested_by_principal_id IS NULL AND requested_at IS NULL) OR (requested_by_principal_id IS NOT NULL AND requested_at IS NOT NULL)` [name: 'ck_hr_assignment_request_pair']
+    `(approved_by_principal_id IS NULL AND approved_at IS NULL) OR (approved_by_principal_id IS NOT NULL AND approved_at IS NOT NULL)` [name: 'ck_hr_assignment_approval_pair']
+    `approved_at IS NULL OR (requested_by_principal_id IS NOT NULL AND requested_at IS NOT NULL AND approved_by_principal_id <> requested_by_principal_id AND approved_at >= requested_at)` [name: 'ck_hr_assignment_approval_provenance']
   }
-  Note: 'Penempatan paralel diperbolehkan; satu penempatan maksimal 100% FTE. Service memeriksa kapasitas posisi dan jumlah FTE lintas penempatan. Baseline mencegah periode primary yang bertumpuk. Roster/jam aktual tetap di batas Workforce.'
+  Note: 'Penempatan paralel diperbolehkan; satu penempatan maksimal 100% FTE. Service memeriksa kapasitas posisi dan jumlah FTE lintas penempatan sebelum persetujuan. Baris tanpa approval adalah permintaan, bukan penempatan resmi. Baseline mencegah periode primary yang bertumpuk. Roster/jam aktual tetap di batas Workforce.'
 }
 
 Table hr_worker_lifecycle_events {

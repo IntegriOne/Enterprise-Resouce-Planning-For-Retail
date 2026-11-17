@@ -373,6 +373,10 @@ func specWorkerAssignment() operation.Specification[entity.WorkerAssignment, str
 		AggregateID: func(v *entity.WorkerAssignment) string { return v.ID },
 		Initialize: func(v *entity.WorkerAssignment, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
+			if actor.Kind == "human" {
+				v.RequestedByPrincipalID = &actor.PrincipalID
+				v.RequestedAt = &now
+			}
 		},
 		Touch: func(v *entity.WorkerAssignment, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.WorkerAssignment) map[string]string {
@@ -380,6 +384,9 @@ func specWorkerAssignment() operation.Specification[entity.WorkerAssignment, str
 			a["id"] = fmt.Sprint(v.ID)
 			a["worker_id"] = fmt.Sprint(v.WorkerID)
 			a["position_id"] = fmt.Sprint(v.PositionID)
+			if v.RequestedByPrincipalID != nil {
+				a["requested_by_principal_id"] = *v.RequestedByPrincipalID
+			}
 			if v.ManagerWorkerID != nil {
 				a["manager_worker_id"] = fmt.Sprint(*v.ManagerWorkerID)
 			}
@@ -389,6 +396,12 @@ func specWorkerAssignment() operation.Specification[entity.WorkerAssignment, str
 			return a
 		},
 		Guard: func(action string, old, next *entity.WorkerAssignment) error {
+			if action == "create" && (next.RequestedByPrincipalID == nil || next.RequestedAt == nil) {
+				return hrerrors.ErrForbidden
+			}
+			if action == "create" && next.EmploymentStatusSnapshot != nil {
+				return hrerrors.ErrWorkflowRequired
+			}
 			if action == "create" && next.ApprovedByPrincipalID != nil {
 				return hrerrors.ErrWorkflowRequired
 			}

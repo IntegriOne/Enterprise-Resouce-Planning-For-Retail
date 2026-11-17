@@ -1,0 +1,3 @@
+# Permintaan draf penempatan pekerja
+
+HRM kini mencatat pengaju dan waktu server pada draf `hr_worker_assignments` melalui migrasi `000007`, model, validator, repository finder, service, dan proto gRPC. Validator membuktikan worker, posisi, badan hukum, periode, tipe, serta manager HRM; klien tidak dapat mengisi approval/status atau mengubah/menghapus draf lewat CRUD generik. Generator resmi tidak lagi menimpa validasi rekrutmen manual. Unit/mock, gRPC–PostgreSQL, migrasi down/up, fmt/vet/race, dan Docker healthy lulus. Approval dan kapasitas FTE masih pekerjaan berikutnya; draf bukan penempatan resmi. Detail: [audit](../../audit/human_resource/62-2026-11-17-092330-permintaan-draf-penempatan-pekerja.md).
