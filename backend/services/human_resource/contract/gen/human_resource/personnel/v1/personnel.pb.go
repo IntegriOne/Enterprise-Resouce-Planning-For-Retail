@@ -3212,7 +3212,7 @@ const file_human_resource_personnel_v1_personnel_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2-.human_resource.personnel.v1.EmergencyContactR\x04item\"\x98\x01\n" +
 	"\x19EmergencyContactsResponse\x12C\n" +
 	"\x05items\x18\x01 \x03(\v2-.human_resource.personnel.v1.EmergencyContactR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xacJ\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xa3K\n" +
 	"\x10PersonnelService\x12m\n" +
 	"\fCreateWorker\x120.human_resource.personnel.v1.CreateWorkerRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12m\n" +
 	"\fUpdateWorker\x120.human_resource.personnel.v1.UpdateWorkerRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12\\\n" +
@@ -3242,7 +3242,8 @@ const file_human_resource_personnel_v1_personnel_proto_rawDesc = "" +
 	"'FindEmploymentContractByWorkCountryCode\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.personnel.v1.EmploymentContractsResponse\x12\x9c\x01\n" +
 	"1FindEmploymentContractByGoverningJurisdictionCode\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.personnel.v1.EmploymentContractsResponse\x12\x98\x01\n" +
 	"-FindEmploymentContractByCollectiveAgreementID\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.personnel.v1.EmploymentContractsResponse\x12\x8b\x01\n" +
-	"\x16CreateWorkerAssignment\x12:.human_resource.personnel.v1.CreateWorkerAssignmentRequest\x1a5.human_resource.personnel.v1.WorkerAssignmentResponse\x12\x8b\x01\n" +
+	"\x16CreateWorkerAssignment\x12:.human_resource.personnel.v1.CreateWorkerAssignmentRequest\x1a5.human_resource.personnel.v1.WorkerAssignmentResponse\x12u\n" +
+	"\x17ApproveWorkerAssignment\x12#.human_resource.common.v1.IDRequest\x1a5.human_resource.personnel.v1.WorkerAssignmentResponse\x12\x8b\x01\n" +
 	"\x16UpdateWorkerAssignment\x12:.human_resource.personnel.v1.UpdateWorkerAssignmentRequest\x1a5.human_resource.personnel.v1.WorkerAssignmentResponse\x12f\n" +
 	"\x16DeleteWorkerAssignment\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12u\n" +
 	"\x17GetWorkerAssignmentByID\x12#.human_resource.common.v1.IDRequest\x1a5.human_resource.personnel.v1.WorkerAssignmentResponse\x12x\n" +
@@ -3428,119 +3429,121 @@ var file_human_resource_personnel_v1_personnel_proto_depIdxs = []int32{
 	42,  // 79: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByGoverningJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
 	42,  // 80: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByCollectiveAgreementID:input_type -> human_resource.common.v1.StringFinderRequest
 	14,  // 81: human_resource.personnel.v1.PersonnelService.CreateWorkerAssignment:input_type -> human_resource.personnel.v1.CreateWorkerAssignmentRequest
-	15,  // 82: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:input_type -> human_resource.personnel.v1.UpdateWorkerAssignmentRequest
-	40,  // 83: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:input_type -> human_resource.common.v1.IDRequest
-	40,  // 84: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:input_type -> human_resource.common.v1.IDRequest
-	41,  // 85: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:input_type -> human_resource.common.v1.PageRequest
-	42,  // 86: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 87: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 88: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 89: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 90: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 91: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	20,  // 92: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.CreateWorkerLifecycleEventRequest
-	21,  // 93: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest
-	43,  // 94: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:input_type -> human_resource.common.v1.IdentityIDRequest
-	43,  // 95: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:input_type -> human_resource.common.v1.IdentityIDRequest
-	41,  // 96: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:input_type -> human_resource.common.v1.PageRequest
-	42,  // 97: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 98: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 99: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 100: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 101: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 102: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	26,  // 103: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:input_type -> human_resource.personnel.v1.CreateWorkerDocumentRequest
-	27,  // 104: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:input_type -> human_resource.personnel.v1.UpdateWorkerDocumentRequest
-	40,  // 105: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:input_type -> human_resource.common.v1.IDRequest
-	40,  // 106: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:input_type -> human_resource.common.v1.IDRequest
-	41,  // 107: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:input_type -> human_resource.common.v1.PageRequest
-	42,  // 108: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 109: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 110: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 111: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 112: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 113: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 114: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	32,  // 115: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:input_type -> human_resource.personnel.v1.CreateEmergencyContactRequest
-	33,  // 116: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:input_type -> human_resource.personnel.v1.UpdateEmergencyContactRequest
-	40,  // 117: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:input_type -> human_resource.common.v1.IDRequest
-	40,  // 118: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:input_type -> human_resource.common.v1.IDRequest
-	41,  // 119: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:input_type -> human_resource.common.v1.PageRequest
-	42,  // 120: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 121: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	42,  // 122: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:input_type -> human_resource.common.v1.StringFinderRequest
-	4,   // 123: human_resource.personnel.v1.PersonnelService.CreateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
-	4,   // 124: human_resource.personnel.v1.PersonnelService.UpdateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
-	44,  // 125: human_resource.personnel.v1.PersonnelService.DeleteWorker:output_type -> human_resource.common.v1.EmptyResponse
-	4,   // 126: human_resource.personnel.v1.PersonnelService.GetWorkerByID:output_type -> human_resource.personnel.v1.WorkerResponse
-	5,   // 127: human_resource.personnel.v1.PersonnelService.GetAllWorkers:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 128: human_resource.personnel.v1.PersonnelService.FindWorkerByWorkerNumber:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 129: human_resource.personnel.v1.PersonnelService.FindWorkerByPersonPartyReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 130: human_resource.personnel.v1.PersonnelService.FindWorkerByStatus:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 131: human_resource.personnel.v1.PersonnelService.FindWorkerByTerminationReasonCode:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 132: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryLegalEntityReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 133: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryAssignmentID:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 134: human_resource.personnel.v1.PersonnelService.FindWorkerByIAMPrincipalReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
-	5,   // 135: human_resource.personnel.v1.PersonnelService.FindWorkerByCreatedByPrincipalID:output_type -> human_resource.personnel.v1.WorkersResponse
-	10,  // 136: human_resource.personnel.v1.PersonnelService.CreateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
-	10,  // 137: human_resource.personnel.v1.PersonnelService.UpdateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
-	44,  // 138: human_resource.personnel.v1.PersonnelService.DeleteEmploymentContract:output_type -> human_resource.common.v1.EmptyResponse
-	10,  // 139: human_resource.personnel.v1.PersonnelService.GetEmploymentContractByID:output_type -> human_resource.personnel.v1.EmploymentContractResponse
-	11,  // 140: human_resource.personnel.v1.PersonnelService.GetAllEmploymentContracts:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 141: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkerID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 142: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractNumber:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 143: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractType:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 144: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractStatus:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 145: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByEmployingLegalEntityReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 146: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 147: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 148: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkCountryCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 149: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByGoverningJurisdictionCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	11,  // 150: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByCollectiveAgreementID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	16,  // 151: human_resource.personnel.v1.PersonnelService.CreateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
-	16,  // 152: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
-	44,  // 153: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:output_type -> human_resource.common.v1.EmptyResponse
-	16,  // 154: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
-	17,  // 155: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	17,  // 156: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	17,  // 157: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	17,  // 158: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	17,  // 159: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	17,  // 160: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	17,  // 161: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	22,  // 162: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
-	22,  // 163: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
-	44,  // 164: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:output_type -> human_resource.common.v1.EmptyResponse
-	22,  // 165: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
-	23,  // 166: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	23,  // 167: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	23,  // 168: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	23,  // 169: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	23,  // 170: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	23,  // 171: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	23,  // 172: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	28,  // 173: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
-	28,  // 174: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
-	44,  // 175: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:output_type -> human_resource.common.v1.EmptyResponse
-	28,  // 176: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
-	29,  // 177: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	29,  // 178: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	29,  // 179: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	29,  // 180: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	29,  // 181: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	29,  // 182: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	29,  // 183: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	29,  // 184: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	34,  // 185: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
-	34,  // 186: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
-	44,  // 187: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:output_type -> human_resource.common.v1.EmptyResponse
-	34,  // 188: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:output_type -> human_resource.personnel.v1.EmergencyContactResponse
-	35,  // 189: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	35,  // 190: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	35,  // 191: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	35,  // 192: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	123, // [123:193] is the sub-list for method output_type
-	53,  // [53:123] is the sub-list for method input_type
+	40,  // 82: human_resource.personnel.v1.PersonnelService.ApproveWorkerAssignment:input_type -> human_resource.common.v1.IDRequest
+	15,  // 83: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:input_type -> human_resource.personnel.v1.UpdateWorkerAssignmentRequest
+	40,  // 84: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:input_type -> human_resource.common.v1.IDRequest
+	40,  // 85: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:input_type -> human_resource.common.v1.IDRequest
+	41,  // 86: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:input_type -> human_resource.common.v1.PageRequest
+	42,  // 87: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 88: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 89: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 90: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 91: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 92: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	20,  // 93: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.CreateWorkerLifecycleEventRequest
+	21,  // 94: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest
+	43,  // 95: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:input_type -> human_resource.common.v1.IdentityIDRequest
+	43,  // 96: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:input_type -> human_resource.common.v1.IdentityIDRequest
+	41,  // 97: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:input_type -> human_resource.common.v1.PageRequest
+	42,  // 98: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 99: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 100: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 101: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 102: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 103: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	26,  // 104: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:input_type -> human_resource.personnel.v1.CreateWorkerDocumentRequest
+	27,  // 105: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:input_type -> human_resource.personnel.v1.UpdateWorkerDocumentRequest
+	40,  // 106: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:input_type -> human_resource.common.v1.IDRequest
+	40,  // 107: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:input_type -> human_resource.common.v1.IDRequest
+	41,  // 108: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:input_type -> human_resource.common.v1.PageRequest
+	42,  // 109: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 110: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 111: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 112: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 113: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 114: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 115: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	32,  // 116: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:input_type -> human_resource.personnel.v1.CreateEmergencyContactRequest
+	33,  // 117: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:input_type -> human_resource.personnel.v1.UpdateEmergencyContactRequest
+	40,  // 118: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:input_type -> human_resource.common.v1.IDRequest
+	40,  // 119: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:input_type -> human_resource.common.v1.IDRequest
+	41,  // 120: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:input_type -> human_resource.common.v1.PageRequest
+	42,  // 121: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 122: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 123: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:input_type -> human_resource.common.v1.StringFinderRequest
+	4,   // 124: human_resource.personnel.v1.PersonnelService.CreateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
+	4,   // 125: human_resource.personnel.v1.PersonnelService.UpdateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
+	44,  // 126: human_resource.personnel.v1.PersonnelService.DeleteWorker:output_type -> human_resource.common.v1.EmptyResponse
+	4,   // 127: human_resource.personnel.v1.PersonnelService.GetWorkerByID:output_type -> human_resource.personnel.v1.WorkerResponse
+	5,   // 128: human_resource.personnel.v1.PersonnelService.GetAllWorkers:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 129: human_resource.personnel.v1.PersonnelService.FindWorkerByWorkerNumber:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 130: human_resource.personnel.v1.PersonnelService.FindWorkerByPersonPartyReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 131: human_resource.personnel.v1.PersonnelService.FindWorkerByStatus:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 132: human_resource.personnel.v1.PersonnelService.FindWorkerByTerminationReasonCode:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 133: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryLegalEntityReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 134: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryAssignmentID:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 135: human_resource.personnel.v1.PersonnelService.FindWorkerByIAMPrincipalReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
+	5,   // 136: human_resource.personnel.v1.PersonnelService.FindWorkerByCreatedByPrincipalID:output_type -> human_resource.personnel.v1.WorkersResponse
+	10,  // 137: human_resource.personnel.v1.PersonnelService.CreateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
+	10,  // 138: human_resource.personnel.v1.PersonnelService.UpdateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
+	44,  // 139: human_resource.personnel.v1.PersonnelService.DeleteEmploymentContract:output_type -> human_resource.common.v1.EmptyResponse
+	10,  // 140: human_resource.personnel.v1.PersonnelService.GetEmploymentContractByID:output_type -> human_resource.personnel.v1.EmploymentContractResponse
+	11,  // 141: human_resource.personnel.v1.PersonnelService.GetAllEmploymentContracts:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 142: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkerID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 143: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractNumber:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 144: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractType:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 145: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractStatus:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 146: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByEmployingLegalEntityReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 147: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 148: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 149: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkCountryCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 150: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByGoverningJurisdictionCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	11,  // 151: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByCollectiveAgreementID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	16,  // 152: human_resource.personnel.v1.PersonnelService.CreateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	16,  // 153: human_resource.personnel.v1.PersonnelService.ApproveWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	16,  // 154: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	44,  // 155: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:output_type -> human_resource.common.v1.EmptyResponse
+	16,  // 156: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	17,  // 157: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	17,  // 158: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	17,  // 159: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	17,  // 160: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	17,  // 161: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	17,  // 162: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	17,  // 163: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	22,  // 164: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
+	22,  // 165: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
+	44,  // 166: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:output_type -> human_resource.common.v1.EmptyResponse
+	22,  // 167: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
+	23,  // 168: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	23,  // 169: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	23,  // 170: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	23,  // 171: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	23,  // 172: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	23,  // 173: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	23,  // 174: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	28,  // 175: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
+	28,  // 176: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
+	44,  // 177: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:output_type -> human_resource.common.v1.EmptyResponse
+	28,  // 178: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
+	29,  // 179: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	29,  // 180: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	29,  // 181: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	29,  // 182: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	29,  // 183: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	29,  // 184: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	29,  // 185: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	29,  // 186: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	34,  // 187: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
+	34,  // 188: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
+	44,  // 189: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:output_type -> human_resource.common.v1.EmptyResponse
+	34,  // 190: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:output_type -> human_resource.personnel.v1.EmergencyContactResponse
+	35,  // 191: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	35,  // 192: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	35,  // 193: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	35,  // 194: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	124, // [124:195] is the sub-list for method output_type
+	53,  // [53:124] is the sub-list for method input_type
 	53,  // [53:53] is the sub-list for extension type_name
 	53,  // [53:53] is the sub-list for extension extendee
 	0,   // [0:53] is the sub-list for field type_name

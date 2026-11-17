@@ -63,6 +63,15 @@ func (h *Handler) CreateWorkerAssignment(ctx context.Context, request *pb.Create
 		ManagerWorkerID: in.ManagerWorkerId, AssignmentType: in.GetAssignmentType(), EmploymentStatusSnapshot: in.EmploymentStatusSnapshot,
 		FTEPercent: decimalPointer(in.FtePercent), ValidFrom: from, ValidTo: to, AssignmentReason: in.AssignmentReason, ApprovedByPrincipalID: in.ApprovedByPrincipalId, ApprovedAt: approved}))
 }
+
+// ApproveWorkerAssignment meneruskan keputusan penempatan ke service HRM.
+func (h *Handler) ApproveWorkerAssignment(ctx context.Context, request *common.IDRequest) (*pb.WorkerAssignmentResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return assignmentResponse(h.service.ApproveWorkerAssignment(ctx, request.Id))
+}
+
 func (h *Handler) UpdateWorkerAssignment(ctx context.Context, request *pb.UpdateWorkerAssignmentRequest) (*pb.WorkerAssignmentResponse, error) {
 	if request == nil || request.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

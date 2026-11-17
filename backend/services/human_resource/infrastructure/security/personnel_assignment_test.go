@@ -8,6 +8,7 @@ import (
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	domainrepo "github.com/integrione/erp-retail/backend/services/human_resource/domain/repository"
 )
 
 type assignmentWorkerStub struct {
@@ -34,6 +35,37 @@ type assignmentPositionStub struct {
 
 func (s *assignmentPositionStub) FindByIDForUpdate(context.Context, string) (*entity.Position, error) {
 	return s.position, s.err
+}
+
+type assignmentListStub struct {
+	workerRows   []entity.WorkerAssignment
+	positionRows []entity.WorkerAssignment
+}
+
+func (s *assignmentListStub) CountWhere(_ context.Context, filters []domainrepo.Filter) (int64, error) {
+	if len(filters) != 1 {
+		return 0, hrerrors.ErrInvalidInput
+	}
+	if filters[0].Column == "worker_id" {
+		return int64(len(s.workerRows)), nil
+	}
+	return int64(len(s.positionRows)), nil
+}
+
+func (s *assignmentListStub) FindByWorkerID(_ context.Context, _ string, limit, offset int) ([]entity.WorkerAssignment, error) {
+	return assignmentPage(s.workerRows, limit, offset), nil
+}
+
+func (s *assignmentListStub) FindByPositionID(_ context.Context, _ string, limit, offset int) ([]entity.WorkerAssignment, error) {
+	return assignmentPage(s.positionRows, limit, offset), nil
+}
+
+func assignmentPage(rows []entity.WorkerAssignment, limit, offset int) []entity.WorkerAssignment {
+	if offset >= len(rows) {
+		return nil
+	}
+	end := min(offset+limit, len(rows))
+	return rows[offset:end]
 }
 
 func TestWorkerAssignmentValidatorAcceptsOnlyConsistentDraft(t *testing.T) {
@@ -143,5 +175,73 @@ func TestWorkerAssignmentValidatorChecksManager(t *testing.T) {
 	workers.manager.Status = entity.WorkerStatusTerminated
 	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("inactive manager: %v", err)
+	}
+}
+
+func TestWorkerAssignmentApprovalChecksTemporalCapacity(t *testing.T) {
+	t.Parallel()
+	from := time.Date(2026, 11, 17, 0, 0, 0, 0, time.UTC)
+	requester := "00000000-0000-4000-8000-000000000001"
+	approver := "00000000-0000-4000-8000-000000000002"
+	legal := "00000000-0000-4000-8000-000000000003"
+	workerID := "00000000-0000-4000-8000-000000000004"
+	positionID := "00000000-0000-4000-8000-000000000005"
+	worker := &entity.Worker{ID: workerID, Status: entity.WorkerStatusActive, PrimaryLegalEntityReferenceID: legal}
+	position := &entity.Position{ID: positionID, PositionStatus: "active", LegalEntityReferenceID: legal,
+		HeadcountAuthorized: "1", ValidFrom: from}
+	rows := &assignmentListStub{}
+	v := &workerAssignmentValidator{workers: &assignmentWorkerStub{worker: worker},
+		positions: &assignmentPositionStub{position: position}, assignments: rows}
+	draft := &entity.WorkerAssignment{ID: "00000000-0000-4000-8000-000000000006", WorkerID: workerID,
+		PositionID: positionID, AssignmentType: "secondary", FTEPercent: "60", ValidFrom: from,
+		RequestedByPrincipalID: &requester, RequestedAt: &from}
+	approved := *draft
+	status := string(entity.WorkerStatusActive)
+	approved.EmploymentStatusSnapshot = &status
+	approved.ApprovedByPrincipalID = &approver
+	approvedAt := from.Add(time.Hour)
+	approved.ApprovedAt = &approvedAt
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); err != nil {
+		t.Fatalf("approve empty capacity: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, &approved); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("client approval: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, draft); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("generic update: %v", err)
+	}
+	other := approved
+	other.ID = "00000000-0000-4000-8000-000000000007"
+	other.FTEPercent = "50"
+	rows.workerRows = []entity.WorkerAssignment{other}
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("worker FTE overflow: %v", err)
+	}
+	other.FTEPercent = "40"
+	rows.workerRows = []entity.WorkerAssignment{other}
+	rows.positionRows = []entity.WorkerAssignment{other}
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); err != nil {
+		t.Fatalf("worker and position exact capacity: %v", err)
+	}
+	other.WorkerID = "00000000-0000-4000-8000-000000000008"
+	other.FTEPercent = "50"
+	rows.workerRows = nil
+	rows.positionRows = []entity.WorkerAssignment{other}
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("position FTE overflow: %v", err)
+	}
+	other.ValidTo = &from
+	approved.ValidFrom = from.AddDate(0, 0, 1)
+	rows.positionRows = []entity.WorkerAssignment{other}
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("period change during approval: %v", err)
+	}
+	draft.ValidFrom = approved.ValidFrom
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); err != nil {
+		t.Fatalf("nonoverlapping position assignment: %v", err)
+	}
+	position.PositionStatus = "planned"
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("planned position approval: %v", err)
 	}
 }

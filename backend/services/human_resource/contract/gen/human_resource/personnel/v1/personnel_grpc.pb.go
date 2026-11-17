@@ -49,6 +49,7 @@ const (
 	PersonnelService_FindEmploymentContractByGoverningJurisdictionCode_FullMethodName        = "/human_resource.personnel.v1.PersonnelService/FindEmploymentContractByGoverningJurisdictionCode"
 	PersonnelService_FindEmploymentContractByCollectiveAgreementID_FullMethodName            = "/human_resource.personnel.v1.PersonnelService/FindEmploymentContractByCollectiveAgreementID"
 	PersonnelService_CreateWorkerAssignment_FullMethodName                                   = "/human_resource.personnel.v1.PersonnelService/CreateWorkerAssignment"
+	PersonnelService_ApproveWorkerAssignment_FullMethodName                                  = "/human_resource.personnel.v1.PersonnelService/ApproveWorkerAssignment"
 	PersonnelService_UpdateWorkerAssignment_FullMethodName                                   = "/human_resource.personnel.v1.PersonnelService/UpdateWorkerAssignment"
 	PersonnelService_DeleteWorkerAssignment_FullMethodName                                   = "/human_resource.personnel.v1.PersonnelService/DeleteWorkerAssignment"
 	PersonnelService_GetWorkerAssignmentByID_FullMethodName                                  = "/human_resource.personnel.v1.PersonnelService/GetWorkerAssignmentByID"
@@ -125,6 +126,7 @@ type PersonnelServiceClient interface {
 	FindEmploymentContractByGoverningJurisdictionCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*EmploymentContractsResponse, error)
 	FindEmploymentContractByCollectiveAgreementID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*EmploymentContractsResponse, error)
 	CreateWorkerAssignment(ctx context.Context, in *CreateWorkerAssignmentRequest, opts ...grpc.CallOption) (*WorkerAssignmentResponse, error)
+	ApproveWorkerAssignment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkerAssignmentResponse, error)
 	UpdateWorkerAssignment(ctx context.Context, in *UpdateWorkerAssignmentRequest, opts ...grpc.CallOption) (*WorkerAssignmentResponse, error)
 	DeleteWorkerAssignment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetWorkerAssignmentByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkerAssignmentResponse, error)
@@ -460,6 +462,16 @@ func (c *personnelServiceClient) CreateWorkerAssignment(ctx context.Context, in 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkerAssignmentResponse)
 	err := c.cc.Invoke(ctx, PersonnelService_CreateWorkerAssignment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *personnelServiceClient) ApproveWorkerAssignment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkerAssignmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkerAssignmentResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_ApproveWorkerAssignment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -909,6 +921,7 @@ type PersonnelServiceServer interface {
 	FindEmploymentContractByGoverningJurisdictionCode(context.Context, *v1.StringFinderRequest) (*EmploymentContractsResponse, error)
 	FindEmploymentContractByCollectiveAgreementID(context.Context, *v1.StringFinderRequest) (*EmploymentContractsResponse, error)
 	CreateWorkerAssignment(context.Context, *CreateWorkerAssignmentRequest) (*WorkerAssignmentResponse, error)
+	ApproveWorkerAssignment(context.Context, *v1.IDRequest) (*WorkerAssignmentResponse, error)
 	UpdateWorkerAssignment(context.Context, *UpdateWorkerAssignmentRequest) (*WorkerAssignmentResponse, error)
 	DeleteWorkerAssignment(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetWorkerAssignmentByID(context.Context, *v1.IDRequest) (*WorkerAssignmentResponse, error)
@@ -1046,6 +1059,9 @@ func (UnimplementedPersonnelServiceServer) FindEmploymentContractByCollectiveAgr
 }
 func (UnimplementedPersonnelServiceServer) CreateWorkerAssignment(context.Context, *CreateWorkerAssignmentRequest) (*WorkerAssignmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateWorkerAssignment not implemented")
+}
+func (UnimplementedPersonnelServiceServer) ApproveWorkerAssignment(context.Context, *v1.IDRequest) (*WorkerAssignmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveWorkerAssignment not implemented")
 }
 func (UnimplementedPersonnelServiceServer) UpdateWorkerAssignment(context.Context, *UpdateWorkerAssignmentRequest) (*WorkerAssignmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateWorkerAssignment not implemented")
@@ -1709,6 +1725,24 @@ func _PersonnelService_CreateWorkerAssignment_Handler(srv interface{}, ctx conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PersonnelServiceServer).CreateWorkerAssignment(ctx, req.(*CreateWorkerAssignmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PersonnelService_ApproveWorkerAssignment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).ApproveWorkerAssignment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_ApproveWorkerAssignment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).ApproveWorkerAssignment(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2573,6 +2607,10 @@ var PersonnelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateWorkerAssignment",
 			Handler:    _PersonnelService_CreateWorkerAssignment_Handler,
+		},
+		{
+			MethodName: "ApproveWorkerAssignment",
+			Handler:    _PersonnelService_ApproveWorkerAssignment_Handler,
 		},
 		{
 			MethodName: "UpdateWorkerAssignment",

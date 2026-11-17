@@ -36,6 +36,7 @@ service PersonnelService {
   rpc FindEmploymentContractByGoverningJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
   rpc FindEmploymentContractByCollectiveAgreementID(human_resource.common.v1.StringFinderRequest) returns (EmploymentContractsResponse);
   rpc CreateWorkerAssignment(CreateWorkerAssignmentRequest) returns (WorkerAssignmentResponse);
+  rpc ApproveWorkerAssignment(human_resource.common.v1.IDRequest) returns (WorkerAssignmentResponse);
   rpc UpdateWorkerAssignment(UpdateWorkerAssignmentRequest) returns (WorkerAssignmentResponse);
   rpc DeleteWorkerAssignment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetWorkerAssignmentByID(human_resource.common.v1.IDRequest) returns (WorkerAssignmentResponse);

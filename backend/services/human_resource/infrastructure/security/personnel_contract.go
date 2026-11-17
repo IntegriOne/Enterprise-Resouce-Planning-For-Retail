@@ -36,7 +36,7 @@ func PersonnelValidators(repos *repository.Registry) (map[string]MutationValidat
 			workers: repos.Worker, contracts: repos.EmploymentContract,
 		},
 		"hr_worker_assignments": &workerAssignmentValidator{
-			workers: repos.Worker, positions: repos.Position,
+			workers: repos.Worker, positions: repos.Position, assignments: repos.WorkerAssignment,
 		},
 	}, nil
 }

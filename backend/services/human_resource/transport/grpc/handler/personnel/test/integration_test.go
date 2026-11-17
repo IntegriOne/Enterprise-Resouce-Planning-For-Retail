@@ -33,7 +33,10 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-type workerScopePolicy struct{ legalEntityID string }
+type workerScopePolicy struct {
+	legalEntityID string
+	principalID   *string
+}
 
 type workerReferenceVerifier struct{}
 
@@ -44,9 +47,13 @@ func (workerReferenceVerifier) VerifyWorkerReferences(_ context.Context, check s
 	return nil
 }
 
-func (workerScopePolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
+func (p workerScopePolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
+	principalID := "00000000-0000-4000-8000-000000000001"
+	if p.principalID != nil {
+		principalID = *p.principalID
+	}
 	return operation.Actor{
-		PrincipalID: "00000000-0000-4000-8000-000000000001",
+		PrincipalID: principalID,
 		SessionID:   "00000000-0000-4000-8000-000000000002",
 		Kind:        "human",
 	}, nil
@@ -133,10 +140,11 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 			t.Errorf("clean HRM worker test rows: %v", err)
 		}
 	})
+	principalID := "00000000-0000-4000-8000-000000000001"
 	svc, err := service.NewService(service.Dependencies{
 		Runtime: operation.Dependencies{
 			Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-			Policy: workerScopePolicy{legalEntityID: legalA}, Integrity: security.NewIntegrity(validators),
+			Policy: workerScopePolicy{legalEntityID: legalA, principalID: &principalID}, Integrity: security.NewIntegrity(validators),
 		},
 		Worker: repos.Worker, EmploymentContract: repos.EmploymentContract,
 		WorkerAssignment: repos.WorkerAssignment, WorkerLifecycleEvent: repos.WorkerLifecycleEvent,
@@ -347,7 +355,7 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("assignment requester finder = %+v, %v", assignmentPage, err)
 	}
 	if _, err := client.UpdateWorkerAssignment(ctx, &pb.UpdateWorkerAssignmentRequest{Id: assignmentID,
-		Input: &pb.WorkerAssignmentInput{AssignmentType: stringPointer("secondary")},
+		Input:      &pb.WorkerAssignmentInput{AssignmentType: stringPointer("secondary")},
 		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"assignment_type"}}}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("generic assignment update = %v", err)
 	}
@@ -357,8 +365,96 @@ func TestWorkerScopedQueryRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Exec("UPDATE hr_worker_assignments SET approved_by_principal_id = ?, approved_at = now() WHERE id = ?", requesterID, assignmentID).Error; err == nil {
 		t.Fatal("self approval bypassed database provenance constraint")
 	}
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", assignmentID).Count(&events).Error; err != nil || events != 1 {
+	if _, err := client.ApproveWorkerAssignment(ctx, &common.IDRequest{Id: assignmentID}); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("self approval = %v", err)
+	}
+	principalID = "00000000-0000-4000-8000-000000000009"
+	if _, err := client.ApproveWorkerAssignment(ctx, &common.IDRequest{Id: assignmentID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("approve planned position or preboarding worker = %v", err)
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_workers SET status = 'active' WHERE id = ?", newWorkerID).Error; err != nil {
+		t.Fatalf("activate worker test fixture: %v", err)
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_positions SET position_status = 'active', headcount_authorized = 1 WHERE id = ?", assignmentPositionID).Error; err != nil {
+		t.Fatalf("activate position test fixture: %v", err)
+	}
+	approvedAssignment, err := client.ApproveWorkerAssignment(ctx, &common.IDRequest{Id: assignmentID})
+	if err != nil || approvedAssignment.GetItem().GetApprovedByPrincipalId() != principalID || approvedAssignment.GetItem().GetApprovedAt() == nil {
+		t.Fatalf("approve assignment = %+v, %v", approvedAssignment, err)
+	}
+	if _, err := client.ApproveWorkerAssignment(ctx, &common.IDRequest{Id: assignmentID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat approval = %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", assignmentID).Count(&events).Error; err != nil || events != 2 {
 		t.Fatalf("assignment outbox events = %d, %v", events, err)
+	}
+	capacityPositionID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec("INSERT INTO hr_positions (id, position_code, position_title, job_id, organization_unit_reference_id, legal_entity_reference_id, position_status, headcount_authorized, valid_from) VALUES (?, ?, 'Associate', ?, ?, ?, 'active', 1, ?)",
+		capacityPositionID, "POSITION-"+capacityPositionID, assignmentJobID, insideID, legalA, assignmentStart).Error; err != nil {
+		t.Fatalf("insert capacity position fixture: %v", err)
+	}
+	capacityWorkerID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec("INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, primary_legal_entity_reference_id) VALUES (?, ?, ?, 'employee', 'active', ?)",
+		capacityWorkerID, "CAPACITY-"+capacityWorkerID, capacityWorkerID, legalA).Error; err != nil {
+		t.Fatalf("insert capacity worker fixture: %v", err)
+	}
+	capacityAssignmentIDs := make([]string, 0, 2)
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cleanupCancel()
+		for _, id := range capacityAssignmentIDs {
+			if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_worker_assignments WHERE id = ?", id).Error; err != nil {
+				t.Errorf("clean capacity assignment: %v", err)
+			}
+		}
+		if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_positions WHERE id = ?", capacityPositionID).Error; err != nil {
+			t.Errorf("clean capacity position: %v", err)
+		}
+		if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_workers WHERE id = ?", capacityWorkerID).Error; err != nil {
+			t.Errorf("clean capacity worker: %v", err)
+		}
+	})
+	principalID = requesterID
+	secondary := "secondary"
+	fti := "60"
+	for _, workerID := range []string{insideID, capacityWorkerID} {
+		created, err := client.CreateWorkerAssignment(ctx, &pb.CreateWorkerAssignmentRequest{Input: &pb.WorkerAssignmentInput{
+			WorkerId: &workerID, PositionId: &capacityPositionID, AssignmentType: &secondary,
+			FtePercent: &fti, ValidFrom: &assignmentStart,
+		}})
+		if err != nil {
+			t.Fatalf("create competing assignment: %v", err)
+		}
+		capacityAssignmentIDs = append(capacityAssignmentIDs, created.GetItem().GetId())
+	}
+	principalID = "00000000-0000-4000-8000-000000000009"
+	approvalResults := make(chan error, 2)
+	for _, id := range capacityAssignmentIDs {
+		go func(id string) {
+			_, err := client.ApproveWorkerAssignment(ctx, &common.IDRequest{Id: id})
+			approvalResults <- err
+		}(id)
+	}
+	successes, capacityRejections := 0, 0
+	for range 2 {
+		err := <-approvalResults
+		switch status.Code(err) {
+		case codes.OK:
+			successes++
+		case codes.FailedPrecondition:
+			capacityRejections++
+		default:
+			t.Fatalf("unexpected concurrent approval = %v", err)
+		}
+	}
+	if successes != 1 || capacityRejections != 1 {
+		t.Fatalf("concurrent capacity approvals: success=%d rejected=%d", successes, capacityRejections)
 	}
 	if _, err := client.DeleteWorker(ctx, &common.IDRequest{Id: newWorkerID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete employment history = %v", err)

@@ -24,6 +24,7 @@ func (r *Resource[T, K, P]) Command(
 	approvesLeaveAdjustment := r.spec.Table == "hr_leave_adjustments" && action == "approve"
 	approvesPayroll := r.spec.Table == "hr_payroll_runs" && action == "approve"
 	approvesCareerPath := r.spec.Table == "hr_career_paths" && action == "approve"
+	approvesWorkerAssignment := r.spec.Table == "hr_worker_assignments" && action == "approve"
 	launchesPerformanceCycle := r.spec.Table == "hr_performance_cycles" && action == "launch"
 	startsOnboardingPlan := r.spec.Table == "hr_onboarding_plans" && action == "start"
 	completesOnboardingPlan := r.spec.Table == "hr_onboarding_plans" && action == "complete"
@@ -40,7 +41,7 @@ func (r *Resource[T, K, P]) Command(
 	publishesJobPosting := r.spec.Table == "hr_job_postings" && action == "publish"
 	closesJobPosting := r.spec.Table == "hr_job_postings" && action == "close"
 	withdrawsJobPosting := r.spec.Table == "hr_job_postings" && action == "withdraw"
-	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || rejectsRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
+	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || approvesWorkerAssignment || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || rejectsRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
 	if !allowed || change == nil {
 		return nil, hrerrors.ErrWorkflowRequired
 	}

@@ -2,11 +2,14 @@ package security
 
 import (
 	"context"
+	"math/big"
+	"reflect"
 	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	domainrepo "github.com/integrione/erp-retail/backend/services/human_resource/domain/repository"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
@@ -19,9 +22,16 @@ type assignmentPositionReader interface {
 	FindByIDForUpdate(context.Context, string) (*entity.Position, error)
 }
 
+type assignmentListReader interface {
+	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
+	FindByWorkerID(context.Context, string, int, int) ([]entity.WorkerAssignment, error)
+	FindByPositionID(context.Context, string, int, int) ([]entity.WorkerAssignment, error)
+}
+
 type workerAssignmentValidator struct {
-	workers   assignmentWorkerReader
-	positions assignmentPositionReader
+	workers     assignmentWorkerReader
+	positions   assignmentPositionReader
+	assignments assignmentListReader
 }
 
 // ValidateMutation menerima permintaan penempatan draf dengan referensi HRM yang konsisten.
@@ -33,17 +43,30 @@ func (v *workerAssignmentValidator) ValidateMutation(ctx context.Context, table 
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if before != nil || after == nil {
+	if after == nil {
 		return hrerrors.ErrWorkflowRequired
 	}
 	assignment, ok := after.(*entity.WorkerAssignment)
 	if !ok || assignment == nil {
 		return hrerrors.ErrInvalidInput
 	}
-	if assignment.RequestedByPrincipalID == nil || assignment.RequestedAt == nil ||
-		assignment.ApprovedByPrincipalID != nil || assignment.ApprovedAt != nil ||
-		assignment.EmploymentStatusSnapshot != nil || !supportedAssignmentType(assignment.AssignmentType) {
+	approval := before != nil
+	if approval {
+		previous, ok := before.(*entity.WorkerAssignment)
+		if !ok || previous == nil {
+			return hrerrors.ErrInvalidInput
+		}
+		if !validAssignmentApproval(previous, assignment) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else if assignment.ApprovedByPrincipalID != nil || assignment.ApprovedAt != nil || assignment.EmploymentStatusSnapshot != nil {
 		return hrerrors.ErrWorkflowRequired
+	}
+	if assignment.RequestedByPrincipalID == nil || assignment.RequestedAt == nil || !supportedAssignmentType(assignment.AssignmentType) {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if approval && operation.RequireDependency(v.assignments) != nil {
+		return hrerrors.ErrUnavailable
 	}
 	worker, err := v.workers.FindByIDForUpdate(ctx, assignment.WorkerID)
 	if err != nil {
@@ -52,6 +75,9 @@ func (v *workerAssignmentValidator) ValidateMutation(ctx context.Context, table 
 	if worker == nil || (worker.Status != entity.WorkerStatusPreboarding && worker.Status != entity.WorkerStatusActive) ||
 		worker.TerminationDate != nil ||
 		(worker.HireDate != nil && entity.CompareDates(assignment.ValidFrom, *worker.HireDate) < 0) {
+		return hrerrors.ErrReferenceConflict
+	}
+	if approval && worker.Status != entity.WorkerStatusActive {
 		return hrerrors.ErrReferenceConflict
 	}
 	position, err := v.positions.FindByIDForUpdate(ctx, assignment.PositionID)
@@ -63,18 +89,110 @@ func (v *workerAssignmentValidator) ValidateMutation(ctx context.Context, table 
 		!assignmentPeriodWithin(assignment.ValidFrom, assignment.ValidTo, position.ValidFrom, position.ValidTo) {
 		return hrerrors.ErrReferenceConflict
 	}
-	if assignment.ManagerWorkerID == nil {
-		return nil
-	}
-	manager, err := v.workers.FindByID(ctx, *assignment.ManagerWorkerID)
-	if err != nil {
-		return workerAssessmentReferenceError(err)
-	}
-	if manager == nil || manager.Status != entity.WorkerStatusActive ||
-		!strings.EqualFold(manager.PrimaryLegalEntityReferenceID, worker.PrimaryLegalEntityReferenceID) {
+	if approval && position.PositionStatus != "active" {
 		return hrerrors.ErrReferenceConflict
 	}
+	if assignment.ManagerWorkerID != nil {
+		manager, err := v.workers.FindByID(ctx, *assignment.ManagerWorkerID)
+		if err != nil {
+			return workerAssessmentReferenceError(err)
+		}
+		if manager == nil || manager.Status != entity.WorkerStatusActive ||
+			!strings.EqualFold(manager.PrimaryLegalEntityReferenceID, worker.PrimaryLegalEntityReferenceID) {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
+	if approval {
+		return v.checkAssignmentCapacity(ctx, assignment, position)
+	}
 	return nil
+}
+
+func validAssignmentApproval(before, after *entity.WorkerAssignment) bool {
+	if before.ApprovedByPrincipalID != nil || before.ApprovedAt != nil || before.EmploymentStatusSnapshot != nil ||
+		before.RequestedByPrincipalID == nil || before.RequestedAt == nil ||
+		after.ApprovedByPrincipalID == nil || after.ApprovedAt == nil || after.EmploymentStatusSnapshot == nil ||
+		*after.EmploymentStatusSnapshot != string(entity.WorkerStatusActive) ||
+		strings.EqualFold(*before.RequestedByPrincipalID, *after.ApprovedByPrincipalID) ||
+		after.ApprovedAt.Before(*before.RequestedAt) {
+		return false
+	}
+	copy := *after
+	copy.ApprovedByPrincipalID = nil
+	copy.ApprovedAt = nil
+	copy.EmploymentStatusSnapshot = nil
+	return reflect.DeepEqual(before, &copy)
+}
+
+func (v *workerAssignmentValidator) checkAssignmentCapacity(ctx context.Context, candidate *entity.WorkerAssignment, position *entity.Position) error {
+	workerRows, err := v.loadAssignments(ctx, "worker_id", candidate.WorkerID, v.assignments.FindByWorkerID)
+	if err != nil {
+		return err
+	}
+	positionRows, err := v.loadAssignments(ctx, "position_id", candidate.PositionID, v.assignments.FindByPositionID)
+	if err != nil {
+		return err
+	}
+	workerLimit := big.NewRat(100, 1)
+	if err := checkTemporalCapacity(candidate, workerRows, workerLimit); err != nil {
+		return err
+	}
+	headcount, err := position.HeadcountAuthorized.Rat()
+	if err != nil {
+		return hrerrors.ErrReferenceConflict
+	}
+	positionLimit := new(big.Rat).Mul(headcount, workerLimit)
+	return checkTemporalCapacity(candidate, positionRows, positionLimit)
+}
+
+func (v *workerAssignmentValidator) loadAssignments(ctx context.Context, column, id string, find func(context.Context, string, int, int) ([]entity.WorkerAssignment, error)) ([]entity.WorkerAssignment, error) {
+	count, err := v.assignments.CountWhere(ctx, []domainrepo.Filter{{Column: column, Values: []any{id}}})
+	if err != nil {
+		return nil, err
+	}
+	return operation.CollectComplete(ctx, count, func(limit, offset int) (operation.Page[entity.WorkerAssignment], error) {
+		rows, err := find(ctx, id, limit, offset)
+		return operation.Page[entity.WorkerAssignment]{Items: rows}, err
+	})
+}
+
+func checkTemporalCapacity(candidate *entity.WorkerAssignment, rows []entity.WorkerAssignment, limit *big.Rat) error {
+	points := []time.Time{candidate.ValidFrom}
+	for _, row := range rows {
+		if row.ApprovedAt != nil && row.ID != candidate.ID && assignmentPeriodsOverlap(candidate, &row) &&
+			entity.CompareDates(row.ValidFrom, candidate.ValidFrom) > 0 {
+			points = append(points, row.ValidFrom)
+		}
+	}
+	for _, point := range points {
+		total, err := candidate.FTEPercent.Rat()
+		if err != nil {
+			return hrerrors.ErrInvalidInput
+		}
+		for _, row := range rows {
+			if row.ApprovedAt == nil || row.ID == candidate.ID || !assignmentContainsDate(&row, point) {
+				continue
+			}
+			fte, err := row.FTEPercent.Rat()
+			if err != nil {
+				return hrerrors.ErrReferenceConflict
+			}
+			total.Add(total, fte)
+		}
+		if total.Cmp(limit) > 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
+	return nil
+}
+
+func assignmentContainsDate(row *entity.WorkerAssignment, day time.Time) bool {
+	return entity.CompareDates(row.ValidFrom, day) <= 0 && (row.ValidTo == nil || entity.CompareDates(*row.ValidTo, day) >= 0)
+}
+
+func assignmentPeriodsOverlap(left, right *entity.WorkerAssignment) bool {
+	return (left.ValidTo == nil || entity.CompareDates(*left.ValidTo, right.ValidFrom) >= 0) &&
+		(right.ValidTo == nil || entity.CompareDates(*right.ValidTo, left.ValidFrom) >= 0)
 }
 
 func supportedAssignmentType(value string) bool {

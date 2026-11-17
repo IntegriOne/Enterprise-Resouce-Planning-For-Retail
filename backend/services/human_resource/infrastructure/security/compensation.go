@@ -26,7 +26,7 @@ type compensationWorkerReader interface {
 }
 
 type compensationAssignmentReader interface {
-	FindByIDForUpdate(context.Context, string) (*entity.WorkerAssignment, error)
+	FindByID(context.Context, string) (*entity.WorkerAssignment, error)
 }
 
 type compensationPositionReader interface {
@@ -191,7 +191,7 @@ func (v *compensationRecordValidator) ValidateMutation(ctx context.Context, tabl
 		(worker.TerminationDate != nil && (record.EffectiveTo == nil || entity.CompareDates(*record.EffectiveTo, *worker.TerminationDate) > 0)) {
 		return hrerrors.ErrReferenceConflict
 	}
-	assignment, err := v.assignments.FindByIDForUpdate(ctx, record.AssignmentID)
+	assignment, err := v.assignments.FindByID(ctx, record.AssignmentID)
 	if err != nil {
 		return compensationReferenceError(err)
 	}

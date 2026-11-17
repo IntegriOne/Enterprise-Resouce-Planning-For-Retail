@@ -88,7 +88,7 @@ func (s compensationWorkerStub) FindByIDForUpdate(context.Context, string) (*ent
 
 type compensationAssignmentStub struct{ value *entity.WorkerAssignment }
 
-func (s compensationAssignmentStub) FindByIDForUpdate(context.Context, string) (*entity.WorkerAssignment, error) {
+func (s compensationAssignmentStub) FindByID(context.Context, string) (*entity.WorkerAssignment, error) {
 	return s.value, nil
 }
 
