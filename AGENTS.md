@@ -519,11 +519,13 @@ Jangan menambah repository test atau integration test terpisah sebagai lapisan w
 Untuk uji fungsional GraphQL di lingkungan development atau testing:
 
 1. Login sebagai `superadmin` melalui endpoint HTTPS `/api/graphql`.
-2. Daftarkan permission yang diperlukan operasi yang diuji di database IAM lingkungan uji melalui mekanisme resmi IAM. Buat atau gunakan role uji dan tambahkan permission tersebut ke role.
-3. Assign role uji ke akun `superadmin` melalui mutasi resmi IAM. Login ulang agar sesi menggunakan grant terbaru.
+2. Cari kode permission yang dibutuhkan melalui Query GraphQL IAM `permissions`. Jika kode belum terdaftar, gunakan manifest katalog resmi dan bootstrap IAM di lingkungan uji. Buat role uji dengan Mutation `createRole` atau gunakan role uji yang sudah ada, lalu pasang permission melalui Mutation `assignRolePermission`.
+3. Assign role uji ke akun `superadmin` melalui Mutation `assignUserRole`. Login ulang agar sesi menggunakan grant terbaru.
 4. Jalankan Query dan Mutation melalui HTTPS `/api/graphql` dengan sesi `superadmin`. Sertakan token CSRF yang sah pada Mutation dan catat hasil aktual sesuai aturan laporan E2E.
 
 Gunakan akun dengan grant terbatas untuk menguji penolakan akses di luar scope, termasuk lintas badan hukum. Izin global `superadmin` dapat menutupi pembatasan tersebut. Ikuti [tata kelola IAM](agents/users.md#5-tata-kelola-permission-manifest-kode--pemberian-akses-lintas-management) saat mendaftarkan izin dan memberikan role.
+
+Semua perubahan role, pemasangan atau pencabutan permission pada role, serta pemberian atau pencabutan role pada akun uji wajib melalui GraphQL IAM, termasuk saat cleanup. Penulisan langsung ke tabel RBAC IAM melalui SQL dilarang, termasuk pada database disposable.
 
 ### Cakupan dan bukti E2E
 
