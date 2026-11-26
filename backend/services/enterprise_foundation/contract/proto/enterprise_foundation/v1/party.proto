@@ -1,0 +1,715 @@
+syntax = "proto3";
+
+package enterprise_foundation.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/enterprise_foundation/contract/gen/enterprise_foundation/v1;enterprisefoundationv1";
+
+import "enterprise_foundation/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// Party merepresentasikan entitas master mitra bisnis eksternal (supplier, vendor, customer B2B, carrier, institusi keuangan).
+message Party {
+  string id = 1;
+  string partner_code = 2;
+  PartyKind kind = 3;
+  string display_name = 4;
+  optional string legal_name = 5;
+  optional string email = 6;
+  optional string phone = 7;
+  optional string website_url = 8;
+  optional string tax_id_number = 9;
+  optional string tax_registered_name = 10;
+  bool is_pkp = 11;
+  bool is_tax_exempt = 12;
+  optional string tax_exemption_reason = 13;
+  google.protobuf.Timestamp tax_verified_at = 14;
+  string preferred_language = 15;
+  PartyStatus status = 16;
+  optional string notes = 17;
+  google.protobuf.Timestamp created_at = 18;
+  google.protobuf.Timestamp updated_at = 19;
+  google.protobuf.Timestamp deleted_at = 20;
+}
+
+// PartyRole merepresentasikan peran bisnis resmi milik satu mitra eksternal.
+message PartyRole {
+  string id = 1;
+  string party_id = 2;
+  PartyRoleKind role = 3;
+  bool is_active = 4;
+  optional string reference_note = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// PartyContact merepresentasikan PIC / perwakilan manusia milik mitra serta tautan portal IAM opsional.
+message PartyContact {
+  string id = 1;
+  string party_id = 2;
+  optional string iam_user_id = 3;
+  string full_name = 4;
+  optional string job_title = 5;
+  string contact_role = 6;
+  optional string email = 7;
+  optional string phone = 8;
+  PortalAccessStatus portal_access_status = 9;
+  bool is_primary = 10;
+  bool is_active = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  google.protobuf.Timestamp deleted_at = 14;
+}
+
+// PartyAddress merepresentasikan relasi antara mitra eksternal dan master alamat sesuai peruntukannya.
+message PartyAddress {
+  string id = 1;
+  string party_id = 2;
+  string address_id = 3;
+  AddressUsageKind usage = 4;
+  bool is_primary = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// PortalAccessEvaluation merangkum hasil evaluasi hak perwakilan portal PIC mitra terhadap principal IAM.
+message PortalAccessEvaluation {
+  bool allowed = 1;
+  string party_id = 2;
+  string contact_id = 3;
+  string iam_user_id = 4;
+  repeated PartyRoleKind active_roles = 5;
+}
+
+// --- RPC Mitra Eksternal (Party) ---
+
+message GetPartyByIdRequest {
+  string id = 1;
+}
+
+message GetPartyByIdResponse {
+  Party party = 1;
+}
+
+message GetPartiesByIdsRequest {
+  repeated string ids = 1;
+}
+
+message GetPartiesByIdsResponse {
+  repeated Party items = 1;
+}
+
+message GetPartyByCodeRequest {
+  string partner_code = 1;
+}
+
+message GetPartyByCodeResponse {
+  Party party = 1;
+}
+
+message GetPartyByTaxIdNumberRequest {
+  string tax_id_number = 1;
+}
+
+message GetPartyByTaxIdNumberResponse {
+  Party party = 1;
+}
+
+message ListPartiesByEmailRequest {
+  string email = 1;
+  PageRequest page = 2;
+}
+
+message ListPartiesByEmailResponse {
+  repeated Party items = 1;
+  PageInfo page = 2;
+}
+
+message ListPartiesRequest {
+  string query = 1;
+  optional PartyKind kind = 2;
+  optional PartyStatus status = 3;
+  optional PartyRoleKind role = 4;
+  bool include_deleted = 5;
+  PageRequest page = 6;
+}
+
+message ListPartiesResponse {
+  repeated Party items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllPartiesRequest {
+  PageRequest page = 1;
+}
+
+message GetAllPartiesResponse {
+  repeated Party items = 1;
+  PageInfo page = 2;
+}
+
+message CreatePartyRequest {
+  string partner_code = 1;
+  PartyKind kind = 2;
+  string display_name = 3;
+  optional string legal_name = 4;
+  optional string email = 5;
+  optional string phone = 6;
+  optional string website_url = 7;
+  optional string tax_id_number = 8;
+  optional string tax_registered_name = 9;
+  bool is_pkp = 10;
+  bool is_tax_exempt = 11;
+  optional string tax_exemption_reason = 12;
+  google.protobuf.Timestamp tax_verified_at = 13;
+  string preferred_language = 14;
+  PartyStatus status = 15;
+  optional string notes = 16;
+}
+
+message CreatePartyResponse {
+  Party party = 1;
+}
+
+message UpdatePartyProfileRequest {
+  string id = 1;
+  PartyKind kind = 2;
+  string display_name = 3;
+  optional string legal_name = 4;
+  optional string email = 5;
+  optional string phone = 6;
+  optional string website_url = 7;
+  string preferred_language = 8;
+  optional string notes = 9;
+}
+
+message UpdatePartyProfileResponse {
+  Party party = 1;
+}
+
+message UpdatePartyTaxProfileRequest {
+  string id = 1;
+  optional string tax_id_number = 2;
+  optional string tax_registered_name = 3;
+  bool is_pkp = 4;
+  bool is_tax_exempt = 5;
+  optional string tax_exemption_reason = 6;
+  google.protobuf.Timestamp tax_verified_at = 7;
+}
+
+message UpdatePartyTaxProfileResponse {
+  Party party = 1;
+}
+
+message VerifyAndActivatePartyRequest {
+  string id = 1;
+}
+
+message VerifyAndActivatePartyResponse {
+  Party party = 1;
+}
+
+message SuspendPartyRequest {
+  string id = 1;
+}
+
+message SuspendPartyResponse {
+  Party party = 1;
+}
+
+message DeactivatePartyRequest {
+  string id = 1;
+}
+
+message DeactivatePartyResponse {
+  Party party = 1;
+}
+
+message DeletePartyRequest {
+  string id = 1;
+}
+
+message DeletePartyResponse {
+  bool deleted = 1;
+}
+
+// --- RPC Peran Bisnis Mitra (PartyRole) ---
+
+message GetPartyRoleByIdRequest {
+  string role_id = 1;
+}
+
+message GetPartyRoleByIdResponse {
+  PartyRole role = 1;
+}
+
+message ListPartyRolesByPartyRequest {
+  string party_id = 1;
+  PageRequest page = 2;
+}
+
+message ListPartyRolesByPartyResponse {
+  repeated PartyRole items = 1;
+  PageInfo page = 2;
+}
+
+message GetPartyRoleByPartyAndKindRequest {
+  string party_id = 1;
+  PartyRoleKind kind = 2;
+}
+
+message GetPartyRoleByPartyAndKindResponse {
+  PartyRole role = 1;
+}
+
+message ListPartyRolesRequest {
+  string party_id = 1;
+  optional PartyRoleKind role = 2;
+  bool active_only = 3;
+  string query = 4;
+  PageRequest page = 5;
+}
+
+message ListPartyRolesResponse {
+  repeated PartyRole items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllPartyRolesRequest {
+  PageRequest page = 1;
+}
+
+message GetAllPartyRolesResponse {
+  repeated PartyRole items = 1;
+  PageInfo page = 2;
+}
+
+message ListPartyRolesByKindRequest {
+  PartyRoleKind kind = 1;
+  bool active_only = 2;
+  PageRequest page = 3;
+}
+
+message ListPartyRolesByKindResponse {
+  repeated PartyRole items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllPartyRolesByKindRequest {
+  PartyRoleKind kind = 1;
+  bool active_only = 2;
+  PageRequest page = 3;
+}
+
+message GetAllPartyRolesByKindResponse {
+  repeated PartyRole items = 1;
+  PageInfo page = 2;
+}
+
+message ValidatePartyRoleScopeRequest {
+  string party_id = 1;
+  PartyRoleKind required_role = 2;
+}
+
+message ValidatePartyRoleScopeResponse {
+  ScopeTargetDecision decision = 1;
+}
+
+message AssignPartyRoleRequest {
+  string party_id = 1;
+  PartyRoleKind role = 2;
+  optional string reference_note = 3;
+}
+
+message AssignPartyRoleResponse {
+  PartyRole role = 1;
+}
+
+message UpdatePartyRoleNoteRequest {
+  string id = 1;
+  optional string reference_note = 2;
+}
+
+message UpdatePartyRoleNoteResponse {
+  PartyRole role = 1;
+}
+
+message ActivatePartyRoleRequest {
+  string role_id = 1;
+}
+
+message ActivatePartyRoleResponse {
+  PartyRole role = 1;
+}
+
+message DeactivatePartyRoleRequest {
+  string role_id = 1;
+}
+
+message DeactivatePartyRoleResponse {
+  PartyRole role = 1;
+}
+
+message RemovePartyRoleRequest {
+  string role_id = 1;
+}
+
+message RemovePartyRoleResponse {
+  bool removed = 1;
+}
+
+// --- RPC PIC / Kontak Mitra & Akses Portal IAM (PartyContact) ---
+
+message GetPartyContactByIdRequest {
+  string contact_id = 1;
+}
+
+message GetPartyContactByIdResponse {
+  PartyContact contact = 1;
+}
+
+message ListPartyContactsByPartyRequest {
+  string party_id = 1;
+  PageRequest page = 2;
+}
+
+message ListPartyContactsByPartyResponse {
+  repeated PartyContact items = 1;
+  PageInfo page = 2;
+}
+
+message GetPrimaryPartyContactRequest {
+  string party_id = 1;
+}
+
+message GetPrimaryPartyContactResponse {
+  PartyContact contact = 1;
+}
+
+message ListPartyContactsByIamUserIdRequest {
+  string iam_user_id = 1;
+  PageRequest page = 2;
+}
+
+message ListPartyContactsByIamUserIdResponse {
+  repeated PartyContact items = 1;
+  PageInfo page = 2;
+}
+
+message ListPartyContactsByEmailRequest {
+  string email = 1;
+  PageRequest page = 2;
+}
+
+message ListPartyContactsByEmailResponse {
+  repeated PartyContact items = 1;
+  PageInfo page = 2;
+}
+
+message ListPartyContactsRequest {
+  string party_id = 1;
+  string query = 2;
+  string contact_role = 3;
+  optional PortalAccessStatus portal_access_status = 4;
+  bool active_only = 5;
+  bool include_deleted = 6;
+  PageRequest page = 7;
+}
+
+message ListPartyContactsResponse {
+  repeated PartyContact items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllPartyContactsRequest {
+  PageRequest page = 1;
+}
+
+message GetAllPartyContactsResponse {
+  repeated PartyContact items = 1;
+  PageInfo page = 2;
+}
+
+message EvaluateRepresentativePortalAccessRequest {
+  string party_id = 1;
+  string iam_user_id = 2;
+  PartyRoleKind required_role = 3;
+}
+
+message EvaluateRepresentativePortalAccessResponse {
+  PortalAccessEvaluation evaluation = 1;
+}
+
+message AddPartyContactRequest {
+  string party_id = 1;
+  optional string iam_user_id = 2;
+  string full_name = 3;
+  optional string job_title = 4;
+  string contact_role = 5;
+  optional string email = 6;
+  optional string phone = 7;
+  PortalAccessStatus portal_access_status = 8;
+  bool is_primary = 9;
+}
+
+message AddPartyContactResponse {
+  PartyContact contact = 1;
+}
+
+message UpdatePartyContactRequest {
+  string id = 1;
+  string full_name = 2;
+  optional string job_title = 3;
+  string contact_role = 4;
+  optional string email = 5;
+  optional string phone = 6;
+  bool is_primary = 7;
+}
+
+message UpdatePartyContactResponse {
+  PartyContact contact = 1;
+}
+
+message SetPrimaryPartyContactRequest {
+  string party_id = 1;
+  string contact_id = 2;
+}
+
+message SetPrimaryPartyContactResponse {
+  PartyContact contact = 1;
+}
+
+message RequestPartyPortalLinkRequest {
+  string contact_id = 1;
+  string iam_user_id = 2;
+}
+
+message RequestPartyPortalLinkResponse {
+  PartyContact contact = 1;
+}
+
+message ActivatePartyPortalAccessRequest {
+  string contact_id = 1;
+  string iam_user_id = 2;
+}
+
+message ActivatePartyPortalAccessResponse {
+  PartyContact contact = 1;
+}
+
+message RevokePartyPortalAccessRequest {
+  string contact_id = 1;
+}
+
+message RevokePartyPortalAccessResponse {
+  PartyContact contact = 1;
+}
+
+message UnlinkPartyPortalUserRequest {
+  string contact_id = 1;
+}
+
+message UnlinkPartyPortalUserResponse {
+  PartyContact contact = 1;
+}
+
+message ActivatePartyContactRequest {
+  string contact_id = 1;
+}
+
+message ActivatePartyContactResponse {
+  PartyContact contact = 1;
+}
+
+message DeactivatePartyContactRequest {
+  string contact_id = 1;
+}
+
+message DeactivatePartyContactResponse {
+  PartyContact contact = 1;
+}
+
+message DeletePartyContactRequest {
+  string contact_id = 1;
+}
+
+message DeletePartyContactResponse {
+  bool deleted = 1;
+}
+
+// --- RPC Relasi Alamat Mitra (PartyAddress) ---
+
+message GetPartyAddressLinkByIdRequest {
+  string link_id = 1;
+}
+
+message GetPartyAddressLinkByIdResponse {
+  PartyAddress link = 1;
+}
+
+message ListPartyAddressLinksByPartyRequest {
+  string party_id = 1;
+  PageRequest page = 2;
+}
+
+message ListPartyAddressLinksByPartyResponse {
+  repeated PartyAddress items = 1;
+  PageInfo page = 2;
+}
+
+message ListPartyAddressLinksByPartyAndUsageRequest {
+  string party_id = 1;
+  AddressUsageKind usage = 2;
+  PageRequest page = 3;
+}
+
+message ListPartyAddressLinksByPartyAndUsageResponse {
+  repeated PartyAddress items = 1;
+  PageInfo page = 2;
+}
+
+message GetPrimaryPartyAddressLinkRequest {
+  string party_id = 1;
+  AddressUsageKind usage = 2;
+}
+
+message GetPrimaryPartyAddressLinkResponse {
+  PartyAddress link = 1;
+}
+
+message ListPartyAddressLinksByAddressIdRequest {
+  string address_id = 1;
+  PageRequest page = 2;
+}
+
+message ListPartyAddressLinksByAddressIdResponse {
+  repeated PartyAddress items = 1;
+  PageInfo page = 2;
+}
+
+message ListPartyAddressLinksRequest {
+  string party_id = 1;
+  string address_id = 2;
+  optional AddressUsageKind usage = 3;
+  optional bool primary_only = 4;
+  PageRequest page = 5;
+}
+
+message ListPartyAddressLinksResponse {
+  repeated PartyAddress items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllPartyAddressLinksRequest {
+  PageRequest page = 1;
+}
+
+message GetAllPartyAddressLinksResponse {
+  repeated PartyAddress items = 1;
+  PageInfo page = 2;
+}
+
+message LinkPartyAddressRequest {
+  string party_id = 1;
+  string address_id = 2;
+  AddressUsageKind usage = 3;
+  bool is_primary = 4;
+  bool replace_primary = 5;
+}
+
+message LinkPartyAddressResponse {
+  PartyAddress link = 1;
+}
+
+message UpdatePartyAddressLinkRequest {
+  string id = 1;
+  AddressUsageKind usage = 2;
+  bool is_primary = 3;
+  bool replace_primary = 4;
+}
+
+message UpdatePartyAddressLinkResponse {
+  PartyAddress link = 1;
+}
+
+message SetPrimaryPartyAddressLinkRequest {
+  string link_id = 1;
+}
+
+message SetPrimaryPartyAddressLinkResponse {
+  PartyAddress link = 1;
+}
+
+message UnlinkPartyAddressRequest {
+  string link_id = 1;
+}
+
+message UnlinkPartyAddressResponse {
+  bool unlinked = 1;
+}
+
+// PartyService mengelola mitra bisnis eksternal, peran bisnis, PIC portal IAM, dan relasi alamat mitra.
+service PartyService {
+  // Party core.
+  rpc GetPartyById(GetPartyByIdRequest) returns (GetPartyByIdResponse);
+  rpc GetPartiesByIds(GetPartiesByIdsRequest) returns (GetPartiesByIdsResponse);
+  rpc GetPartyByCode(GetPartyByCodeRequest) returns (GetPartyByCodeResponse);
+  rpc GetPartyByTaxIdNumber(GetPartyByTaxIdNumberRequest) returns (GetPartyByTaxIdNumberResponse);
+  rpc ListPartiesByEmail(ListPartiesByEmailRequest) returns (ListPartiesByEmailResponse);
+  rpc ListParties(ListPartiesRequest) returns (ListPartiesResponse);
+  rpc GetAllParties(GetAllPartiesRequest) returns (GetAllPartiesResponse);
+  rpc CreateParty(CreatePartyRequest) returns (CreatePartyResponse);
+  rpc UpdatePartyProfile(UpdatePartyProfileRequest) returns (UpdatePartyProfileResponse);
+  rpc UpdatePartyTaxProfile(UpdatePartyTaxProfileRequest) returns (UpdatePartyTaxProfileResponse);
+  rpc VerifyAndActivateParty(VerifyAndActivatePartyRequest) returns (VerifyAndActivatePartyResponse);
+  rpc SuspendParty(SuspendPartyRequest) returns (SuspendPartyResponse);
+  rpc DeactivateParty(DeactivatePartyRequest) returns (DeactivatePartyResponse);
+  rpc DeleteParty(DeletePartyRequest) returns (DeletePartyResponse);
+
+  // Party roles dan scope mitra.
+  rpc GetPartyRoleById(GetPartyRoleByIdRequest) returns (GetPartyRoleByIdResponse);
+  rpc ListPartyRolesByParty(ListPartyRolesByPartyRequest) returns (ListPartyRolesByPartyResponse);
+  rpc GetPartyRoleByPartyAndKind(GetPartyRoleByPartyAndKindRequest) returns (GetPartyRoleByPartyAndKindResponse);
+  rpc ListPartyRoles(ListPartyRolesRequest) returns (ListPartyRolesResponse);
+  rpc GetAllPartyRoles(GetAllPartyRolesRequest) returns (GetAllPartyRolesResponse);
+  rpc ListPartyRolesByKind(ListPartyRolesByKindRequest) returns (ListPartyRolesByKindResponse);
+  rpc GetAllPartyRolesByKind(GetAllPartyRolesByKindRequest) returns (GetAllPartyRolesByKindResponse);
+  rpc ValidatePartyRoleScope(ValidatePartyRoleScopeRequest) returns (ValidatePartyRoleScopeResponse);
+  rpc AssignPartyRole(AssignPartyRoleRequest) returns (AssignPartyRoleResponse);
+  rpc UpdatePartyRoleNote(UpdatePartyRoleNoteRequest) returns (UpdatePartyRoleNoteResponse);
+  rpc ActivatePartyRole(ActivatePartyRoleRequest) returns (ActivatePartyRoleResponse);
+  rpc DeactivatePartyRole(DeactivatePartyRoleRequest) returns (DeactivatePartyRoleResponse);
+  rpc RemovePartyRole(RemovePartyRoleRequest) returns (RemovePartyRoleResponse);
+
+  // Party contacts dan evaluasi akses portal IAM.
+  rpc GetPartyContactById(GetPartyContactByIdRequest) returns (GetPartyContactByIdResponse);
+  rpc ListPartyContactsByParty(ListPartyContactsByPartyRequest) returns (ListPartyContactsByPartyResponse);
+  rpc GetPrimaryPartyContact(GetPrimaryPartyContactRequest) returns (GetPrimaryPartyContactResponse);
+  rpc ListPartyContactsByIamUserId(ListPartyContactsByIamUserIdRequest) returns (ListPartyContactsByIamUserIdResponse);
+  rpc ListPartyContactsByEmail(ListPartyContactsByEmailRequest) returns (ListPartyContactsByEmailResponse);
+  rpc ListPartyContacts(ListPartyContactsRequest) returns (ListPartyContactsResponse);
+  rpc GetAllPartyContacts(GetAllPartyContactsRequest) returns (GetAllPartyContactsResponse);
+  rpc EvaluateRepresentativePortalAccess(EvaluateRepresentativePortalAccessRequest) returns (EvaluateRepresentativePortalAccessResponse);
+  rpc AddPartyContact(AddPartyContactRequest) returns (AddPartyContactResponse);
+  rpc UpdatePartyContact(UpdatePartyContactRequest) returns (UpdatePartyContactResponse);
+  rpc SetPrimaryPartyContact(SetPrimaryPartyContactRequest) returns (SetPrimaryPartyContactResponse);
+  rpc RequestPartyPortalLink(RequestPartyPortalLinkRequest) returns (RequestPartyPortalLinkResponse);
+  rpc ActivatePartyPortalAccess(ActivatePartyPortalAccessRequest) returns (ActivatePartyPortalAccessResponse);
+  rpc RevokePartyPortalAccess(RevokePartyPortalAccessRequest) returns (RevokePartyPortalAccessResponse);
+  rpc UnlinkPartyPortalUser(UnlinkPartyPortalUserRequest) returns (UnlinkPartyPortalUserResponse);
+  rpc ActivatePartyContact(ActivatePartyContactRequest) returns (ActivatePartyContactResponse);
+  rpc DeactivatePartyContact(DeactivatePartyContactRequest) returns (DeactivatePartyContactResponse);
+  rpc DeletePartyContact(DeletePartyContactRequest) returns (DeletePartyContactResponse);
+
+  // Relasi alamat mitra.
+  rpc GetPartyAddressLinkById(GetPartyAddressLinkByIdRequest) returns (GetPartyAddressLinkByIdResponse);
+  rpc ListPartyAddressLinksByParty(ListPartyAddressLinksByPartyRequest) returns (ListPartyAddressLinksByPartyResponse);
+  rpc ListPartyAddressLinksByPartyAndUsage(ListPartyAddressLinksByPartyAndUsageRequest) returns (ListPartyAddressLinksByPartyAndUsageResponse);
+  rpc GetPrimaryPartyAddressLink(GetPrimaryPartyAddressLinkRequest) returns (GetPrimaryPartyAddressLinkResponse);
+  rpc ListPartyAddressLinksByAddressId(ListPartyAddressLinksByAddressIdRequest) returns (ListPartyAddressLinksByAddressIdResponse);
+  rpc ListPartyAddressLinks(ListPartyAddressLinksRequest) returns (ListPartyAddressLinksResponse);
+  rpc GetAllPartyAddressLinks(GetAllPartyAddressLinksRequest) returns (GetAllPartyAddressLinksResponse);
+  rpc LinkPartyAddress(LinkPartyAddressRequest) returns (LinkPartyAddressResponse);
+  rpc UpdatePartyAddressLink(UpdatePartyAddressLinkRequest) returns (UpdatePartyAddressLinkResponse);
+  rpc SetPrimaryPartyAddressLink(SetPrimaryPartyAddressLinkRequest) returns (SetPrimaryPartyAddressLinkResponse);
+  rpc UnlinkPartyAddress(UnlinkPartyAddressRequest) returns (UnlinkPartyAddressResponse);
+}

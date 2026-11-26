@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+package enterprise_foundation.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/enterprise_foundation/contract/gen/enterprise_foundation/v1;enterprisefoundationv1";
+
+import "enterprise_foundation/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// Address merepresentasikan master alamat geografis bersama untuk badan hukum, lokasi fisik, dan mitra eksternal.
+message Address {
+  string id = 1;
+  optional string label = 2;
+  string address_line_1 = 3;
+  optional string address_line_2 = 4;
+  string city = 5;
+  optional string province = 6;
+  optional string postal_code = 7;
+  string country_code = 8;
+  optional string formatted_address = 9;
+  optional double latitude = 10;
+  optional double longitude = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message GetAddressByIdRequest {
+  string id = 1;
+}
+
+message GetAddressByIdResponse {
+  Address address = 1;
+}
+
+message GetAddressesByIdsRequest {
+  repeated string ids = 1;
+}
+
+message GetAddressesByIdsResponse {
+  repeated Address items = 1;
+}
+
+message ListAddressesRequest {
+  string query = 1;
+  string country_code = 2;
+  string city = 3;
+  string province = 4;
+  string postal_code = 5;
+  PageRequest page = 6;
+}
+
+message ListAddressesResponse {
+  repeated Address items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllAddressesRequest {
+  PageRequest page = 1;
+}
+
+message GetAllAddressesResponse {
+  repeated Address items = 1;
+  PageInfo page = 2;
+}
+
+message IsAddressReferencedRequest {
+  string id = 1;
+}
+
+message IsAddressReferencedResponse {
+  bool referenced = 1;
+}
+
+message CreateAddressRequest {
+  optional string label = 1;
+  string address_line_1 = 2;
+  optional string address_line_2 = 3;
+  string city = 4;
+  optional string province = 5;
+  optional string postal_code = 6;
+  string country_code = 7;
+  optional string formatted_address = 8;
+  optional double latitude = 9;
+  optional double longitude = 10;
+}
+
+message CreateAddressResponse {
+  Address address = 1;
+}
+
+message FindOrCreateAddressRequest {
+  optional string label = 1;
+  string address_line_1 = 2;
+  optional string address_line_2 = 3;
+  string city = 4;
+  optional string province = 5;
+  optional string postal_code = 6;
+  string country_code = 7;
+  optional string formatted_address = 8;
+  optional double latitude = 9;
+  optional double longitude = 10;
+}
+
+message FindOrCreateAddressResponse {
+  Address address = 1;
+  bool created = 2;
+}
+
+message UpdateAddressRequest {
+  string id = 1;
+  optional string label = 2;
+  string address_line_1 = 3;
+  optional string address_line_2 = 4;
+  string city = 5;
+  optional string province = 6;
+  optional string postal_code = 7;
+  string country_code = 8;
+  optional string formatted_address = 9;
+  optional double latitude = 10;
+  optional double longitude = 11;
+}
+
+message UpdateAddressResponse {
+  Address address = 1;
+}
+
+message DeleteAddressRequest {
+  string id = 1;
+}
+
+message DeleteAddressResponse {
+  bool deleted = 1;
+}
+
+// AddressService menyediakan operasi master alamat geografis Enterprise Foundation.
+service AddressService {
+  rpc GetAddressById(GetAddressByIdRequest) returns (GetAddressByIdResponse);
+  rpc GetAddressesByIds(GetAddressesByIdsRequest) returns (GetAddressesByIdsResponse);
+  rpc ListAddresses(ListAddressesRequest) returns (ListAddressesResponse);
+  rpc GetAllAddresses(GetAllAddressesRequest) returns (GetAllAddressesResponse);
+  rpc IsAddressReferenced(IsAddressReferencedRequest) returns (IsAddressReferencedResponse);
+  rpc CreateAddress(CreateAddressRequest) returns (CreateAddressResponse);
+  rpc FindOrCreateAddress(FindOrCreateAddressRequest) returns (FindOrCreateAddressResponse);
+  rpc UpdateAddress(UpdateAddressRequest) returns (UpdateAddressResponse);
+  rpc DeleteAddress(DeleteAddressRequest) returns (DeleteAddressResponse);
+}

@@ -1,0 +1,224 @@
+syntax = "proto3";
+
+package enterprise_foundation.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/enterprise_foundation/contract/gen/enterprise_foundation/v1;enterprisefoundationv1";
+
+import "enterprise_foundation/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// LegalEntity merepresentasikan badan hukum internal perusahaan sekaligus target scope legal_entity IAM.
+message LegalEntity {
+  string id = 1;
+  optional string parent_legal_entity_id = 2;
+  string entity_code = 3;
+  string legal_name = 4;
+  optional string trading_name = 5;
+  optional string legal_form = 6;
+  bool is_primary_operating_entity = 7;
+  LegalEntityStatus status = 8;
+  string jurisdiction_country_code = 9;
+  optional string nib = 10;
+  optional string tax_id_number = 11;
+  bool is_pkp = 12;
+  optional string registered_address_id = 13;
+  int32 fiscal_year_start_month = 14;
+  google.protobuf.Timestamp incorporation_date = 15;
+  google.protobuf.Timestamp dissolution_date = 16;
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Timestamp updated_at = 18;
+  google.protobuf.Timestamp deleted_at = 19;
+}
+
+message GetLegalEntityByIdRequest {
+  string id = 1;
+}
+
+message GetLegalEntityByIdResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message GetLegalEntitiesByIdsRequest {
+  repeated string ids = 1;
+}
+
+message GetLegalEntitiesByIdsResponse {
+  repeated LegalEntity items = 1;
+}
+
+message GetLegalEntityByCodeRequest {
+  string entity_code = 1;
+}
+
+message GetLegalEntityByCodeResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message GetLegalEntityByTaxIdNumberRequest {
+  string tax_id_number = 1;
+}
+
+message GetLegalEntityByTaxIdNumberResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message ListLegalEntitiesByNibRequest {
+  string nib = 1;
+  PageRequest page = 2;
+}
+
+message ListLegalEntitiesByNibResponse {
+  repeated LegalEntity items = 1;
+  PageInfo page = 2;
+}
+
+message GetPrimaryOperatingLegalEntityRequest {}
+
+message GetPrimaryOperatingLegalEntityResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message ListLegalEntitiesRequest {
+  string query = 1;
+  optional string parent_legal_entity_id = 2;
+  optional LegalEntityStatus status = 3;
+  optional bool primary_only = 4;
+  bool include_deleted = 5;
+  PageRequest page = 6;
+}
+
+message ListLegalEntitiesResponse {
+  repeated LegalEntity items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllLegalEntitiesRequest {
+  PageRequest page = 1;
+}
+
+message GetAllLegalEntitiesResponse {
+  repeated LegalEntity items = 1;
+  PageInfo page = 2;
+}
+
+message ListLegalEntityChildrenRequest {
+  string parent_legal_entity_id = 1;
+  PageRequest page = 2;
+}
+
+message ListLegalEntityChildrenResponse {
+  repeated LegalEntity items = 1;
+  PageInfo page = 2;
+}
+
+message ValidateLegalEntityScopeTargetRequest {
+  string id = 1;
+}
+
+message ValidateLegalEntityScopeTargetResponse {
+  ScopeTargetDecision decision = 1;
+}
+
+message CreateLegalEntityRequest {
+  optional string parent_legal_entity_id = 1;
+  string entity_code = 2;
+  string legal_name = 3;
+  optional string trading_name = 4;
+  optional string legal_form = 5;
+  bool is_primary_operating_entity = 6;
+  LegalEntityStatus status = 7;
+  string jurisdiction_country_code = 8;
+  optional string nib = 9;
+  optional string tax_id_number = 10;
+  bool is_pkp = 11;
+  optional string registered_address_id = 12;
+  int32 fiscal_year_start_month = 13;
+  google.protobuf.Timestamp incorporation_date = 14;
+  google.protobuf.Timestamp dissolution_date = 15;
+}
+
+message CreateLegalEntityResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message UpdateLegalEntityRequest {
+  string id = 1;
+  optional string parent_legal_entity_id = 2;
+  string legal_name = 3;
+  optional string trading_name = 4;
+  optional string legal_form = 5;
+  string jurisdiction_country_code = 6;
+  optional string nib = 7;
+  optional string tax_id_number = 8;
+  bool is_pkp = 9;
+  optional string registered_address_id = 10;
+  int32 fiscal_year_start_month = 11;
+  google.protobuf.Timestamp incorporation_date = 12;
+  google.protobuf.Timestamp dissolution_date = 13;
+}
+
+message UpdateLegalEntityResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message SetPrimaryOperatingLegalEntityRequest {
+  string id = 1;
+}
+
+message SetPrimaryOperatingLegalEntityResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message ActivateLegalEntityRequest {
+  string id = 1;
+}
+
+message ActivateLegalEntityResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message SuspendLegalEntityRequest {
+  string id = 1;
+}
+
+message SuspendLegalEntityResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message DissolveLegalEntityRequest {
+  string id = 1;
+  google.protobuf.Timestamp dissolution_date = 2;
+}
+
+message DissolveLegalEntityResponse {
+  LegalEntity legal_entity = 1;
+}
+
+message DeleteLegalEntityRequest {
+  string id = 1;
+}
+
+message DeleteLegalEntityResponse {
+  bool deleted = 1;
+}
+
+// LegalEntityService mengelola badan hukum perusahaan, hierarki entitas, dan validasi scope legal_entity.
+service LegalEntityService {
+  rpc GetLegalEntityById(GetLegalEntityByIdRequest) returns (GetLegalEntityByIdResponse);
+  rpc GetLegalEntitiesByIds(GetLegalEntitiesByIdsRequest) returns (GetLegalEntitiesByIdsResponse);
+  rpc GetLegalEntityByCode(GetLegalEntityByCodeRequest) returns (GetLegalEntityByCodeResponse);
+  rpc GetLegalEntityByTaxIdNumber(GetLegalEntityByTaxIdNumberRequest) returns (GetLegalEntityByTaxIdNumberResponse);
+  rpc ListLegalEntitiesByNib(ListLegalEntitiesByNibRequest) returns (ListLegalEntitiesByNibResponse);
+  rpc GetPrimaryOperatingLegalEntity(GetPrimaryOperatingLegalEntityRequest) returns (GetPrimaryOperatingLegalEntityResponse);
+  rpc ListLegalEntities(ListLegalEntitiesRequest) returns (ListLegalEntitiesResponse);
+  rpc GetAllLegalEntities(GetAllLegalEntitiesRequest) returns (GetAllLegalEntitiesResponse);
+  rpc ListLegalEntityChildren(ListLegalEntityChildrenRequest) returns (ListLegalEntityChildrenResponse);
+  rpc ValidateLegalEntityScopeTarget(ValidateLegalEntityScopeTargetRequest) returns (ValidateLegalEntityScopeTargetResponse);
+  rpc CreateLegalEntity(CreateLegalEntityRequest) returns (CreateLegalEntityResponse);
+  rpc UpdateLegalEntity(UpdateLegalEntityRequest) returns (UpdateLegalEntityResponse);
+  rpc SetPrimaryOperatingLegalEntity(SetPrimaryOperatingLegalEntityRequest) returns (SetPrimaryOperatingLegalEntityResponse);
+  rpc ActivateLegalEntity(ActivateLegalEntityRequest) returns (ActivateLegalEntityResponse);
+  rpc SuspendLegalEntity(SuspendLegalEntityRequest) returns (SuspendLegalEntityResponse);
+  rpc DissolveLegalEntity(DissolveLegalEntityRequest) returns (DissolveLegalEntityResponse);
+  rpc DeleteLegalEntity(DeleteLegalEntityRequest) returns (DeleteLegalEntityResponse);
+}

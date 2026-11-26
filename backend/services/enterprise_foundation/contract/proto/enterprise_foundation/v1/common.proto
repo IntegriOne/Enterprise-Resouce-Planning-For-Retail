@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package enterprise_foundation.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/enterprise_foundation/contract/gen/enterprise_foundation/v1;enterprisefoundationv1";
+
+// LegalEntityStatus merepresentasikan status siklus hidup badan hukum perusahaan.
+enum LegalEntityStatus {
+  LEGAL_ENTITY_STATUS_UNSPECIFIED = 0;
+  LEGAL_ENTITY_STATUS_PENDING = 1;
+  LEGAL_ENTITY_STATUS_ACTIVE = 2;
+  LEGAL_ENTITY_STATUS_SUSPENDED = 3;
+  LEGAL_ENTITY_STATUS_DISSOLVED = 4;
+}
+
+// OrgUnitKind merepresentasikan jenis unit organisasi internal.
+enum OrgUnitKind {
+  ORG_UNIT_KIND_UNSPECIFIED = 0;
+  ORG_UNIT_KIND_DIVISION = 1;
+  ORG_UNIT_KIND_DEPARTMENT = 2;
+  ORG_UNIT_KIND_TEAM = 3;
+  ORG_UNIT_KIND_BRANCH = 4;
+  ORG_UNIT_KIND_OTHER = 5;
+}
+
+// LocationKind merepresentasikan jenis lokasi fisik internal perusahaan.
+enum LocationKind {
+  LOCATION_KIND_UNSPECIFIED = 0;
+  LOCATION_KIND_HEADQUARTERS = 1;
+  LOCATION_KIND_WAREHOUSE = 2;
+  LOCATION_KIND_RETAIL_STORE = 3;
+  LOCATION_KIND_BRANCH_OFFICE = 4;
+}
+
+// PartyKind merepresentasikan bentuk entitas mitra eksternal.
+enum PartyKind {
+  PARTY_KIND_UNSPECIFIED = 0;
+  PARTY_KIND_ORGANIZATION = 1;
+  PARTY_KIND_INDIVIDUAL = 2;
+  PARTY_KIND_FINANCIAL_ENTITY = 3;
+  PARTY_KIND_GOVERNMENT_BODY = 4;
+}
+
+// PartyStatus merepresentasikan status verifikasi dan keaktifan mitra eksternal.
+enum PartyStatus {
+  PARTY_STATUS_UNSPECIFIED = 0;
+  PARTY_STATUS_PENDING_VERIFICATION = 1;
+  PARTY_STATUS_ACTIVE = 2;
+  PARTY_STATUS_SUSPENDED = 3;
+  PARTY_STATUS_INACTIVE = 4;
+}
+
+// PartyRoleKind merepresentasikan peran bisnis mitra terhadap perusahaan.
+enum PartyRoleKind {
+  PARTY_ROLE_KIND_UNSPECIFIED = 0;
+  PARTY_ROLE_KIND_SUPPLIER = 1;
+  PARTY_ROLE_KIND_VENDOR = 2;
+  PARTY_ROLE_KIND_CUSTOMER_B2B = 3;
+  PARTY_ROLE_KIND_CARRIER = 4;
+  PARTY_ROLE_KIND_FINANCIAL_INSTITUTION = 5;
+  PARTY_ROLE_KIND_OTHER = 6;
+}
+
+// PortalAccessStatus merepresentasikan status tautan akses portal PIC mitra ke IAM.
+enum PortalAccessStatus {
+  PORTAL_ACCESS_STATUS_UNSPECIFIED = 0;
+  PORTAL_ACCESS_STATUS_NONE = 1;
+  PORTAL_ACCESS_STATUS_PENDING_LINK = 2;
+  PORTAL_ACCESS_STATUS_ACTIVE = 3;
+  PORTAL_ACCESS_STATUS_REVOKED = 4;
+}
+
+// AddressUsageKind merepresentasikan peruntukan penggunaan alamat milik mitra.
+enum AddressUsageKind {
+  ADDRESS_USAGE_KIND_UNSPECIFIED = 0;
+  ADDRESS_USAGE_KIND_REGISTERED_OFFICE = 1;
+  ADDRESS_USAGE_KIND_HEADQUARTERS = 2;
+  ADDRESS_USAGE_KIND_BILLING = 3;
+  ADDRESS_USAGE_KIND_SHIPPING = 4;
+  ADDRESS_USAGE_KIND_OTHER = 5;
+}
+
+// OutboxStatus merepresentasikan status pengiriman event integrasi lintas layanan.
+enum OutboxStatus {
+  OUTBOX_STATUS_UNSPECIFIED = 0;
+  OUTBOX_STATUS_PENDING = 1;
+  OUTBOX_STATUS_EFFECTIVE = 2;
+  OUTBOX_STATUS_FAILED = 3;
+}
+
+// ScopeTargetKind mengidentifikasi tipe objek scope Enterprise Foundation yang divalidasi lintas layanan.
+enum ScopeTargetKind {
+  SCOPE_TARGET_KIND_UNSPECIFIED = 0;
+  SCOPE_TARGET_KIND_LEGAL_ENTITY = 1;
+  SCOPE_TARGET_KIND_ORGANIZATION_UNIT = 2;
+  SCOPE_TARGET_KIND_FACILITY = 3;
+  SCOPE_TARGET_KIND_SUPPLIER_PARTY = 4;
+  SCOPE_TARGET_KIND_VENDOR_PARTY = 5;
+}
+
+// ScopeTargetDecision merangkum hasil evaluasi kelayakan objek target scope Enterprise Foundation.
+message ScopeTargetDecision {
+  bool eligible = 1;
+  ScopeTargetKind scope_kind = 2;
+  string target_id = 3;
+  string code = 4;
+  string legal_entity_id = 5;
+}
+
+// PageRequest membawa parameter paginasi berbasis limit dan offset.
+message PageRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+// PageInfo membawa metadata hasil paginasi.
+message PageInfo {
+  int64 total = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  bool has_more = 4;
+}

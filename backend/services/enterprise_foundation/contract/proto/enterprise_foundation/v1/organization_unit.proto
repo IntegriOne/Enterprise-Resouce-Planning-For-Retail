@@ -1,0 +1,194 @@
+syntax = "proto3";
+
+package enterprise_foundation.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/enterprise_foundation/contract/gen/enterprise_foundation/v1;enterprisefoundationv1";
+
+import "enterprise_foundation/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// OrganizationUnit merepresentasikan unit organisasi internal sekaligus target scope organization_unit IAM.
+message OrganizationUnit {
+  string id = 1;
+  string legal_entity_id = 2;
+  optional string parent_unit_id = 3;
+  optional string primary_location_id = 4;
+  string unit_code = 5;
+  string name = 6;
+  OrgUnitKind kind = 7;
+  optional string cost_center_code = 8;
+  optional string head_person_id = 9;
+  bool is_active = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+  google.protobuf.Timestamp deleted_at = 13;
+}
+
+message GetOrganizationUnitByIdRequest {
+  string id = 1;
+}
+
+message GetOrganizationUnitByIdResponse {
+  OrganizationUnit organization_unit = 1;
+}
+
+message GetOrganizationUnitsByIdsRequest {
+  repeated string ids = 1;
+}
+
+message GetOrganizationUnitsByIdsResponse {
+  repeated OrganizationUnit items = 1;
+}
+
+message GetOrganizationUnitByEntityAndCodeRequest {
+  string legal_entity_id = 1;
+  string unit_code = 2;
+}
+
+message GetOrganizationUnitByEntityAndCodeResponse {
+  OrganizationUnit organization_unit = 1;
+}
+
+message ListOrganizationUnitsByHeadPersonIdRequest {
+  string head_person_id = 1;
+  PageRequest page = 2;
+}
+
+message ListOrganizationUnitsByHeadPersonIdResponse {
+  repeated OrganizationUnit items = 1;
+  PageInfo page = 2;
+}
+
+message ListOrganizationUnitsByPrimaryLocationIdRequest {
+  string primary_location_id = 1;
+  PageRequest page = 2;
+}
+
+message ListOrganizationUnitsByPrimaryLocationIdResponse {
+  repeated OrganizationUnit items = 1;
+  PageInfo page = 2;
+}
+
+message ListOrganizationUnitChildrenRequest {
+  string parent_unit_id = 1;
+  PageRequest page = 2;
+}
+
+message ListOrganizationUnitChildrenResponse {
+  repeated OrganizationUnit items = 1;
+  PageInfo page = 2;
+}
+
+message ListOrganizationUnitsRequest {
+  string query = 1;
+  string legal_entity_id = 2;
+  optional string parent_unit_id = 3;
+  optional string primary_location_id = 4;
+  optional OrgUnitKind kind = 5;
+  bool active_only = 6;
+  bool include_deleted = 7;
+  PageRequest page = 8;
+}
+
+message ListOrganizationUnitsResponse {
+  repeated OrganizationUnit items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllOrganizationUnitsRequest {
+  PageRequest page = 1;
+}
+
+message GetAllOrganizationUnitsResponse {
+  repeated OrganizationUnit items = 1;
+  PageInfo page = 2;
+}
+
+message ValidateOrganizationUnitScopeTargetRequest {
+  string id = 1;
+}
+
+message ValidateOrganizationUnitScopeTargetResponse {
+  ScopeTargetDecision decision = 1;
+}
+
+message CreateOrganizationUnitRequest {
+  string legal_entity_id = 1;
+  optional string parent_unit_id = 2;
+  optional string primary_location_id = 3;
+  string unit_code = 4;
+  string name = 5;
+  OrgUnitKind kind = 6;
+  optional string cost_center_code = 7;
+  optional string head_person_id = 8;
+}
+
+message CreateOrganizationUnitResponse {
+  OrganizationUnit organization_unit = 1;
+}
+
+message UpdateOrganizationUnitRequest {
+  string id = 1;
+  optional string parent_unit_id = 2;
+  optional string primary_location_id = 3;
+  string name = 4;
+  OrgUnitKind kind = 5;
+  optional string cost_center_code = 6;
+  optional string head_person_id = 7;
+}
+
+message UpdateOrganizationUnitResponse {
+  OrganizationUnit organization_unit = 1;
+}
+
+message AssignOrganizationUnitHeadPersonRequest {
+  string id = 1;
+  optional string head_person_id = 2;
+}
+
+message AssignOrganizationUnitHeadPersonResponse {
+  OrganizationUnit organization_unit = 1;
+}
+
+message ActivateOrganizationUnitRequest {
+  string id = 1;
+}
+
+message ActivateOrganizationUnitResponse {
+  OrganizationUnit organization_unit = 1;
+}
+
+message DeactivateOrganizationUnitRequest {
+  string id = 1;
+}
+
+message DeactivateOrganizationUnitResponse {
+  OrganizationUnit organization_unit = 1;
+}
+
+message DeleteOrganizationUnitRequest {
+  string id = 1;
+}
+
+message DeleteOrganizationUnitResponse {
+  bool deleted = 1;
+}
+
+// OrganizationUnitService mengelola hierarki unit kerja perusahaan dan validasi scope organization_unit.
+service OrganizationUnitService {
+  rpc GetOrganizationUnitById(GetOrganizationUnitByIdRequest) returns (GetOrganizationUnitByIdResponse);
+  rpc GetOrganizationUnitsByIds(GetOrganizationUnitsByIdsRequest) returns (GetOrganizationUnitsByIdsResponse);
+  rpc GetOrganizationUnitByEntityAndCode(GetOrganizationUnitByEntityAndCodeRequest) returns (GetOrganizationUnitByEntityAndCodeResponse);
+  rpc ListOrganizationUnitsByHeadPersonId(ListOrganizationUnitsByHeadPersonIdRequest) returns (ListOrganizationUnitsByHeadPersonIdResponse);
+  rpc ListOrganizationUnitsByPrimaryLocationId(ListOrganizationUnitsByPrimaryLocationIdRequest) returns (ListOrganizationUnitsByPrimaryLocationIdResponse);
+  rpc ListOrganizationUnitChildren(ListOrganizationUnitChildrenRequest) returns (ListOrganizationUnitChildrenResponse);
+  rpc ListOrganizationUnits(ListOrganizationUnitsRequest) returns (ListOrganizationUnitsResponse);
+  rpc GetAllOrganizationUnits(GetAllOrganizationUnitsRequest) returns (GetAllOrganizationUnitsResponse);
+  rpc ValidateOrganizationUnitScopeTarget(ValidateOrganizationUnitScopeTargetRequest) returns (ValidateOrganizationUnitScopeTargetResponse);
+  rpc CreateOrganizationUnit(CreateOrganizationUnitRequest) returns (CreateOrganizationUnitResponse);
+  rpc UpdateOrganizationUnit(UpdateOrganizationUnitRequest) returns (UpdateOrganizationUnitResponse);
+  rpc AssignOrganizationUnitHeadPerson(AssignOrganizationUnitHeadPersonRequest) returns (AssignOrganizationUnitHeadPersonResponse);
+  rpc ActivateOrganizationUnit(ActivateOrganizationUnitRequest) returns (ActivateOrganizationUnitResponse);
+  rpc DeactivateOrganizationUnit(DeactivateOrganizationUnitRequest) returns (DeactivateOrganizationUnitResponse);
+  rpc DeleteOrganizationUnit(DeleteOrganizationUnitRequest) returns (DeleteOrganizationUnitResponse);
+}

@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package enterprise_foundation.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/enterprise_foundation/contract/gen/enterprise_foundation/v1;enterprisefoundationv1";
+
+import "enterprise_foundation/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// Location merepresentasikan lokasi fisik operasional internal perusahaan sekaligus target scope facility IAM.
+message Location {
+  string id = 1;
+  string legal_entity_id = 2;
+  optional string parent_location_id = 3;
+  optional string address_id = 4;
+  string location_code = 5;
+  string name = 6;
+  LocationKind kind = 7;
+  optional string phone = 8;
+  string timezone = 9;
+  string operational_attributes_json = 10;
+  bool is_active = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  google.protobuf.Timestamp deleted_at = 14;
+}
+
+message GetLocationByIdRequest {
+  string id = 1;
+}
+
+message GetLocationByIdResponse {
+  Location location = 1;
+}
+
+message GetLocationsByIdsRequest {
+  repeated string ids = 1;
+}
+
+message GetLocationsByIdsResponse {
+  repeated Location items = 1;
+}
+
+message GetLocationByCodeRequest {
+  string location_code = 1;
+}
+
+message GetLocationByCodeResponse {
+  Location location = 1;
+}
+
+message ListLocationsByLegalEntityAndKindRequest {
+  string legal_entity_id = 1;
+  LocationKind kind = 2;
+  bool active_only = 3;
+  PageRequest page = 4;
+}
+
+message ListLocationsByLegalEntityAndKindResponse {
+  repeated Location items = 1;
+  PageInfo page = 2;
+}
+
+message ListLocationsByAddressIdRequest {
+  string address_id = 1;
+  PageRequest page = 2;
+}
+
+message ListLocationsByAddressIdResponse {
+  repeated Location items = 1;
+  PageInfo page = 2;
+}
+
+message ListLocationChildrenRequest {
+  string parent_location_id = 1;
+  PageRequest page = 2;
+}
+
+message ListLocationChildrenResponse {
+  repeated Location items = 1;
+  PageInfo page = 2;
+}
+
+message ListLocationsRequest {
+  string query = 1;
+  string legal_entity_id = 2;
+  optional string parent_location_id = 3;
+  optional string address_id = 4;
+  optional LocationKind kind = 5;
+  bool active_only = 6;
+  bool include_deleted = 7;
+  PageRequest page = 8;
+}
+
+message ListLocationsResponse {
+  repeated Location items = 1;
+  PageInfo page = 2;
+}
+
+message GetAllLocationsRequest {
+  PageRequest page = 1;
+}
+
+message GetAllLocationsResponse {
+  repeated Location items = 1;
+  PageInfo page = 2;
+}
+
+message ValidateFacilityScopeRequest {
+  string id = 1;
+}
+
+message ValidateFacilityScopeResponse {
+  ScopeTargetDecision decision = 1;
+}
+
+message ValidateWarehouseScopeRequest {
+  string id = 1;
+}
+
+message ValidateWarehouseScopeResponse {
+  ScopeTargetDecision decision = 1;
+}
+
+message CreateLocationRequest {
+  string legal_entity_id = 1;
+  optional string parent_location_id = 2;
+  optional string address_id = 3;
+  string location_code = 4;
+  string name = 5;
+  LocationKind kind = 6;
+  optional string phone = 7;
+  string timezone = 8;
+  string operational_attributes_json = 9;
+}
+
+message CreateLocationResponse {
+  Location location = 1;
+}
+
+message UpdateLocationRequest {
+  string id = 1;
+  optional string parent_location_id = 2;
+  optional string address_id = 3;
+  string name = 4;
+  LocationKind kind = 5;
+  optional string phone = 6;
+  string timezone = 7;
+  string operational_attributes_json = 8;
+}
+
+message UpdateLocationResponse {
+  Location location = 1;
+}
+
+message ActivateLocationRequest {
+  string id = 1;
+}
+
+message ActivateLocationResponse {
+  Location location = 1;
+}
+
+message DeactivateLocationRequest {
+  string id = 1;
+}
+
+message DeactivateLocationResponse {
+  Location location = 1;
+}
+
+message DeleteLocationRequest {
+  string id = 1;
+}
+
+message DeleteLocationResponse {
+  bool deleted = 1;
+}
+
+// LocationService mengelola lokasi fisik operasional internal dan validasi scope facility/warehouse.
+service LocationService {
+  rpc GetLocationById(GetLocationByIdRequest) returns (GetLocationByIdResponse);
+  rpc GetLocationsByIds(GetLocationsByIdsRequest) returns (GetLocationsByIdsResponse);
+  rpc GetLocationByCode(GetLocationByCodeRequest) returns (GetLocationByCodeResponse);
+  rpc ListLocationsByLegalEntityAndKind(ListLocationsByLegalEntityAndKindRequest) returns (ListLocationsByLegalEntityAndKindResponse);
+  rpc ListLocationsByAddressId(ListLocationsByAddressIdRequest) returns (ListLocationsByAddressIdResponse);
+  rpc ListLocationChildren(ListLocationChildrenRequest) returns (ListLocationChildrenResponse);
+  rpc ListLocations(ListLocationsRequest) returns (ListLocationsResponse);
+  rpc GetAllLocations(GetAllLocationsRequest) returns (GetAllLocationsResponse);
+  rpc ValidateFacilityScope(ValidateFacilityScopeRequest) returns (ValidateFacilityScopeResponse);
+  rpc ValidateWarehouseScope(ValidateWarehouseScopeRequest) returns (ValidateWarehouseScopeResponse);
+  rpc CreateLocation(CreateLocationRequest) returns (CreateLocationResponse);
+  rpc UpdateLocation(UpdateLocationRequest) returns (UpdateLocationResponse);
+  rpc ActivateLocation(ActivateLocationRequest) returns (ActivateLocationResponse);
+  rpc DeactivateLocation(DeactivateLocationRequest) returns (DeactivateLocationResponse);
+  rpc DeleteLocation(DeleteLocationRequest) returns (DeleteLocationResponse);
+}
