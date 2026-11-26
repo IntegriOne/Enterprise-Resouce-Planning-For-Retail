@@ -514,6 +514,19 @@ Jangan menambah repository test atau integration test terpisah sebagai lapisan w
 
 - E2E memvalidasi full dataflow lintas komponen dengan service nyata; jika persistence termasuk alur, gunakan database testing disposable berakhiran `_test`. Untuk GraphQL Gateway, kirim HTTP POST JSON ke `/api/graphql` dan validasi sambungan gRPC ke service terkait. Untuk batas Go `internal`, jalankan service pemilik sebagai proses terpisah atau gunakan harness E2E eksternal yang sah.
 
+### Uji fungsional HTTPS dengan superadmin
+
+Untuk uji fungsional GraphQL di lingkungan development atau testing:
+
+1. Login sebagai `superadmin` melalui endpoint HTTPS `/api/graphql`.
+2. Daftarkan permission yang diperlukan operasi yang diuji di database IAM lingkungan uji melalui mekanisme resmi IAM. Buat atau gunakan role uji dan tambahkan permission tersebut ke role.
+3. Assign role uji ke akun `superadmin` melalui mutasi resmi IAM. Login ulang agar sesi menggunakan grant terbaru.
+4. Jalankan Query dan Mutation melalui HTTPS `/api/graphql` dengan sesi `superadmin`. Sertakan token CSRF yang sah pada Mutation dan catat hasil aktual sesuai aturan laporan E2E.
+
+Gunakan akun dengan grant terbatas untuk menguji penolakan akses di luar scope, termasuk lintas badan hukum. Izin global `superadmin` dapat menutupi pembatasan tersebut. Ikuti [tata kelola IAM](agents/users.md#5-tata-kelola-permission-manifest-kode--pemberian-akses-lintas-management) saat mendaftarkan izin dan memberikan role.
+
+### Cakupan dan bukti E2E
+
 - Cakup jalur berhasil dan kegagalan yang berdampak. Kelompokkan variasi sejenis dengan table-driven tests dan hindari kombinasi yang tidak menambah cakupan berarti. Bersihkan data tes setelah pengujian. Jangan membuat suite repository, transport/API, atau integration test terpisah.
 
 - Pastikan perintah test module mengompilasi paket E2E. Catat prasyarat dan hasil aktual.
