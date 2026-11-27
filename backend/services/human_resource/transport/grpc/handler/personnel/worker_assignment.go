@@ -24,6 +24,9 @@ func assignment(value *entity.WorkerAssignment) *pb.WorkerAssignment {
 	if value.ApprovedAt != nil {
 		item.ApprovedAt = timestamppb.New(*value.ApprovedAt)
 	}
+	if value.CancelledAt != nil {
+		item.CancelledAt = timestamppb.New(*value.CancelledAt)
+	}
 	return item
 }
 func assignmentResponse(value *entity.WorkerAssignment, err error) (*pb.WorkerAssignmentResponse, error) {

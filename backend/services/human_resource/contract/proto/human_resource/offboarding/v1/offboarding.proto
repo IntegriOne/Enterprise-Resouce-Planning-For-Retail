@@ -7,6 +7,8 @@ import "human_resource/common/v1/common.proto";
 
 service OffboardingService {
   rpc CreateOffboardingPlan(CreateOffboardingPlanRequest) returns (OffboardingPlanResponse);
+  rpc ApproveOffboardingPlan(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);
+  rpc StartOffboardingPlan(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);
   rpc UpdateOffboardingPlan(UpdateOffboardingPlanRequest) returns (OffboardingPlanResponse);
   rpc DeleteOffboardingPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetOffboardingPlanByID(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);

@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	OffboardingService_CreateOffboardingPlan_FullMethodName                                        = "/human_resource.offboarding.v1.OffboardingService/CreateOffboardingPlan"
+	OffboardingService_ApproveOffboardingPlan_FullMethodName                                       = "/human_resource.offboarding.v1.OffboardingService/ApproveOffboardingPlan"
+	OffboardingService_StartOffboardingPlan_FullMethodName                                         = "/human_resource.offboarding.v1.OffboardingService/StartOffboardingPlan"
 	OffboardingService_UpdateOffboardingPlan_FullMethodName                                        = "/human_resource.offboarding.v1.OffboardingService/UpdateOffboardingPlan"
 	OffboardingService_DeleteOffboardingPlan_FullMethodName                                        = "/human_resource.offboarding.v1.OffboardingService/DeleteOffboardingPlan"
 	OffboardingService_GetOffboardingPlanByID_FullMethodName                                       = "/human_resource.offboarding.v1.OffboardingService/GetOffboardingPlanByID"
@@ -52,6 +54,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OffboardingServiceClient interface {
 	CreateOffboardingPlan(ctx context.Context, in *CreateOffboardingPlanRequest, opts ...grpc.CallOption) (*OffboardingPlanResponse, error)
+	ApproveOffboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OffboardingPlanResponse, error)
+	StartOffboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OffboardingPlanResponse, error)
 	UpdateOffboardingPlan(ctx context.Context, in *UpdateOffboardingPlanRequest, opts ...grpc.CallOption) (*OffboardingPlanResponse, error)
 	DeleteOffboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetOffboardingPlanByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OffboardingPlanResponse, error)
@@ -90,6 +94,26 @@ func (c *offboardingServiceClient) CreateOffboardingPlan(ctx context.Context, in
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OffboardingPlanResponse)
 	err := c.cc.Invoke(ctx, OffboardingService_CreateOffboardingPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *offboardingServiceClient) ApproveOffboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OffboardingPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OffboardingPlanResponse)
+	err := c.cc.Invoke(ctx, OffboardingService_ApproveOffboardingPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *offboardingServiceClient) StartOffboardingPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*OffboardingPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OffboardingPlanResponse)
+	err := c.cc.Invoke(ctx, OffboardingService_StartOffboardingPlan_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -341,6 +365,8 @@ func (c *offboardingServiceClient) FindOffboardingTaskByWaivedByPrincipalID(ctx 
 // for forward compatibility.
 type OffboardingServiceServer interface {
 	CreateOffboardingPlan(context.Context, *CreateOffboardingPlanRequest) (*OffboardingPlanResponse, error)
+	ApproveOffboardingPlan(context.Context, *v1.IDRequest) (*OffboardingPlanResponse, error)
+	StartOffboardingPlan(context.Context, *v1.IDRequest) (*OffboardingPlanResponse, error)
 	UpdateOffboardingPlan(context.Context, *UpdateOffboardingPlanRequest) (*OffboardingPlanResponse, error)
 	DeleteOffboardingPlan(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetOffboardingPlanByID(context.Context, *v1.IDRequest) (*OffboardingPlanResponse, error)
@@ -377,6 +403,12 @@ type UnimplementedOffboardingServiceServer struct{}
 
 func (UnimplementedOffboardingServiceServer) CreateOffboardingPlan(context.Context, *CreateOffboardingPlanRequest) (*OffboardingPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateOffboardingPlan not implemented")
+}
+func (UnimplementedOffboardingServiceServer) ApproveOffboardingPlan(context.Context, *v1.IDRequest) (*OffboardingPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveOffboardingPlan not implemented")
+}
+func (UnimplementedOffboardingServiceServer) StartOffboardingPlan(context.Context, *v1.IDRequest) (*OffboardingPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartOffboardingPlan not implemented")
 }
 func (UnimplementedOffboardingServiceServer) UpdateOffboardingPlan(context.Context, *UpdateOffboardingPlanRequest) (*OffboardingPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateOffboardingPlan not implemented")
@@ -485,6 +517,42 @@ func _OffboardingService_CreateOffboardingPlan_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OffboardingServiceServer).CreateOffboardingPlan(ctx, req.(*CreateOffboardingPlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OffboardingService_ApproveOffboardingPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OffboardingServiceServer).ApproveOffboardingPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OffboardingService_ApproveOffboardingPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OffboardingServiceServer).ApproveOffboardingPlan(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OffboardingService_StartOffboardingPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OffboardingServiceServer).StartOffboardingPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OffboardingService_StartOffboardingPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OffboardingServiceServer).StartOffboardingPlan(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -931,6 +999,14 @@ var OffboardingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateOffboardingPlan",
 			Handler:    _OffboardingService_CreateOffboardingPlan_Handler,
+		},
+		{
+			MethodName: "ApproveOffboardingPlan",
+			Handler:    _OffboardingService_ApproveOffboardingPlan_Handler,
+		},
+		{
+			MethodName: "StartOffboardingPlan",
+			Handler:    _OffboardingService_StartOffboardingPlan_Handler,
 		},
 		{
 			MethodName: "UpdateOffboardingPlan",

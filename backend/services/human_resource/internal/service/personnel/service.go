@@ -19,6 +19,7 @@ type Dependencies struct {
 	WorkerLifecycleEvent domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
 	WorkerDocument       domainrepo.RecordRepository[entity.WorkerDocument, string]
 	EmergencyContact     domainrepo.RecordRepository[entity.EmergencyContact, string]
+	OffboardingPlan      domainrepo.RecordRepository[entity.OffboardingPlan, string]
 }
 
 // Service mengoordinasikan operasi domain personnel.

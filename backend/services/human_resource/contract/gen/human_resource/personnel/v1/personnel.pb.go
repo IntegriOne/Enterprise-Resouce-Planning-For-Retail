@@ -24,6 +24,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type TerminateWorkerRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	WorkerId          string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	OffboardingPlanId string                 `protobuf:"bytes,2,opt,name=offboarding_plan_id,json=offboardingPlanId,proto3" json:"offboarding_plan_id,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *TerminateWorkerRequest) Reset() {
+	*x = TerminateWorkerRequest{}
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TerminateWorkerRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TerminateWorkerRequest) ProtoMessage() {}
+
+func (x *TerminateWorkerRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TerminateWorkerRequest.ProtoReflect.Descriptor instead.
+func (*TerminateWorkerRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *TerminateWorkerRequest) GetWorkerId() string {
+	if x != nil {
+		return x.WorkerId
+	}
+	return ""
+}
+
+func (x *TerminateWorkerRequest) GetOffboardingPlanId() string {
+	if x != nil {
+		return x.OffboardingPlanId
+	}
+	return ""
+}
+
 type ApplyPrimaryAssignmentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkerId      string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
@@ -34,7 +86,7 @@ type ApplyPrimaryAssignmentRequest struct {
 
 func (x *ApplyPrimaryAssignmentRequest) Reset() {
 	*x = ApplyPrimaryAssignmentRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[0]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +98,7 @@ func (x *ApplyPrimaryAssignmentRequest) String() string {
 func (*ApplyPrimaryAssignmentRequest) ProtoMessage() {}
 
 func (x *ApplyPrimaryAssignmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[0]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +111,7 @@ func (x *ApplyPrimaryAssignmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplyPrimaryAssignmentRequest.ProtoReflect.Descriptor instead.
 func (*ApplyPrimaryAssignmentRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{0}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ApplyPrimaryAssignmentRequest) GetWorkerId() string {
@@ -99,7 +151,7 @@ type Worker struct {
 
 func (x *Worker) Reset() {
 	*x = Worker{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[1]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -111,7 +163,7 @@ func (x *Worker) String() string {
 func (*Worker) ProtoMessage() {}
 
 func (x *Worker) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[1]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -124,7 +176,7 @@ func (x *Worker) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Worker.ProtoReflect.Descriptor instead.
 func (*Worker) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{1}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Worker) GetId() string {
@@ -251,7 +303,7 @@ type WorkerInput struct {
 
 func (x *WorkerInput) Reset() {
 	*x = WorkerInput{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[2]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -263,7 +315,7 @@ func (x *WorkerInput) String() string {
 func (*WorkerInput) ProtoMessage() {}
 
 func (x *WorkerInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[2]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -276,7 +328,7 @@ func (x *WorkerInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerInput.ProtoReflect.Descriptor instead.
 func (*WorkerInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{2}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *WorkerInput) GetWorkerNumber() string {
@@ -365,7 +417,7 @@ type CreateWorkerRequest struct {
 
 func (x *CreateWorkerRequest) Reset() {
 	*x = CreateWorkerRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[3]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -377,7 +429,7 @@ func (x *CreateWorkerRequest) String() string {
 func (*CreateWorkerRequest) ProtoMessage() {}
 
 func (x *CreateWorkerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[3]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -390,7 +442,7 @@ func (x *CreateWorkerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkerRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkerRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{3}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateWorkerRequest) GetInput() *WorkerInput {
@@ -411,7 +463,7 @@ type UpdateWorkerRequest struct {
 
 func (x *UpdateWorkerRequest) Reset() {
 	*x = UpdateWorkerRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[4]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -423,7 +475,7 @@ func (x *UpdateWorkerRequest) String() string {
 func (*UpdateWorkerRequest) ProtoMessage() {}
 
 func (x *UpdateWorkerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[4]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -436,7 +488,7 @@ func (x *UpdateWorkerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkerRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkerRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{4}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateWorkerRequest) GetId() string {
@@ -469,7 +521,7 @@ type WorkerResponse struct {
 
 func (x *WorkerResponse) Reset() {
 	*x = WorkerResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[5]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -481,7 +533,7 @@ func (x *WorkerResponse) String() string {
 func (*WorkerResponse) ProtoMessage() {}
 
 func (x *WorkerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[5]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -494,7 +546,7 @@ func (x *WorkerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerResponse.ProtoReflect.Descriptor instead.
 func (*WorkerResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{5}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *WorkerResponse) GetItem() *Worker {
@@ -514,7 +566,7 @@ type WorkersResponse struct {
 
 func (x *WorkersResponse) Reset() {
 	*x = WorkersResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[6]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -526,7 +578,7 @@ func (x *WorkersResponse) String() string {
 func (*WorkersResponse) ProtoMessage() {}
 
 func (x *WorkersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[6]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -539,7 +591,7 @@ func (x *WorkersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkersResponse.ProtoReflect.Descriptor instead.
 func (*WorkersResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{6}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *WorkersResponse) GetItems() []*Worker {
@@ -582,7 +634,7 @@ type EmploymentContract struct {
 
 func (x *EmploymentContract) Reset() {
 	*x = EmploymentContract{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[7]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -594,7 +646,7 @@ func (x *EmploymentContract) String() string {
 func (*EmploymentContract) ProtoMessage() {}
 
 func (x *EmploymentContract) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[7]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -607,7 +659,7 @@ func (x *EmploymentContract) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmploymentContract.ProtoReflect.Descriptor instead.
 func (*EmploymentContract) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{7}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *EmploymentContract) GetId() string {
@@ -760,7 +812,7 @@ type EmploymentContractInput struct {
 
 func (x *EmploymentContractInput) Reset() {
 	*x = EmploymentContractInput{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[8]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -772,7 +824,7 @@ func (x *EmploymentContractInput) String() string {
 func (*EmploymentContractInput) ProtoMessage() {}
 
 func (x *EmploymentContractInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[8]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -785,7 +837,7 @@ func (x *EmploymentContractInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmploymentContractInput.ProtoReflect.Descriptor instead.
 func (*EmploymentContractInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{8}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *EmploymentContractInput) GetWorkerId() string {
@@ -909,7 +961,7 @@ type CreateEmploymentContractRequest struct {
 
 func (x *CreateEmploymentContractRequest) Reset() {
 	*x = CreateEmploymentContractRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[9]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -921,7 +973,7 @@ func (x *CreateEmploymentContractRequest) String() string {
 func (*CreateEmploymentContractRequest) ProtoMessage() {}
 
 func (x *CreateEmploymentContractRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[9]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -934,7 +986,7 @@ func (x *CreateEmploymentContractRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEmploymentContractRequest.ProtoReflect.Descriptor instead.
 func (*CreateEmploymentContractRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{9}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateEmploymentContractRequest) GetInput() *EmploymentContractInput {
@@ -955,7 +1007,7 @@ type UpdateEmploymentContractRequest struct {
 
 func (x *UpdateEmploymentContractRequest) Reset() {
 	*x = UpdateEmploymentContractRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[10]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -967,7 +1019,7 @@ func (x *UpdateEmploymentContractRequest) String() string {
 func (*UpdateEmploymentContractRequest) ProtoMessage() {}
 
 func (x *UpdateEmploymentContractRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[10]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -980,7 +1032,7 @@ func (x *UpdateEmploymentContractRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateEmploymentContractRequest.ProtoReflect.Descriptor instead.
 func (*UpdateEmploymentContractRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{10}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdateEmploymentContractRequest) GetId() string {
@@ -1013,7 +1065,7 @@ type EmploymentContractResponse struct {
 
 func (x *EmploymentContractResponse) Reset() {
 	*x = EmploymentContractResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[11]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1025,7 +1077,7 @@ func (x *EmploymentContractResponse) String() string {
 func (*EmploymentContractResponse) ProtoMessage() {}
 
 func (x *EmploymentContractResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[11]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1038,7 +1090,7 @@ func (x *EmploymentContractResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmploymentContractResponse.ProtoReflect.Descriptor instead.
 func (*EmploymentContractResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{11}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *EmploymentContractResponse) GetItem() *EmploymentContract {
@@ -1058,7 +1110,7 @@ type EmploymentContractsResponse struct {
 
 func (x *EmploymentContractsResponse) Reset() {
 	*x = EmploymentContractsResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[12]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1070,7 +1122,7 @@ func (x *EmploymentContractsResponse) String() string {
 func (*EmploymentContractsResponse) ProtoMessage() {}
 
 func (x *EmploymentContractsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[12]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1083,7 +1135,7 @@ func (x *EmploymentContractsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmploymentContractsResponse.ProtoReflect.Descriptor instead.
 func (*EmploymentContractsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{12}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *EmploymentContractsResponse) GetItems() []*EmploymentContract {
@@ -1116,13 +1168,14 @@ type WorkerAssignment struct {
 	ApprovedAt               *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
 	RequestedByPrincipalId   *string                `protobuf:"bytes,13,opt,name=requested_by_principal_id,json=requestedByPrincipalId,proto3,oneof" json:"requested_by_principal_id,omitempty"`
 	RequestedAt              *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=requested_at,json=requestedAt,proto3" json:"requested_at,omitempty"`
+	CancelledAt              *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
 
 func (x *WorkerAssignment) Reset() {
 	*x = WorkerAssignment{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[13]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1134,7 +1187,7 @@ func (x *WorkerAssignment) String() string {
 func (*WorkerAssignment) ProtoMessage() {}
 
 func (x *WorkerAssignment) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[13]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1147,7 +1200,7 @@ func (x *WorkerAssignment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerAssignment.ProtoReflect.Descriptor instead.
 func (*WorkerAssignment) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{13}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *WorkerAssignment) GetId() string {
@@ -1248,6 +1301,13 @@ func (x *WorkerAssignment) GetRequestedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *WorkerAssignment) GetCancelledAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CancelledAt
+	}
+	return nil
+}
+
 type WorkerAssignmentInput struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	WorkerId                 *string                `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3,oneof" json:"worker_id,omitempty"`
@@ -1267,7 +1327,7 @@ type WorkerAssignmentInput struct {
 
 func (x *WorkerAssignmentInput) Reset() {
 	*x = WorkerAssignmentInput{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[14]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1279,7 +1339,7 @@ func (x *WorkerAssignmentInput) String() string {
 func (*WorkerAssignmentInput) ProtoMessage() {}
 
 func (x *WorkerAssignmentInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[14]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1292,7 +1352,7 @@ func (x *WorkerAssignmentInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerAssignmentInput.ProtoReflect.Descriptor instead.
 func (*WorkerAssignmentInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{14}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *WorkerAssignmentInput) GetWorkerId() string {
@@ -1381,7 +1441,7 @@ type CreateWorkerAssignmentRequest struct {
 
 func (x *CreateWorkerAssignmentRequest) Reset() {
 	*x = CreateWorkerAssignmentRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[15]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1393,7 +1453,7 @@ func (x *CreateWorkerAssignmentRequest) String() string {
 func (*CreateWorkerAssignmentRequest) ProtoMessage() {}
 
 func (x *CreateWorkerAssignmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[15]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1406,7 +1466,7 @@ func (x *CreateWorkerAssignmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkerAssignmentRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkerAssignmentRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{15}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CreateWorkerAssignmentRequest) GetInput() *WorkerAssignmentInput {
@@ -1427,7 +1487,7 @@ type UpdateWorkerAssignmentRequest struct {
 
 func (x *UpdateWorkerAssignmentRequest) Reset() {
 	*x = UpdateWorkerAssignmentRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[16]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1439,7 +1499,7 @@ func (x *UpdateWorkerAssignmentRequest) String() string {
 func (*UpdateWorkerAssignmentRequest) ProtoMessage() {}
 
 func (x *UpdateWorkerAssignmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[16]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1452,7 +1512,7 @@ func (x *UpdateWorkerAssignmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkerAssignmentRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkerAssignmentRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{16}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateWorkerAssignmentRequest) GetId() string {
@@ -1485,7 +1545,7 @@ type WorkerAssignmentResponse struct {
 
 func (x *WorkerAssignmentResponse) Reset() {
 	*x = WorkerAssignmentResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[17]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1497,7 +1557,7 @@ func (x *WorkerAssignmentResponse) String() string {
 func (*WorkerAssignmentResponse) ProtoMessage() {}
 
 func (x *WorkerAssignmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[17]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1510,7 +1570,7 @@ func (x *WorkerAssignmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerAssignmentResponse.ProtoReflect.Descriptor instead.
 func (*WorkerAssignmentResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{17}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *WorkerAssignmentResponse) GetItem() *WorkerAssignment {
@@ -1530,7 +1590,7 @@ type WorkerAssignmentsResponse struct {
 
 func (x *WorkerAssignmentsResponse) Reset() {
 	*x = WorkerAssignmentsResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[18]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1542,7 +1602,7 @@ func (x *WorkerAssignmentsResponse) String() string {
 func (*WorkerAssignmentsResponse) ProtoMessage() {}
 
 func (x *WorkerAssignmentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[18]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1555,7 +1615,7 @@ func (x *WorkerAssignmentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerAssignmentsResponse.ProtoReflect.Descriptor instead.
 func (*WorkerAssignmentsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{18}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *WorkerAssignmentsResponse) GetItems() []*WorkerAssignment {
@@ -1591,7 +1651,7 @@ type WorkerLifecycleEvent struct {
 
 func (x *WorkerLifecycleEvent) Reset() {
 	*x = WorkerLifecycleEvent{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[19]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1603,7 +1663,7 @@ func (x *WorkerLifecycleEvent) String() string {
 func (*WorkerLifecycleEvent) ProtoMessage() {}
 
 func (x *WorkerLifecycleEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[19]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1616,7 +1676,7 @@ func (x *WorkerLifecycleEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerLifecycleEvent.ProtoReflect.Descriptor instead.
 func (*WorkerLifecycleEvent) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{19}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *WorkerLifecycleEvent) GetId() int64 {
@@ -1713,7 +1773,7 @@ type WorkerLifecycleEventInput struct {
 
 func (x *WorkerLifecycleEventInput) Reset() {
 	*x = WorkerLifecycleEventInput{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[20]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1725,7 +1785,7 @@ func (x *WorkerLifecycleEventInput) String() string {
 func (*WorkerLifecycleEventInput) ProtoMessage() {}
 
 func (x *WorkerLifecycleEventInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[20]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1738,7 +1798,7 @@ func (x *WorkerLifecycleEventInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerLifecycleEventInput.ProtoReflect.Descriptor instead.
 func (*WorkerLifecycleEventInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{20}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *WorkerLifecycleEventInput) GetWorkerId() string {
@@ -1813,7 +1873,7 @@ type CreateWorkerLifecycleEventRequest struct {
 
 func (x *CreateWorkerLifecycleEventRequest) Reset() {
 	*x = CreateWorkerLifecycleEventRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[21]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1825,7 +1885,7 @@ func (x *CreateWorkerLifecycleEventRequest) String() string {
 func (*CreateWorkerLifecycleEventRequest) ProtoMessage() {}
 
 func (x *CreateWorkerLifecycleEventRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[21]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1838,7 +1898,7 @@ func (x *CreateWorkerLifecycleEventRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use CreateWorkerLifecycleEventRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkerLifecycleEventRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{21}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *CreateWorkerLifecycleEventRequest) GetInput() *WorkerLifecycleEventInput {
@@ -1859,7 +1919,7 @@ type UpdateWorkerLifecycleEventRequest struct {
 
 func (x *UpdateWorkerLifecycleEventRequest) Reset() {
 	*x = UpdateWorkerLifecycleEventRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[22]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1871,7 +1931,7 @@ func (x *UpdateWorkerLifecycleEventRequest) String() string {
 func (*UpdateWorkerLifecycleEventRequest) ProtoMessage() {}
 
 func (x *UpdateWorkerLifecycleEventRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[22]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1884,7 +1944,7 @@ func (x *UpdateWorkerLifecycleEventRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use UpdateWorkerLifecycleEventRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkerLifecycleEventRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{22}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *UpdateWorkerLifecycleEventRequest) GetId() int64 {
@@ -1917,7 +1977,7 @@ type WorkerLifecycleEventResponse struct {
 
 func (x *WorkerLifecycleEventResponse) Reset() {
 	*x = WorkerLifecycleEventResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[23]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1929,7 +1989,7 @@ func (x *WorkerLifecycleEventResponse) String() string {
 func (*WorkerLifecycleEventResponse) ProtoMessage() {}
 
 func (x *WorkerLifecycleEventResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[23]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1942,7 +2002,7 @@ func (x *WorkerLifecycleEventResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerLifecycleEventResponse.ProtoReflect.Descriptor instead.
 func (*WorkerLifecycleEventResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{23}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *WorkerLifecycleEventResponse) GetItem() *WorkerLifecycleEvent {
@@ -1962,7 +2022,7 @@ type WorkerLifecycleEventsResponse struct {
 
 func (x *WorkerLifecycleEventsResponse) Reset() {
 	*x = WorkerLifecycleEventsResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[24]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1974,7 +2034,7 @@ func (x *WorkerLifecycleEventsResponse) String() string {
 func (*WorkerLifecycleEventsResponse) ProtoMessage() {}
 
 func (x *WorkerLifecycleEventsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[24]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1987,7 +2047,7 @@ func (x *WorkerLifecycleEventsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerLifecycleEventsResponse.ProtoReflect.Descriptor instead.
 func (*WorkerLifecycleEventsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{24}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *WorkerLifecycleEventsResponse) GetItems() []*WorkerLifecycleEvent {
@@ -2028,7 +2088,7 @@ type WorkerDocument struct {
 
 func (x *WorkerDocument) Reset() {
 	*x = WorkerDocument{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[25]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2040,7 +2100,7 @@ func (x *WorkerDocument) String() string {
 func (*WorkerDocument) ProtoMessage() {}
 
 func (x *WorkerDocument) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[25]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2053,7 +2113,7 @@ func (x *WorkerDocument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerDocument.ProtoReflect.Descriptor instead.
 func (*WorkerDocument) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{25}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *WorkerDocument) GetId() string {
@@ -2190,7 +2250,7 @@ type WorkerDocumentInput struct {
 
 func (x *WorkerDocumentInput) Reset() {
 	*x = WorkerDocumentInput{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[26]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2202,7 +2262,7 @@ func (x *WorkerDocumentInput) String() string {
 func (*WorkerDocumentInput) ProtoMessage() {}
 
 func (x *WorkerDocumentInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[26]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2215,7 +2275,7 @@ func (x *WorkerDocumentInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerDocumentInput.ProtoReflect.Descriptor instead.
 func (*WorkerDocumentInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{26}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *WorkerDocumentInput) GetWorkerId() string {
@@ -2325,7 +2385,7 @@ type CreateWorkerDocumentRequest struct {
 
 func (x *CreateWorkerDocumentRequest) Reset() {
 	*x = CreateWorkerDocumentRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[27]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2337,7 +2397,7 @@ func (x *CreateWorkerDocumentRequest) String() string {
 func (*CreateWorkerDocumentRequest) ProtoMessage() {}
 
 func (x *CreateWorkerDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[27]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2350,7 +2410,7 @@ func (x *CreateWorkerDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkerDocumentRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkerDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{27}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *CreateWorkerDocumentRequest) GetInput() *WorkerDocumentInput {
@@ -2371,7 +2431,7 @@ type UpdateWorkerDocumentRequest struct {
 
 func (x *UpdateWorkerDocumentRequest) Reset() {
 	*x = UpdateWorkerDocumentRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[28]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2383,7 +2443,7 @@ func (x *UpdateWorkerDocumentRequest) String() string {
 func (*UpdateWorkerDocumentRequest) ProtoMessage() {}
 
 func (x *UpdateWorkerDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[28]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2396,7 +2456,7 @@ func (x *UpdateWorkerDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkerDocumentRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkerDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{28}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *UpdateWorkerDocumentRequest) GetId() string {
@@ -2429,7 +2489,7 @@ type WorkerDocumentResponse struct {
 
 func (x *WorkerDocumentResponse) Reset() {
 	*x = WorkerDocumentResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[29]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2441,7 +2501,7 @@ func (x *WorkerDocumentResponse) String() string {
 func (*WorkerDocumentResponse) ProtoMessage() {}
 
 func (x *WorkerDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[29]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2454,7 +2514,7 @@ func (x *WorkerDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerDocumentResponse.ProtoReflect.Descriptor instead.
 func (*WorkerDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{29}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *WorkerDocumentResponse) GetItem() *WorkerDocument {
@@ -2474,7 +2534,7 @@ type WorkerDocumentsResponse struct {
 
 func (x *WorkerDocumentsResponse) Reset() {
 	*x = WorkerDocumentsResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[30]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2486,7 +2546,7 @@ func (x *WorkerDocumentsResponse) String() string {
 func (*WorkerDocumentsResponse) ProtoMessage() {}
 
 func (x *WorkerDocumentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[30]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2499,7 +2559,7 @@ func (x *WorkerDocumentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerDocumentsResponse.ProtoReflect.Descriptor instead.
 func (*WorkerDocumentsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{30}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *WorkerDocumentsResponse) GetItems() []*WorkerDocument {
@@ -2531,7 +2591,7 @@ type EmergencyContact struct {
 
 func (x *EmergencyContact) Reset() {
 	*x = EmergencyContact{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[31]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2543,7 +2603,7 @@ func (x *EmergencyContact) String() string {
 func (*EmergencyContact) ProtoMessage() {}
 
 func (x *EmergencyContact) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[31]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2556,7 +2616,7 @@ func (x *EmergencyContact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmergencyContact.ProtoReflect.Descriptor instead.
 func (*EmergencyContact) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{31}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *EmergencyContact) GetId() string {
@@ -2622,7 +2682,7 @@ type EmergencyContactInput struct {
 
 func (x *EmergencyContactInput) Reset() {
 	*x = EmergencyContactInput{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[32]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2634,7 +2694,7 @@ func (x *EmergencyContactInput) String() string {
 func (*EmergencyContactInput) ProtoMessage() {}
 
 func (x *EmergencyContactInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[32]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2647,7 +2707,7 @@ func (x *EmergencyContactInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmergencyContactInput.ProtoReflect.Descriptor instead.
 func (*EmergencyContactInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{32}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *EmergencyContactInput) GetWorkerId() string {
@@ -2701,7 +2761,7 @@ type CreateEmergencyContactRequest struct {
 
 func (x *CreateEmergencyContactRequest) Reset() {
 	*x = CreateEmergencyContactRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[33]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2713,7 +2773,7 @@ func (x *CreateEmergencyContactRequest) String() string {
 func (*CreateEmergencyContactRequest) ProtoMessage() {}
 
 func (x *CreateEmergencyContactRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[33]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2726,7 +2786,7 @@ func (x *CreateEmergencyContactRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEmergencyContactRequest.ProtoReflect.Descriptor instead.
 func (*CreateEmergencyContactRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{33}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *CreateEmergencyContactRequest) GetInput() *EmergencyContactInput {
@@ -2747,7 +2807,7 @@ type UpdateEmergencyContactRequest struct {
 
 func (x *UpdateEmergencyContactRequest) Reset() {
 	*x = UpdateEmergencyContactRequest{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[34]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2759,7 +2819,7 @@ func (x *UpdateEmergencyContactRequest) String() string {
 func (*UpdateEmergencyContactRequest) ProtoMessage() {}
 
 func (x *UpdateEmergencyContactRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[34]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2772,7 +2832,7 @@ func (x *UpdateEmergencyContactRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateEmergencyContactRequest.ProtoReflect.Descriptor instead.
 func (*UpdateEmergencyContactRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{34}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *UpdateEmergencyContactRequest) GetId() string {
@@ -2805,7 +2865,7 @@ type EmergencyContactResponse struct {
 
 func (x *EmergencyContactResponse) Reset() {
 	*x = EmergencyContactResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[35]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2817,7 +2877,7 @@ func (x *EmergencyContactResponse) String() string {
 func (*EmergencyContactResponse) ProtoMessage() {}
 
 func (x *EmergencyContactResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[35]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2830,7 +2890,7 @@ func (x *EmergencyContactResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmergencyContactResponse.ProtoReflect.Descriptor instead.
 func (*EmergencyContactResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{35}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *EmergencyContactResponse) GetItem() *EmergencyContact {
@@ -2850,7 +2910,7 @@ type EmergencyContactsResponse struct {
 
 func (x *EmergencyContactsResponse) Reset() {
 	*x = EmergencyContactsResponse{}
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[36]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2862,7 +2922,7 @@ func (x *EmergencyContactsResponse) String() string {
 func (*EmergencyContactsResponse) ProtoMessage() {}
 
 func (x *EmergencyContactsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[36]
+	mi := &file_human_resource_personnel_v1_personnel_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2875,7 +2935,7 @@ func (x *EmergencyContactsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmergencyContactsResponse.ProtoReflect.Descriptor instead.
 func (*EmergencyContactsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{36}
+	return file_human_resource_personnel_v1_personnel_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *EmergencyContactsResponse) GetItems() []*EmergencyContact {
@@ -2896,7 +2956,10 @@ var File_human_resource_personnel_v1_personnel_proto protoreflect.FileDescriptor
 
 const file_human_resource_personnel_v1_personnel_proto_rawDesc = "" +
 	"\n" +
-	"+human_resource/personnel/v1/personnel.proto\x12\x1bhuman_resource.personnel.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"a\n" +
+	"+human_resource/personnel/v1/personnel.proto\x12\x1bhuman_resource.personnel.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"e\n" +
+	"\x16TerminateWorkerRequest\x12\x1b\n" +
+	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12.\n" +
+	"\x13offboarding_plan_id\x18\x02 \x01(\tR\x11offboardingPlanId\"a\n" +
 	"\x1dApplyPrimaryAssignmentRequest\x12\x1b\n" +
 	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12#\n" +
 	"\rassignment_id\x18\x02 \x01(\tR\fassignmentId\"\x9d\a\n" +
@@ -3040,7 +3103,7 @@ const file_human_resource_personnel_v1_personnel_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2/.human_resource.personnel.v1.EmploymentContractR\x04item\"\x9c\x01\n" +
 	"\x1bEmploymentContractsResponse\x12E\n" +
 	"\x05items\x18\x01 \x03(\v2/.human_resource.personnel.v1.EmploymentContractR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\x9c\x06\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xdb\x06\n" +
 	"\x10WorkerAssignment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tworker_id\x18\x02 \x01(\tR\bworkerId\x12\x1f\n" +
@@ -3060,7 +3123,8 @@ const file_human_resource_personnel_v1_personnel_proto_rawDesc = "" +
 	"\vapproved_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"approvedAt\x12>\n" +
 	"\x19requested_by_principal_id\x18\r \x01(\tH\x05R\x16requestedByPrincipalId\x88\x01\x01\x12=\n" +
-	"\frequested_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\vrequestedAtB\x14\n" +
+	"\frequested_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\vrequestedAt\x12=\n" +
+	"\fcancelled_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAtB\x14\n" +
 	"\x12_manager_worker_idB\x1d\n" +
 	"\x1b_employment_status_snapshotB\v\n" +
 	"\t_valid_toB\x14\n" +
@@ -3267,10 +3331,11 @@ const file_human_resource_personnel_v1_personnel_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2-.human_resource.personnel.v1.EmergencyContactR\x04item\"\x98\x01\n" +
 	"\x19EmergencyContactsResponse\x12C\n" +
 	"\x05items\x18\x01 \x03(\v2-.human_resource.personnel.v1.EmergencyContactR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x8bM\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x80N\n" +
 	"\x10PersonnelService\x12m\n" +
 	"\fCreateWorker\x120.human_resource.personnel.v1.CreateWorkerRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12b\n" +
-	"\x0eActivateWorker\x12#.human_resource.common.v1.IDRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12\x81\x01\n" +
+	"\x0eActivateWorker\x12#.human_resource.common.v1.IDRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12s\n" +
+	"\x0fTerminateWorker\x123.human_resource.personnel.v1.TerminateWorkerRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12\x81\x01\n" +
 	"\x16ApplyPrimaryAssignment\x12:.human_resource.personnel.v1.ApplyPrimaryAssignmentRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12m\n" +
 	"\fUpdateWorker\x120.human_resource.personnel.v1.UpdateWorkerRequest\x1a+.human_resource.personnel.v1.WorkerResponse\x12\\\n" +
 	"\fDeleteWorker\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12a\n" +
@@ -3355,260 +3420,264 @@ func file_human_resource_personnel_v1_personnel_proto_rawDescGZIP() []byte {
 	return file_human_resource_personnel_v1_personnel_proto_rawDescData
 }
 
-var file_human_resource_personnel_v1_personnel_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
+var file_human_resource_personnel_v1_personnel_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_human_resource_personnel_v1_personnel_proto_goTypes = []any{
-	(*ApplyPrimaryAssignmentRequest)(nil),     // 0: human_resource.personnel.v1.ApplyPrimaryAssignmentRequest
-	(*Worker)(nil),                            // 1: human_resource.personnel.v1.Worker
-	(*WorkerInput)(nil),                       // 2: human_resource.personnel.v1.WorkerInput
-	(*CreateWorkerRequest)(nil),               // 3: human_resource.personnel.v1.CreateWorkerRequest
-	(*UpdateWorkerRequest)(nil),               // 4: human_resource.personnel.v1.UpdateWorkerRequest
-	(*WorkerResponse)(nil),                    // 5: human_resource.personnel.v1.WorkerResponse
-	(*WorkersResponse)(nil),                   // 6: human_resource.personnel.v1.WorkersResponse
-	(*EmploymentContract)(nil),                // 7: human_resource.personnel.v1.EmploymentContract
-	(*EmploymentContractInput)(nil),           // 8: human_resource.personnel.v1.EmploymentContractInput
-	(*CreateEmploymentContractRequest)(nil),   // 9: human_resource.personnel.v1.CreateEmploymentContractRequest
-	(*UpdateEmploymentContractRequest)(nil),   // 10: human_resource.personnel.v1.UpdateEmploymentContractRequest
-	(*EmploymentContractResponse)(nil),        // 11: human_resource.personnel.v1.EmploymentContractResponse
-	(*EmploymentContractsResponse)(nil),       // 12: human_resource.personnel.v1.EmploymentContractsResponse
-	(*WorkerAssignment)(nil),                  // 13: human_resource.personnel.v1.WorkerAssignment
-	(*WorkerAssignmentInput)(nil),             // 14: human_resource.personnel.v1.WorkerAssignmentInput
-	(*CreateWorkerAssignmentRequest)(nil),     // 15: human_resource.personnel.v1.CreateWorkerAssignmentRequest
-	(*UpdateWorkerAssignmentRequest)(nil),     // 16: human_resource.personnel.v1.UpdateWorkerAssignmentRequest
-	(*WorkerAssignmentResponse)(nil),          // 17: human_resource.personnel.v1.WorkerAssignmentResponse
-	(*WorkerAssignmentsResponse)(nil),         // 18: human_resource.personnel.v1.WorkerAssignmentsResponse
-	(*WorkerLifecycleEvent)(nil),              // 19: human_resource.personnel.v1.WorkerLifecycleEvent
-	(*WorkerLifecycleEventInput)(nil),         // 20: human_resource.personnel.v1.WorkerLifecycleEventInput
-	(*CreateWorkerLifecycleEventRequest)(nil), // 21: human_resource.personnel.v1.CreateWorkerLifecycleEventRequest
-	(*UpdateWorkerLifecycleEventRequest)(nil), // 22: human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest
-	(*WorkerLifecycleEventResponse)(nil),      // 23: human_resource.personnel.v1.WorkerLifecycleEventResponse
-	(*WorkerLifecycleEventsResponse)(nil),     // 24: human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	(*WorkerDocument)(nil),                    // 25: human_resource.personnel.v1.WorkerDocument
-	(*WorkerDocumentInput)(nil),               // 26: human_resource.personnel.v1.WorkerDocumentInput
-	(*CreateWorkerDocumentRequest)(nil),       // 27: human_resource.personnel.v1.CreateWorkerDocumentRequest
-	(*UpdateWorkerDocumentRequest)(nil),       // 28: human_resource.personnel.v1.UpdateWorkerDocumentRequest
-	(*WorkerDocumentResponse)(nil),            // 29: human_resource.personnel.v1.WorkerDocumentResponse
-	(*WorkerDocumentsResponse)(nil),           // 30: human_resource.personnel.v1.WorkerDocumentsResponse
-	(*EmergencyContact)(nil),                  // 31: human_resource.personnel.v1.EmergencyContact
-	(*EmergencyContactInput)(nil),             // 32: human_resource.personnel.v1.EmergencyContactInput
-	(*CreateEmergencyContactRequest)(nil),     // 33: human_resource.personnel.v1.CreateEmergencyContactRequest
-	(*UpdateEmergencyContactRequest)(nil),     // 34: human_resource.personnel.v1.UpdateEmergencyContactRequest
-	(*EmergencyContactResponse)(nil),          // 35: human_resource.personnel.v1.EmergencyContactResponse
-	(*EmergencyContactsResponse)(nil),         // 36: human_resource.personnel.v1.EmergencyContactsResponse
-	(*timestamppb.Timestamp)(nil),             // 37: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),             // 38: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                       // 39: human_resource.common.v1.PageInfo
-	(*v1.JsonDocument)(nil),                   // 40: human_resource.common.v1.JsonDocument
-	(*v1.IDRequest)(nil),                      // 41: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                    // 42: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),            // 43: human_resource.common.v1.StringFinderRequest
-	(*v1.IdentityIDRequest)(nil),              // 44: human_resource.common.v1.IdentityIDRequest
-	(*v1.EmptyResponse)(nil),                  // 45: human_resource.common.v1.EmptyResponse
+	(*TerminateWorkerRequest)(nil),            // 0: human_resource.personnel.v1.TerminateWorkerRequest
+	(*ApplyPrimaryAssignmentRequest)(nil),     // 1: human_resource.personnel.v1.ApplyPrimaryAssignmentRequest
+	(*Worker)(nil),                            // 2: human_resource.personnel.v1.Worker
+	(*WorkerInput)(nil),                       // 3: human_resource.personnel.v1.WorkerInput
+	(*CreateWorkerRequest)(nil),               // 4: human_resource.personnel.v1.CreateWorkerRequest
+	(*UpdateWorkerRequest)(nil),               // 5: human_resource.personnel.v1.UpdateWorkerRequest
+	(*WorkerResponse)(nil),                    // 6: human_resource.personnel.v1.WorkerResponse
+	(*WorkersResponse)(nil),                   // 7: human_resource.personnel.v1.WorkersResponse
+	(*EmploymentContract)(nil),                // 8: human_resource.personnel.v1.EmploymentContract
+	(*EmploymentContractInput)(nil),           // 9: human_resource.personnel.v1.EmploymentContractInput
+	(*CreateEmploymentContractRequest)(nil),   // 10: human_resource.personnel.v1.CreateEmploymentContractRequest
+	(*UpdateEmploymentContractRequest)(nil),   // 11: human_resource.personnel.v1.UpdateEmploymentContractRequest
+	(*EmploymentContractResponse)(nil),        // 12: human_resource.personnel.v1.EmploymentContractResponse
+	(*EmploymentContractsResponse)(nil),       // 13: human_resource.personnel.v1.EmploymentContractsResponse
+	(*WorkerAssignment)(nil),                  // 14: human_resource.personnel.v1.WorkerAssignment
+	(*WorkerAssignmentInput)(nil),             // 15: human_resource.personnel.v1.WorkerAssignmentInput
+	(*CreateWorkerAssignmentRequest)(nil),     // 16: human_resource.personnel.v1.CreateWorkerAssignmentRequest
+	(*UpdateWorkerAssignmentRequest)(nil),     // 17: human_resource.personnel.v1.UpdateWorkerAssignmentRequest
+	(*WorkerAssignmentResponse)(nil),          // 18: human_resource.personnel.v1.WorkerAssignmentResponse
+	(*WorkerAssignmentsResponse)(nil),         // 19: human_resource.personnel.v1.WorkerAssignmentsResponse
+	(*WorkerLifecycleEvent)(nil),              // 20: human_resource.personnel.v1.WorkerLifecycleEvent
+	(*WorkerLifecycleEventInput)(nil),         // 21: human_resource.personnel.v1.WorkerLifecycleEventInput
+	(*CreateWorkerLifecycleEventRequest)(nil), // 22: human_resource.personnel.v1.CreateWorkerLifecycleEventRequest
+	(*UpdateWorkerLifecycleEventRequest)(nil), // 23: human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest
+	(*WorkerLifecycleEventResponse)(nil),      // 24: human_resource.personnel.v1.WorkerLifecycleEventResponse
+	(*WorkerLifecycleEventsResponse)(nil),     // 25: human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	(*WorkerDocument)(nil),                    // 26: human_resource.personnel.v1.WorkerDocument
+	(*WorkerDocumentInput)(nil),               // 27: human_resource.personnel.v1.WorkerDocumentInput
+	(*CreateWorkerDocumentRequest)(nil),       // 28: human_resource.personnel.v1.CreateWorkerDocumentRequest
+	(*UpdateWorkerDocumentRequest)(nil),       // 29: human_resource.personnel.v1.UpdateWorkerDocumentRequest
+	(*WorkerDocumentResponse)(nil),            // 30: human_resource.personnel.v1.WorkerDocumentResponse
+	(*WorkerDocumentsResponse)(nil),           // 31: human_resource.personnel.v1.WorkerDocumentsResponse
+	(*EmergencyContact)(nil),                  // 32: human_resource.personnel.v1.EmergencyContact
+	(*EmergencyContactInput)(nil),             // 33: human_resource.personnel.v1.EmergencyContactInput
+	(*CreateEmergencyContactRequest)(nil),     // 34: human_resource.personnel.v1.CreateEmergencyContactRequest
+	(*UpdateEmergencyContactRequest)(nil),     // 35: human_resource.personnel.v1.UpdateEmergencyContactRequest
+	(*EmergencyContactResponse)(nil),          // 36: human_resource.personnel.v1.EmergencyContactResponse
+	(*EmergencyContactsResponse)(nil),         // 37: human_resource.personnel.v1.EmergencyContactsResponse
+	(*timestamppb.Timestamp)(nil),             // 38: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),             // 39: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                       // 40: human_resource.common.v1.PageInfo
+	(*v1.JsonDocument)(nil),                   // 41: human_resource.common.v1.JsonDocument
+	(*v1.IDRequest)(nil),                      // 42: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                    // 43: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),            // 44: human_resource.common.v1.StringFinderRequest
+	(*v1.IdentityIDRequest)(nil),              // 45: human_resource.common.v1.IdentityIDRequest
+	(*v1.EmptyResponse)(nil),                  // 46: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_personnel_v1_personnel_proto_depIdxs = []int32{
-	37,  // 0: human_resource.personnel.v1.Worker.created_at:type_name -> google.protobuf.Timestamp
-	37,  // 1: human_resource.personnel.v1.Worker.updated_at:type_name -> google.protobuf.Timestamp
-	2,   // 2: human_resource.personnel.v1.CreateWorkerRequest.input:type_name -> human_resource.personnel.v1.WorkerInput
-	2,   // 3: human_resource.personnel.v1.UpdateWorkerRequest.input:type_name -> human_resource.personnel.v1.WorkerInput
-	38,  // 4: human_resource.personnel.v1.UpdateWorkerRequest.update_mask:type_name -> google.protobuf.FieldMask
-	1,   // 5: human_resource.personnel.v1.WorkerResponse.item:type_name -> human_resource.personnel.v1.Worker
-	1,   // 6: human_resource.personnel.v1.WorkersResponse.items:type_name -> human_resource.personnel.v1.Worker
-	39,  // 7: human_resource.personnel.v1.WorkersResponse.page:type_name -> human_resource.common.v1.PageInfo
-	37,  // 8: human_resource.personnel.v1.EmploymentContract.signed_at:type_name -> google.protobuf.Timestamp
-	37,  // 9: human_resource.personnel.v1.EmploymentContract.created_at:type_name -> google.protobuf.Timestamp
-	37,  // 10: human_resource.personnel.v1.EmploymentContractInput.signed_at:type_name -> google.protobuf.Timestamp
-	8,   // 11: human_resource.personnel.v1.CreateEmploymentContractRequest.input:type_name -> human_resource.personnel.v1.EmploymentContractInput
-	8,   // 12: human_resource.personnel.v1.UpdateEmploymentContractRequest.input:type_name -> human_resource.personnel.v1.EmploymentContractInput
-	38,  // 13: human_resource.personnel.v1.UpdateEmploymentContractRequest.update_mask:type_name -> google.protobuf.FieldMask
-	7,   // 14: human_resource.personnel.v1.EmploymentContractResponse.item:type_name -> human_resource.personnel.v1.EmploymentContract
-	7,   // 15: human_resource.personnel.v1.EmploymentContractsResponse.items:type_name -> human_resource.personnel.v1.EmploymentContract
-	39,  // 16: human_resource.personnel.v1.EmploymentContractsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	37,  // 17: human_resource.personnel.v1.WorkerAssignment.approved_at:type_name -> google.protobuf.Timestamp
-	37,  // 18: human_resource.personnel.v1.WorkerAssignment.requested_at:type_name -> google.protobuf.Timestamp
-	37,  // 19: human_resource.personnel.v1.WorkerAssignmentInput.approved_at:type_name -> google.protobuf.Timestamp
-	14,  // 20: human_resource.personnel.v1.CreateWorkerAssignmentRequest.input:type_name -> human_resource.personnel.v1.WorkerAssignmentInput
-	14,  // 21: human_resource.personnel.v1.UpdateWorkerAssignmentRequest.input:type_name -> human_resource.personnel.v1.WorkerAssignmentInput
-	38,  // 22: human_resource.personnel.v1.UpdateWorkerAssignmentRequest.update_mask:type_name -> google.protobuf.FieldMask
-	13,  // 23: human_resource.personnel.v1.WorkerAssignmentResponse.item:type_name -> human_resource.personnel.v1.WorkerAssignment
-	13,  // 24: human_resource.personnel.v1.WorkerAssignmentsResponse.items:type_name -> human_resource.personnel.v1.WorkerAssignment
-	39,  // 25: human_resource.personnel.v1.WorkerAssignmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	37,  // 26: human_resource.personnel.v1.WorkerLifecycleEvent.occurred_at:type_name -> google.protobuf.Timestamp
-	40,  // 27: human_resource.personnel.v1.WorkerLifecycleEvent.event_payload:type_name -> human_resource.common.v1.JsonDocument
-	37,  // 28: human_resource.personnel.v1.WorkerLifecycleEventInput.occurred_at:type_name -> google.protobuf.Timestamp
-	40,  // 29: human_resource.personnel.v1.WorkerLifecycleEventInput.event_payload:type_name -> human_resource.common.v1.JsonDocument
-	20,  // 30: human_resource.personnel.v1.CreateWorkerLifecycleEventRequest.input:type_name -> human_resource.personnel.v1.WorkerLifecycleEventInput
-	20,  // 31: human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest.input:type_name -> human_resource.personnel.v1.WorkerLifecycleEventInput
-	38,  // 32: human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest.update_mask:type_name -> google.protobuf.FieldMask
-	19,  // 33: human_resource.personnel.v1.WorkerLifecycleEventResponse.item:type_name -> human_resource.personnel.v1.WorkerLifecycleEvent
-	19,  // 34: human_resource.personnel.v1.WorkerLifecycleEventsResponse.items:type_name -> human_resource.personnel.v1.WorkerLifecycleEvent
-	39,  // 35: human_resource.personnel.v1.WorkerLifecycleEventsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	37,  // 36: human_resource.personnel.v1.WorkerDocument.verified_at:type_name -> google.protobuf.Timestamp
-	37,  // 37: human_resource.personnel.v1.WorkerDocument.created_at:type_name -> google.protobuf.Timestamp
-	37,  // 38: human_resource.personnel.v1.WorkerDocumentInput.verified_at:type_name -> google.protobuf.Timestamp
-	26,  // 39: human_resource.personnel.v1.CreateWorkerDocumentRequest.input:type_name -> human_resource.personnel.v1.WorkerDocumentInput
-	26,  // 40: human_resource.personnel.v1.UpdateWorkerDocumentRequest.input:type_name -> human_resource.personnel.v1.WorkerDocumentInput
-	38,  // 41: human_resource.personnel.v1.UpdateWorkerDocumentRequest.update_mask:type_name -> google.protobuf.FieldMask
-	25,  // 42: human_resource.personnel.v1.WorkerDocumentResponse.item:type_name -> human_resource.personnel.v1.WorkerDocument
-	25,  // 43: human_resource.personnel.v1.WorkerDocumentsResponse.items:type_name -> human_resource.personnel.v1.WorkerDocument
-	39,  // 44: human_resource.personnel.v1.WorkerDocumentsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	37,  // 45: human_resource.personnel.v1.EmergencyContact.authorization_confirmed_at:type_name -> google.protobuf.Timestamp
-	37,  // 46: human_resource.personnel.v1.EmergencyContactInput.authorization_confirmed_at:type_name -> google.protobuf.Timestamp
-	32,  // 47: human_resource.personnel.v1.CreateEmergencyContactRequest.input:type_name -> human_resource.personnel.v1.EmergencyContactInput
-	32,  // 48: human_resource.personnel.v1.UpdateEmergencyContactRequest.input:type_name -> human_resource.personnel.v1.EmergencyContactInput
-	38,  // 49: human_resource.personnel.v1.UpdateEmergencyContactRequest.update_mask:type_name -> google.protobuf.FieldMask
-	31,  // 50: human_resource.personnel.v1.EmergencyContactResponse.item:type_name -> human_resource.personnel.v1.EmergencyContact
-	31,  // 51: human_resource.personnel.v1.EmergencyContactsResponse.items:type_name -> human_resource.personnel.v1.EmergencyContact
-	39,  // 52: human_resource.personnel.v1.EmergencyContactsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	3,   // 53: human_resource.personnel.v1.PersonnelService.CreateWorker:input_type -> human_resource.personnel.v1.CreateWorkerRequest
-	41,  // 54: human_resource.personnel.v1.PersonnelService.ActivateWorker:input_type -> human_resource.common.v1.IDRequest
-	0,   // 55: human_resource.personnel.v1.PersonnelService.ApplyPrimaryAssignment:input_type -> human_resource.personnel.v1.ApplyPrimaryAssignmentRequest
-	4,   // 56: human_resource.personnel.v1.PersonnelService.UpdateWorker:input_type -> human_resource.personnel.v1.UpdateWorkerRequest
-	41,  // 57: human_resource.personnel.v1.PersonnelService.DeleteWorker:input_type -> human_resource.common.v1.IDRequest
-	41,  // 58: human_resource.personnel.v1.PersonnelService.GetWorkerByID:input_type -> human_resource.common.v1.IDRequest
-	42,  // 59: human_resource.personnel.v1.PersonnelService.GetAllWorkers:input_type -> human_resource.common.v1.PageRequest
-	43,  // 60: human_resource.personnel.v1.PersonnelService.FindWorkerByWorkerNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 61: human_resource.personnel.v1.PersonnelService.FindWorkerByPersonPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 62: human_resource.personnel.v1.PersonnelService.FindWorkerByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 63: human_resource.personnel.v1.PersonnelService.FindWorkerByTerminationReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 64: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 65: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 66: human_resource.personnel.v1.PersonnelService.FindWorkerByIAMPrincipalReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 67: human_resource.personnel.v1.PersonnelService.FindWorkerByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	9,   // 68: human_resource.personnel.v1.PersonnelService.CreateEmploymentContract:input_type -> human_resource.personnel.v1.CreateEmploymentContractRequest
-	10,  // 69: human_resource.personnel.v1.PersonnelService.UpdateEmploymentContract:input_type -> human_resource.personnel.v1.UpdateEmploymentContractRequest
-	41,  // 70: human_resource.personnel.v1.PersonnelService.DeleteEmploymentContract:input_type -> human_resource.common.v1.IDRequest
-	41,  // 71: human_resource.personnel.v1.PersonnelService.GetEmploymentContractByID:input_type -> human_resource.common.v1.IDRequest
-	42,  // 72: human_resource.personnel.v1.PersonnelService.GetAllEmploymentContracts:input_type -> human_resource.common.v1.PageRequest
-	43,  // 73: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 74: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 75: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractType:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 76: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 77: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 78: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 79: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 80: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 81: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByGoverningJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 82: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByCollectiveAgreementID:input_type -> human_resource.common.v1.StringFinderRequest
-	15,  // 83: human_resource.personnel.v1.PersonnelService.CreateWorkerAssignment:input_type -> human_resource.personnel.v1.CreateWorkerAssignmentRequest
-	41,  // 84: human_resource.personnel.v1.PersonnelService.ApproveWorkerAssignment:input_type -> human_resource.common.v1.IDRequest
-	16,  // 85: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:input_type -> human_resource.personnel.v1.UpdateWorkerAssignmentRequest
-	41,  // 86: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:input_type -> human_resource.common.v1.IDRequest
-	41,  // 87: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:input_type -> human_resource.common.v1.IDRequest
-	42,  // 88: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:input_type -> human_resource.common.v1.PageRequest
-	43,  // 89: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 90: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 91: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 92: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 93: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 94: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	21,  // 95: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.CreateWorkerLifecycleEventRequest
-	22,  // 96: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest
-	44,  // 97: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:input_type -> human_resource.common.v1.IdentityIDRequest
-	44,  // 98: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:input_type -> human_resource.common.v1.IdentityIDRequest
-	42,  // 99: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:input_type -> human_resource.common.v1.PageRequest
-	43,  // 100: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 101: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 102: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 103: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 104: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 105: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	27,  // 106: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:input_type -> human_resource.personnel.v1.CreateWorkerDocumentRequest
-	28,  // 107: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:input_type -> human_resource.personnel.v1.UpdateWorkerDocumentRequest
-	41,  // 108: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:input_type -> human_resource.common.v1.IDRequest
-	41,  // 109: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:input_type -> human_resource.common.v1.IDRequest
-	42,  // 110: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:input_type -> human_resource.common.v1.PageRequest
-	43,  // 111: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 112: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 113: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 114: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 115: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 116: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 117: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	33,  // 118: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:input_type -> human_resource.personnel.v1.CreateEmergencyContactRequest
-	34,  // 119: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:input_type -> human_resource.personnel.v1.UpdateEmergencyContactRequest
-	41,  // 120: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:input_type -> human_resource.common.v1.IDRequest
-	41,  // 121: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:input_type -> human_resource.common.v1.IDRequest
-	42,  // 122: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:input_type -> human_resource.common.v1.PageRequest
-	43,  // 123: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 124: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	43,  // 125: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:input_type -> human_resource.common.v1.StringFinderRequest
-	5,   // 126: human_resource.personnel.v1.PersonnelService.CreateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
-	5,   // 127: human_resource.personnel.v1.PersonnelService.ActivateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
-	5,   // 128: human_resource.personnel.v1.PersonnelService.ApplyPrimaryAssignment:output_type -> human_resource.personnel.v1.WorkerResponse
-	5,   // 129: human_resource.personnel.v1.PersonnelService.UpdateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
-	45,  // 130: human_resource.personnel.v1.PersonnelService.DeleteWorker:output_type -> human_resource.common.v1.EmptyResponse
-	5,   // 131: human_resource.personnel.v1.PersonnelService.GetWorkerByID:output_type -> human_resource.personnel.v1.WorkerResponse
-	6,   // 132: human_resource.personnel.v1.PersonnelService.GetAllWorkers:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 133: human_resource.personnel.v1.PersonnelService.FindWorkerByWorkerNumber:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 134: human_resource.personnel.v1.PersonnelService.FindWorkerByPersonPartyReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 135: human_resource.personnel.v1.PersonnelService.FindWorkerByStatus:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 136: human_resource.personnel.v1.PersonnelService.FindWorkerByTerminationReasonCode:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 137: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryLegalEntityReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 138: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryAssignmentID:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 139: human_resource.personnel.v1.PersonnelService.FindWorkerByIAMPrincipalReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
-	6,   // 140: human_resource.personnel.v1.PersonnelService.FindWorkerByCreatedByPrincipalID:output_type -> human_resource.personnel.v1.WorkersResponse
-	11,  // 141: human_resource.personnel.v1.PersonnelService.CreateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
-	11,  // 142: human_resource.personnel.v1.PersonnelService.UpdateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
-	45,  // 143: human_resource.personnel.v1.PersonnelService.DeleteEmploymentContract:output_type -> human_resource.common.v1.EmptyResponse
-	11,  // 144: human_resource.personnel.v1.PersonnelService.GetEmploymentContractByID:output_type -> human_resource.personnel.v1.EmploymentContractResponse
-	12,  // 145: human_resource.personnel.v1.PersonnelService.GetAllEmploymentContracts:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 146: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkerID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 147: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractNumber:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 148: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractType:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 149: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractStatus:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 150: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByEmployingLegalEntityReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 151: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 152: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 153: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkCountryCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 154: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByGoverningJurisdictionCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	12,  // 155: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByCollectiveAgreementID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
-	17,  // 156: human_resource.personnel.v1.PersonnelService.CreateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
-	17,  // 157: human_resource.personnel.v1.PersonnelService.ApproveWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
-	17,  // 158: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
-	45,  // 159: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:output_type -> human_resource.common.v1.EmptyResponse
-	17,  // 160: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
-	18,  // 161: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	18,  // 162: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	18,  // 163: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	18,  // 164: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	18,  // 165: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	18,  // 166: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	18,  // 167: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
-	23,  // 168: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
-	23,  // 169: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
-	45,  // 170: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:output_type -> human_resource.common.v1.EmptyResponse
-	23,  // 171: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
-	24,  // 172: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	24,  // 173: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	24,  // 174: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	24,  // 175: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	24,  // 176: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	24,  // 177: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	24,  // 178: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
-	29,  // 179: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
-	29,  // 180: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
-	45,  // 181: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:output_type -> human_resource.common.v1.EmptyResponse
-	29,  // 182: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
-	30,  // 183: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	30,  // 184: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	30,  // 185: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	30,  // 186: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	30,  // 187: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	30,  // 188: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	30,  // 189: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	30,  // 190: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
-	35,  // 191: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
-	35,  // 192: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
-	45,  // 193: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:output_type -> human_resource.common.v1.EmptyResponse
-	35,  // 194: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:output_type -> human_resource.personnel.v1.EmergencyContactResponse
-	36,  // 195: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	36,  // 196: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	36,  // 197: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	36,  // 198: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
-	126, // [126:199] is the sub-list for method output_type
-	53,  // [53:126] is the sub-list for method input_type
-	53,  // [53:53] is the sub-list for extension type_name
-	53,  // [53:53] is the sub-list for extension extendee
-	0,   // [0:53] is the sub-list for field type_name
+	38,  // 0: human_resource.personnel.v1.Worker.created_at:type_name -> google.protobuf.Timestamp
+	38,  // 1: human_resource.personnel.v1.Worker.updated_at:type_name -> google.protobuf.Timestamp
+	3,   // 2: human_resource.personnel.v1.CreateWorkerRequest.input:type_name -> human_resource.personnel.v1.WorkerInput
+	3,   // 3: human_resource.personnel.v1.UpdateWorkerRequest.input:type_name -> human_resource.personnel.v1.WorkerInput
+	39,  // 4: human_resource.personnel.v1.UpdateWorkerRequest.update_mask:type_name -> google.protobuf.FieldMask
+	2,   // 5: human_resource.personnel.v1.WorkerResponse.item:type_name -> human_resource.personnel.v1.Worker
+	2,   // 6: human_resource.personnel.v1.WorkersResponse.items:type_name -> human_resource.personnel.v1.Worker
+	40,  // 7: human_resource.personnel.v1.WorkersResponse.page:type_name -> human_resource.common.v1.PageInfo
+	38,  // 8: human_resource.personnel.v1.EmploymentContract.signed_at:type_name -> google.protobuf.Timestamp
+	38,  // 9: human_resource.personnel.v1.EmploymentContract.created_at:type_name -> google.protobuf.Timestamp
+	38,  // 10: human_resource.personnel.v1.EmploymentContractInput.signed_at:type_name -> google.protobuf.Timestamp
+	9,   // 11: human_resource.personnel.v1.CreateEmploymentContractRequest.input:type_name -> human_resource.personnel.v1.EmploymentContractInput
+	9,   // 12: human_resource.personnel.v1.UpdateEmploymentContractRequest.input:type_name -> human_resource.personnel.v1.EmploymentContractInput
+	39,  // 13: human_resource.personnel.v1.UpdateEmploymentContractRequest.update_mask:type_name -> google.protobuf.FieldMask
+	8,   // 14: human_resource.personnel.v1.EmploymentContractResponse.item:type_name -> human_resource.personnel.v1.EmploymentContract
+	8,   // 15: human_resource.personnel.v1.EmploymentContractsResponse.items:type_name -> human_resource.personnel.v1.EmploymentContract
+	40,  // 16: human_resource.personnel.v1.EmploymentContractsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	38,  // 17: human_resource.personnel.v1.WorkerAssignment.approved_at:type_name -> google.protobuf.Timestamp
+	38,  // 18: human_resource.personnel.v1.WorkerAssignment.requested_at:type_name -> google.protobuf.Timestamp
+	38,  // 19: human_resource.personnel.v1.WorkerAssignment.cancelled_at:type_name -> google.protobuf.Timestamp
+	38,  // 20: human_resource.personnel.v1.WorkerAssignmentInput.approved_at:type_name -> google.protobuf.Timestamp
+	15,  // 21: human_resource.personnel.v1.CreateWorkerAssignmentRequest.input:type_name -> human_resource.personnel.v1.WorkerAssignmentInput
+	15,  // 22: human_resource.personnel.v1.UpdateWorkerAssignmentRequest.input:type_name -> human_resource.personnel.v1.WorkerAssignmentInput
+	39,  // 23: human_resource.personnel.v1.UpdateWorkerAssignmentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14,  // 24: human_resource.personnel.v1.WorkerAssignmentResponse.item:type_name -> human_resource.personnel.v1.WorkerAssignment
+	14,  // 25: human_resource.personnel.v1.WorkerAssignmentsResponse.items:type_name -> human_resource.personnel.v1.WorkerAssignment
+	40,  // 26: human_resource.personnel.v1.WorkerAssignmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	38,  // 27: human_resource.personnel.v1.WorkerLifecycleEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	41,  // 28: human_resource.personnel.v1.WorkerLifecycleEvent.event_payload:type_name -> human_resource.common.v1.JsonDocument
+	38,  // 29: human_resource.personnel.v1.WorkerLifecycleEventInput.occurred_at:type_name -> google.protobuf.Timestamp
+	41,  // 30: human_resource.personnel.v1.WorkerLifecycleEventInput.event_payload:type_name -> human_resource.common.v1.JsonDocument
+	21,  // 31: human_resource.personnel.v1.CreateWorkerLifecycleEventRequest.input:type_name -> human_resource.personnel.v1.WorkerLifecycleEventInput
+	21,  // 32: human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest.input:type_name -> human_resource.personnel.v1.WorkerLifecycleEventInput
+	39,  // 33: human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest.update_mask:type_name -> google.protobuf.FieldMask
+	20,  // 34: human_resource.personnel.v1.WorkerLifecycleEventResponse.item:type_name -> human_resource.personnel.v1.WorkerLifecycleEvent
+	20,  // 35: human_resource.personnel.v1.WorkerLifecycleEventsResponse.items:type_name -> human_resource.personnel.v1.WorkerLifecycleEvent
+	40,  // 36: human_resource.personnel.v1.WorkerLifecycleEventsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	38,  // 37: human_resource.personnel.v1.WorkerDocument.verified_at:type_name -> google.protobuf.Timestamp
+	38,  // 38: human_resource.personnel.v1.WorkerDocument.created_at:type_name -> google.protobuf.Timestamp
+	38,  // 39: human_resource.personnel.v1.WorkerDocumentInput.verified_at:type_name -> google.protobuf.Timestamp
+	27,  // 40: human_resource.personnel.v1.CreateWorkerDocumentRequest.input:type_name -> human_resource.personnel.v1.WorkerDocumentInput
+	27,  // 41: human_resource.personnel.v1.UpdateWorkerDocumentRequest.input:type_name -> human_resource.personnel.v1.WorkerDocumentInput
+	39,  // 42: human_resource.personnel.v1.UpdateWorkerDocumentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	26,  // 43: human_resource.personnel.v1.WorkerDocumentResponse.item:type_name -> human_resource.personnel.v1.WorkerDocument
+	26,  // 44: human_resource.personnel.v1.WorkerDocumentsResponse.items:type_name -> human_resource.personnel.v1.WorkerDocument
+	40,  // 45: human_resource.personnel.v1.WorkerDocumentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	38,  // 46: human_resource.personnel.v1.EmergencyContact.authorization_confirmed_at:type_name -> google.protobuf.Timestamp
+	38,  // 47: human_resource.personnel.v1.EmergencyContactInput.authorization_confirmed_at:type_name -> google.protobuf.Timestamp
+	33,  // 48: human_resource.personnel.v1.CreateEmergencyContactRequest.input:type_name -> human_resource.personnel.v1.EmergencyContactInput
+	33,  // 49: human_resource.personnel.v1.UpdateEmergencyContactRequest.input:type_name -> human_resource.personnel.v1.EmergencyContactInput
+	39,  // 50: human_resource.personnel.v1.UpdateEmergencyContactRequest.update_mask:type_name -> google.protobuf.FieldMask
+	32,  // 51: human_resource.personnel.v1.EmergencyContactResponse.item:type_name -> human_resource.personnel.v1.EmergencyContact
+	32,  // 52: human_resource.personnel.v1.EmergencyContactsResponse.items:type_name -> human_resource.personnel.v1.EmergencyContact
+	40,  // 53: human_resource.personnel.v1.EmergencyContactsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	4,   // 54: human_resource.personnel.v1.PersonnelService.CreateWorker:input_type -> human_resource.personnel.v1.CreateWorkerRequest
+	42,  // 55: human_resource.personnel.v1.PersonnelService.ActivateWorker:input_type -> human_resource.common.v1.IDRequest
+	0,   // 56: human_resource.personnel.v1.PersonnelService.TerminateWorker:input_type -> human_resource.personnel.v1.TerminateWorkerRequest
+	1,   // 57: human_resource.personnel.v1.PersonnelService.ApplyPrimaryAssignment:input_type -> human_resource.personnel.v1.ApplyPrimaryAssignmentRequest
+	5,   // 58: human_resource.personnel.v1.PersonnelService.UpdateWorker:input_type -> human_resource.personnel.v1.UpdateWorkerRequest
+	42,  // 59: human_resource.personnel.v1.PersonnelService.DeleteWorker:input_type -> human_resource.common.v1.IDRequest
+	42,  // 60: human_resource.personnel.v1.PersonnelService.GetWorkerByID:input_type -> human_resource.common.v1.IDRequest
+	43,  // 61: human_resource.personnel.v1.PersonnelService.GetAllWorkers:input_type -> human_resource.common.v1.PageRequest
+	44,  // 62: human_resource.personnel.v1.PersonnelService.FindWorkerByWorkerNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 63: human_resource.personnel.v1.PersonnelService.FindWorkerByPersonPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 64: human_resource.personnel.v1.PersonnelService.FindWorkerByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 65: human_resource.personnel.v1.PersonnelService.FindWorkerByTerminationReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 66: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 67: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 68: human_resource.personnel.v1.PersonnelService.FindWorkerByIAMPrincipalReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 69: human_resource.personnel.v1.PersonnelService.FindWorkerByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	10,  // 70: human_resource.personnel.v1.PersonnelService.CreateEmploymentContract:input_type -> human_resource.personnel.v1.CreateEmploymentContractRequest
+	11,  // 71: human_resource.personnel.v1.PersonnelService.UpdateEmploymentContract:input_type -> human_resource.personnel.v1.UpdateEmploymentContractRequest
+	42,  // 72: human_resource.personnel.v1.PersonnelService.DeleteEmploymentContract:input_type -> human_resource.common.v1.IDRequest
+	42,  // 73: human_resource.personnel.v1.PersonnelService.GetEmploymentContractByID:input_type -> human_resource.common.v1.IDRequest
+	43,  // 74: human_resource.personnel.v1.PersonnelService.GetAllEmploymentContracts:input_type -> human_resource.common.v1.PageRequest
+	44,  // 75: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 76: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 77: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractType:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 78: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 79: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 80: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 81: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 82: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 83: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByGoverningJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 84: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByCollectiveAgreementID:input_type -> human_resource.common.v1.StringFinderRequest
+	16,  // 85: human_resource.personnel.v1.PersonnelService.CreateWorkerAssignment:input_type -> human_resource.personnel.v1.CreateWorkerAssignmentRequest
+	42,  // 86: human_resource.personnel.v1.PersonnelService.ApproveWorkerAssignment:input_type -> human_resource.common.v1.IDRequest
+	17,  // 87: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:input_type -> human_resource.personnel.v1.UpdateWorkerAssignmentRequest
+	42,  // 88: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:input_type -> human_resource.common.v1.IDRequest
+	42,  // 89: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:input_type -> human_resource.common.v1.IDRequest
+	43,  // 90: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:input_type -> human_resource.common.v1.PageRequest
+	44,  // 91: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 92: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 93: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 94: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 95: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 96: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	22,  // 97: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.CreateWorkerLifecycleEventRequest
+	23,  // 98: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:input_type -> human_resource.personnel.v1.UpdateWorkerLifecycleEventRequest
+	45,  // 99: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:input_type -> human_resource.common.v1.IdentityIDRequest
+	45,  // 100: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:input_type -> human_resource.common.v1.IdentityIDRequest
+	43,  // 101: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:input_type -> human_resource.common.v1.PageRequest
+	44,  // 102: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 103: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 104: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 105: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 106: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 107: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	28,  // 108: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:input_type -> human_resource.personnel.v1.CreateWorkerDocumentRequest
+	29,  // 109: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:input_type -> human_resource.personnel.v1.UpdateWorkerDocumentRequest
+	42,  // 110: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:input_type -> human_resource.common.v1.IDRequest
+	42,  // 111: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:input_type -> human_resource.common.v1.IDRequest
+	43,  // 112: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:input_type -> human_resource.common.v1.PageRequest
+	44,  // 113: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 114: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 115: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 116: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 117: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 118: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 119: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	34,  // 120: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:input_type -> human_resource.personnel.v1.CreateEmergencyContactRequest
+	35,  // 121: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:input_type -> human_resource.personnel.v1.UpdateEmergencyContactRequest
+	42,  // 122: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:input_type -> human_resource.common.v1.IDRequest
+	42,  // 123: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:input_type -> human_resource.common.v1.IDRequest
+	43,  // 124: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:input_type -> human_resource.common.v1.PageRequest
+	44,  // 125: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 126: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 127: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:input_type -> human_resource.common.v1.StringFinderRequest
+	6,   // 128: human_resource.personnel.v1.PersonnelService.CreateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
+	6,   // 129: human_resource.personnel.v1.PersonnelService.ActivateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
+	6,   // 130: human_resource.personnel.v1.PersonnelService.TerminateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
+	6,   // 131: human_resource.personnel.v1.PersonnelService.ApplyPrimaryAssignment:output_type -> human_resource.personnel.v1.WorkerResponse
+	6,   // 132: human_resource.personnel.v1.PersonnelService.UpdateWorker:output_type -> human_resource.personnel.v1.WorkerResponse
+	46,  // 133: human_resource.personnel.v1.PersonnelService.DeleteWorker:output_type -> human_resource.common.v1.EmptyResponse
+	6,   // 134: human_resource.personnel.v1.PersonnelService.GetWorkerByID:output_type -> human_resource.personnel.v1.WorkerResponse
+	7,   // 135: human_resource.personnel.v1.PersonnelService.GetAllWorkers:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 136: human_resource.personnel.v1.PersonnelService.FindWorkerByWorkerNumber:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 137: human_resource.personnel.v1.PersonnelService.FindWorkerByPersonPartyReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 138: human_resource.personnel.v1.PersonnelService.FindWorkerByStatus:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 139: human_resource.personnel.v1.PersonnelService.FindWorkerByTerminationReasonCode:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 140: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryLegalEntityReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 141: human_resource.personnel.v1.PersonnelService.FindWorkerByPrimaryAssignmentID:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 142: human_resource.personnel.v1.PersonnelService.FindWorkerByIAMPrincipalReferenceID:output_type -> human_resource.personnel.v1.WorkersResponse
+	7,   // 143: human_resource.personnel.v1.PersonnelService.FindWorkerByCreatedByPrincipalID:output_type -> human_resource.personnel.v1.WorkersResponse
+	12,  // 144: human_resource.personnel.v1.PersonnelService.CreateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
+	12,  // 145: human_resource.personnel.v1.PersonnelService.UpdateEmploymentContract:output_type -> human_resource.personnel.v1.EmploymentContractResponse
+	46,  // 146: human_resource.personnel.v1.PersonnelService.DeleteEmploymentContract:output_type -> human_resource.common.v1.EmptyResponse
+	12,  // 147: human_resource.personnel.v1.PersonnelService.GetEmploymentContractByID:output_type -> human_resource.personnel.v1.EmploymentContractResponse
+	13,  // 148: human_resource.personnel.v1.PersonnelService.GetAllEmploymentContracts:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 149: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkerID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 150: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractNumber:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 151: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractType:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 152: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByContractStatus:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 153: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByEmployingLegalEntityReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 154: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 155: human_resource.personnel.v1.PersonnelService.FindEmploymentContractBySignedDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 156: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByWorkCountryCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 157: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByGoverningJurisdictionCode:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	13,  // 158: human_resource.personnel.v1.PersonnelService.FindEmploymentContractByCollectiveAgreementID:output_type -> human_resource.personnel.v1.EmploymentContractsResponse
+	18,  // 159: human_resource.personnel.v1.PersonnelService.CreateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	18,  // 160: human_resource.personnel.v1.PersonnelService.ApproveWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	18,  // 161: human_resource.personnel.v1.PersonnelService.UpdateWorkerAssignment:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	46,  // 162: human_resource.personnel.v1.PersonnelService.DeleteWorkerAssignment:output_type -> human_resource.common.v1.EmptyResponse
+	18,  // 163: human_resource.personnel.v1.PersonnelService.GetWorkerAssignmentByID:output_type -> human_resource.personnel.v1.WorkerAssignmentResponse
+	19,  // 164: human_resource.personnel.v1.PersonnelService.GetAllWorkerAssignments:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	19,  // 165: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	19,  // 166: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByPositionID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	19,  // 167: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByManagerWorkerID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	19,  // 168: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByAssignmentType:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	19,  // 169: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByRequestedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	19,  // 170: human_resource.personnel.v1.PersonnelService.FindWorkerAssignmentByApprovedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerAssignmentsResponse
+	24,  // 171: human_resource.personnel.v1.PersonnelService.CreateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
+	24,  // 172: human_resource.personnel.v1.PersonnelService.UpdateWorkerLifecycleEvent:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
+	46,  // 173: human_resource.personnel.v1.PersonnelService.DeleteWorkerLifecycleEvent:output_type -> human_resource.common.v1.EmptyResponse
+	24,  // 174: human_resource.personnel.v1.PersonnelService.GetWorkerLifecycleEventByID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventResponse
+	25,  // 175: human_resource.personnel.v1.PersonnelService.GetAllWorkerLifecycleEvents:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	25,  // 176: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByWorkerID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	25,  // 177: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByEventType:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	25,  // 178: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByPreviousStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	25,  // 179: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByNewStatus:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	25,  // 180: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByActorPrincipalID:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	25,  // 181: human_resource.personnel.v1.PersonnelService.FindWorkerLifecycleEventByIdempotencyKey:output_type -> human_resource.personnel.v1.WorkerLifecycleEventsResponse
+	30,  // 182: human_resource.personnel.v1.PersonnelService.CreateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
+	30,  // 183: human_resource.personnel.v1.PersonnelService.UpdateWorkerDocument:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
+	46,  // 184: human_resource.personnel.v1.PersonnelService.DeleteWorkerDocument:output_type -> human_resource.common.v1.EmptyResponse
+	30,  // 185: human_resource.personnel.v1.PersonnelService.GetWorkerDocumentByID:output_type -> human_resource.personnel.v1.WorkerDocumentResponse
+	31,  // 186: human_resource.personnel.v1.PersonnelService.GetAllWorkerDocuments:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	31,  // 187: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByWorkerID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	31,  // 188: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentType:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	31,  // 189: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	31,  // 190: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByDocumentVersionReferenceID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	31,  // 191: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByIssuingCountryCode:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	31,  // 192: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerificationStatus:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	31,  // 193: human_resource.personnel.v1.PersonnelService.FindWorkerDocumentByVerifiedByPrincipalID:output_type -> human_resource.personnel.v1.WorkerDocumentsResponse
+	36,  // 194: human_resource.personnel.v1.PersonnelService.CreateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
+	36,  // 195: human_resource.personnel.v1.PersonnelService.UpdateEmergencyContact:output_type -> human_resource.personnel.v1.EmergencyContactResponse
+	46,  // 196: human_resource.personnel.v1.PersonnelService.DeleteEmergencyContact:output_type -> human_resource.common.v1.EmptyResponse
+	36,  // 197: human_resource.personnel.v1.PersonnelService.GetEmergencyContactByID:output_type -> human_resource.personnel.v1.EmergencyContactResponse
+	37,  // 198: human_resource.personnel.v1.PersonnelService.GetAllEmergencyContacts:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	37,  // 199: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByWorkerID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	37,  // 200: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByContactPartyReferenceID:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	37,  // 201: human_resource.personnel.v1.PersonnelService.FindEmergencyContactByRelationshipCode:output_type -> human_resource.personnel.v1.EmergencyContactsResponse
+	128, // [128:202] is the sub-list for method output_type
+	54,  // [54:128] is the sub-list for method input_type
+	54,  // [54:54] is the sub-list for extension type_name
+	54,  // [54:54] is the sub-list for extension extendee
+	0,   // [0:54] is the sub-list for field type_name
 }
 
 func init() { file_human_resource_personnel_v1_personnel_proto_init() }
@@ -3616,24 +3685,24 @@ func file_human_resource_personnel_v1_personnel_proto_init() {
 	if File_human_resource_personnel_v1_personnel_proto != nil {
 		return
 	}
-	file_human_resource_personnel_v1_personnel_proto_msgTypes[1].OneofWrappers = []any{}
 	file_human_resource_personnel_v1_personnel_proto_msgTypes[2].OneofWrappers = []any{}
-	file_human_resource_personnel_v1_personnel_proto_msgTypes[7].OneofWrappers = []any{}
+	file_human_resource_personnel_v1_personnel_proto_msgTypes[3].OneofWrappers = []any{}
 	file_human_resource_personnel_v1_personnel_proto_msgTypes[8].OneofWrappers = []any{}
-	file_human_resource_personnel_v1_personnel_proto_msgTypes[13].OneofWrappers = []any{}
+	file_human_resource_personnel_v1_personnel_proto_msgTypes[9].OneofWrappers = []any{}
 	file_human_resource_personnel_v1_personnel_proto_msgTypes[14].OneofWrappers = []any{}
-	file_human_resource_personnel_v1_personnel_proto_msgTypes[19].OneofWrappers = []any{}
+	file_human_resource_personnel_v1_personnel_proto_msgTypes[15].OneofWrappers = []any{}
 	file_human_resource_personnel_v1_personnel_proto_msgTypes[20].OneofWrappers = []any{}
-	file_human_resource_personnel_v1_personnel_proto_msgTypes[25].OneofWrappers = []any{}
+	file_human_resource_personnel_v1_personnel_proto_msgTypes[21].OneofWrappers = []any{}
 	file_human_resource_personnel_v1_personnel_proto_msgTypes[26].OneofWrappers = []any{}
-	file_human_resource_personnel_v1_personnel_proto_msgTypes[32].OneofWrappers = []any{}
+	file_human_resource_personnel_v1_personnel_proto_msgTypes[27].OneofWrappers = []any{}
+	file_human_resource_personnel_v1_personnel_proto_msgTypes[33].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_personnel_v1_personnel_proto_rawDesc), len(file_human_resource_personnel_v1_personnel_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   37,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

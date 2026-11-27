@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -63,7 +64,7 @@ func (v *offboardingPlanValidator) ValidateMutation(ctx context.Context, table s
 	if before != nil {
 		var ok bool
 		old, ok = before.(*entity.OffboardingPlan)
-		if !ok || old == nil || old.Status != "draft" {
+		if !ok || old == nil || (old.Status != "draft" && old.Status != "approved") {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -71,18 +72,48 @@ func (v *offboardingPlanValidator) ValidateMutation(ctx context.Context, table s
 		return hrerrors.ErrInvalidInput
 	}
 	plan := old
+	transition := false
 	if after != nil {
 		var ok bool
 		plan, ok = after.(*entity.OffboardingPlan)
-		if !ok || plan == nil || plan.Status != "draft" || plan.ApprovedByPrincipalID != nil ||
-			plan.ApprovedAt != nil || plan.CompletedAt != nil || plan.ExitInterviewDocumentVersionReferenceID != nil ||
+		if !ok || plan == nil || plan.CompletedAt != nil || plan.ExitInterviewDocumentVersionReferenceID != nil ||
 			plan.FinalPayrollRunID != nil || plan.FinanceClearanceReferenceID != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		switch {
+		case old != nil && old.Status == "draft" && plan.Status == "approved":
+			expected := *old
+			expected.Status = "approved"
+			expected.ApprovedAt, expected.ApprovedByPrincipalID = plan.ApprovedAt, plan.ApprovedByPrincipalID
+			if old.ApprovedAt != nil || old.ApprovedByPrincipalID != nil ||
+				plan.ApprovedAt == nil || plan.ApprovedByPrincipalID == nil ||
+				strings.EqualFold(old.CreatedByPrincipalID, *plan.ApprovedByPrincipalID) ||
+				plan.ApprovedAt.Before(old.CreatedAt) ||
+				entity.CompareDates(plan.ApprovedAt.UTC(), plan.TerminationEffectiveDate) > 0 ||
+				!reflect.DeepEqual(&expected, plan) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			transition = true
+		case old != nil && old.Status == "approved" && plan.Status == "in_progress":
+			expected := *old
+			expected.Status = "in_progress"
+			if old.ApprovedAt == nil || old.ApprovedByPrincipalID == nil ||
+				strings.EqualFold(old.CreatedByPrincipalID, *old.ApprovedByPrincipalID) ||
+				old.ApprovedAt.Before(old.CreatedAt) || !reflect.DeepEqual(&expected, plan) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			transition = true
+		case plan.Status != "draft" || (old != nil && old.Status != "draft") ||
+			plan.ApprovedAt != nil || plan.ApprovedByPrincipalID != nil:
 			return hrerrors.ErrWorkflowRequired
 		}
 		if old != nil && (old.ID != plan.ID || old.WorkerID != plan.WorkerID ||
 			old.CreatedByPrincipalID != plan.CreatedByPrincipalID || !old.CreatedAt.Equal(plan.CreatedAt)) {
 			return hrerrors.ErrWorkflowRequired
 		}
+	}
+	if after == nil && old.Status != "draft" {
+		return hrerrors.ErrWorkflowRequired
 	}
 	worker, err := v.workers.FindByIDForUpdate(ctx, plan.WorkerID)
 	if err != nil {
@@ -92,7 +123,7 @@ func (v *offboardingPlanValidator) ValidateMutation(ctx context.Context, table s
 		worker.HireDate != nil && entity.CompareDates(plan.NoticeDate, *worker.HireDate) < 0 {
 		return hrerrors.ErrReferenceConflict
 	}
-	if old != nil && (after == nil || !reflect.DeepEqual(old, plan)) {
+	if old != nil && !transition && (after == nil || !reflect.DeepEqual(old, plan)) {
 		count, err := v.tasks.CountWhere(ctx, []domainrepo.Filter{{Column: "offboarding_plan_id", Values: []any{plan.ID}}})
 		if err != nil {
 			return err

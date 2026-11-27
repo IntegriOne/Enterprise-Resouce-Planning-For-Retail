@@ -66,6 +66,11 @@ func (h *Handler) ActivateWorker(ctx context.Context, request *common.IDRequest)
 	return workerResponse(h.service.ActivateWorker(ctx, request.Id))
 }
 
+// TerminateWorker mencatat terminasi dari rencana offboarding yang disetujui.
+func (h *Handler) TerminateWorker(ctx context.Context, request *pb.TerminateWorkerRequest) (*pb.WorkerResponse, error) {
+	return workerResponse(h.service.TerminateWorker(ctx, request.GetWorkerId(), request.GetOffboardingPlanId()))
+}
+
 // ApplyPrimaryAssignment meneruskan penetapan assignment primer ke command HRM.
 func (h *Handler) ApplyPrimaryAssignment(ctx context.Context, request *pb.ApplyPrimaryAssignmentRequest) (*pb.WorkerResponse, error) {
 	if request == nil {

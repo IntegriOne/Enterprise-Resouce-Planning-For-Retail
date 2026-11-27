@@ -17,8 +17,8 @@ import (
 func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 	t.Parallel()
 	catalog := security.PermissionCatalog()
-	if len(catalog) != 426 {
-		t.Fatalf("operation mapping count = %d, want 426", len(catalog))
+	if len(catalog) != 429 {
+		t.Fatalf("operation mapping count = %d, want 429", len(catalog))
 	}
 	codes := make(map[string]struct{}, len(catalog))
 	for operation, code := range catalog {
@@ -27,8 +27,8 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		}
 		codes[code] = struct{}{}
 	}
-	if len(codes) != 342 {
-		t.Fatalf("permission count = %d, want 342", len(codes))
+	if len(codes) != 345 {
+		t.Fatalf("permission count = %d, want 345", len(codes))
 	}
 	for operation, want := range map[string]string{
 		"hr_workers.list":                        "human_resource.workers.read",
@@ -43,6 +43,7 @@ func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 		"hr_positions.activate":                  "human_resource.positions.activate",
 		"hr_workers.apply_primary_assignment":    "human_resource.workers.apply_primary_assignment",
 		"hr_workers.activate":                    "human_resource.workers.activate",
+		"hr_workers.terminate":                   "human_resource.workers.terminate",
 		"hr_performance_cycles.launch":           "human_resource.performance_cycles.launch",
 		"hr_onboarding_plans.start":              "human_resource.onboarding_plans.start",
 		"hr_onboarding_plans.complete":           "human_resource.onboarding_plans.complete",

@@ -77,6 +77,7 @@ func NewRegistry(repos *repository.Registry, runtime operation.Dependencies) (*R
 		Runtime: runtime, Worker: repos.Worker, EmploymentContract: repos.EmploymentContract,
 		WorkerAssignment: repos.WorkerAssignment, WorkerLifecycleEvent: repos.WorkerLifecycleEvent,
 		WorkerDocument: repos.WorkerDocument, EmergencyContact: repos.EmergencyContact,
+		OffboardingPlan: repos.OffboardingPlan,
 	})
 	if err != nil {
 		return nil, err

@@ -57,6 +57,7 @@ func PermissionCatalog() map[string]string {
 	permissions["hr_worker_assignments.approve"] = "human_resource.worker_assignments.approve"
 	permissions["hr_positions.activate"] = "human_resource.positions.activate"
 	permissions["hr_workers.activate"] = "human_resource.workers.activate"
+	permissions["hr_workers.terminate"] = "human_resource.workers.terminate"
 	permissions["hr_workers.apply_primary_assignment"] = "human_resource.workers.apply_primary_assignment"
 	permissions["hr_performance_cycles.launch"] = "human_resource.performance_cycles.launch"
 	permissions["hr_onboarding_plans.start"] = "human_resource.onboarding_plans.start"
@@ -74,12 +75,14 @@ func PermissionCatalog() map[string]string {
 	permissions["hr_job_postings.publish"] = "human_resource.job_postings.publish"
 	permissions["hr_job_postings.close"] = "human_resource.job_postings.close"
 	permissions["hr_job_postings.withdraw"] = "human_resource.job_postings.withdraw"
+	permissions["hr_offboarding_plans.approve"] = "human_resource.offboarding_plans.approve"
+	permissions["hr_offboarding_plans.start"] = "human_resource.offboarding_plans.start"
 	return permissions
 }
 
 // IsSensitiveOperation menetapkan batas minimal step-up yang tidak bergantung pada flag katalog IAM.
 func IsSensitiveOperation(resource, action string) bool {
-	if action == "delete" || action == "approve" || action == "activate" || action == "apply_primary_assignment" || action == "open" || action == "close" || action == "publish" || action == "withdraw" || action == "reject" || action == "advance" || action == "post_leave_entry" || action == "finalize" || action == "launch" || action == "start" || action == "complete" || action == "start_screening" || action == "submit" {
+	if action == "delete" || action == "approve" || action == "activate" || action == "terminate" || action == "apply_primary_assignment" || action == "open" || action == "close" || action == "publish" || action == "withdraw" || action == "reject" || action == "advance" || action == "post_leave_entry" || action == "finalize" || action == "launch" || action == "start" || action == "complete" || action == "start_screening" || action == "submit" {
 		return true
 	}
 	if action == "read" || action == "list" {

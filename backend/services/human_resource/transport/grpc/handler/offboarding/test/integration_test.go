@@ -13,15 +13,19 @@ import (
 
 	common "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/common/v1"
 	pb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/offboarding/v1"
+	personnelpb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/personnel/v1"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/offboarding"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
+	personnelservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/personnel"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
 	handler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/offboarding"
+	personnelhandler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/personnel"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -33,13 +37,21 @@ import (
 
 type integrationPolicy struct{}
 
-func (integrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
-	return operation.Actor{PrincipalID: "00000000-0000-4000-8000-000000000001", SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human"}, nil
+func (integrationPolicy) Authorize(ctx context.Context, access operation.Access) (operation.Actor, error) {
+	principal := "00000000-0000-4000-8000-000000000001"
+	if access.Action == "approve" && len(metadata.ValueFromIncomingContext(ctx, "independent-approver")) > 0 {
+		principal = "00000000-0000-4000-8000-000000000003"
+	}
+	return operation.Actor{PrincipalID: principal, SessionID: "00000000-0000-4000-8000-000000000002", Kind: "human"}, nil
 }
 
 func (integrationPolicy) ReadScope(context.Context, operation.Access) (operation.Scope, error) {
 	return operation.Scope{All: true}, nil
 }
+
+type fixedClock struct{ instant time.Time }
+
+func (c fixedClock) Now() time.Time { return c.instant }
 
 func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	dsn := os.Getenv("HRM_TEST_DATABASE_URL")
@@ -72,10 +84,19 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	instant := time.Now().UTC().Add(time.Hour)
+	runtime := operation.Dependencies{Clock: fixedClock{instant: instant}, Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
+		Policy: integrationPolicy{}, Integrity: security.NewIntegrity(validators)}
 	svc, err := service.NewService(service.Dependencies{
-		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-			Policy: integrationPolicy{}, Integrity: security.NewIntegrity(validators)},
-		OffboardingPlan: repos.OffboardingPlan, OffboardingTask: repos.OffboardingTask,
+		Runtime: runtime, OffboardingPlan: repos.OffboardingPlan, OffboardingTask: repos.OffboardingTask,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	personnel, err := personnelservice.NewService(personnelservice.Dependencies{
+		Runtime: runtime, Worker: repos.Worker, EmploymentContract: repos.EmploymentContract, WorkerAssignment: repos.WorkerAssignment,
+		WorkerLifecycleEvent: repos.WorkerLifecycleEvent, WorkerDocument: repos.WorkerDocument,
+		EmergencyContact: repos.EmergencyContact, OffboardingPlan: repos.OffboardingPlan,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -83,6 +104,9 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	listener := bufconn.Listen(1 << 20)
 	server := grpc.NewServer()
 	if err := handler.Register(server, svc); err != nil {
+		t.Fatal(err)
+	}
+	if err := personnelhandler.Register(server, personnel); err != nil {
 		t.Fatal(err)
 	}
 	served := make(chan error, 1)
@@ -116,6 +140,7 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", taskID},
 			{"DELETE FROM hr_offboarding_plans WHERE id = ?", planID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", planID},
+			{"DELETE FROM hr_worker_lifecycle_events WHERE worker_id = ?", workerID},
 			{"DELETE FROM hr_workers WHERE id = ?", workerID},
 		} {
 			if statement.value != "" {
@@ -212,4 +237,46 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", planID).Count(&eventCount).Error; err != nil || eventCount != 3 {
 		t.Fatalf("plan outbox count=%d error=%v", eventCount, err)
 	}
+	day := instant.Truncate(24 * time.Hour)
+	planInput.NoticeDate = timestamppb.New(day.AddDate(0, 0, -2))
+	planInput.LastWorkingDate = timestamppb.New(day.AddDate(0, 0, -1))
+	planInput.TerminationEffectiveDate = timestamppb.New(day)
+	created, err = client.CreateOffboardingPlan(ctx, &pb.CreateOffboardingPlanRequest{Input: planInput})
+	if err != nil {
+		t.Fatalf("create termination plan: %v", err)
+	}
+	planID = created.GetValue().GetId()
+	planRequest := &common.IDRequest{Id: planID}
+	personnelClient := personnelpb.NewPersonnelServiceClient(connection)
+	terminationRequest := &personnelpb.TerminateWorkerRequest{WorkerId: workerID, OffboardingPlanId: planID}
+	if _, err := personnelClient.TerminateWorker(ctx, terminationRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("terminate before approval and start: %v", err)
+	}
+	if _, err := client.ApproveOffboardingPlan(ctx, planRequest); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("self approval: %v", err)
+	}
+	approvedStatus := "approved"
+	if _, err := client.UpdateOffboardingPlan(ctx, &pb.UpdateOffboardingPlanRequest{Id: planID,
+		Input: &pb.OffboardingPlanInput{Status: &approvedStatus}, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"status"}},
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("generic status update bypass: %v", err)
+	}
+	reviewerCtx := metadata.AppendToOutgoingContext(ctx, "independent-approver", "yes")
+	approved, err := client.ApproveOffboardingPlan(reviewerCtx, planRequest)
+	if err != nil || approved.GetValue().GetStatus() != "approved" {
+		t.Fatalf("independent approval: %v, %v", approved, err)
+	}
+	started, err := client.StartOffboardingPlan(ctx, planRequest)
+	if err != nil || started.GetValue().GetStatus() != "in_progress" {
+		t.Fatalf("start offboarding: %v, %v", started, err)
+	}
+	terminated, err := personnelClient.TerminateWorker(ctx, terminationRequest)
+	if err != nil || terminated.GetItem().GetStatus() != "terminated" {
+		t.Fatalf("terminate worker: %v, %v", terminated, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").
+		Where("aggregate_id = ? AND event_type = ?", planID, "hr_worker_terminations.recorded").Count(&eventCount).Error; err != nil || eventCount != 1 {
+		t.Fatalf("termination outbox count=%d error=%v", eventCount, err)
+	}
+
 }

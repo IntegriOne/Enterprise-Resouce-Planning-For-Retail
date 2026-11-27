@@ -9,6 +9,7 @@ import "human_resource/common/v1/common.proto";
 service PersonnelService {
   rpc CreateWorker(CreateWorkerRequest) returns (WorkerResponse);
   rpc ActivateWorker(human_resource.common.v1.IDRequest) returns (WorkerResponse);
+  rpc TerminateWorker(TerminateWorkerRequest) returns (WorkerResponse);
   rpc ApplyPrimaryAssignment(ApplyPrimaryAssignmentRequest) returns (WorkerResponse);
   rpc UpdateWorker(UpdateWorkerRequest) returns (WorkerResponse);
   rpc DeleteWorker(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -80,6 +81,11 @@ service PersonnelService {
   rpc FindEmergencyContactByWorkerID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
   rpc FindEmergencyContactByContactPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
   rpc FindEmergencyContactByRelationshipCode(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
+}
+
+message TerminateWorkerRequest {
+  string worker_id = 1;
+  string offboarding_plan_id = 2;
 }
 
 message ApplyPrimaryAssignmentRequest {
@@ -180,6 +186,7 @@ message WorkerAssignment {
   google.protobuf.Timestamp approved_at = 12;
   optional string requested_by_principal_id = 13;
   google.protobuf.Timestamp requested_at = 14;
+  google.protobuf.Timestamp cancelled_at = 15;
 }
 message WorkerAssignmentInput {
   optional string worker_id = 1;

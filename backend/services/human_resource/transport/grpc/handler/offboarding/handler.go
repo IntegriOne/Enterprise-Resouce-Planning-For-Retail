@@ -349,3 +349,17 @@ func (s *server) FindOffboardingTaskByWaivedByPrincipalID(ctx context.Context, r
 	}
 	return tasks(s.service.FindOffboardingTaskByWaivedByPrincipalID(ctx, request.Value, int(request.Limit), int(request.Offset)))
 }
+
+func (s *server) ApproveOffboardingPlan(ctx context.Context, request *commonv1.IDRequest) (*pb.OffboardingPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return planResponse(s.service.ApproveOffboardingPlan(ctx, request.Id))
+}
+
+func (s *server) StartOffboardingPlan(ctx context.Context, request *commonv1.IDRequest) (*pb.OffboardingPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return planResponse(s.service.StartOffboardingPlan(ctx, request.Id))
+}

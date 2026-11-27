@@ -1128,9 +1128,11 @@ const file_human_resource_offboarding_v1_offboarding_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v2..human_resource.offboarding.v1.OffboardingTaskR\x05value\"\x98\x01\n" +
 	"\x18OffboardingTasksResponse\x12D\n" +
 	"\x05items\x18\x01 \x03(\v2..human_resource.offboarding.v1.OffboardingTaskR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x9d\x1b\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x89\x1d\n" +
 	"\x12OffboardingService\x12\x8c\x01\n" +
-	"\x15CreateOffboardingPlan\x12;.human_resource.offboarding.v1.CreateOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12\x8c\x01\n" +
+	"\x15CreateOffboardingPlan\x12;.human_resource.offboarding.v1.CreateOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12u\n" +
+	"\x16ApproveOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12s\n" +
+	"\x14StartOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12\x8c\x01\n" +
 	"\x15UpdateOffboardingPlan\x12;.human_resource.offboarding.v1.UpdateOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12e\n" +
 	"\x15DeleteOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12u\n" +
 	"\x16GetOffboardingPlanByID\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12x\n" +
@@ -1219,57 +1221,61 @@ var file_human_resource_offboarding_v1_offboarding_proto_depIdxs = []int32{
 	6,  // 25: human_resource.offboarding.v1.OffboardingTasksResponse.items:type_name -> human_resource.offboarding.v1.OffboardingTask
 	14, // 26: human_resource.offboarding.v1.OffboardingTasksResponse.page:type_name -> human_resource.common.v1.PageInfo
 	2,  // 27: human_resource.offboarding.v1.OffboardingService.CreateOffboardingPlan:input_type -> human_resource.offboarding.v1.CreateOffboardingPlanRequest
-	3,  // 28: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:input_type -> human_resource.offboarding.v1.UpdateOffboardingPlanRequest
-	15, // 29: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 30: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 31: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:input_type -> human_resource.common.v1.PageRequest
-	17, // 32: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 33: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 34: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 35: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 36: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 37: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 38: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 39: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 40: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 41: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:input_type -> human_resource.offboarding.v1.CreateOffboardingTaskRequest
-	9,  // 42: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:input_type -> human_resource.offboarding.v1.UpdateOffboardingTaskRequest
-	15, // 43: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:input_type -> human_resource.common.v1.IDRequest
-	15, // 44: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 45: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:input_type -> human_resource.common.v1.PageRequest
-	17, // 46: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 47: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 48: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 49: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 50: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 51: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 52: human_resource.offboarding.v1.OffboardingService.CreateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	4,  // 53: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	18, // 54: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 55: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	5,  // 56: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 57: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 58: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 59: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 60: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 61: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 62: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 63: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 64: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 65: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	10, // 66: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
-	10, // 67: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
-	18, // 68: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 69: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
-	11, // 70: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 71: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 72: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 73: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 74: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 75: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 76: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	52, // [52:77] is the sub-list for method output_type
-	27, // [27:52] is the sub-list for method input_type
+	15, // 28: human_resource.offboarding.v1.OffboardingService.ApproveOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	15, // 29: human_resource.offboarding.v1.OffboardingService.StartOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	3,  // 30: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:input_type -> human_resource.offboarding.v1.UpdateOffboardingPlanRequest
+	15, // 31: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	15, // 32: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
+	16, // 33: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:input_type -> human_resource.common.v1.PageRequest
+	17, // 34: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 35: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 36: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 37: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 38: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 39: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 40: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 41: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 42: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	8,  // 43: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:input_type -> human_resource.offboarding.v1.CreateOffboardingTaskRequest
+	9,  // 44: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:input_type -> human_resource.offboarding.v1.UpdateOffboardingTaskRequest
+	15, // 45: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:input_type -> human_resource.common.v1.IDRequest
+	15, // 46: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
+	16, // 47: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:input_type -> human_resource.common.v1.PageRequest
+	17, // 48: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 49: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 50: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 51: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 52: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 53: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 54: human_resource.offboarding.v1.OffboardingService.CreateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 55: human_resource.offboarding.v1.OffboardingService.ApproveOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 56: human_resource.offboarding.v1.OffboardingService.StartOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 57: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	18, // 58: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 59: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	5,  // 60: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 61: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 62: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 63: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 64: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 65: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 66: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 67: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 68: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 69: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	10, // 70: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	10, // 71: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	18, // 72: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 73: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	11, // 74: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 75: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 76: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 77: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 78: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 79: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 80: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	54, // [54:81] is the sub-list for method output_type
+	27, // [27:54] is the sub-list for method input_type
 	27, // [27:27] is the sub-list for extension type_name
 	27, // [27:27] is the sub-list for extension extendee
 	0,  // [0:27] is the sub-list for field type_name

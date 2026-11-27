@@ -30,6 +30,7 @@ func (r *Resource[T, K, P]) Command(
 	appliesPrimaryAssignment := r.spec.Table == "hr_workers" && action == "apply_primary_assignment"
 	launchesPerformanceCycle := r.spec.Table == "hr_performance_cycles" && action == "launch"
 	startsOnboardingPlan := r.spec.Table == "hr_onboarding_plans" && action == "start"
+	transitionsOffboardingPlan := r.spec.Table == "hr_offboarding_plans" && (action == "approve" || action == "start")
 	completesOnboardingPlan := r.spec.Table == "hr_onboarding_plans" && action == "complete"
 	completesOnboardingTask := r.spec.Table == "hr_onboarding_tasks" && action == "complete"
 	finalizesTalent := r.spec.Table == "hr_talent_assessments" && action == "finalize"
@@ -44,7 +45,7 @@ func (r *Resource[T, K, P]) Command(
 	publishesJobPosting := r.spec.Table == "hr_job_postings" && action == "publish"
 	closesJobPosting := r.spec.Table == "hr_job_postings" && action == "close"
 	withdrawsJobPosting := r.spec.Table == "hr_job_postings" && action == "withdraw"
-	allowed := postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || approvesWorkerAssignment || activatesPosition || activatesWorker || appliesPrimaryAssignment || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || rejectsRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
+	allowed := transitionsOffboardingPlan || postsLeave || approvesLeaveAdjustment || approvesPayroll || approvesCareerPath || approvesWorkerAssignment || activatesPosition || activatesWorker || appliesPrimaryAssignment || launchesPerformanceCycle || startsOnboardingPlan || completesOnboardingPlan || completesOnboardingTask || finalizesTalent || startsApplicationScreening || shortlistsApplication || rejectsApplication || submitsRequisition || approvesRequisition || rejectsRequisition || opensRequisition || closesRequisition || publishesJobPosting || closesJobPosting || withdrawsJobPosting
 	if !allowed || change == nil {
 		return nil, hrerrors.ErrWorkflowRequired
 	}

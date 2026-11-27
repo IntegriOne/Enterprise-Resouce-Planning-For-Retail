@@ -70,11 +70,9 @@ func patchOffboardingPlan(v *entity.OffboardingPlan, in UpdateOffboardingPlanInp
 		}
 		v.TerminationEffectiveDate = *in.TerminationEffectiveDate.Value
 	}
-	if in.Status.Set {
-		if in.Status.Value == nil {
-			return hrerrors.Invalid("status", "must not be null")
-		}
-		v.Status = *in.Status.Value
+	if (in.Status.Set && (in.Status.Value == nil || *in.Status.Value != "draft")) ||
+		in.ApprovedByPrincipalID.Set || in.ApprovedAt.Set {
+		return hrerrors.ErrWorkflowRequired
 	}
 	if in.ExitInterviewDocumentVersionReferenceID.Set {
 		v.ExitInterviewDocumentVersionReferenceID = in.ExitInterviewDocumentVersionReferenceID.Value
@@ -84,12 +82,6 @@ func patchOffboardingPlan(v *entity.OffboardingPlan, in UpdateOffboardingPlanInp
 	}
 	if in.FinanceClearanceReferenceID.Set {
 		v.FinanceClearanceReferenceID = in.FinanceClearanceReferenceID.Value
-	}
-	if in.ApprovedByPrincipalID.Set {
-		v.ApprovedByPrincipalID = in.ApprovedByPrincipalID.Value
-	}
-	if in.ApprovedAt.Set {
-		v.ApprovedAt = in.ApprovedAt.Value
 	}
 	if in.CompletedAt.Set {
 		v.CompletedAt = in.CompletedAt.Value
