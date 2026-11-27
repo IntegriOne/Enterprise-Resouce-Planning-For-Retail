@@ -1,0 +1,86 @@
+type AccessRequest implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  lifecycle_event_id: ID!
+  request_kind: String!
+  requested_scope_type: String!
+  requested_scope_reference_id: ID!
+  approved_catalog_reference_id: ID
+  iam_request_reference_id: ID
+  iam_decision_event_reference_id: ID
+  status: String!
+  requested_by_principal_id: ID!
+  requested_at: Time
+  last_reconciled_at: Time
+  idempotency_key: String!
+}
+
+type AccessRequestEdge {
+  cursor: String!
+  node: AccessRequest!
+}
+
+type AccessRequestConnection {
+  edges: [AccessRequestEdge!]!
+  nodes: [AccessRequest!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  accessRequest(id: ID!): AccessRequest
+  accessRequests(worker_id: String, lifecycle_event_id: String, requested_scope_type: String, requested_scope_reference_id: String, approved_catalog_reference_id: String, iam_request_reference_id: String, iam_decision_event_reference_id: String, status: String, requested_by_principal_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): AccessRequestConnection!
+}
+
+input CreateAccessRequestInput {
+  worker_id: ID
+  lifecycle_event_id: ID
+  request_kind: String
+  requested_scope_type: String
+  requested_scope_reference_id: ID
+  approved_catalog_reference_id: ID
+  iam_request_reference_id: ID
+  iam_decision_event_reference_id: ID
+  status: String
+  last_reconciled_at: Time
+  idempotency_key: String
+}
+
+input UpdateAccessRequestInput {
+  worker_id: ID @goField(omittable: true)
+  lifecycle_event_id: ID @goField(omittable: true)
+  request_kind: String @goField(omittable: true)
+  requested_scope_type: String @goField(omittable: true)
+  requested_scope_reference_id: ID @goField(omittable: true)
+  approved_catalog_reference_id: ID @goField(omittable: true)
+  iam_request_reference_id: ID @goField(omittable: true)
+  iam_decision_event_reference_id: ID @goField(omittable: true)
+  status: String @goField(omittable: true)
+  last_reconciled_at: Time @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreateAccessRequestPayload implements MutationResult {
+  access_request: AccessRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateAccessRequestPayload implements MutationResult {
+  access_request: AccessRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteAccessRequestPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createAccessRequest(input: CreateAccessRequestInput!): CreateAccessRequestPayload!
+  updateAccessRequest(id: ID!, input: UpdateAccessRequestInput!): UpdateAccessRequestPayload!
+  deleteAccessRequest(id: ID!): DeleteAccessRequestPayload!
+}

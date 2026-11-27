@@ -15,14 +15,17 @@ func TestLoadEmbeddedCatalogs(t *testing.T) {
 		t.Fatalf("LoadEmbeddedCatalogs() error = %v", err)
 	}
 
-	if len(catalogs.Manifests) != 3 {
-		t.Fatalf("manifest count = %d, want 3", len(catalogs.Manifests))
+	if len(catalogs.Manifests) != 4 {
+		t.Fatalf("manifest count = %d, want 4", len(catalogs.Manifests))
 	}
-	if len(catalogs.Permissions) != 105 {
-		t.Fatalf("permission count = %d, want 105 (15 iam + 10 enterprise_foundation + 80 human_resource)", len(catalogs.Permissions))
+	if len(catalogs.Permissions) != 457 {
+		t.Fatalf("permission count = %d, want 457 (15 iam + 10 enterprise_foundation + 409 human_resource + 23 finance_accounting)", len(catalogs.Permissions))
 	}
-	if len(catalogs.Roles) != 12 {
-		t.Fatalf("role count = %d, want 12", len(catalogs.Roles))
+	if len(catalogs.Roles) != 16 {
+		t.Fatalf("role count = %d, want 16", len(catalogs.Roles))
+	}
+	if len(catalogs.PermissionCodesForDomain("finance_accounting")) != 23 {
+		t.Fatalf("finance_accounting permissions count = %d, want 23", len(catalogs.PermissionCodesForDomain("finance_accounting")))
 	}
 	if len(catalogs.PermissionCodesForDomain("iam")) != 15 {
 		t.Fatalf("iam permissions count = %d, want 15", len(catalogs.PermissionCodesForDomain("iam")))
@@ -114,8 +117,13 @@ func TestLoadEmbeddedCatalogs(t *testing.T) {
 		"human_resource.workforce_plans.supersede",
 		"human_resource.workforce_plans.update",
 	}
-	if !slices.Equal(hrmPermissions, wantHRM) {
-		t.Fatalf("HRM permission codes = %v, want %v", hrmPermissions, wantHRM)
+	if len(hrmPermissions) != 409 {
+		t.Fatalf("HRM permission count = %d, want 409", len(hrmPermissions))
+	}
+	for _, code := range wantHRM {
+		if !slices.Contains(hrmPermissions, code) {
+			t.Fatalf("missing expected HRM permission code %q", code)
+		}
 	}
 	if !catalogs.PermissionByCode["human_resource.workers.activate"].IsSensitive {
 		t.Fatal("worker activation permission must require sensitive authentication")

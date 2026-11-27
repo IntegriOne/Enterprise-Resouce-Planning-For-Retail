@@ -1,0 +1,702 @@
+type TalentFramework implements Node {
+  id: ID!
+  _id: ID!
+  framework_code: String!
+  framework_version: Int!
+  framework_name: String!
+  rubric_document_version_reference_id: ID!
+  rubric_digest: String!
+  effective_from: Time
+  effective_to: Time
+  approved_by_principal_id: ID!
+  approved_at: Time
+}
+
+type TalentFrameworkEdge {
+  cursor: String!
+  node: TalentFramework!
+}
+
+type TalentFrameworkConnection {
+  edges: [TalentFrameworkEdge!]!
+  nodes: [TalentFramework!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentFramework(id: ID!): TalentFramework
+  talentFrameworks(framework_code: String, rubric_document_version_reference_id: String, approved_by_principal_id: String, after: String, before: String, first: Int, last: Int): TalentFrameworkConnection!
+}
+
+input CreateTalentFrameworkInput {
+  framework_code: String
+  framework_version: Int
+  framework_name: String
+  rubric_document_version_reference_id: ID
+  rubric_digest: String
+  effective_from: Time
+  effective_to: Time
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+input UpdateTalentFrameworkInput {
+  framework_code: String @goField(omittable: true)
+  framework_version: Int @goField(omittable: true)
+  framework_name: String @goField(omittable: true)
+  rubric_document_version_reference_id: ID @goField(omittable: true)
+  rubric_digest: String @goField(omittable: true)
+  effective_from: Time @goField(omittable: true)
+  effective_to: Time @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+}
+
+type CreateTalentFrameworkPayload implements MutationResult {
+  talent_framework: TalentFramework
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentFrameworkPayload implements MutationResult {
+  talent_framework: TalentFramework
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentFrameworkPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentFramework(input: CreateTalentFrameworkInput!): CreateTalentFrameworkPayload!
+  updateTalentFramework(id: ID!, input: UpdateTalentFrameworkInput!): UpdateTalentFrameworkPayload!
+  deleteTalentFramework(id: ID!): DeleteTalentFrameworkPayload!
+}
+
+type TalentDimension implements Node {
+  id: ID!
+  _id: ID!
+  framework_id: ID!
+  dimension_code: String!
+  dimension_name: String!
+  definition: String!
+  rating_anchors: String
+  weight_percent: String!
+  is_required: Boolean!
+}
+
+type TalentDimensionEdge {
+  cursor: String!
+  node: TalentDimension!
+}
+
+type TalentDimensionConnection {
+  edges: [TalentDimensionEdge!]!
+  nodes: [TalentDimension!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentDimension(id: ID!): TalentDimension
+  talentDimensions(framework_id: String, dimension_code: String, after: String, before: String, first: Int, last: Int): TalentDimensionConnection!
+}
+
+input CreateTalentDimensionInput {
+  framework_id: ID
+  dimension_code: String
+  dimension_name: String
+  definition: String
+  rating_anchors: String
+  weight_percent: String
+  is_required: Boolean
+}
+
+input UpdateTalentDimensionInput {
+  framework_id: ID @goField(omittable: true)
+  dimension_code: String @goField(omittable: true)
+  dimension_name: String @goField(omittable: true)
+  definition: String @goField(omittable: true)
+  rating_anchors: String @goField(omittable: true)
+  weight_percent: String @goField(omittable: true)
+  is_required: Boolean @goField(omittable: true)
+}
+
+type CreateTalentDimensionPayload implements MutationResult {
+  talent_dimension: TalentDimension
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentDimensionPayload implements MutationResult {
+  talent_dimension: TalentDimension
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentDimensionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentDimension(input: CreateTalentDimensionInput!): CreateTalentDimensionPayload!
+  updateTalentDimension(id: ID!, input: UpdateTalentDimensionInput!): UpdateTalentDimensionPayload!
+  deleteTalentDimension(id: ID!): DeleteTalentDimensionPayload!
+}
+
+type TalentReviewCycle implements Node {
+  id: ID!
+  _id: ID!
+  cycle_code: String!
+  framework_id: ID!
+  legal_entity_reference_id: ID!
+  organization_unit_reference_id: ID
+  period_start: Time
+  period_end: Time
+  status: String!
+  owner_principal_id: ID!
+  closed_at: Time
+}
+
+type TalentReviewCycleEdge {
+  cursor: String!
+  node: TalentReviewCycle!
+}
+
+type TalentReviewCycleConnection {
+  edges: [TalentReviewCycleEdge!]!
+  nodes: [TalentReviewCycle!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentReviewCycle(id: ID!): TalentReviewCycle
+  talentReviewCycles(cycle_code: String, framework_id: String, legal_entity_reference_id: String, organization_unit_reference_id: String, status: String, owner_principal_id: String, after: String, before: String, first: Int, last: Int): TalentReviewCycleConnection!
+}
+
+input CreateTalentReviewCycleInput {
+  cycle_code: String
+  framework_id: ID
+  legal_entity_reference_id: ID
+  organization_unit_reference_id: ID
+  period_start: Time
+  period_end: Time
+  status: String
+  owner_principal_id: ID
+  closed_at: Time
+}
+
+input UpdateTalentReviewCycleInput {
+  cycle_code: String @goField(omittable: true)
+  framework_id: ID @goField(omittable: true)
+  legal_entity_reference_id: ID @goField(omittable: true)
+  organization_unit_reference_id: ID @goField(omittable: true)
+  period_start: Time @goField(omittable: true)
+  period_end: Time @goField(omittable: true)
+  status: String @goField(omittable: true)
+  owner_principal_id: ID @goField(omittable: true)
+  closed_at: Time @goField(omittable: true)
+}
+
+type CreateTalentReviewCyclePayload implements MutationResult {
+  talent_review_cycle: TalentReviewCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentReviewCyclePayload implements MutationResult {
+  talent_review_cycle: TalentReviewCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentReviewCyclePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentReviewCycle(input: CreateTalentReviewCycleInput!): CreateTalentReviewCyclePayload!
+  updateTalentReviewCycle(id: ID!, input: UpdateTalentReviewCycleInput!): UpdateTalentReviewCyclePayload!
+  deleteTalentReviewCycle(id: ID!): DeleteTalentReviewCyclePayload!
+}
+
+type TalentAssessment implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  talent_review_cycle_id: ID!
+  framework_id: ID!
+  assessment_version: Int!
+  performance_review_id: ID
+  status: String!
+  assessed_by_principal_id: ID!
+  assessed_at: Time
+  evidence_document_version_reference_id: ID!
+  evidence_digest: String!
+  segment_code: String
+  finalized_by_principal_id: ID
+  finalized_at: Time
+}
+
+type TalentAssessmentEdge {
+  cursor: String!
+  node: TalentAssessment!
+}
+
+type TalentAssessmentConnection {
+  edges: [TalentAssessmentEdge!]!
+  nodes: [TalentAssessment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentAssessment(id: ID!): TalentAssessment
+  talentAssessments(worker_id: String, talent_review_cycle_id: String, framework_id: String, performance_review_id: String, status: String, assessed_by_principal_id: String, evidence_document_version_reference_id: String, segment_code: String, finalized_by_principal_id: String, after: String, before: String, first: Int, last: Int): TalentAssessmentConnection!
+}
+
+input CreateTalentAssessmentInput {
+  worker_id: ID
+  talent_review_cycle_id: ID
+  framework_id: ID
+  assessment_version: Int
+  performance_review_id: ID
+  status: String
+  evidence_document_version_reference_id: ID
+  evidence_digest: String
+  segment_code: String
+  finalized_by_principal_id: ID
+  finalized_at: Time
+}
+
+input UpdateTalentAssessmentInput {
+  worker_id: ID @goField(omittable: true)
+  talent_review_cycle_id: ID @goField(omittable: true)
+  framework_id: ID @goField(omittable: true)
+  assessment_version: Int @goField(omittable: true)
+  performance_review_id: ID @goField(omittable: true)
+  status: String @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+  evidence_digest: String @goField(omittable: true)
+  segment_code: String @goField(omittable: true)
+  finalized_by_principal_id: ID @goField(omittable: true)
+  finalized_at: Time @goField(omittable: true)
+}
+
+type CreateTalentAssessmentPayload implements MutationResult {
+  talent_assessment: TalentAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentAssessmentPayload implements MutationResult {
+  talent_assessment: TalentAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentAssessmentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentAssessment(input: CreateTalentAssessmentInput!): CreateTalentAssessmentPayload!
+  updateTalentAssessment(id: ID!, input: UpdateTalentAssessmentInput!): UpdateTalentAssessmentPayload!
+  deleteTalentAssessment(id: ID!): DeleteTalentAssessmentPayload!
+}
+
+type TalentAssessmentScore implements Node {
+  id: ID!
+  _id: ID!
+  assessment_id: ID!
+  framework_id: ID!
+  dimension_id: ID!
+  score: Int!
+  evidence_document_version_reference_id: ID!
+  evidence_digest: String!
+}
+
+type TalentAssessmentScoreEdge {
+  cursor: String!
+  node: TalentAssessmentScore!
+}
+
+type TalentAssessmentScoreConnection {
+  edges: [TalentAssessmentScoreEdge!]!
+  nodes: [TalentAssessmentScore!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentAssessmentScore(id: ID!): TalentAssessmentScore
+  talentAssessmentScores(assessment_id: String, framework_id: String, dimension_id: String, after: String, before: String, first: Int, last: Int): TalentAssessmentScoreConnection!
+}
+
+input CreateTalentAssessmentScoreInput {
+  assessment_id: ID
+  framework_id: ID
+  dimension_id: ID
+  score: Int
+  evidence_document_version_reference_id: ID
+  evidence_digest: String
+}
+
+input UpdateTalentAssessmentScoreInput {
+  assessment_id: ID @goField(omittable: true)
+  framework_id: ID @goField(omittable: true)
+  dimension_id: ID @goField(omittable: true)
+  score: Int @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+  evidence_digest: String @goField(omittable: true)
+}
+
+type CreateTalentAssessmentScorePayload implements MutationResult {
+  talent_assessment_score: TalentAssessmentScore
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentAssessmentScorePayload implements MutationResult {
+  talent_assessment_score: TalentAssessmentScore
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentAssessmentScorePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentAssessmentScore(input: CreateTalentAssessmentScoreInput!): CreateTalentAssessmentScorePayload!
+  updateTalentAssessmentScore(id: ID!, input: UpdateTalentAssessmentScoreInput!): UpdateTalentAssessmentScorePayload!
+  deleteTalentAssessmentScore(id: ID!): DeleteTalentAssessmentScorePayload!
+}
+
+type TalentCalibrationSession implements Node {
+  id: ID!
+  _id: ID!
+  talent_review_cycle_id: ID!
+  session_code: String!
+  chair_principal_id: ID!
+  scheduled_at: Time
+  status: String!
+  closed_at: Time
+  minutes_document_version_reference_id: ID
+}
+
+type TalentCalibrationSessionEdge {
+  cursor: String!
+  node: TalentCalibrationSession!
+}
+
+type TalentCalibrationSessionConnection {
+  edges: [TalentCalibrationSessionEdge!]!
+  nodes: [TalentCalibrationSession!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentCalibrationSession(id: ID!): TalentCalibrationSession
+  talentCalibrationSessions(talent_review_cycle_id: String, session_code: String, chair_principal_id: String, status: String, minutes_document_version_reference_id: String, after: String, before: String, first: Int, last: Int): TalentCalibrationSessionConnection!
+}
+
+input CreateTalentCalibrationSessionInput {
+  talent_review_cycle_id: ID
+  session_code: String
+  chair_principal_id: ID
+  scheduled_at: Time
+  status: String
+  closed_at: Time
+  minutes_document_version_reference_id: ID
+}
+
+input UpdateTalentCalibrationSessionInput {
+  talent_review_cycle_id: ID @goField(omittable: true)
+  session_code: String @goField(omittable: true)
+  chair_principal_id: ID @goField(omittable: true)
+  scheduled_at: Time @goField(omittable: true)
+  status: String @goField(omittable: true)
+  closed_at: Time @goField(omittable: true)
+  minutes_document_version_reference_id: ID @goField(omittable: true)
+}
+
+type CreateTalentCalibrationSessionPayload implements MutationResult {
+  talent_calibration_session: TalentCalibrationSession
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentCalibrationSessionPayload implements MutationResult {
+  talent_calibration_session: TalentCalibrationSession
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentCalibrationSessionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentCalibrationSession(input: CreateTalentCalibrationSessionInput!): CreateTalentCalibrationSessionPayload!
+  updateTalentCalibrationSession(id: ID!, input: UpdateTalentCalibrationSessionInput!): UpdateTalentCalibrationSessionPayload!
+  deleteTalentCalibrationSession(id: ID!): DeleteTalentCalibrationSessionPayload!
+}
+
+type TalentCalibrationDecision implements Node {
+  id: ID!
+  _id: ID!
+  session_id: ID!
+  talent_review_cycle_id: ID!
+  assessment_id: ID!
+  dimension_id: ID!
+  original_score: Int!
+  calibrated_score: Int!
+  rationale_document_version_reference_id: ID!
+  rationale_digest: String!
+  decided_by_principal_id: ID!
+  decided_at: Time
+}
+
+type TalentCalibrationDecisionEdge {
+  cursor: String!
+  node: TalentCalibrationDecision!
+}
+
+type TalentCalibrationDecisionConnection {
+  edges: [TalentCalibrationDecisionEdge!]!
+  nodes: [TalentCalibrationDecision!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentCalibrationDecision(id: ID!): TalentCalibrationDecision
+  talentCalibrationDecisions(session_id: String, talent_review_cycle_id: String, assessment_id: String, dimension_id: String, rationale_document_version_reference_id: String, decided_by_principal_id: String, after: String, before: String, first: Int, last: Int): TalentCalibrationDecisionConnection!
+}
+
+input CreateTalentCalibrationDecisionInput {
+  session_id: ID
+  talent_review_cycle_id: ID
+  assessment_id: ID
+  dimension_id: ID
+  original_score: Int
+  calibrated_score: Int
+  rationale_document_version_reference_id: ID
+  rationale_digest: String
+}
+
+input UpdateTalentCalibrationDecisionInput {
+  session_id: ID @goField(omittable: true)
+  talent_review_cycle_id: ID @goField(omittable: true)
+  assessment_id: ID @goField(omittable: true)
+  dimension_id: ID @goField(omittable: true)
+  original_score: Int @goField(omittable: true)
+  calibrated_score: Int @goField(omittable: true)
+  rationale_document_version_reference_id: ID @goField(omittable: true)
+  rationale_digest: String @goField(omittable: true)
+}
+
+type CreateTalentCalibrationDecisionPayload implements MutationResult {
+  talent_calibration_decision: TalentCalibrationDecision
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentCalibrationDecisionPayload implements MutationResult {
+  talent_calibration_decision: TalentCalibrationDecision
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentCalibrationDecisionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentCalibrationDecision(input: CreateTalentCalibrationDecisionInput!): CreateTalentCalibrationDecisionPayload!
+  updateTalentCalibrationDecision(id: ID!, input: UpdateTalentCalibrationDecisionInput!): UpdateTalentCalibrationDecisionPayload!
+  deleteTalentCalibrationDecision(id: ID!): DeleteTalentCalibrationDecisionPayload!
+}
+
+type TalentPool implements Node {
+  id: ID!
+  _id: ID!
+  pool_code: String!
+  pool_version: Int!
+  pool_name: String!
+  legal_entity_reference_id: ID!
+  target_job_id: ID
+  eligibility_document_version_reference_id: ID!
+  eligibility_digest: String!
+  valid_from: Time
+  valid_to: Time
+  owner_principal_id: ID!
+}
+
+type TalentPoolEdge {
+  cursor: String!
+  node: TalentPool!
+}
+
+type TalentPoolConnection {
+  edges: [TalentPoolEdge!]!
+  nodes: [TalentPool!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentPool(id: ID!): TalentPool
+  talentPools(pool_code: String, legal_entity_reference_id: String, target_job_id: String, eligibility_document_version_reference_id: String, owner_principal_id: String, after: String, before: String, first: Int, last: Int): TalentPoolConnection!
+}
+
+input CreateTalentPoolInput {
+  pool_code: String
+  pool_version: Int
+  pool_name: String
+  legal_entity_reference_id: ID
+  target_job_id: ID
+  eligibility_document_version_reference_id: ID
+  eligibility_digest: String
+  valid_from: Time
+  valid_to: Time
+  owner_principal_id: ID
+}
+
+input UpdateTalentPoolInput {
+  pool_code: String @goField(omittable: true)
+  pool_version: Int @goField(omittable: true)
+  pool_name: String @goField(omittable: true)
+  legal_entity_reference_id: ID @goField(omittable: true)
+  target_job_id: ID @goField(omittable: true)
+  eligibility_document_version_reference_id: ID @goField(omittable: true)
+  eligibility_digest: String @goField(omittable: true)
+  valid_from: Time @goField(omittable: true)
+  valid_to: Time @goField(omittable: true)
+  owner_principal_id: ID @goField(omittable: true)
+}
+
+type CreateTalentPoolPayload implements MutationResult {
+  talent_pool: TalentPool
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentPoolPayload implements MutationResult {
+  talent_pool: TalentPool
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentPoolPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentPool(input: CreateTalentPoolInput!): CreateTalentPoolPayload!
+  updateTalentPool(id: ID!, input: UpdateTalentPoolInput!): UpdateTalentPoolPayload!
+  deleteTalentPool(id: ID!): DeleteTalentPoolPayload!
+}
+
+type TalentPoolMembership implements Node {
+  id: ID!
+  _id: ID!
+  talent_pool_id: ID!
+  worker_id: ID!
+  assessment_id: ID!
+  nominated_by_principal_id: ID!
+  status: String!
+  valid_from: Time
+  valid_to: Time
+  approved_by_principal_id: ID
+  approved_at: Time
+  exit_reason_code: String
+}
+
+type TalentPoolMembershipEdge {
+  cursor: String!
+  node: TalentPoolMembership!
+}
+
+type TalentPoolMembershipConnection {
+  edges: [TalentPoolMembershipEdge!]!
+  nodes: [TalentPoolMembership!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  talentPoolMembership(id: ID!): TalentPoolMembership
+  talentPoolMemberships(talent_pool_id: String, worker_id: String, assessment_id: String, nominated_by_principal_id: String, status: String, approved_by_principal_id: String, exit_reason_code: String, after: String, before: String, first: Int, last: Int): TalentPoolMembershipConnection!
+}
+
+input CreateTalentPoolMembershipInput {
+  talent_pool_id: ID
+  worker_id: ID
+  assessment_id: ID
+  nominated_by_principal_id: ID
+  status: String
+  valid_from: Time
+  valid_to: Time
+  approved_by_principal_id: ID
+  approved_at: Time
+  exit_reason_code: String
+}
+
+input UpdateTalentPoolMembershipInput {
+  talent_pool_id: ID @goField(omittable: true)
+  worker_id: ID @goField(omittable: true)
+  assessment_id: ID @goField(omittable: true)
+  nominated_by_principal_id: ID @goField(omittable: true)
+  status: String @goField(omittable: true)
+  valid_from: Time @goField(omittable: true)
+  valid_to: Time @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+  exit_reason_code: String @goField(omittable: true)
+}
+
+type CreateTalentPoolMembershipPayload implements MutationResult {
+  talent_pool_membership: TalentPoolMembership
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateTalentPoolMembershipPayload implements MutationResult {
+  talent_pool_membership: TalentPoolMembership
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteTalentPoolMembershipPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createTalentPoolMembership(input: CreateTalentPoolMembershipInput!): CreateTalentPoolMembershipPayload!
+  updateTalentPoolMembership(id: ID!, input: UpdateTalentPoolMembershipInput!): UpdateTalentPoolMembershipPayload!
+  deleteTalentPoolMembership(id: ID!): DeleteTalentPoolMembershipPayload!
+}

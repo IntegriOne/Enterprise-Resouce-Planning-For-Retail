@@ -1,0 +1,45 @@
+# Mutasi alur kerja domain promotion HRM.
+
+input DecidePromotionRecommendationInput {
+  rationale_document_version_reference_id: ID!
+  rationale_digest: String!
+  idempotency_key: String!
+}
+
+type SubmitPromotionRecommendationPayload implements MutationResult {
+  promotion_recommendation: PromotionRecommendation
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApprovePromotionRecommendationPayload implements MutationResult {
+  promotion_recommendation: PromotionRecommendation
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectPromotionRecommendationPayload implements MutationResult {
+  promotion_recommendation: PromotionRecommendation
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ReturnPromotionRecommendationPayload implements MutationResult {
+  promotion_recommendation: PromotionRecommendation
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApplyPromotionRecommendationPayload implements MutationResult {
+  promotion_recommendation: PromotionRecommendation
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  submitPromotionRecommendation(id: ID!): SubmitPromotionRecommendationPayload!
+  approvePromotionRecommendation(id: ID!, input: DecidePromotionRecommendationInput!): ApprovePromotionRecommendationPayload!
+  rejectPromotionRecommendation(id: ID!, input: DecidePromotionRecommendationInput!): RejectPromotionRecommendationPayload!
+  returnPromotionRecommendation(id: ID!, input: DecidePromotionRecommendationInput!): ReturnPromotionRecommendationPayload!
+  applyPromotionRecommendation(id: ID!): ApplyPromotionRecommendationPayload!
+}

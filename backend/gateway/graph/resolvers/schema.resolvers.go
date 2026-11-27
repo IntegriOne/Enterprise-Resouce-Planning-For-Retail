@@ -71,6 +71,84 @@ func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error)
 		return r.WorkforcePlan(ctx, id)
 	case "workforce-plan-line":
 		return r.WorkforcePlanLine(ctx, id)
+	case "worker-lifecycle-event":
+		return r.WorkerLifecycleEvent(ctx, id)
+	case "worker-document":
+		return r.WorkerDocument(ctx, id)
+	case "emergency-contact":
+		return r.EmergencyContact(ctx, id)
+	case "learning-course":
+		return r.LearningCourse(ctx, id)
+	case "learning-enrollment":
+		return r.LearningEnrollment(ctx, id)
+	case "learning-course-competency":
+		return r.LearningCourseCompetency(ctx, id)
+	case "onboarding-plan":
+		return r.OnboardingPlan(ctx, id)
+	case "onboarding-task":
+		return r.OnboardingTask(ctx, id)
+	case "payroll-profile":
+		return r.PayrollProfile(ctx, id)
+	case "pay-component":
+		return r.PayComponent(ctx, id)
+	case "payroll-adjustment":
+		return r.PayrollAdjustment(ctx, id)
+	case "performance-cycle":
+		return r.PerformanceCycle(ctx, id)
+	case "performance-goal":
+		return r.PerformanceGoal(ctx, id)
+	case "performance-review":
+		return r.PerformanceReview(ctx, id)
+	case "performance-goal-update":
+		return r.PerformanceGoalUpdate(ctx, id)
+	case "performance-review-goal-score":
+		return r.PerformanceReviewGoalScore(ctx, id)
+	case "policy":
+		return r.Policy(ctx, id)
+	case "policy-acknowledgement":
+		return r.PolicyAcknowledgement(ctx, id)
+	case "promotion-recommendation":
+		return r.PromotionRecommendation(ctx, id)
+	case "promotion-decision":
+		return r.PromotionDecision(ctx, id)
+	case "application":
+		return r.Application(ctx, id)
+	case "application-stage-history":
+		return r.ApplicationStageHistory(ctx, id)
+	case "interview":
+		return r.Interview(ctx, id)
+	case "interview-panelist":
+		return r.InterviewPanelist(ctx, id)
+	case "interview-feedback":
+		return r.InterviewFeedback(ctx, id)
+	case "offer":
+		return r.Offer(ctx, id)
+	case "job-posting":
+		return r.JobPosting(ctx, id)
+	case "application-assessment":
+		return r.ApplicationAssessment(ctx, id)
+	case "succession-plan":
+		return r.SuccessionPlan(ctx, id)
+	case "succession-candidate":
+		return r.SuccessionCandidate(ctx, id)
+	case "talent-framework":
+		return r.TalentFramework(ctx, id)
+	case "talent-dimension":
+		return r.TalentDimension(ctx, id)
+	case "talent-review-cycle":
+		return r.TalentReviewCycle(ctx, id)
+	case "talent-assessment":
+		return r.TalentAssessment(ctx, id)
+	case "talent-assessment-score":
+		return r.TalentAssessmentScore(ctx, id)
+	case "talent-calibration-session":
+		return r.TalentCalibrationSession(ctx, id)
+	case "talent-calibration-decision":
+		return r.TalentCalibrationDecision(ctx, id)
+	case "talent-pool":
+		return r.TalentPool(ctx, id)
+	case "talent-pool-membership":
+		return r.TalentPoolMembership(ctx, id)
 	}
 	if efadapter.IsEFNodeID(id) {
 		adp, err := r.ef()

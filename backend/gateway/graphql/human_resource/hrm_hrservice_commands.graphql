@@ -1,0 +1,32 @@
+# Mutasi alur kerja domain hrservice HRM.
+
+type ResolveServiceRequestPayload implements MutationResult {
+  service_request: ServiceRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CloseServiceRequestPayload implements MutationResult {
+  service_request: ServiceRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelServiceRequestPayload implements MutationResult {
+  service_request: ServiceRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type AssignServiceRequestPayload implements MutationResult {
+  service_request: ServiceRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  resolveServiceRequest(id: ID!, resolution_document_version_reference_id: ID!): ResolveServiceRequestPayload!
+  closeServiceRequest(id: ID!): CloseServiceRequestPayload!
+  cancelServiceRequest(id: ID!): CancelServiceRequestPayload!
+  assignServiceRequest(id: ID!): AssignServiceRequestPayload!
+}

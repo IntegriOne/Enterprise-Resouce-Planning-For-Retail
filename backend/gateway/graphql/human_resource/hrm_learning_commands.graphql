@@ -1,0 +1,25 @@
+# Mutasi alur kerja domain learning HRM.
+
+type StartLearningEnrollmentPayload implements MutationResult {
+  learning_enrollment: LearningEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteLearningEnrollmentPayload implements MutationResult {
+  learning_enrollment: LearningEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type WithdrawLearningEnrollmentPayload implements MutationResult {
+  learning_enrollment: LearningEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  startLearningEnrollment(id: ID!): StartLearningEnrollmentPayload!
+  completeLearningEnrollment(id: ID!): CompleteLearningEnrollmentPayload!
+  withdrawLearningEnrollment(id: ID!): WithdrawLearningEnrollmentPayload!
+}

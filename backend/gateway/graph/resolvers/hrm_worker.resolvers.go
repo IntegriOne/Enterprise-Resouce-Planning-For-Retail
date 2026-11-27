@@ -148,10 +148,10 @@ func (r *queryResolver) Worker(ctx context.Context, id string) (*model.Worker, e
 }
 
 // Workers is the resolver for the workers field.
-func (r *queryResolver) Workers(ctx context.Context, workerNumber *string, legalEntityID *string, after *string, before *string, first *int, last *int) (*model.WorkerConnection, error) {
+func (r *queryResolver) Workers(ctx context.Context, workerNumber *string, legalEntityID *string, personPartyReferenceID *string, iamPrincipalReferenceID *string, status *string, primaryAssignmentID *string, terminationReasonCode *string, createdByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.WorkerConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.Worker], error) {
-			return r.HRMAdapter.Workers(ctx, limit, offset, workerNumber, legalEntityID)
+			return r.HRMAdapter.WorkersFiltered(ctx, limit, offset, workerNumber, legalEntityID, personPartyReferenceID, iamPrincipalReferenceID, status, primaryAssignmentID, terminationReasonCode, createdByPrincipalID)
 		},
 		func(node *model.Worker, cursor string) *model.WorkerEdge {
 			return &model.WorkerEdge{Node: node, Cursor: cursor}
@@ -190,10 +190,10 @@ func (r *queryResolver) WorkerAssignment(ctx context.Context, id string) (*model
 }
 
 // WorkerAssignments membaca halaman assignment pekerja.
-func (r *queryResolver) WorkerAssignments(ctx context.Context, workerID *string, positionID *string, after *string, before *string, first *int, last *int) (*model.WorkerAssignmentConnection, error) {
+func (r *queryResolver) WorkerAssignments(ctx context.Context, workerID *string, positionID *string, managerWorkerID *string, assignmentType *string, requestedByPrincipalID *string, approvedByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.WorkerAssignmentConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.WorkerAssignment], error) {
-			return r.HRMAdapter.WorkerAssignments(ctx, workerID, positionID, limit, offset)
+			return r.HRMAdapter.WorkerAssignmentsFiltered(ctx, limit, offset, workerID, positionID, managerWorkerID, assignmentType, requestedByPrincipalID, approvedByPrincipalID)
 		},
 		func(node *model.WorkerAssignment, cursor string) *model.WorkerAssignmentEdge {
 			return &model.WorkerAssignmentEdge{Node: node, Cursor: cursor}
@@ -211,10 +211,10 @@ func (r *queryResolver) EmploymentContract(ctx context.Context, id string) (*mod
 }
 
 // EmploymentContracts membaca metadata kontrak pekerja.
-func (r *queryResolver) EmploymentContracts(ctx context.Context, workerID string, after *string, before *string, first *int, last *int) (*model.EmploymentContractConnection, error) {
+func (r *queryResolver) EmploymentContracts(ctx context.Context, workerID *string, contractNumber *string, employingLegalEntityReferenceID *string, contractType *string, contractStatus *string, governingJurisdictionCode *string, workCountryCode *string, collectiveAgreementID *string, signedDocumentReferenceID *string, signedDocumentVersionReferenceID *string, after *string, before *string, first *int, last *int) (*model.EmploymentContractConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.EmploymentContract], error) {
-			return r.HRMAdapter.EmploymentContracts(ctx, workerID, limit, offset)
+			return r.HRMAdapter.EmploymentContractsFiltered(ctx, limit, offset, workerID, contractNumber, employingLegalEntityReferenceID, contractType, contractStatus, governingJurisdictionCode, workCountryCode, collectiveAgreementID, signedDocumentReferenceID, signedDocumentVersionReferenceID)
 		},
 		func(node *model.EmploymentContract, cursor string) *model.EmploymentContractEdge {
 			return &model.EmploymentContractEdge{Node: node, Cursor: cursor}

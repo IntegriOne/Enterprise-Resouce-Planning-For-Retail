@@ -1,0 +1,11 @@
+# Mutasi alur kerja domain compensation HRM.
+
+type ApproveCompensationRecordPayload implements MutationResult {
+  compensation_record: CompensationRecord
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  approveCompensationRecord(id: ID!): ApproveCompensationRecordPayload!
+}

@@ -28,7 +28,7 @@ type PositionConnection {
 
 extend type Query {
   position(id: ID!): Position
-  positions(legal_entity_id: ID, after: String, before: String, first: Int, last: Int): PositionConnection!
+  positions(legal_entity_id: ID, position_code: String, job_id: ID, organization_unit_reference_id: ID, reports_to_position_id: ID, position_status: String, work_location_reference_id: ID, cost_center_reference_id: ID, after: String, before: String, first: Int, last: Int): PositionConnection!
 }
 
 type ActivatePositionPayload implements MutationResult {

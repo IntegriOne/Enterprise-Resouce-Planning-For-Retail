@@ -1,0 +1,233 @@
+type WorkerQualification implements Node {
+  id: ID!
+  _id: ID!
+  title: String!
+  obtained_on: String
+  verified_by_principal_id: ID
+}
+
+type WorkerQualificationEdge {
+  cursor: String!
+  node: WorkerQualification!
+}
+
+type WorkerQualificationConnection {
+  edges: [WorkerQualificationEdge!]!
+  nodes: [WorkerQualification!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workerQualification(id: ID!): WorkerQualification
+  workerQualifications(worker_id: String, qualification_type: String, qualification_code: String, issuer_party_reference_id: String, credential_reference_id: String, verification_status: String, verified_by_principal_id: String, after: String, before: String, first: Int, last: Int): WorkerQualificationConnection!
+}
+
+input CreateWorkerQualificationInput {
+  worker_id: ID
+  title: String
+  obtained_on: String
+  verified_by_principal_id: ID
+}
+
+input UpdateWorkerQualificationInput {
+  worker_id: ID @goField(omittable: true)
+  title: String @goField(omittable: true)
+  obtained_on: String @goField(omittable: true)
+  verified_by_principal_id: ID @goField(omittable: true)
+}
+
+type CreateWorkerQualificationPayload implements MutationResult {
+  worker_qualification: WorkerQualification
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateWorkerQualificationPayload implements MutationResult {
+  worker_qualification: WorkerQualification
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkerQualificationPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkerQualification(input: CreateWorkerQualificationInput!): CreateWorkerQualificationPayload!
+  updateWorkerQualification(id: ID!, input: UpdateWorkerQualificationInput!): UpdateWorkerQualificationPayload!
+  deleteWorkerQualification(id: ID!): DeleteWorkerQualificationPayload!
+}
+
+type Competency implements Node {
+  id: ID!
+  _id: ID!
+  proficiency_scale: String
+}
+
+type CompetencyEdge {
+  cursor: String!
+  node: Competency!
+}
+
+type CompetencyConnection {
+  edges: [CompetencyEdge!]!
+  nodes: [Competency!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  competency(id: ID!): Competency
+  competencies(competency_code: String, category_code: String, after: String, before: String, first: Int, last: Int): CompetencyConnection!
+}
+
+input CreateCompetencyInput {
+  competency_code: String
+  category_code: String
+}
+
+input UpdateCompetencyInput {
+  competency_code: String @goField(omittable: true)
+  category_code: String @goField(omittable: true)
+}
+
+type CreateCompetencyPayload implements MutationResult {
+  competency: Competency
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateCompetencyPayload implements MutationResult {
+  competency: Competency
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCompetencyPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCompetency(input: CreateCompetencyInput!): CreateCompetencyPayload!
+  updateCompetency(id: ID!, input: UpdateCompetencyInput!): UpdateCompetencyPayload!
+  deleteCompetency(id: ID!): DeleteCompetencyPayload!
+}
+
+type JobCompetency implements Node {
+  id: ID!
+  _id: ID!
+}
+
+type JobCompetencyEdge {
+  cursor: String!
+  node: JobCompetency!
+}
+
+type JobCompetencyConnection {
+  edges: [JobCompetencyEdge!]!
+  nodes: [JobCompetency!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  jobCompetency(id: ID!): JobCompetency
+  jobCompetencies(job_id: String, competency_id: String, after: String, before: String, first: Int, last: Int): JobCompetencyConnection!
+}
+
+input CreateJobCompetencyInput {
+  job_id: ID
+}
+
+input UpdateJobCompetencyInput {
+  job_id: ID @goField(omittable: true)
+}
+
+type CreateJobCompetencyPayload implements MutationResult {
+  job_competency: JobCompetency
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateJobCompetencyPayload implements MutationResult {
+  job_competency: JobCompetency
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteJobCompetencyPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createJobCompetency(input: CreateJobCompetencyInput!): CreateJobCompetencyPayload!
+  updateJobCompetency(id: ID!, input: UpdateJobCompetencyInput!): UpdateJobCompetencyPayload!
+  deleteJobCompetency(id: ID!): DeleteJobCompetencyPayload!
+}
+
+type WorkerCompetencyAssessment implements Node {
+  id: ID!
+  _id: ID!
+  assessed_at: Time
+  evidence_document_version_reference_id: ID
+}
+
+type WorkerCompetencyAssessmentEdge {
+  cursor: String!
+  node: WorkerCompetencyAssessment!
+}
+
+type WorkerCompetencyAssessmentConnection {
+  edges: [WorkerCompetencyAssessmentEdge!]!
+  nodes: [WorkerCompetencyAssessment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workerCompetencyAssessment(id: ID!): WorkerCompetencyAssessment
+  workerCompetencyAssessments(worker_id: String, competency_id: String, assessed_by_principal_id: String, evidence_document_version_reference_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): WorkerCompetencyAssessmentConnection!
+}
+
+input CreateWorkerCompetencyAssessmentInput {
+  worker_id: ID
+  assessed_at: Time
+  evidence_digest: String
+}
+
+input UpdateWorkerCompetencyAssessmentInput {
+  worker_id: ID @goField(omittable: true)
+  assessed_at: Time @goField(omittable: true)
+  evidence_digest: String @goField(omittable: true)
+}
+
+type CreateWorkerCompetencyAssessmentPayload implements MutationResult {
+  worker_competency_assessment: WorkerCompetencyAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateWorkerCompetencyAssessmentPayload implements MutationResult {
+  worker_competency_assessment: WorkerCompetencyAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkerCompetencyAssessmentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkerCompetencyAssessment(input: CreateWorkerCompetencyAssessmentInput!): CreateWorkerCompetencyAssessmentPayload!
+  updateWorkerCompetencyAssessment(id: ID!, input: UpdateWorkerCompetencyAssessmentInput!): UpdateWorkerCompetencyAssessmentPayload!
+  deleteWorkerCompetencyAssessment(id: ID!): DeleteWorkerCompetencyAssessmentPayload!
+}

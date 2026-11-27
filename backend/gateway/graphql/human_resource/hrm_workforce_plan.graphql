@@ -26,7 +26,7 @@ type WorkforcePlanConnection {
 
 extend type Query {
   workforcePlan(id: ID!): WorkforcePlan
-  workforcePlans(after: String, before: String, first: Int, last: Int): WorkforcePlanConnection!
+  workforcePlans(plan_code: String, legal_entity_reference_id: ID, scenario_code: String, status: String, finance_budget_reference_id: ID, created_by_principal_id: ID, approved_by_principal_id: ID, after: String, before: String, first: Int, last: Int): WorkforcePlanConnection!
 }
 
 type WorkforcePlanLine implements Node {
@@ -59,7 +59,7 @@ type WorkforcePlanLineConnection {
 
 extend type Query {
   workforcePlanLine(id: ID!): WorkforcePlanLine
-  workforcePlanLines(workforce_plan_id: ID, after: String, before: String, first: Int, last: Int): WorkforcePlanLineConnection!
+  workforcePlanLines(workforce_plan_id: ID, line_number: Int, organization_unit_reference_id: ID, job_id: ID, work_location_reference_id: ID, currency_code: String, action_code: String, after: String, before: String, first: Int, last: Int): WorkforcePlanLineConnection!
 }
 
 type SubmitWorkforcePlanPayload implements MutationResult {

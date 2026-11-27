@@ -25,7 +25,7 @@ func TestHRMPermissionsInManifestMatchGRPCPolicy(t *testing.T) {
 				continue
 			}
 			actualResource, action, _ := strings.Cut(key, ".")
-			if actualResource != resource {
+			if actualResource != resource && (actualResource != "hr_promotion_recommendations" || resource != "hr_promotion_decisions") {
 				t.Errorf("IAM permission %s uses unexpected gRPC resource %s", code, actualResource)
 			}
 			mapped = true

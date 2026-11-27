@@ -1,0 +1,239 @@
+type EmployeeRelationsCase implements Node {
+  id: ID!
+  _id: ID!
+  case_number: String!
+  case_type: String!
+  status: String!
+  subject_worker_id: ID
+  reporting_party_reference_id: ID
+  assigned_investigator_principal_id: ID
+  opened_at: Time
+  due_at: Time
+  resolved_at: Time
+  outcome_code: String
+  restricted_summary_reference_id: ID!
+  confidentiality_class: String!
+  legal_hold_reference_id: ID
+  idempotency_key: String!
+}
+
+type EmployeeRelationsCaseEdge {
+  cursor: String!
+  node: EmployeeRelationsCase!
+}
+
+type EmployeeRelationsCaseConnection {
+  edges: [EmployeeRelationsCaseEdge!]!
+  nodes: [EmployeeRelationsCase!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  employeeRelationsCase(id: ID!): EmployeeRelationsCase
+  employeeRelationsCases(case_number: String, case_type: String, status: String, subject_worker_id: String, reporting_party_reference_id: String, assigned_investigator_principal_id: String, outcome_code: String, restricted_summary_reference_id: String, legal_hold_reference_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): EmployeeRelationsCaseConnection!
+}
+
+input CreateEmployeeRelationsCaseInput {
+  case_number: String
+  case_type: String
+  status: String
+  subject_worker_id: ID
+  reporting_party_reference_id: ID
+  assigned_investigator_principal_id: ID
+  due_at: Time
+  resolved_at: Time
+  outcome_code: String
+  restricted_summary_reference_id: ID
+  confidentiality_class: String
+  legal_hold_reference_id: ID
+  idempotency_key: String
+}
+
+input UpdateEmployeeRelationsCaseInput {
+  case_number: String @goField(omittable: true)
+  case_type: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  subject_worker_id: ID @goField(omittable: true)
+  reporting_party_reference_id: ID @goField(omittable: true)
+  assigned_investigator_principal_id: ID @goField(omittable: true)
+  due_at: Time @goField(omittable: true)
+  resolved_at: Time @goField(omittable: true)
+  outcome_code: String @goField(omittable: true)
+  restricted_summary_reference_id: ID @goField(omittable: true)
+  confidentiality_class: String @goField(omittable: true)
+  legal_hold_reference_id: ID @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreateEmployeeRelationsCasePayload implements MutationResult {
+  employee_relations_case: EmployeeRelationsCase
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateEmployeeRelationsCasePayload implements MutationResult {
+  employee_relations_case: EmployeeRelationsCase
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteEmployeeRelationsCasePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createEmployeeRelationsCase(input: CreateEmployeeRelationsCaseInput!): CreateEmployeeRelationsCasePayload!
+  updateEmployeeRelationsCase(id: ID!, input: UpdateEmployeeRelationsCaseInput!): UpdateEmployeeRelationsCasePayload!
+  deleteEmployeeRelationsCase(id: ID!): DeleteEmployeeRelationsCasePayload!
+}
+
+type EmployeeRelationsEvent implements Node {
+  id: ID!
+  _id: ID!
+  case_id: ID!
+  event_type: String!
+  occurred_at: Time
+  actor_principal_id: ID
+  event_digest: String!
+  event_reference_id: ID
+}
+
+type EmployeeRelationsEventEdge {
+  cursor: String!
+  node: EmployeeRelationsEvent!
+}
+
+type EmployeeRelationsEventConnection {
+  edges: [EmployeeRelationsEventEdge!]!
+  nodes: [EmployeeRelationsEvent!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  employeeRelationsEvent(id: ID!): EmployeeRelationsEvent
+  employeeRelationsEvents(case_id: String, event_type: String, actor_principal_id: String, event_reference_id: String, after: String, before: String, first: Int, last: Int): EmployeeRelationsEventConnection!
+}
+
+input CreateEmployeeRelationsEventInput {
+  case_id: ID
+  event_type: String
+  event_digest: String
+  event_reference_id: ID
+}
+
+input UpdateEmployeeRelationsEventInput {
+  case_id: ID @goField(omittable: true)
+  event_type: String @goField(omittable: true)
+  event_digest: String @goField(omittable: true)
+  event_reference_id: ID @goField(omittable: true)
+}
+
+type CreateEmployeeRelationsEventPayload implements MutationResult {
+  employee_relations_event: EmployeeRelationsEvent
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateEmployeeRelationsEventPayload implements MutationResult {
+  employee_relations_event: EmployeeRelationsEvent
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteEmployeeRelationsEventPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createEmployeeRelationsEvent(input: CreateEmployeeRelationsEventInput!): CreateEmployeeRelationsEventPayload!
+  updateEmployeeRelationsEvent(id: ID!, input: UpdateEmployeeRelationsEventInput!): UpdateEmployeeRelationsEventPayload!
+  deleteEmployeeRelationsEvent(id: ID!): DeleteEmployeeRelationsEventPayload!
+}
+
+type CollectiveAgreement implements Node {
+  id: ID!
+  _id: ID!
+  agreement_code: String!
+  agreement_version: Int!
+  legal_entity_reference_id: ID!
+  representative_party_reference_id: ID!
+  jurisdiction_code: String!
+  effective_from: Time
+  effective_to: Time
+  signed_at: Time
+  document_version_reference_id: ID!
+  content_digest: String!
+}
+
+type CollectiveAgreementEdge {
+  cursor: String!
+  node: CollectiveAgreement!
+}
+
+type CollectiveAgreementConnection {
+  edges: [CollectiveAgreementEdge!]!
+  nodes: [CollectiveAgreement!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  collectiveAgreement(id: ID!): CollectiveAgreement
+  collectiveAgreements(agreement_code: String, legal_entity_reference_id: String, representative_party_reference_id: String, jurisdiction_code: String, document_version_reference_id: String, after: String, before: String, first: Int, last: Int): CollectiveAgreementConnection!
+}
+
+input CreateCollectiveAgreementInput {
+  agreement_code: String
+  agreement_version: Int
+  legal_entity_reference_id: ID
+  representative_party_reference_id: ID
+  jurisdiction_code: String
+  effective_from: Time
+  effective_to: Time
+  signed_at: Time
+  document_version_reference_id: ID
+  content_digest: String
+}
+
+input UpdateCollectiveAgreementInput {
+  agreement_code: String @goField(omittable: true)
+  agreement_version: Int @goField(omittable: true)
+  legal_entity_reference_id: ID @goField(omittable: true)
+  representative_party_reference_id: ID @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  effective_from: Time @goField(omittable: true)
+  effective_to: Time @goField(omittable: true)
+  signed_at: Time @goField(omittable: true)
+  document_version_reference_id: ID @goField(omittable: true)
+  content_digest: String @goField(omittable: true)
+}
+
+type CreateCollectiveAgreementPayload implements MutationResult {
+  collective_agreement: CollectiveAgreement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateCollectiveAgreementPayload implements MutationResult {
+  collective_agreement: CollectiveAgreement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCollectiveAgreementPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCollectiveAgreement(input: CreateCollectiveAgreementInput!): CreateCollectiveAgreementPayload!
+  updateCollectiveAgreement(id: ID!, input: UpdateCollectiveAgreementInput!): UpdateCollectiveAgreementPayload!
+  deleteCollectiveAgreement(id: ID!): DeleteCollectiveAgreementPayload!
+}

@@ -31,7 +31,7 @@ type LeavePolicyConnection {
 
 extend type Query {
   leavePolicy(id: ID!): LeavePolicy
-  leavePolicies(after: String, before: String, first: Int, last: Int): LeavePolicyConnection!
+  leavePolicies(policy_code: String, leave_type_code: String, jurisdiction_code: String, after: String, before: String, first: Int, last: Int): LeavePolicyConnection!
 }
 
 type LeaveEntitlement implements Node {
@@ -65,7 +65,7 @@ type LeaveEntitlementConnection {
 
 extend type Query {
   leaveEntitlement(id: ID!): LeaveEntitlement
-  leaveEntitlements(worker_id: ID!, after: String, before: String, first: Int, last: Int): LeaveEntitlementConnection!
+  leaveEntitlements(worker_id: ID, leave_policy_id: ID, uom_code: String, source_workforce_snapshot_reference_id: ID, after: String, before: String, first: Int, last: Int): LeaveEntitlementConnection!
 }
 
 type LeaveLedgerEntry implements Node {
@@ -95,8 +95,8 @@ type LeaveLedgerEntryConnection {
 
 extend type Query {
   leaveLedgerEntry(id: ID!): LeaveLedgerEntry
-  # Sediakan tepat satu filter.
-  leaveLedgerEntries(entitlement_id: ID, adjustment_id: ID, after: String, before: String, first: Int, last: Int): LeaveLedgerEntryConnection!
+  # Gunakan paling banyak satu filter.
+  leaveLedgerEntries(entitlement_id: ID, adjustment_id: ID, entry_type: String, source_management: String, source_event_id: ID, reason_code: String, reverses_entry_id: ID, actor_principal_id: ID, after: String, before: String, first: Int, last: Int): LeaveLedgerEntryConnection!
 }
 
 type LeaveAdjustment implements Node {
@@ -124,8 +124,8 @@ type LeaveAdjustmentConnection {
 
 extend type Query {
   leaveAdjustment(id: ID!): LeaveAdjustment
-  # Sediakan tepat satu filter.
-  leaveAdjustments(entitlement_id: ID, idempotency_key: String, after: String, before: String, first: Int, last: Int): LeaveAdjustmentConnection!
+  # Gunakan paling banyak satu filter.
+  leaveAdjustments(entitlement_id: ID, idempotency_key: String, reason_code: String, requested_by_principal_id: ID, approved_by_principal_id: ID, after: String, before: String, first: Int, last: Int): LeaveAdjustmentConnection!
 }
 
 type ApproveLeaveAdjustmentPayload implements MutationResult {

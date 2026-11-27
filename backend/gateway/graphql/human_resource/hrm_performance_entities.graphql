@@ -1,0 +1,429 @@
+type PerformanceCycle implements Node {
+  id: ID!
+  _id: ID!
+  cycle_code: String!
+  cycle_name: String!
+  cycle_type: String!
+  status: String!
+  period_start: String!
+  period_end: String!
+  self_review_due_at: Time
+  manager_review_due_at: Time
+  calibration_due_at: Time
+  launched_at: Time
+  launched_by_principal_id: ID
+  configuration: String
+}
+
+type PerformanceCycleEdge {
+  cursor: String!
+  node: PerformanceCycle!
+}
+
+type PerformanceCycleConnection {
+  edges: [PerformanceCycleEdge!]!
+  nodes: [PerformanceCycle!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  performanceCycle(id: ID!): PerformanceCycle
+  performanceCycles(cycle_code: String, cycle_type: String, status: String, launched_by_principal_id: String, after: String, before: String, first: Int, last: Int): PerformanceCycleConnection!
+}
+
+input CreatePerformanceCycleInput {
+  cycle_code: String
+  cycle_name: String
+  cycle_type: String
+  status: String
+  period_start: String
+  period_end: String
+  self_review_due_at: Time
+  manager_review_due_at: Time
+  calibration_due_at: Time
+  launched_at: Time
+  launched_by_principal_id: ID
+  configuration: String
+}
+
+input UpdatePerformanceCycleInput {
+  cycle_code: String @goField(omittable: true)
+  cycle_name: String @goField(omittable: true)
+  cycle_type: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  period_start: String @goField(omittable: true)
+  period_end: String @goField(omittable: true)
+  self_review_due_at: Time @goField(omittable: true)
+  manager_review_due_at: Time @goField(omittable: true)
+  calibration_due_at: Time @goField(omittable: true)
+  launched_at: Time @goField(omittable: true)
+  launched_by_principal_id: ID @goField(omittable: true)
+  configuration: String @goField(omittable: true)
+}
+
+type CreatePerformanceCyclePayload implements MutationResult {
+  performance_cycle: PerformanceCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePerformanceCyclePayload implements MutationResult {
+  performance_cycle: PerformanceCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePerformanceCyclePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPerformanceCycle(input: CreatePerformanceCycleInput!): CreatePerformanceCyclePayload!
+  updatePerformanceCycle(id: ID!, input: UpdatePerformanceCycleInput!): UpdatePerformanceCyclePayload!
+  deletePerformanceCycle(id: ID!): DeletePerformanceCyclePayload!
+}
+
+type PerformanceGoal implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  performance_cycle_id: ID!
+  parent_goal_id: ID
+  goal_code: String
+  goal_title: String!
+  goal_description: String
+  goal_type: String!
+  measure_definition: String
+  target_value: String
+  actual_value: String
+  unit_code: String
+  weight_percent: String
+  due_date: String
+  goal_status: String!
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+type PerformanceGoalEdge {
+  cursor: String!
+  node: PerformanceGoal!
+}
+
+type PerformanceGoalConnection {
+  edges: [PerformanceGoalEdge!]!
+  nodes: [PerformanceGoal!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  performanceGoal(id: ID!): PerformanceGoal
+  performanceGoals(worker_id: String, performance_cycle_id: String, parent_goal_id: String, goal_code: String, goal_type: String, unit_code: String, goal_status: String, approved_by_principal_id: String, after: String, before: String, first: Int, last: Int): PerformanceGoalConnection!
+}
+
+input CreatePerformanceGoalInput {
+  worker_id: ID
+  performance_cycle_id: ID
+  parent_goal_id: ID
+  goal_code: String
+  goal_title: String
+  goal_description: String
+  goal_type: String
+  measure_definition: String
+  target_value: String
+  actual_value: String
+  unit_code: String
+  weight_percent: String
+  due_date: String
+  goal_status: String
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+input UpdatePerformanceGoalInput {
+  worker_id: ID @goField(omittable: true)
+  performance_cycle_id: ID @goField(omittable: true)
+  parent_goal_id: ID @goField(omittable: true)
+  goal_code: String @goField(omittable: true)
+  goal_title: String @goField(omittable: true)
+  goal_description: String @goField(omittable: true)
+  goal_type: String @goField(omittable: true)
+  measure_definition: String @goField(omittable: true)
+  target_value: String @goField(omittable: true)
+  actual_value: String @goField(omittable: true)
+  unit_code: String @goField(omittable: true)
+  weight_percent: String @goField(omittable: true)
+  due_date: String @goField(omittable: true)
+  goal_status: String @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+}
+
+type CreatePerformanceGoalPayload implements MutationResult {
+  performance_goal: PerformanceGoal
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePerformanceGoalPayload implements MutationResult {
+  performance_goal: PerformanceGoal
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePerformanceGoalPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPerformanceGoal(input: CreatePerformanceGoalInput!): CreatePerformanceGoalPayload!
+  updatePerformanceGoal(id: ID!, input: UpdatePerformanceGoalInput!): UpdatePerformanceGoalPayload!
+  deletePerformanceGoal(id: ID!): DeletePerformanceGoalPayload!
+}
+
+type PerformanceReview implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  performance_cycle_id: ID!
+  reviewer_principal_id: ID!
+  reviewer_role: String!
+  review_version: Int!
+  overall_rating_code: String
+  competency_assessment: String
+  narrative: String
+  development_plan_id: ID
+  submitted_at: Time
+  finalized_at: Time
+  visibility_class: String!
+  content_digest: String!
+}
+
+type PerformanceReviewEdge {
+  cursor: String!
+  node: PerformanceReview!
+}
+
+type PerformanceReviewConnection {
+  edges: [PerformanceReviewEdge!]!
+  nodes: [PerformanceReview!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  performanceReview(id: ID!): PerformanceReview
+  performanceReviews(worker_id: String, performance_cycle_id: String, reviewer_principal_id: String, overall_rating_code: String, development_plan_id: String, after: String, before: String, first: Int, last: Int): PerformanceReviewConnection!
+}
+
+input CreatePerformanceReviewInput {
+  worker_id: ID
+  performance_cycle_id: ID
+  reviewer_principal_id: ID
+  reviewer_role: String
+  review_version: Int
+  overall_rating_code: String
+  competency_assessment: String
+  narrative: String
+  development_plan_id: ID
+  submitted_at: Time
+  finalized_at: Time
+  visibility_class: String
+  content_digest: String
+}
+
+input UpdatePerformanceReviewInput {
+  worker_id: ID @goField(omittable: true)
+  performance_cycle_id: ID @goField(omittable: true)
+  reviewer_principal_id: ID @goField(omittable: true)
+  reviewer_role: String @goField(omittable: true)
+  review_version: Int @goField(omittable: true)
+  overall_rating_code: String @goField(omittable: true)
+  competency_assessment: String @goField(omittable: true)
+  narrative: String @goField(omittable: true)
+  development_plan_id: ID @goField(omittable: true)
+  submitted_at: Time @goField(omittable: true)
+  finalized_at: Time @goField(omittable: true)
+  visibility_class: String @goField(omittable: true)
+  content_digest: String @goField(omittable: true)
+}
+
+type CreatePerformanceReviewPayload implements MutationResult {
+  performance_review: PerformanceReview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePerformanceReviewPayload implements MutationResult {
+  performance_review: PerformanceReview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePerformanceReviewPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPerformanceReview(input: CreatePerformanceReviewInput!): CreatePerformanceReviewPayload!
+  updatePerformanceReview(id: ID!, input: UpdatePerformanceReviewInput!): UpdatePerformanceReviewPayload!
+  deletePerformanceReview(id: ID!): DeletePerformanceReviewPayload!
+}
+
+type PerformanceGoalUpdate implements Node {
+  id: ID!
+  _id: ID!
+  goal_id: ID!
+  observed_at: Time
+  actual_value: String!
+  evidence_document_version_reference_id: ID!
+  evidence_digest: String!
+  recorded_by_principal_id: ID!
+  recorded_at: Time
+  supersedes_update_id: ID
+  idempotency_key: String!
+}
+
+type PerformanceGoalUpdateEdge {
+  cursor: String!
+  node: PerformanceGoalUpdate!
+}
+
+type PerformanceGoalUpdateConnection {
+  edges: [PerformanceGoalUpdateEdge!]!
+  nodes: [PerformanceGoalUpdate!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  performanceGoalUpdate(id: ID!): PerformanceGoalUpdate
+  performanceGoalUpdates(goal_id: String, evidence_document_version_reference_id: String, recorded_by_principal_id: String, supersedes_update_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): PerformanceGoalUpdateConnection!
+}
+
+input CreatePerformanceGoalUpdateInput {
+  goal_id: ID
+  observed_at: Time
+  actual_value: String
+  evidence_document_version_reference_id: ID
+  evidence_digest: String
+  supersedes_update_id: ID
+  idempotency_key: String
+}
+
+input UpdatePerformanceGoalUpdateInput {
+  goal_id: ID @goField(omittable: true)
+  observed_at: Time @goField(omittable: true)
+  actual_value: String @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+  evidence_digest: String @goField(omittable: true)
+  supersedes_update_id: ID @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreatePerformanceGoalUpdatePayload implements MutationResult {
+  performance_goal_update: PerformanceGoalUpdate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePerformanceGoalUpdatePayload implements MutationResult {
+  performance_goal_update: PerformanceGoalUpdate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePerformanceGoalUpdatePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPerformanceGoalUpdate(input: CreatePerformanceGoalUpdateInput!): CreatePerformanceGoalUpdatePayload!
+  updatePerformanceGoalUpdate(id: ID!, input: UpdatePerformanceGoalUpdateInput!): UpdatePerformanceGoalUpdatePayload!
+  deletePerformanceGoalUpdate(id: ID!): DeletePerformanceGoalUpdatePayload!
+}
+
+type PerformanceReviewGoalScore implements Node {
+  id: ID!
+  _id: ID!
+  performance_review_id: ID!
+  goal_id: ID!
+  worker_id: ID!
+  performance_cycle_id: ID!
+  rating: Int!
+  weight_percent_snapshot: String!
+  rubric_document_version_reference_id: ID!
+  evidence_document_version_reference_id: ID!
+}
+
+type PerformanceReviewGoalScoreEdge {
+  cursor: String!
+  node: PerformanceReviewGoalScore!
+}
+
+type PerformanceReviewGoalScoreConnection {
+  edges: [PerformanceReviewGoalScoreEdge!]!
+  nodes: [PerformanceReviewGoalScore!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  performanceReviewGoalScore(id: ID!): PerformanceReviewGoalScore
+  performanceReviewGoalScores(performance_review_id: String, goal_id: String, worker_id: String, performance_cycle_id: String, rubric_document_version_reference_id: String, evidence_document_version_reference_id: String, after: String, before: String, first: Int, last: Int): PerformanceReviewGoalScoreConnection!
+}
+
+input CreatePerformanceReviewGoalScoreInput {
+  performance_review_id: ID
+  goal_id: ID
+  worker_id: ID
+  performance_cycle_id: ID
+  rating: Int
+  weight_percent_snapshot: String
+  rubric_document_version_reference_id: ID
+  evidence_document_version_reference_id: ID
+}
+
+input UpdatePerformanceReviewGoalScoreInput {
+  performance_review_id: ID @goField(omittable: true)
+  goal_id: ID @goField(omittable: true)
+  worker_id: ID @goField(omittable: true)
+  performance_cycle_id: ID @goField(omittable: true)
+  rating: Int @goField(omittable: true)
+  weight_percent_snapshot: String @goField(omittable: true)
+  rubric_document_version_reference_id: ID @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+}
+
+type CreatePerformanceReviewGoalScorePayload implements MutationResult {
+  performance_review_goal_score: PerformanceReviewGoalScore
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePerformanceReviewGoalScorePayload implements MutationResult {
+  performance_review_goal_score: PerformanceReviewGoalScore
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePerformanceReviewGoalScorePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPerformanceReviewGoalScore(input: CreatePerformanceReviewGoalScoreInput!): CreatePerformanceReviewGoalScorePayload!
+  updatePerformanceReviewGoalScore(id: ID!, input: UpdatePerformanceReviewGoalScoreInput!): UpdatePerformanceReviewGoalScorePayload!
+  deletePerformanceReviewGoalScore(id: ID!): DeletePerformanceReviewGoalScorePayload!
+}

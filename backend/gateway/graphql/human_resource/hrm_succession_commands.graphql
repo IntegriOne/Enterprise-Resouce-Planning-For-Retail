@@ -1,0 +1,11 @@
+# Mutasi alur kerja domain succession HRM.
+
+type ApproveSuccessionPlanPayload implements MutationResult {
+  succession_plan: SuccessionPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  approveSuccessionPlan(id: ID!): ApproveSuccessionPlanPayload!
+}

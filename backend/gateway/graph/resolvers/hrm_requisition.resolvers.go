@@ -70,10 +70,10 @@ func (r *queryResolver) Requisition(ctx context.Context, id string) (*model.Requ
 }
 
 // Requisitions membaca daftar requisition.
-func (r *queryResolver) Requisitions(ctx context.Context, requisitionNumber *string, after *string, before *string, first *int, last *int) (*model.RequisitionConnection, error) {
+func (r *queryResolver) Requisitions(ctx context.Context, requisitionNumber *string, workforcePlanLineID *string, positionID *string, jobID *string, organizationUnitReferenceID *string, hiringManagerPrincipalID *string, recruiterPrincipalID *string, requisitionType *string, status *string, budgetReferenceID *string, workLocationReferenceID *string, approvedByPrincipalID *string, rejectionReasonCode *string, rejectedByPrincipalID *string, idempotencyKey *string, after *string, before *string, first *int, last *int) (*model.RequisitionConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.Requisition], error) {
-			return r.HRMAdapter.Requisitions(ctx, requisitionNumber, limit, offset)
+			return r.HRMAdapter.RequisitionsFiltered(ctx, limit, offset, requisitionNumber, workforcePlanLineID, positionID, jobID, organizationUnitReferenceID, hiringManagerPrincipalID, recruiterPrincipalID, requisitionType, status, budgetReferenceID, workLocationReferenceID, approvedByPrincipalID, rejectionReasonCode, rejectedByPrincipalID, idempotencyKey)
 		},
 		func(node *model.Requisition, cursor string) *model.RequisitionEdge {
 			return &model.RequisitionEdge{Node: node, Cursor: cursor}

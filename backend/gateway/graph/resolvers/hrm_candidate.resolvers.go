@@ -42,10 +42,10 @@ func (r *queryResolver) Candidate(ctx context.Context, id string) (*model.Candid
 }
 
 // Candidates membaca daftar kandidat.
-func (r *queryResolver) Candidates(ctx context.Context, candidateNumber *string, after *string, before *string, first *int, last *int) (*model.CandidateConnection, error) {
+func (r *queryResolver) Candidates(ctx context.Context, candidateNumber *string, personPartyReferenceID *string, contactReferenceID *string, sourceType *string, candidateStatus *string, createdByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.CandidateConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.Candidate], error) {
-			return r.HRMAdapter.Candidates(ctx, candidateNumber, limit, offset)
+			return r.HRMAdapter.CandidatesFiltered(ctx, limit, offset, candidateNumber, personPartyReferenceID, contactReferenceID, sourceType, candidateStatus, createdByPrincipalID)
 		},
 		func(node *model.Candidate, cursor string) *model.CandidateEdge {
 			return &model.CandidateEdge{Node: node, Cursor: cursor}

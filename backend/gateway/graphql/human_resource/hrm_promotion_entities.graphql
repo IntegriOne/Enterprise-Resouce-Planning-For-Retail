@@ -1,0 +1,170 @@
+type PromotionRecommendation implements Node {
+  id: ID!
+  _id: ID!
+  recommendation_number: String!
+  worker_id: ID!
+  source_assignment_id: ID!
+  target_position_id: ID!
+  assessment_id: ID!
+  supersedes_recommendation_id: ID
+  recommended_effective_date: Time
+  rationale_document_version_reference_id: ID!
+  rationale_digest: String!
+  recommended_by_principal_id: ID!
+  recommended_at: Time
+  status: String!
+  approval_decision_id: ID
+  applied_assignment_id: ID
+  applied_lifecycle_event_id: ID
+  applied_at: Time
+  idempotency_key: String!
+}
+
+type PromotionRecommendationEdge {
+  cursor: String!
+  node: PromotionRecommendation!
+}
+
+type PromotionRecommendationConnection {
+  edges: [PromotionRecommendationEdge!]!
+  nodes: [PromotionRecommendation!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  promotionRecommendation(id: ID!): PromotionRecommendation
+  promotionRecommendations(recommendation_number: String, worker_id: String, source_assignment_id: String, target_position_id: String, assessment_id: String, supersedes_recommendation_id: String, rationale_document_version_reference_id: String, recommended_by_principal_id: String, status: String, approval_decision_id: String, applied_assignment_id: String, applied_lifecycle_event_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): PromotionRecommendationConnection!
+}
+
+input CreatePromotionRecommendationInput {
+  recommendation_number: String
+  worker_id: ID
+  source_assignment_id: ID
+  target_position_id: ID
+  assessment_id: ID
+  supersedes_recommendation_id: ID
+  recommended_effective_date: Time
+  rationale_document_version_reference_id: ID
+  rationale_digest: String
+  status: String
+  approval_decision_id: ID
+  applied_assignment_id: ID
+  applied_lifecycle_event_id: ID
+  applied_at: Time
+  idempotency_key: String
+}
+
+input UpdatePromotionRecommendationInput {
+  recommendation_number: String @goField(omittable: true)
+  worker_id: ID @goField(omittable: true)
+  source_assignment_id: ID @goField(omittable: true)
+  target_position_id: ID @goField(omittable: true)
+  assessment_id: ID @goField(omittable: true)
+  supersedes_recommendation_id: ID @goField(omittable: true)
+  recommended_effective_date: Time @goField(omittable: true)
+  rationale_document_version_reference_id: ID @goField(omittable: true)
+  rationale_digest: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  approval_decision_id: ID @goField(omittable: true)
+  applied_assignment_id: ID @goField(omittable: true)
+  applied_lifecycle_event_id: ID @goField(omittable: true)
+  applied_at: Time @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreatePromotionRecommendationPayload implements MutationResult {
+  promotion_recommendation: PromotionRecommendation
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePromotionRecommendationPayload implements MutationResult {
+  promotion_recommendation: PromotionRecommendation
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePromotionRecommendationPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPromotionRecommendation(input: CreatePromotionRecommendationInput!): CreatePromotionRecommendationPayload!
+  updatePromotionRecommendation(id: ID!, input: UpdatePromotionRecommendationInput!): UpdatePromotionRecommendationPayload!
+  deletePromotionRecommendation(id: ID!): DeletePromotionRecommendationPayload!
+}
+
+type PromotionDecision implements Node {
+  id: ID!
+  _id: ID!
+  recommendation_id: ID!
+  step_number: Int!
+  decision: String!
+  decided_by_principal_id: ID!
+  decided_at: Time
+  rationale_document_version_reference_id: ID!
+  rationale_digest: String!
+  idempotency_key: String!
+}
+
+type PromotionDecisionEdge {
+  cursor: String!
+  node: PromotionDecision!
+}
+
+type PromotionDecisionConnection {
+  edges: [PromotionDecisionEdge!]!
+  nodes: [PromotionDecision!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  promotionDecision(id: ID!): PromotionDecision
+  promotionDecisions(recommendation_id: String, step_number: Int, decided_by_principal_id: String, rationale_document_version_reference_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): PromotionDecisionConnection!
+}
+
+input CreatePromotionDecisionInput {
+  recommendation_id: ID
+  step_number: Int
+  decision: String
+  rationale_document_version_reference_id: ID
+  rationale_digest: String
+  idempotency_key: String
+}
+
+input UpdatePromotionDecisionInput {
+  recommendation_id: ID @goField(omittable: true)
+  step_number: Int @goField(omittable: true)
+  decision: String @goField(omittable: true)
+  rationale_document_version_reference_id: ID @goField(omittable: true)
+  rationale_digest: String @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreatePromotionDecisionPayload implements MutationResult {
+  promotion_decision: PromotionDecision
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePromotionDecisionPayload implements MutationResult {
+  promotion_decision: PromotionDecision
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePromotionDecisionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPromotionDecision(input: CreatePromotionDecisionInput!): CreatePromotionDecisionPayload!
+  updatePromotionDecision(id: ID!, input: UpdatePromotionDecisionInput!): UpdatePromotionDecisionPayload!
+  deletePromotionDecision(id: ID!): DeletePromotionDecisionPayload!
+}

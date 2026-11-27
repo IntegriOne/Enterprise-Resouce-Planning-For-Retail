@@ -88,10 +88,10 @@ func (r *queryResolver) PayrollRun(ctx context.Context, id string) (*model.Payro
 }
 
 // PayrollRuns membaca daftar status run payroll.
-func (r *queryResolver) PayrollRuns(ctx context.Context, idempotencyKey *string, payrollPeriodID *string, after *string, before *string, first *int, last *int) (*model.PayrollRunConnection, error) {
+func (r *queryResolver) PayrollRuns(ctx context.Context, idempotencyKey *string, payrollPeriodID *string, payrollGroupID *string, employingLegalEntityReferenceID *string, currencyCode *string, ruleSetID *string, originalRunID *string, runNumber *int, runType *string, status *string, jurisdictionCode *string, inputSnapshotReferenceID *string, startedByPrincipalID *string, approvedByPrincipalID *string, financeJournalReferenceID *string, paymentBatchReferenceID *string, financeSettlementEventReferenceID *string, after *string, before *string, first *int, last *int) (*model.PayrollRunConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.PayrollRun], error) {
-			return r.HRMAdapter.PayrollRuns(ctx, limit, offset, idempotencyKey, payrollPeriodID)
+			return r.HRMAdapter.PayrollRunsFiltered(ctx, limit, offset, idempotencyKey, payrollPeriodID, payrollGroupID, employingLegalEntityReferenceID, currencyCode, ruleSetID, originalRunID, runNumber, runType, status, jurisdictionCode, inputSnapshotReferenceID, startedByPrincipalID, approvedByPrincipalID, financeJournalReferenceID, paymentBatchReferenceID, financeSettlementEventReferenceID)
 		},
 		func(node *model.PayrollRun, cursor string) *model.PayrollRunEdge {
 			return &model.PayrollRunEdge{Node: node, Cursor: cursor}
@@ -109,10 +109,10 @@ func (r *queryResolver) PayrollPeriod(ctx context.Context, id string) (*model.Pa
 }
 
 // PayrollPeriods membaca daftar periode payroll.
-func (r *queryResolver) PayrollPeriods(ctx context.Context, payrollGroupID *string, after *string, before *string, first *int, last *int) (*model.PayrollPeriodConnection, error) {
+func (r *queryResolver) PayrollPeriods(ctx context.Context, payrollGroupID *string, employingLegalEntityReferenceID *string, currencyCode *string, jurisdictionCode *string, periodCode *string, periodStatus *string, calendarReferenceID *string, after *string, before *string, first *int, last *int) (*model.PayrollPeriodConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.PayrollPeriod], error) {
-			return r.HRMAdapter.PayrollPeriods(ctx, limit, offset, payrollGroupID)
+			return r.HRMAdapter.PayrollPeriodsFiltered(ctx, limit, offset, payrollGroupID, employingLegalEntityReferenceID, currencyCode, jurisdictionCode, periodCode, periodStatus, calendarReferenceID)
 		},
 		func(node *model.PayrollPeriod, cursor string) *model.PayrollPeriodEdge {
 			return &model.PayrollPeriodEdge{Node: node, Cursor: cursor}
@@ -130,10 +130,10 @@ func (r *queryResolver) PayrollGroup(ctx context.Context, id string) (*model.Pay
 }
 
 // PayrollGroups membaca daftar grup payroll.
-func (r *queryResolver) PayrollGroups(ctx context.Context, after *string, before *string, first *int, last *int) (*model.PayrollGroupConnection, error) {
+func (r *queryResolver) PayrollGroups(ctx context.Context, groupCode *string, employingLegalEntityReferenceID *string, jurisdictionCode *string, currencyCode *string, after *string, before *string, first *int, last *int) (*model.PayrollGroupConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.PayrollGroup], error) {
-			return r.HRMAdapter.PayrollGroups(ctx, limit, offset)
+			return r.HRMAdapter.PayrollGroupsFiltered(ctx, limit, offset, groupCode, employingLegalEntityReferenceID, jurisdictionCode, currencyCode)
 		},
 		func(node *model.PayrollGroup, cursor string) *model.PayrollGroupEdge {
 			return &model.PayrollGroupEdge{Node: node, Cursor: cursor}
@@ -151,10 +151,10 @@ func (r *queryResolver) PayrollRuleSet(ctx context.Context, id string) (*model.P
 }
 
 // PayrollRuleSets membaca daftar aturan payroll.
-func (r *queryResolver) PayrollRuleSets(ctx context.Context, after *string, before *string, first *int, last *int) (*model.PayrollRuleSetConnection, error) {
+func (r *queryResolver) PayrollRuleSets(ctx context.Context, ruleCode *string, jurisdictionCode *string, artifactDocumentVersionReferenceID *string, legalBasisDocumentVersionReferenceID *string, approvedByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.PayrollRuleSetConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.PayrollRuleSet], error) {
-			return r.HRMAdapter.PayrollRuleSets(ctx, limit, offset)
+			return r.HRMAdapter.PayrollRuleSetsFiltered(ctx, limit, offset, ruleCode, jurisdictionCode, artifactDocumentVersionReferenceID, legalBasisDocumentVersionReferenceID, approvedByPrincipalID)
 		},
 		func(node *model.PayrollRuleSet, cursor string) *model.PayrollRuleSetEdge {
 			return &model.PayrollRuleSetEdge{Node: node, Cursor: cursor}

@@ -98,10 +98,10 @@ func (r *queryResolver) OffboardingPlan(ctx context.Context, id string) (*model.
 }
 
 // OffboardingPlans membaca rencana offboarding pekerja.
-func (r *queryResolver) OffboardingPlans(ctx context.Context, workerID string, after *string, before *string, first *int, last *int) (*model.OffboardingPlanConnection, error) {
+func (r *queryResolver) OffboardingPlans(ctx context.Context, workerID *string, planNumber *string, reasonCode *string, status *string, exitInterviewDocumentVersionReferenceID *string, finalPayrollRunID *string, financeClearanceReferenceID *string, createdByPrincipalID *string, approvedByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.OffboardingPlanConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.OffboardingPlan], error) {
-			return r.HRMAdapter.OffboardingPlans(ctx, workerID, limit, offset)
+			return r.HRMAdapter.OffboardingPlansFiltered(ctx, limit, offset, workerID, planNumber, reasonCode, status, exitInterviewDocumentVersionReferenceID, finalPayrollRunID, financeClearanceReferenceID, createdByPrincipalID, approvedByPrincipalID)
 		},
 		func(node *model.OffboardingPlan, cursor string) *model.OffboardingPlanEdge {
 			return &model.OffboardingPlanEdge{Node: node, Cursor: cursor}
@@ -119,10 +119,10 @@ func (r *queryResolver) OffboardingTask(ctx context.Context, id string) (*model.
 }
 
 // OffboardingTasks membaca daftar tugas per rencana offboarding.
-func (r *queryResolver) OffboardingTasks(ctx context.Context, offboardingPlanID string, after *string, before *string, first *int, last *int) (*model.OffboardingTaskConnection, error) {
+func (r *queryResolver) OffboardingTasks(ctx context.Context, offboardingPlanID *string, taskCode *string, assignedPrincipalID *string, status *string, ownerConfirmationReferenceID *string, waivedByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.OffboardingTaskConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.OffboardingTask], error) {
-			return r.HRMAdapter.OffboardingTasks(ctx, offboardingPlanID, limit, offset)
+			return r.HRMAdapter.OffboardingTasksFiltered(ctx, limit, offset, offboardingPlanID, taskCode, assignedPrincipalID, status, ownerConfirmationReferenceID, waivedByPrincipalID)
 		},
 		func(node *model.OffboardingTask, cursor string) *model.OffboardingTaskEdge {
 			return &model.OffboardingTaskEdge{Node: node, Cursor: cursor}

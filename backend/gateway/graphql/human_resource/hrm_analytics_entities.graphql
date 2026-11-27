@@ -1,0 +1,170 @@
+type HumanCapitalMetricDefinition implements Node {
+  id: ID!
+  _id: ID!
+  metric_code: String!
+  metric_version: String!
+  metric_name: String!
+  metric_domain: String!
+  numerator_definition: String
+  denominator_definition: String
+  inclusion_exclusion_rules: String
+  unit_code: String
+  standard_reference: String
+}
+
+type HumanCapitalMetricDefinitionEdge {
+  cursor: String!
+  node: HumanCapitalMetricDefinition!
+}
+
+type HumanCapitalMetricDefinitionConnection {
+  edges: [HumanCapitalMetricDefinitionEdge!]!
+  nodes: [HumanCapitalMetricDefinition!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  humanCapitalMetricDefinition(id: ID!): HumanCapitalMetricDefinition
+  humanCapitalMetricDefinitions(metric_code: String, unit_code: String, after: String, before: String, first: Int, last: Int): HumanCapitalMetricDefinitionConnection!
+}
+
+input CreateHumanCapitalMetricDefinitionInput {
+  metric_code: String
+  metric_version: String
+  metric_name: String
+  metric_domain: String
+  numerator_definition: String
+  denominator_definition: String
+  inclusion_exclusion_rules: String
+  unit_code: String
+  standard_reference: String
+}
+
+input UpdateHumanCapitalMetricDefinitionInput {
+  metric_code: String @goField(omittable: true)
+  metric_version: String @goField(omittable: true)
+  metric_name: String @goField(omittable: true)
+  metric_domain: String @goField(omittable: true)
+  numerator_definition: String @goField(omittable: true)
+  denominator_definition: String @goField(omittable: true)
+  inclusion_exclusion_rules: String @goField(omittable: true)
+  unit_code: String @goField(omittable: true)
+  standard_reference: String @goField(omittable: true)
+}
+
+type CreateHumanCapitalMetricDefinitionPayload implements MutationResult {
+  human_capital_metric_definition: HumanCapitalMetricDefinition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateHumanCapitalMetricDefinitionPayload implements MutationResult {
+  human_capital_metric_definition: HumanCapitalMetricDefinition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteHumanCapitalMetricDefinitionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createHumanCapitalMetricDefinition(input: CreateHumanCapitalMetricDefinitionInput!): CreateHumanCapitalMetricDefinitionPayload!
+  updateHumanCapitalMetricDefinition(id: ID!, input: UpdateHumanCapitalMetricDefinitionInput!): UpdateHumanCapitalMetricDefinitionPayload!
+  deleteHumanCapitalMetricDefinition(id: ID!): DeleteHumanCapitalMetricDefinitionPayload!
+}
+
+type HumanCapitalMetricSnapshot implements Node {
+  id: ID!
+  _id: ID!
+  metric_definition_id: ID!
+  period_start: Time
+  period_end: Time
+  organization_unit_reference_id: ID
+  jurisdiction_code: String
+  value_numeric: String
+  value_text: String
+  population_count: String
+  data_quality_status: String!
+  snapshot_version: Int!
+  methodology_version: String!
+  confidentiality_class: String!
+  calculated_at: Time
+  source_digest: String!
+}
+
+type HumanCapitalMetricSnapshotEdge {
+  cursor: String!
+  node: HumanCapitalMetricSnapshot!
+}
+
+type HumanCapitalMetricSnapshotConnection {
+  edges: [HumanCapitalMetricSnapshotEdge!]!
+  nodes: [HumanCapitalMetricSnapshot!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  humanCapitalMetricSnapshot(id: ID!): HumanCapitalMetricSnapshot
+  humanCapitalMetricSnapshots(metric_definition_id: String, organization_unit_reference_id: String, jurisdiction_code: String, data_quality_status: String, after: String, before: String, first: Int, last: Int): HumanCapitalMetricSnapshotConnection!
+}
+
+input CreateHumanCapitalMetricSnapshotInput {
+  metric_definition_id: ID
+  period_start: Time
+  period_end: Time
+  organization_unit_reference_id: ID
+  jurisdiction_code: String
+  value_numeric: String
+  value_text: String
+  population_count: String
+  data_quality_status: String
+  snapshot_version: Int
+  methodology_version: String
+  confidentiality_class: String
+  source_digest: String
+}
+
+input UpdateHumanCapitalMetricSnapshotInput {
+  metric_definition_id: ID @goField(omittable: true)
+  period_start: Time @goField(omittable: true)
+  period_end: Time @goField(omittable: true)
+  organization_unit_reference_id: ID @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  value_numeric: String @goField(omittable: true)
+  value_text: String @goField(omittable: true)
+  population_count: String @goField(omittable: true)
+  data_quality_status: String @goField(omittable: true)
+  snapshot_version: Int @goField(omittable: true)
+  methodology_version: String @goField(omittable: true)
+  confidentiality_class: String @goField(omittable: true)
+  source_digest: String @goField(omittable: true)
+}
+
+type CreateHumanCapitalMetricSnapshotPayload implements MutationResult {
+  human_capital_metric_snapshot: HumanCapitalMetricSnapshot
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateHumanCapitalMetricSnapshotPayload implements MutationResult {
+  human_capital_metric_snapshot: HumanCapitalMetricSnapshot
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteHumanCapitalMetricSnapshotPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createHumanCapitalMetricSnapshot(input: CreateHumanCapitalMetricSnapshotInput!): CreateHumanCapitalMetricSnapshotPayload!
+  updateHumanCapitalMetricSnapshot(id: ID!, input: UpdateHumanCapitalMetricSnapshotInput!): UpdateHumanCapitalMetricSnapshotPayload!
+  deleteHumanCapitalMetricSnapshot(id: ID!): DeleteHumanCapitalMetricSnapshotPayload!
+}

@@ -1,0 +1,110 @@
+type EngagementSurvey implements Node {
+  id: ID!
+  _id: ID!
+  survey_code: String!
+  survey_version: Int!
+  legal_entity_reference_id: ID!
+  topic_code: String!
+  opens_at: Time
+  closes_at: Time
+  questionnaire_document_version_reference_id: ID!
+  questionnaire_digest: String!
+  minimum_reporting_population: Int!
+}
+
+type EngagementSurveyEdge {
+  cursor: String!
+  node: EngagementSurvey!
+}
+
+type EngagementSurveyConnection {
+  edges: [EngagementSurveyEdge!]!
+  nodes: [EngagementSurvey!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  engagementSurvey(id: ID!): EngagementSurvey
+  engagementSurveys(survey_code: String, legal_entity_reference_id: String, topic_code: String, questionnaire_document_version_reference_id: String, after: String, before: String, first: Int, last: Int): EngagementSurveyConnection!
+}
+
+input CreateEngagementSurveyInput {
+  survey_code: String
+  survey_version: Int
+  legal_entity_reference_id: ID
+  topic_code: String
+  opens_at: Time
+  closes_at: Time
+  questionnaire_document_version_reference_id: ID
+  questionnaire_digest: String
+  minimum_reporting_population: Int
+}
+
+input UpdateEngagementSurveyInput {
+  survey_code: String @goField(omittable: true)
+  survey_version: Int @goField(omittable: true)
+  legal_entity_reference_id: ID @goField(omittable: true)
+  topic_code: String @goField(omittable: true)
+  opens_at: Time @goField(omittable: true)
+  closes_at: Time @goField(omittable: true)
+  questionnaire_document_version_reference_id: ID @goField(omittable: true)
+  questionnaire_digest: String @goField(omittable: true)
+  minimum_reporting_population: Int @goField(omittable: true)
+}
+
+type CreateEngagementSurveyPayload implements MutationResult {
+  engagement_survey: EngagementSurvey
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateEngagementSurveyPayload implements MutationResult {
+  engagement_survey: EngagementSurvey
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteEngagementSurveyPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createEngagementSurvey(input: CreateEngagementSurveyInput!): CreateEngagementSurveyPayload!
+  updateEngagementSurvey(id: ID!, input: UpdateEngagementSurveyInput!): UpdateEngagementSurveyPayload!
+  deleteEngagementSurvey(id: ID!): DeleteEngagementSurveyPayload!
+}
+
+type EngagementSurveyResult implements Node {
+  id: ID!
+  _id: ID!
+  survey_id: ID!
+  organization_unit_reference_id: ID
+  question_code: String!
+  result_version: Int!
+  respondent_count: Int!
+  score_value: String!
+  scale_minimum: String!
+  scale_maximum: String!
+  source_digest: String!
+  calculated_at: Time
+}
+
+type EngagementSurveyResultEdge {
+  cursor: String!
+  node: EngagementSurveyResult!
+}
+
+type EngagementSurveyResultConnection {
+  edges: [EngagementSurveyResultEdge!]!
+  nodes: [EngagementSurveyResult!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  engagementSurveyResult(id: ID!): EngagementSurveyResult
+  engagementSurveyResults(survey_id: String, organization_unit_reference_id: String, question_code: String, after: String, before: String, first: Int, last: Int): EngagementSurveyResultConnection!
+}

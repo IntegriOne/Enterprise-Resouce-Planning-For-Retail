@@ -1,0 +1,90 @@
+# Mutasi alur kerja domain talent HRM.
+
+input RecordTalentCalibrationDecisionInput {
+  session_id: ID!
+  assessment_id: ID!
+  dimension_id: ID!
+  calibrated_score: Int!
+  rationale_document_version_reference_id: ID!
+  rationale_digest: String!
+}
+
+type LaunchTalentReviewCyclePayload implements MutationResult {
+  talent_review_cycle: TalentReviewCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type StartTalentReviewCycleCalibrationPayload implements MutationResult {
+  talent_review_cycle: TalentReviewCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CloseTalentReviewCyclePayload implements MutationResult {
+  talent_review_cycle: TalentReviewCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SubmitTalentAssessmentPayload implements MutationResult {
+  talent_assessment: TalentAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type WithdrawTalentAssessmentPayload implements MutationResult {
+  talent_assessment: TalentAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type FinalizeTalentAssessmentPayload implements MutationResult {
+  talent_assessment: TalentAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type OpenTalentCalibrationSessionPayload implements MutationResult {
+  talent_calibration_session: TalentCalibrationSession
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RecordTalentCalibrationDecisionPayload implements MutationResult {
+  talent_calibration_decision: TalentCalibrationDecision
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveTalentPoolMembershipPayload implements MutationResult {
+  talent_pool_membership: TalentPoolMembership
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectTalentPoolMembershipPayload implements MutationResult {
+  talent_pool_membership: TalentPoolMembership
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ExitTalentPoolMembershipPayload implements MutationResult {
+  talent_pool_membership: TalentPoolMembership
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  launchTalentReviewCycle(id: ID!): LaunchTalentReviewCyclePayload!
+  startTalentReviewCycleCalibration(id: ID!): StartTalentReviewCycleCalibrationPayload!
+  closeTalentReviewCycle(id: ID!): CloseTalentReviewCyclePayload!
+  submitTalentAssessment(id: ID!): SubmitTalentAssessmentPayload!
+  withdrawTalentAssessment(id: ID!): WithdrawTalentAssessmentPayload!
+  finalizeTalentAssessment(id: ID!): FinalizeTalentAssessmentPayload!
+  openTalentCalibrationSession(id: ID!): OpenTalentCalibrationSessionPayload!
+  recordTalentCalibrationDecision(input: RecordTalentCalibrationDecisionInput!): RecordTalentCalibrationDecisionPayload!
+  approveTalentPoolMembership(id: ID!): ApproveTalentPoolMembershipPayload!
+  rejectTalentPoolMembership(id: ID!, reason_code: String!): RejectTalentPoolMembershipPayload!
+  exitTalentPoolMembership(id: ID!, reason_code: String!): ExitTalentPoolMembershipPayload!
+}

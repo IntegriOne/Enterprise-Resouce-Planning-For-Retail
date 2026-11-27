@@ -1,0 +1,39 @@
+# Mutasi CRUD tambahan untuk domain personnel HRM.
+
+type DeleteWorkerPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateWorkerAssignmentInput {
+  worker_id: ID @goField(omittable: true)
+  position_id: ID @goField(omittable: true)
+  manager_worker_id: ID @goField(omittable: true)
+  assignment_type: String @goField(omittable: true)
+  employment_status_snapshot: String @goField(omittable: true)
+  fte_percent: String @goField(omittable: true)
+  valid_from: String @goField(omittable: true)
+  valid_to: String @goField(omittable: true)
+  assignment_reason: String @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+}
+
+type UpdateWorkerAssignmentPayload implements MutationResult {
+  worker_assignment: WorkerAssignment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkerAssignmentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  deleteWorker(id: ID!): DeleteWorkerPayload!
+  updateWorkerAssignment(id: ID!, input: UpdateWorkerAssignmentInput!): UpdateWorkerAssignmentPayload!
+  deleteWorkerAssignment(id: ID!): DeleteWorkerAssignmentPayload!
+}

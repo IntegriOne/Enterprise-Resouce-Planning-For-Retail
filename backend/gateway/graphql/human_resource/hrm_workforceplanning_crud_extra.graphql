@@ -1,0 +1,53 @@
+# Mutasi CRUD tambahan untuk domain workforce planning HRM.
+
+input UpdateJobFamilyInput {
+  family_code: String @goField(omittable: true)
+  family_name: String @goField(omittable: true)
+  description: String @goField(omittable: true)
+  job_domain: String @goField(omittable: true)
+  is_active: Boolean @goField(omittable: true)
+}
+
+type UpdateJobFamilyPayload implements MutationResult {
+  job_family: JobFamily
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteJobFamilyPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateJobInput {
+  job_family_id: ID @goField(omittable: true)
+  job_code: String @goField(omittable: true)
+  job_title: String @goField(omittable: true)
+  job_level_code: String @goField(omittable: true)
+  job_description: String @goField(omittable: true)
+  responsibilities: String @goField(omittable: true)
+  qualification_requirements: String @goField(omittable: true)
+  valid_from: String @goField(omittable: true)
+  valid_to: String @goField(omittable: true)
+  is_active: Boolean @goField(omittable: true)
+}
+
+type UpdateJobPayload implements MutationResult {
+  job: Job
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteJobPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  updateJobFamily(id: ID!, input: UpdateJobFamilyInput!): UpdateJobFamilyPayload!
+  deleteJobFamily(id: ID!): DeleteJobFamilyPayload!
+  updateJob(id: ID!, input: UpdateJobInput!): UpdateJobPayload!
+  deleteJob(id: ID!): DeleteJobPayload!
+}

@@ -1,0 +1,635 @@
+type Application implements Node {
+  id: ID!
+  _id: ID!
+  candidate_id: ID!
+  requisition_id: ID!
+  application_number: String!
+  status: String!
+  applied_at: Time
+  current_stage_code: String
+  assigned_recruiter_principal_id: ID
+  screening_score: String
+  scorecard_version: String
+  disposition_reason_code: String
+  decision_at: Time
+  decision_by_principal_id: ID
+  hired_worker_id: ID
+  source_posting_id: ID
+  idempotency_key: String!
+}
+
+type ApplicationEdge {
+  cursor: String!
+  node: Application!
+}
+
+type ApplicationConnection {
+  edges: [ApplicationEdge!]!
+  nodes: [Application!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  application(id: ID!): Application
+  applications(candidate_id: String, requisition_id: String, application_number: String, status: String, current_stage_code: String, assigned_recruiter_principal_id: String, disposition_reason_code: String, decision_by_principal_id: String, hired_worker_id: String, source_posting_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): ApplicationConnection!
+}
+
+input CreateApplicationInput {
+  candidate_id: ID
+  requisition_id: ID
+  application_number: String
+  status: String
+  current_stage_code: String
+  assigned_recruiter_principal_id: ID
+  screening_score: String
+  scorecard_version: String
+  disposition_reason_code: String
+  decision_at: Time
+  decision_by_principal_id: ID
+  hired_worker_id: ID
+  source_posting_id: ID
+  idempotency_key: String
+}
+
+input UpdateApplicationInput {
+  candidate_id: ID @goField(omittable: true)
+  requisition_id: ID @goField(omittable: true)
+  application_number: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  current_stage_code: String @goField(omittable: true)
+  assigned_recruiter_principal_id: ID @goField(omittable: true)
+  screening_score: String @goField(omittable: true)
+  scorecard_version: String @goField(omittable: true)
+  disposition_reason_code: String @goField(omittable: true)
+  decision_at: Time @goField(omittable: true)
+  decision_by_principal_id: ID @goField(omittable: true)
+  hired_worker_id: ID @goField(omittable: true)
+  source_posting_id: ID @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreateApplicationPayload implements MutationResult {
+  application: Application
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateApplicationPayload implements MutationResult {
+  application: Application
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteApplicationPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createApplication(input: CreateApplicationInput!): CreateApplicationPayload!
+  updateApplication(id: ID!, input: UpdateApplicationInput!): UpdateApplicationPayload!
+  deleteApplication(id: ID!): DeleteApplicationPayload!
+}
+
+type ApplicationStageHistory implements Node {
+  id: ID!
+  _id: ID!
+  application_id: ID!
+  previous_status: String
+  new_status: String!
+  stage_code: String
+  changed_at: Time
+  changed_by_principal_id: ID
+  reason_code: String
+}
+
+type ApplicationStageHistoryEdge {
+  cursor: String!
+  node: ApplicationStageHistory!
+}
+
+type ApplicationStageHistoryConnection {
+  edges: [ApplicationStageHistoryEdge!]!
+  nodes: [ApplicationStageHistory!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  applicationStageHistory(id: ID!): ApplicationStageHistory
+  applicationStageHistories(application_id: String, previous_status: String, new_status: String, stage_code: String, changed_by_principal_id: String, reason_code: String, after: String, before: String, first: Int, last: Int): ApplicationStageHistoryConnection!
+}
+
+type Interview implements Node {
+  id: ID!
+  _id: ID!
+  application_id: ID!
+  interview_round: Int!
+  interview_type: String!
+  scheduled_start: Time
+  scheduled_end: Time
+  location_reference_id: ID
+  meeting_reference_id: ID
+  status: String!
+  candidate_timezone: String
+  created_by_principal_id: ID
+}
+
+type InterviewEdge {
+  cursor: String!
+  node: Interview!
+}
+
+type InterviewConnection {
+  edges: [InterviewEdge!]!
+  nodes: [Interview!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  interview(id: ID!): Interview
+  interviews(application_id: String, interview_type: String, location_reference_id: String, meeting_reference_id: String, status: String, created_by_principal_id: String, after: String, before: String, first: Int, last: Int): InterviewConnection!
+}
+
+input CreateInterviewInput {
+  application_id: ID
+  interview_round: Int
+  interview_type: String
+  scheduled_start: Time
+  scheduled_end: Time
+  location_reference_id: ID
+  meeting_reference_id: ID
+  status: String
+  candidate_timezone: String
+}
+
+input UpdateInterviewInput {
+  application_id: ID @goField(omittable: true)
+  interview_round: Int @goField(omittable: true)
+  interview_type: String @goField(omittable: true)
+  scheduled_start: Time @goField(omittable: true)
+  scheduled_end: Time @goField(omittable: true)
+  location_reference_id: ID @goField(omittable: true)
+  meeting_reference_id: ID @goField(omittable: true)
+  status: String @goField(omittable: true)
+  candidate_timezone: String @goField(omittable: true)
+}
+
+type CreateInterviewPayload implements MutationResult {
+  interview: Interview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateInterviewPayload implements MutationResult {
+  interview: Interview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteInterviewPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createInterview(input: CreateInterviewInput!): CreateInterviewPayload!
+  updateInterview(id: ID!, input: UpdateInterviewInput!): UpdateInterviewPayload!
+  deleteInterview(id: ID!): DeleteInterviewPayload!
+}
+
+type InterviewPanelist implements Node {
+  id: ID!
+  _id: ID!
+  interview_id: ID!
+  interviewer_principal_id: ID!
+  interviewer_role: String
+  scorecard_template_reference_id: ID
+  feedback_due_at: Time
+}
+
+type InterviewPanelistEdge {
+  cursor: String!
+  node: InterviewPanelist!
+}
+
+type InterviewPanelistConnection {
+  edges: [InterviewPanelistEdge!]!
+  nodes: [InterviewPanelist!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  interviewPanelist(id: ID!): InterviewPanelist
+  interviewPanelists(interview_id: String, interviewer_principal_id: String, scorecard_template_reference_id: String, after: String, before: String, first: Int, last: Int): InterviewPanelistConnection!
+}
+
+input CreateInterviewPanelistInput {
+  interview_id: ID
+  interviewer_principal_id: ID
+  interviewer_role: String
+  scorecard_template_reference_id: ID
+  feedback_due_at: Time
+}
+
+input UpdateInterviewPanelistInput {
+  interview_id: ID @goField(omittable: true)
+  interviewer_principal_id: ID @goField(omittable: true)
+  interviewer_role: String @goField(omittable: true)
+  scorecard_template_reference_id: ID @goField(omittable: true)
+  feedback_due_at: Time @goField(omittable: true)
+}
+
+type CreateInterviewPanelistPayload implements MutationResult {
+  interview_panelist: InterviewPanelist
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateInterviewPanelistPayload implements MutationResult {
+  interview_panelist: InterviewPanelist
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteInterviewPanelistPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createInterviewPanelist(input: CreateInterviewPanelistInput!): CreateInterviewPanelistPayload!
+  updateInterviewPanelist(id: ID!, input: UpdateInterviewPanelistInput!): UpdateInterviewPanelistPayload!
+  deleteInterviewPanelist(id: ID!): DeleteInterviewPanelistPayload!
+}
+
+type InterviewFeedback implements Node {
+  id: ID!
+  _id: ID!
+  interview_id: ID!
+  interviewer_principal_id: ID!
+  feedback_version: Int!
+  submitted_at: Time
+  overall_recommendation: String!
+  competency_scores: String
+  evidence_notes: String
+  content_digest: String!
+  visibility_class: String!
+}
+
+type InterviewFeedbackEdge {
+  cursor: String!
+  node: InterviewFeedback!
+}
+
+type InterviewFeedbackConnection {
+  edges: [InterviewFeedbackEdge!]!
+  nodes: [InterviewFeedback!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  interviewFeedback(id: ID!): InterviewFeedback
+  interviewFeedbacks(interview_id: String, interviewer_principal_id: String, after: String, before: String, first: Int, last: Int): InterviewFeedbackConnection!
+}
+
+input CreateInterviewFeedbackInput {
+  interview_id: ID
+  interviewer_principal_id: ID
+  feedback_version: Int
+  overall_recommendation: String
+  competency_scores: String
+  evidence_notes: String
+  content_digest: String
+  visibility_class: String
+}
+
+input UpdateInterviewFeedbackInput {
+  interview_id: ID @goField(omittable: true)
+  interviewer_principal_id: ID @goField(omittable: true)
+  feedback_version: Int @goField(omittable: true)
+  overall_recommendation: String @goField(omittable: true)
+  competency_scores: String @goField(omittable: true)
+  evidence_notes: String @goField(omittable: true)
+  content_digest: String @goField(omittable: true)
+  visibility_class: String @goField(omittable: true)
+}
+
+type CreateInterviewFeedbackPayload implements MutationResult {
+  interview_feedback: InterviewFeedback
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateInterviewFeedbackPayload implements MutationResult {
+  interview_feedback: InterviewFeedback
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteInterviewFeedbackPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createInterviewFeedback(input: CreateInterviewFeedbackInput!): CreateInterviewFeedbackPayload!
+  updateInterviewFeedback(id: ID!, input: UpdateInterviewFeedbackInput!): UpdateInterviewFeedbackPayload!
+  deleteInterviewFeedback(id: ID!): DeleteInterviewFeedbackPayload!
+}
+
+type Offer implements Node {
+  id: ID!
+  _id: ID!
+  application_id: ID!
+  offer_number: String!
+  offer_version: Int!
+  offer_status: String!
+  proposed_job_id: ID!
+  proposed_legal_entity_reference_id: ID!
+  proposed_start_date: String
+  proposed_contract_type: String!
+  proposed_compensation_document_version_reference_id: ID
+  currency_code: String
+  offer_document_reference_id: ID
+  offer_document_version_reference_id: ID
+  offer_content_digest: String!
+  issued_at: Time
+  expires_at: Time
+  candidate_response: String
+  responded_at: Time
+  approved_by_principal_id: ID
+  approved_at: Time
+  created_by_principal_id: ID
+  created_at: Time
+  withdrawn_at: Time
+  withdrawn_by_principal_id: ID
+  withdrawal_reason_code: String
+}
+
+type OfferEdge {
+  cursor: String!
+  node: Offer!
+}
+
+type OfferConnection {
+  edges: [OfferEdge!]!
+  nodes: [Offer!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  offer(id: ID!): Offer
+  offers(application_id: String, offer_number: String, offer_status: String, proposed_job_id: String, proposed_legal_entity_reference_id: String, proposed_contract_type: String, proposed_compensation_document_version_reference_id: String, currency_code: String, offer_document_reference_id: String, offer_document_version_reference_id: String, approved_by_principal_id: String, after: String, before: String, first: Int, last: Int): OfferConnection!
+}
+
+input CreateOfferInput {
+  application_id: ID
+  offer_number: String
+  offer_version: Int
+  offer_status: String
+  proposed_job_id: ID
+  proposed_legal_entity_reference_id: ID
+  proposed_start_date: String
+  proposed_contract_type: String
+  proposed_compensation_document_version_reference_id: ID
+  currency_code: String
+  offer_document_reference_id: ID
+  offer_document_version_reference_id: ID
+  offer_content_digest: String
+  issued_at: Time
+  expires_at: Time
+  candidate_response: String
+  responded_at: Time
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+input UpdateOfferInput {
+  application_id: ID @goField(omittable: true)
+  offer_number: String @goField(omittable: true)
+  offer_version: Int @goField(omittable: true)
+  offer_status: String @goField(omittable: true)
+  proposed_job_id: ID @goField(omittable: true)
+  proposed_legal_entity_reference_id: ID @goField(omittable: true)
+  proposed_start_date: String @goField(omittable: true)
+  proposed_contract_type: String @goField(omittable: true)
+  proposed_compensation_document_version_reference_id: ID @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  offer_document_reference_id: ID @goField(omittable: true)
+  offer_document_version_reference_id: ID @goField(omittable: true)
+  offer_content_digest: String @goField(omittable: true)
+  issued_at: Time @goField(omittable: true)
+  expires_at: Time @goField(omittable: true)
+  candidate_response: String @goField(omittable: true)
+  responded_at: Time @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+}
+
+type CreateOfferPayload implements MutationResult {
+  offer: Offer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateOfferPayload implements MutationResult {
+  offer: Offer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteOfferPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createOffer(input: CreateOfferInput!): CreateOfferPayload!
+  updateOffer(id: ID!, input: UpdateOfferInput!): UpdateOfferPayload!
+  deleteOffer(id: ID!): DeleteOfferPayload!
+}
+
+type JobPosting implements Node {
+  id: ID!
+  _id: ID!
+  requisition_id: ID!
+  channel_code: String!
+  posting_version: Int!
+  external_posting_reference: String
+  content_document_version_reference_id: ID!
+  content_digest: String!
+  status: String!
+  published_at: Time
+  closes_at: Time
+  created_by_principal_id: ID!
+  withdrawn_at: Time
+  withdrawal_reason_code: String
+  withdrawn_by_principal_id: ID
+}
+
+type JobPostingEdge {
+  cursor: String!
+  node: JobPosting!
+}
+
+type JobPostingConnection {
+  edges: [JobPostingEdge!]!
+  nodes: [JobPosting!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  jobPosting(id: ID!): JobPosting
+  jobPostings(requisition_id: String, channel_code: String, content_document_version_reference_id: String, status: String, created_by_principal_id: String, withdrawal_reason_code: String, withdrawn_by_principal_id: String, after: String, before: String, first: Int, last: Int): JobPostingConnection!
+}
+
+input CreateJobPostingInput {
+  requisition_id: ID
+  channel_code: String
+  posting_version: Int
+  external_posting_reference: String
+  content_document_version_reference_id: ID
+  content_digest: String
+  status: String
+  published_at: Time
+  closes_at: Time
+}
+
+input UpdateJobPostingInput {
+  requisition_id: ID @goField(omittable: true)
+  channel_code: String @goField(omittable: true)
+  posting_version: Int @goField(omittable: true)
+  external_posting_reference: String @goField(omittable: true)
+  content_document_version_reference_id: ID @goField(omittable: true)
+  content_digest: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  published_at: Time @goField(omittable: true)
+  closes_at: Time @goField(omittable: true)
+}
+
+type CreateJobPostingPayload implements MutationResult {
+  job_posting: JobPosting
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateJobPostingPayload implements MutationResult {
+  job_posting: JobPosting
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteJobPostingPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createJobPosting(input: CreateJobPostingInput!): CreateJobPostingPayload!
+  updateJobPosting(id: ID!, input: UpdateJobPostingInput!): UpdateJobPostingPayload!
+  deleteJobPosting(id: ID!): DeleteJobPostingPayload!
+}
+
+type ApplicationAssessment implements Node {
+  id: ID!
+  _id: ID!
+  application_id: ID!
+  assessment_code: String!
+  attempt_number: Int!
+  rubric_document_version_reference_id: ID!
+  rubric_digest: String!
+  status: String!
+  assessor_principal_id: ID
+  scheduled_at: Time
+  completed_at: Time
+  normalized_score: String
+  recommendation_code: String
+  evidence_document_version_reference_id: ID
+  evidence_digest: String!
+}
+
+type ApplicationAssessmentEdge {
+  cursor: String!
+  node: ApplicationAssessment!
+}
+
+type ApplicationAssessmentConnection {
+  edges: [ApplicationAssessmentEdge!]!
+  nodes: [ApplicationAssessment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  applicationAssessment(id: ID!): ApplicationAssessment
+  applicationAssessments(application_id: String, assessment_code: String, attempt_number: Int, rubric_document_version_reference_id: String, status: String, assessor_principal_id: String, recommendation_code: String, evidence_document_version_reference_id: String, after: String, before: String, first: Int, last: Int): ApplicationAssessmentConnection!
+}
+
+input CreateApplicationAssessmentInput {
+  application_id: ID
+  assessment_code: String
+  attempt_number: Int
+  rubric_document_version_reference_id: ID
+  rubric_digest: String
+  status: String
+  assessor_principal_id: ID
+  scheduled_at: Time
+  completed_at: Time
+  normalized_score: String
+  recommendation_code: String
+  evidence_document_version_reference_id: ID
+  evidence_digest: String
+}
+
+input UpdateApplicationAssessmentInput {
+  application_id: ID @goField(omittable: true)
+  assessment_code: String @goField(omittable: true)
+  attempt_number: Int @goField(omittable: true)
+  rubric_document_version_reference_id: ID @goField(omittable: true)
+  rubric_digest: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  assessor_principal_id: ID @goField(omittable: true)
+  scheduled_at: Time @goField(omittable: true)
+  completed_at: Time @goField(omittable: true)
+  normalized_score: String @goField(omittable: true)
+  recommendation_code: String @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+  evidence_digest: String @goField(omittable: true)
+}
+
+type CreateApplicationAssessmentPayload implements MutationResult {
+  application_assessment: ApplicationAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateApplicationAssessmentPayload implements MutationResult {
+  application_assessment: ApplicationAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteApplicationAssessmentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createApplicationAssessment(input: CreateApplicationAssessmentInput!): CreateApplicationAssessmentPayload!
+  updateApplicationAssessment(id: ID!, input: UpdateApplicationAssessmentInput!): UpdateApplicationAssessmentPayload!
+  deleteApplicationAssessment(id: ID!): DeleteApplicationAssessmentPayload!
+}

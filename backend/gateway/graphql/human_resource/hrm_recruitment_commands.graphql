@@ -1,0 +1,122 @@
+# Mutasi alur kerja domain recruitment HRM.
+
+input IssueOfferInput {
+  document_id: ID!
+  document_version_id: ID!
+  content_digest: String!
+}
+
+input CompleteApplicationAssessmentInput {
+  normalized_score: String
+  recommendation_code: String
+  evidence_document_version_reference_id: ID
+  evidence_digest: String
+}
+
+type StartApplicationScreeningPayload implements MutationResult {
+  application: Application
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ShortlistApplicationPayload implements MutationResult {
+  application: Application
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectApplicationPayload implements MutationResult {
+  application: Application
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type StartInterviewPayload implements MutationResult {
+  interview: Interview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteInterviewPayload implements MutationResult {
+  interview: Interview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelInterviewPayload implements MutationResult {
+  interview: Interview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveOfferPayload implements MutationResult {
+  offer: Offer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type IssueOfferPayload implements MutationResult {
+  offer: Offer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type AcceptOfferPayload implements MutationResult {
+  offer: Offer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeclineOfferPayload implements MutationResult {
+  offer: Offer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type WithdrawOfferPayload implements MutationResult {
+  offer: Offer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type PublishJobPostingPayload implements MutationResult {
+  job_posting: JobPosting
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CloseJobPostingPayload implements MutationResult {
+  job_posting: JobPosting
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type WithdrawJobPostingPayload implements MutationResult {
+  job_posting: JobPosting
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteApplicationAssessmentPayload implements MutationResult {
+  application_assessment: ApplicationAssessment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  startApplicationScreening(id: ID!): StartApplicationScreeningPayload!
+  shortlistApplication(id: ID!, reason_code: String!): ShortlistApplicationPayload!
+  rejectApplication(id: ID!, reason_code: String!): RejectApplicationPayload!
+  startInterview(id: ID!): StartInterviewPayload!
+  completeInterview(id: ID!): CompleteInterviewPayload!
+  cancelInterview(id: ID!): CancelInterviewPayload!
+  approveOffer(id: ID!, compensation_document_version_id: ID!): ApproveOfferPayload!
+  issueOffer(id: ID!, input: IssueOfferInput!): IssueOfferPayload!
+  acceptOffer(id: ID!, response_evidence_id: ID!): AcceptOfferPayload!
+  declineOffer(id: ID!, response_evidence_id: ID!): DeclineOfferPayload!
+  withdrawOffer(id: ID!, reason_code: String!): WithdrawOfferPayload!
+  publishJobPosting(id: ID!): PublishJobPostingPayload!
+  closeJobPosting(id: ID!): CloseJobPostingPayload!
+  withdrawJobPosting(id: ID!, reason_code: String!): WithdrawJobPostingPayload!
+  completeApplicationAssessment(id: ID!, input: CompleteApplicationAssessmentInput): CompleteApplicationAssessmentPayload!
+}

@@ -1,0 +1,25 @@
+# Mutasi alur kerja domain onboarding HRM.
+
+type StartOnboardingPlanPayload implements MutationResult {
+  onboarding_plan: OnboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteOnboardingPlanPayload implements MutationResult {
+  onboarding_plan: OnboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteOnboardingTaskPayload implements MutationResult {
+  onboarding_task: OnboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  startOnboardingPlan(id: ID!): StartOnboardingPlanPayload!
+  completeOnboardingPlan(id: ID!): CompleteOnboardingPlanPayload!
+  completeOnboardingTask(id: ID!, evidence_document_version_reference_id: ID!): CompleteOnboardingTaskPayload!
+}

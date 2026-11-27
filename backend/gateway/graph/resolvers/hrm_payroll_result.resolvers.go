@@ -18,10 +18,10 @@ func (r *queryResolver) PayrollResult(ctx context.Context, id string) (*model.Pa
 }
 
 // PayrollResults membaca hasil kalkulasi payroll.
-func (r *queryResolver) PayrollResults(ctx context.Context, payrollRunID string, after *string, before *string, first *int, last *int) (*model.PayrollResultConnection, error) {
+func (r *queryResolver) PayrollResults(ctx context.Context, payrollRunID *string, workerID *string, payrollGroupID *string, payrollProfileReferenceID *string, currencyCode *string, resultStatus *string, paymentReferenceID *string, payslipDocumentReferenceID *string, after *string, before *string, first *int, last *int) (*model.PayrollResultConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.PayrollResult], error) {
-			return r.HRMAdapter.PayrollResults(ctx, payrollRunID, limit, offset)
+			return r.HRMAdapter.PayrollResultsFiltered(ctx, limit, offset, payrollRunID, workerID, payrollGroupID, payrollProfileReferenceID, currencyCode, resultStatus, paymentReferenceID, payslipDocumentReferenceID)
 		},
 		func(node *model.PayrollResult, cursor string) *model.PayrollResultEdge {
 			return &model.PayrollResultEdge{Node: node, Cursor: cursor}
@@ -39,10 +39,10 @@ func (r *queryResolver) PayrollResultLine(ctx context.Context, id string) (*mode
 }
 
 // PayrollResultLines membaca rincian komponen payroll.
-func (r *queryResolver) PayrollResultLines(ctx context.Context, payrollResultID string, after *string, before *string, first *int, last *int) (*model.PayrollResultLineConnection, error) {
+func (r *queryResolver) PayrollResultLines(ctx context.Context, payrollResultID *string, componentID *string, after *string, before *string, first *int, last *int) (*model.PayrollResultLineConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.PayrollResultLine], error) {
-			return r.HRMAdapter.PayrollResultLines(ctx, payrollResultID, limit, offset)
+			return r.HRMAdapter.PayrollResultLinesFiltered(ctx, limit, offset, payrollResultID, componentID)
 		},
 		func(node *model.PayrollResultLine, cursor string) *model.PayrollResultLineEdge {
 			return &model.PayrollResultLineEdge{Node: node, Cursor: cursor}

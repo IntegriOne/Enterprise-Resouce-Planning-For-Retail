@@ -68,10 +68,10 @@ func (r *queryResolver) LeavePolicy(ctx context.Context, id string) (*model.Leav
 }
 
 // LeavePolicies membaca daftar kebijakan cuti.
-func (r *queryResolver) LeavePolicies(ctx context.Context, after *string, before *string, first *int, last *int) (*model.LeavePolicyConnection, error) {
+func (r *queryResolver) LeavePolicies(ctx context.Context, policyCode *string, leaveTypeCode *string, jurisdictionCode *string, after *string, before *string, first *int, last *int) (*model.LeavePolicyConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.LeavePolicy], error) {
-			return r.HRMAdapter.LeavePolicies(ctx, limit, offset)
+			return r.HRMAdapter.LeavePoliciesFiltered(ctx, limit, offset, policyCode, leaveTypeCode, jurisdictionCode)
 		},
 		func(node *model.LeavePolicy, cursor string) *model.LeavePolicyEdge {
 			return &model.LeavePolicyEdge{Node: node, Cursor: cursor}
@@ -89,10 +89,10 @@ func (r *queryResolver) LeaveEntitlement(ctx context.Context, id string) (*model
 }
 
 // LeaveEntitlements membaca hak cuti per pekerja.
-func (r *queryResolver) LeaveEntitlements(ctx context.Context, workerID string, after *string, before *string, first *int, last *int) (*model.LeaveEntitlementConnection, error) {
+func (r *queryResolver) LeaveEntitlements(ctx context.Context, workerID *string, leavePolicyID *string, uomCode *string, sourceWorkforceSnapshotReferenceID *string, after *string, before *string, first *int, last *int) (*model.LeaveEntitlementConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.LeaveEntitlement], error) {
-			return r.HRMAdapter.LeaveEntitlements(ctx, workerID, limit, offset)
+			return r.HRMAdapter.LeaveEntitlementsFiltered(ctx, limit, offset, workerID, leavePolicyID, uomCode, sourceWorkforceSnapshotReferenceID)
 		},
 		func(node *model.LeaveEntitlement, cursor string) *model.LeaveEntitlementEdge {
 			return &model.LeaveEntitlementEdge{Node: node, Cursor: cursor}
@@ -110,10 +110,10 @@ func (r *queryResolver) LeaveLedgerEntry(ctx context.Context, id string) (*model
 }
 
 // LeaveLedgerEntries membaca riwayat saldo cuti.
-func (r *queryResolver) LeaveLedgerEntries(ctx context.Context, entitlementID *string, adjustmentID *string, after *string, before *string, first *int, last *int) (*model.LeaveLedgerEntryConnection, error) {
+func (r *queryResolver) LeaveLedgerEntries(ctx context.Context, entitlementID *string, adjustmentID *string, entryType *string, sourceManagement *string, sourceEventID *string, reasonCode *string, reversesEntryID *string, actorPrincipalID *string, after *string, before *string, first *int, last *int) (*model.LeaveLedgerEntryConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.LeaveLedgerEntry], error) {
-			return r.HRMAdapter.LeaveLedgerEntries(ctx, entitlementID, adjustmentID, limit, offset)
+			return r.HRMAdapter.LeaveLedgerEntriesFiltered(ctx, limit, offset, entitlementID, adjustmentID, entryType, sourceManagement, sourceEventID, reasonCode, reversesEntryID, actorPrincipalID)
 		},
 		func(node *model.LeaveLedgerEntry, cursor string) *model.LeaveLedgerEntryEdge {
 			return &model.LeaveLedgerEntryEdge{Node: node, Cursor: cursor}
@@ -131,10 +131,10 @@ func (r *queryResolver) LeaveAdjustment(ctx context.Context, id string) (*model.
 }
 
 // LeaveAdjustments membaca pengajuan koreksi saldo cuti.
-func (r *queryResolver) LeaveAdjustments(ctx context.Context, entitlementID *string, idempotencyKey *string, after *string, before *string, first *int, last *int) (*model.LeaveAdjustmentConnection, error) {
+func (r *queryResolver) LeaveAdjustments(ctx context.Context, entitlementID *string, idempotencyKey *string, reasonCode *string, requestedByPrincipalID *string, approvedByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.LeaveAdjustmentConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.LeaveAdjustment], error) {
-			return r.HRMAdapter.LeaveAdjustments(ctx, entitlementID, idempotencyKey, limit, offset)
+			return r.HRMAdapter.LeaveAdjustmentsFiltered(ctx, limit, offset, entitlementID, idempotencyKey, reasonCode, requestedByPrincipalID, approvedByPrincipalID)
 		},
 		func(node *model.LeaveAdjustment, cursor string) *model.LeaveAdjustmentEdge {
 			return &model.LeaveAdjustmentEdge{Node: node, Cursor: cursor}

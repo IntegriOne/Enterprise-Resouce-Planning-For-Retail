@@ -27,7 +27,7 @@ type PayrollResultConnection {
 
 extend type Query {
   payrollResult(id: ID!): PayrollResult
-  payrollResults(payroll_run_id: ID!, after: String, before: String, first: Int, last: Int): PayrollResultConnection!
+  payrollResults(payroll_run_id: ID, worker_id: ID, payroll_group_id: ID, payroll_profile_reference_id: ID, currency_code: String, result_status: String, payment_reference_id: ID, payslip_document_reference_id: ID, after: String, before: String, first: Int, last: Int): PayrollResultConnection!
 }
 
 type PayrollResultLine implements Node {
@@ -58,5 +58,5 @@ type PayrollResultLineConnection {
 
 extend type Query {
   payrollResultLine(id: ID!): PayrollResultLine
-  payrollResultLines(payroll_result_id: ID!, after: String, before: String, first: Int, last: Int): PayrollResultLineConnection!
+  payrollResultLines(payroll_result_id: ID, component_id: ID, after: String, before: String, first: Int, last: Int): PayrollResultLineConnection!
 }

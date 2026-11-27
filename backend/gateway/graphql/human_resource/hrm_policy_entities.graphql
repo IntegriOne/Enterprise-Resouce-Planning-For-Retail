@@ -1,0 +1,155 @@
+type Policy implements Node {
+  id: ID!
+  _id: ID!
+  policy_code: String!
+  policy_version: Int!
+  policy_name: String!
+  category_code: String!
+  legal_entity_reference_id: ID!
+  effective_from: Time
+  effective_to: Time
+  document_version_reference_id: ID!
+  content_digest: String!
+  approved_by_principal_id: ID!
+  approved_at: Time
+}
+
+type PolicyEdge {
+  cursor: String!
+  node: Policy!
+}
+
+type PolicyConnection {
+  edges: [PolicyEdge!]!
+  nodes: [Policy!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  policy(id: ID!): Policy
+  policies(policy_code: String, category_code: String, legal_entity_reference_id: String, document_version_reference_id: String, approved_by_principal_id: String, after: String, before: String, first: Int, last: Int): PolicyConnection!
+}
+
+input CreatePolicyInput {
+  policy_code: String
+  policy_version: Int
+  policy_name: String
+  category_code: String
+  legal_entity_reference_id: ID
+  effective_from: Time
+  effective_to: Time
+  document_version_reference_id: ID
+  content_digest: String
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+input UpdatePolicyInput {
+  policy_code: String @goField(omittable: true)
+  policy_version: Int @goField(omittable: true)
+  policy_name: String @goField(omittable: true)
+  category_code: String @goField(omittable: true)
+  legal_entity_reference_id: ID @goField(omittable: true)
+  effective_from: Time @goField(omittable: true)
+  effective_to: Time @goField(omittable: true)
+  document_version_reference_id: ID @goField(omittable: true)
+  content_digest: String @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+}
+
+type CreatePolicyPayload implements MutationResult {
+  policy: Policy
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePolicyPayload implements MutationResult {
+  policy: Policy
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePolicyPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPolicy(input: CreatePolicyInput!): CreatePolicyPayload!
+  updatePolicy(id: ID!, input: UpdatePolicyInput!): UpdatePolicyPayload!
+  deletePolicy(id: ID!): DeletePolicyPayload!
+}
+
+type PolicyAcknowledgement implements Node {
+  id: ID!
+  _id: ID!
+  policy_id: ID!
+  worker_id: ID!
+  assigned_at: Time
+  due_at: Time
+  acknowledged_at: Time
+  acknowledged_by_principal_id: ID
+  evidence_document_version_reference_id: ID
+}
+
+type PolicyAcknowledgementEdge {
+  cursor: String!
+  node: PolicyAcknowledgement!
+}
+
+type PolicyAcknowledgementConnection {
+  edges: [PolicyAcknowledgementEdge!]!
+  nodes: [PolicyAcknowledgement!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  policyAcknowledgement(id: ID!): PolicyAcknowledgement
+  policyAcknowledgements(policy_id: String, worker_id: String, acknowledged_by_principal_id: String, evidence_document_version_reference_id: String, after: String, before: String, first: Int, last: Int): PolicyAcknowledgementConnection!
+}
+
+input CreatePolicyAcknowledgementInput {
+  policy_id: ID
+  worker_id: ID
+  due_at: Time
+  acknowledged_at: Time
+  acknowledged_by_principal_id: ID
+  evidence_document_version_reference_id: ID
+}
+
+input UpdatePolicyAcknowledgementInput {
+  policy_id: ID @goField(omittable: true)
+  worker_id: ID @goField(omittable: true)
+  due_at: Time @goField(omittable: true)
+  acknowledged_at: Time @goField(omittable: true)
+  acknowledged_by_principal_id: ID @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+}
+
+type CreatePolicyAcknowledgementPayload implements MutationResult {
+  policy_acknowledgement: PolicyAcknowledgement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePolicyAcknowledgementPayload implements MutationResult {
+  policy_acknowledgement: PolicyAcknowledgement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePolicyAcknowledgementPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPolicyAcknowledgement(input: CreatePolicyAcknowledgementInput!): CreatePolicyAcknowledgementPayload!
+  updatePolicyAcknowledgement(id: ID!, input: UpdatePolicyAcknowledgementInput!): UpdatePolicyAcknowledgementPayload!
+  deletePolicyAcknowledgement(id: ID!): DeletePolicyAcknowledgementPayload!
+}

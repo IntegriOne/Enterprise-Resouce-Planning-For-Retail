@@ -128,13 +128,15 @@ for operation, name, args, result in cases:
 print(f'SDL: {node_count} Node types, {connection_count} Relay connections', flush=True)
 with ThreadPoolExecutor(max_workers=6) as executor:
     results = list(executor.map(probe, cases))
-    limited = [
-        index for index, row in enumerate(results)
-        if any(error.get('extensions', {}).get('code') == 'TOO_MANY_REQUESTS' for error in row[3])
-    ]
-    if limited:
-        print('Menunggu jendela rate limit sebelum mengulangi pemeriksaan yang tertunda.', flush=True)
-        time.sleep(60)
+    for _ in range(6):
+        limited = [
+            index for index, row in enumerate(results)
+            if any(error.get('extensions', {}).get('code') == 'TOO_MANY_REQUESTS' for error in row[3])
+        ]
+        if not limited:
+            break
+        print(f'Menunggu jendela rate limit sebelum mengulangi {len(limited)} pemeriksaan yang tertunda.', flush=True)
+        time.sleep(62)
         for index, result in zip(limited, executor.map(probe, (cases[index] for index in limited)), strict=True):
             results[index] = result
 for op in ('Query','Mutation'):

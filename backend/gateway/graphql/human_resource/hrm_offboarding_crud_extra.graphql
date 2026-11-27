@@ -1,0 +1,63 @@
+# Mutasi CRUD tambahan untuk domain offboarding HRM.
+
+input UpdateOffboardingPlanInput {
+  worker_id: ID @goField(omittable: true)
+  plan_number: String @goField(omittable: true)
+  reason_code: String @goField(omittable: true)
+  notice_date: Time @goField(omittable: true)
+  last_working_date: Time @goField(omittable: true)
+  termination_effective_date: Time @goField(omittable: true)
+  status: String @goField(omittable: true)
+  exit_interview_document_version_reference_id: ID @goField(omittable: true)
+  final_payroll_run_id: ID @goField(omittable: true)
+  finance_clearance_reference_id: ID @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+  completed_at: Time @goField(omittable: true)
+}
+
+type UpdateOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteOffboardingPlanPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateOffboardingTaskInput {
+  offboarding_plan_id: ID @goField(omittable: true)
+  task_code: String @goField(omittable: true)
+  task_name: String @goField(omittable: true)
+  owner_management: String @goField(omittable: true)
+  assigned_principal_id: ID @goField(omittable: true)
+  status: String @goField(omittable: true)
+  is_mandatory: Boolean @goField(omittable: true)
+  due_at: Time @goField(omittable: true)
+  completed_at: Time @goField(omittable: true)
+  owner_confirmation_reference_id: ID @goField(omittable: true)
+  waiver_reason: String @goField(omittable: true)
+  waived_by_principal_id: ID @goField(omittable: true)
+}
+
+type UpdateOffboardingTaskPayload implements MutationResult {
+  offboarding_task: OffboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteOffboardingTaskPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  updateOffboardingPlan(id: ID!, input: UpdateOffboardingPlanInput!): UpdateOffboardingPlanPayload!
+  deleteOffboardingPlan(id: ID!): DeleteOffboardingPlanPayload!
+  updateOffboardingTask(id: ID!, input: UpdateOffboardingTaskInput!): UpdateOffboardingTaskPayload!
+  deleteOffboardingTask(id: ID!): DeleteOffboardingTaskPayload!
+}

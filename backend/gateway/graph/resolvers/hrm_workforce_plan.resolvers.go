@@ -118,10 +118,10 @@ func (r *queryResolver) WorkforcePlan(ctx context.Context, id string) (*model.Wo
 }
 
 // WorkforcePlans membaca daftar rencana tenaga kerja.
-func (r *queryResolver) WorkforcePlans(ctx context.Context, after *string, before *string, first *int, last *int) (*model.WorkforcePlanConnection, error) {
+func (r *queryResolver) WorkforcePlans(ctx context.Context, planCode *string, legalEntityReferenceID *string, scenarioCode *string, status *string, financeBudgetReferenceID *string, createdByPrincipalID *string, approvedByPrincipalID *string, after *string, before *string, first *int, last *int) (*model.WorkforcePlanConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.WorkforcePlan], error) {
-			return r.HRMAdapter.WorkforcePlans(ctx, limit, offset)
+			return r.HRMAdapter.WorkforcePlansFiltered(ctx, limit, offset, planCode, legalEntityReferenceID, scenarioCode, status, financeBudgetReferenceID, createdByPrincipalID, approvedByPrincipalID)
 		},
 		func(node *model.WorkforcePlan, cursor string) *model.WorkforcePlanEdge {
 			return &model.WorkforcePlanEdge{Node: node, Cursor: cursor}
@@ -139,10 +139,10 @@ func (r *queryResolver) WorkforcePlanLine(ctx context.Context, id string) (*mode
 }
 
 // WorkforcePlanLines membaca daftar baris rencana.
-func (r *queryResolver) WorkforcePlanLines(ctx context.Context, workforcePlanID *string, after *string, before *string, first *int, last *int) (*model.WorkforcePlanLineConnection, error) {
+func (r *queryResolver) WorkforcePlanLines(ctx context.Context, workforcePlanID *string, lineNumber *int, organizationUnitReferenceID *string, jobID *string, workLocationReferenceID *string, currencyCode *string, actionCode *string, after *string, before *string, first *int, last *int) (*model.WorkforcePlanLineConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.WorkforcePlanLine], error) {
-			return r.HRMAdapter.WorkforcePlanLines(ctx, workforcePlanID, limit, offset)
+			return r.HRMAdapter.WorkforcePlanLinesFiltered(ctx, limit, offset, workforcePlanID, lineNumber, organizationUnitReferenceID, jobID, workLocationReferenceID, currencyCode, actionCode)
 		},
 		func(node *model.WorkforcePlanLine, cursor string) *model.WorkforcePlanLineEdge {
 			return &model.WorkforcePlanLineEdge{Node: node, Cursor: cursor}

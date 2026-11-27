@@ -1,0 +1,175 @@
+type BenefitPlan implements Node {
+  id: ID!
+  _id: ID!
+  plan_code: String!
+  plan_version: Int!
+  plan_name: String!
+  benefit_type: String!
+  provider_party_reference_id: ID
+  jurisdiction_code: String!
+  eligibility_rule: String
+  employee_contribution_rule_reference_id: ID
+  employer_contribution_rule_reference_id: ID
+  valid_from: String!
+  valid_to: String
+  is_active: Boolean!
+}
+
+type BenefitPlanEdge {
+  cursor: String!
+  node: BenefitPlan!
+}
+
+type BenefitPlanConnection {
+  edges: [BenefitPlanEdge!]!
+  nodes: [BenefitPlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  benefitPlan(id: ID!): BenefitPlan
+  benefitPlans(plan_code: String, benefit_type: String, provider_party_reference_id: String, jurisdiction_code: String, employee_contribution_rule_reference_id: String, employer_contribution_rule_reference_id: String, after: String, before: String, first: Int, last: Int): BenefitPlanConnection!
+}
+
+input CreateBenefitPlanInput {
+  plan_code: String
+  plan_version: Int
+  plan_name: String
+  benefit_type: String
+  provider_party_reference_id: ID
+  jurisdiction_code: String
+  eligibility_rule: String
+  employee_contribution_rule_reference_id: ID
+  employer_contribution_rule_reference_id: ID
+  valid_from: String
+  valid_to: String
+  is_active: Boolean
+}
+
+input UpdateBenefitPlanInput {
+  plan_code: String @goField(omittable: true)
+  plan_version: Int @goField(omittable: true)
+  plan_name: String @goField(omittable: true)
+  benefit_type: String @goField(omittable: true)
+  provider_party_reference_id: ID @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  eligibility_rule: String @goField(omittable: true)
+  employee_contribution_rule_reference_id: ID @goField(omittable: true)
+  employer_contribution_rule_reference_id: ID @goField(omittable: true)
+  valid_from: String @goField(omittable: true)
+  valid_to: String @goField(omittable: true)
+  is_active: Boolean @goField(omittable: true)
+}
+
+type CreateBenefitPlanPayload implements MutationResult {
+  benefit_plan: BenefitPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateBenefitPlanPayload implements MutationResult {
+  benefit_plan: BenefitPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteBenefitPlanPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createBenefitPlan(input: CreateBenefitPlanInput!): CreateBenefitPlanPayload!
+  updateBenefitPlan(id: ID!, input: UpdateBenefitPlanInput!): UpdateBenefitPlanPayload!
+  deleteBenefitPlan(id: ID!): DeleteBenefitPlanPayload!
+}
+
+type BenefitEnrollment implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  benefit_plan_id: ID!
+  enrollment_status: String!
+  effective_from: String!
+  effective_to: String
+  enrollment_reference: String
+  provider_member_reference: String
+  employee_contribution_amount: String
+  employer_contribution_amount: String
+  currency_code: String
+  elected_at: Time
+  verified_at: Time
+}
+
+type BenefitEnrollmentEdge {
+  cursor: String!
+  node: BenefitEnrollment!
+}
+
+type BenefitEnrollmentConnection {
+  edges: [BenefitEnrollmentEdge!]!
+  nodes: [BenefitEnrollment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  benefitEnrollment(id: ID!): BenefitEnrollment
+  benefitEnrollments(worker_id: String, benefit_plan_id: String, enrollment_status: String, currency_code: String, after: String, before: String, first: Int, last: Int): BenefitEnrollmentConnection!
+}
+
+input CreateBenefitEnrollmentInput {
+  worker_id: ID
+  benefit_plan_id: ID
+  enrollment_status: String
+  effective_from: String
+  effective_to: String
+  enrollment_reference: String
+  provider_member_reference: String
+  employee_contribution_amount: String
+  employer_contribution_amount: String
+  currency_code: String
+  elected_at: Time
+  verified_at: Time
+}
+
+input UpdateBenefitEnrollmentInput {
+  worker_id: ID @goField(omittable: true)
+  benefit_plan_id: ID @goField(omittable: true)
+  enrollment_status: String @goField(omittable: true)
+  effective_from: String @goField(omittable: true)
+  effective_to: String @goField(omittable: true)
+  enrollment_reference: String @goField(omittable: true)
+  provider_member_reference: String @goField(omittable: true)
+  employee_contribution_amount: String @goField(omittable: true)
+  employer_contribution_amount: String @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  elected_at: Time @goField(omittable: true)
+  verified_at: Time @goField(omittable: true)
+}
+
+type CreateBenefitEnrollmentPayload implements MutationResult {
+  benefit_enrollment: BenefitEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateBenefitEnrollmentPayload implements MutationResult {
+  benefit_enrollment: BenefitEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteBenefitEnrollmentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createBenefitEnrollment(input: CreateBenefitEnrollmentInput!): CreateBenefitEnrollmentPayload!
+  updateBenefitEnrollment(id: ID!, input: UpdateBenefitEnrollmentInput!): UpdateBenefitEnrollmentPayload!
+  deleteBenefitEnrollment(id: ID!): DeleteBenefitEnrollmentPayload!
+}

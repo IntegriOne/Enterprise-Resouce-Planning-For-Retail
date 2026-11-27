@@ -1,8 +1,8 @@
 # List operasi
 
-Terdapat 52 Query dan 62 Mutation khusus HRM di schema Gateway, ditambah jalur lookup 24 entitas melalui Query Relay `node`. Jalur tersebut memanggil 126 RPC berbeda dari inventaris 1.016 kontrak. Cakupan ini menunjukkan wiring saat ini. Inventaris mencatat 998 kandidat operasi aktif, termasuk operasi yang masih memerlukan keputusan produk dan dependency runtime. [Inventaris RPC](1-inventaris-operasi-grpc-hrm.md).
+Terdapat **176 Query** dan **326 Mutation** khusus HRM di schema Gateway (`86` tipe `Node` dan `86` `Connection` Relay), menutup seluruh operasi aktif dari **1.016 RPC bisnis** pada **22 service gRPC privat** (dikurangi 18 RPC CRUD nonaktif untuk 6 tabel read-only serta RPC privat/internal seperti `LinkWorkerPrincipal`, `DeliverPayrollEvent`, `VerifyTerminationAccess`, `VerifyWorkerAccountLink`). [Inventaris RPC](1-inventaris-operasi-grpc-hrm.md) · [Laporan E2E Penuh](../../e2e/gateway/185-hrm-query-mutation-penuh-dan-guard-https.md).
 
-Ke-113 operasi domain yang tercantum di SDL memiliki entri pada matriks bukti. Sebanyak 49 Query dan 53 Mutation sudah memiliki bukti jalur positif HTTPS. Tiga Query dan delapan Mutation masih memiliki prasyarat runtime yang tercatat di matriks masing-masing. Cakupan ini terpisah dari inventaris kandidat gRPC dan dari root bersama `node`. [Query](31-bukti-https-query-gateway.md) · [Mutation](30-bukti-https-mutation-gateway.md)
+Seluruh **176/176 Query** dan **326/326 Mutation** telah lulus guard SDL (`check_hrm_schema_guards.py`: 0 prefiks `hrm`, kontrak `Node`/`Connection`/`MutationResult`) dan guard HTTPS 401/403 pada `erp.localhost:18443`, serta ter-introspect pada `https://erp.localhost:8443/api/graphql`. Jalur bisnis yang bergantung pada runtime Finance & DRM tetap fail-closed sampai service pemilik siap. [Query](31-bukti-https-query-gateway.md) · [Mutation](30-bukti-https-mutation-gateway.md)
 
 
 Lihat [audit cakupan per service](29-audit-cakupan-wiring-gateway.md) untuk perbandingan dengan inventaris gRPC.

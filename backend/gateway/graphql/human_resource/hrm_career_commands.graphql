@@ -1,0 +1,32 @@
+# Mutasi alur kerja domain career HRM.
+
+type CompleteDevelopmentPlanPayload implements MutationResult {
+  development_plan: DevelopmentPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveDevelopmentPlanPayload implements MutationResult {
+  development_plan: DevelopmentPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteDevelopmentActionPayload implements MutationResult {
+  development_action: DevelopmentAction
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveCareerPathPayload implements MutationResult {
+  career_path: CareerPath
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  completeDevelopmentPlan(id: ID!): CompleteDevelopmentPlanPayload!
+  approveDevelopmentPlan(id: ID!): ApproveDevelopmentPlanPayload!
+  completeDevelopmentAction(id: ID!): CompleteDevelopmentActionPayload!
+  approveCareerPath(id: ID!): ApproveCareerPathPayload!
+}

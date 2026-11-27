@@ -1,0 +1,11 @@
+# Mutasi alur kerja domain policy HRM.
+
+type AcknowledgePolicyPayload implements MutationResult {
+  policy_acknowledgement: PolicyAcknowledgement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  acknowledgePolicy(id: ID!, evidence_document_version_reference_id: ID): AcknowledgePolicyPayload!
+}

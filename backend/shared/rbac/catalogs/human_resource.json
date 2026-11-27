@@ -10,10 +10,185 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.access_requests.delete",
+      "resource": "human_resource.access_requests",
+      "action": "delete",
+      "description": "Delete access requests",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.access_requests.read",
       "resource": "human_resource.access_requests",
       "action": "read",
       "description": "Read worker access requests and provisioning status",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.access_requests.update",
+      "resource": "human_resource.access_requests",
+      "action": "update",
+      "description": "Update access requests",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.application_assessments.complete",
+      "resource": "human_resource.application_assessments",
+      "action": "complete",
+      "description": "Complete application assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.application_assessments.create",
+      "resource": "human_resource.application_assessments",
+      "action": "create",
+      "description": "Create application assessments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.application_assessments.delete",
+      "resource": "human_resource.application_assessments",
+      "action": "delete",
+      "description": "Delete application assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.application_assessments.read",
+      "resource": "human_resource.application_assessments",
+      "action": "read",
+      "description": "Read application assessments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.application_assessments.update",
+      "resource": "human_resource.application_assessments",
+      "action": "update",
+      "description": "Update application assessments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.application_stage_history.read",
+      "resource": "human_resource.application_stage_history",
+      "action": "read",
+      "description": "Read application stage history",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.applications.advance",
+      "resource": "human_resource.applications",
+      "action": "advance",
+      "description": "Advance applications",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.applications.create",
+      "resource": "human_resource.applications",
+      "action": "create",
+      "description": "Create applications",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.applications.delete",
+      "resource": "human_resource.applications",
+      "action": "delete",
+      "description": "Delete applications",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.applications.read",
+      "resource": "human_resource.applications",
+      "action": "read",
+      "description": "Read applications",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.applications.reject",
+      "resource": "human_resource.applications",
+      "action": "reject",
+      "description": "Reject applications",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.applications.start_screening",
+      "resource": "human_resource.applications",
+      "action": "start_screening",
+      "description": "Start screening applications",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.applications.update",
+      "resource": "human_resource.applications",
+      "action": "update",
+      "description": "Update applications",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.benefit_enrollments.approve",
+      "resource": "human_resource.benefit_enrollments",
+      "action": "approve",
+      "description": "Approve benefit enrollments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.benefit_enrollments.create",
+      "resource": "human_resource.benefit_enrollments",
+      "action": "create",
+      "description": "Create benefit enrollments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.benefit_enrollments.delete",
+      "resource": "human_resource.benefit_enrollments",
+      "action": "delete",
+      "description": "Delete benefit enrollments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.benefit_enrollments.end",
+      "resource": "human_resource.benefit_enrollments",
+      "action": "end",
+      "description": "End benefit enrollments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.benefit_enrollments.read",
+      "resource": "human_resource.benefit_enrollments",
+      "action": "read",
+      "description": "Read benefit enrollments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.benefit_enrollments.update",
+      "resource": "human_resource.benefit_enrollments",
+      "action": "update",
+      "description": "Update benefit enrollments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.benefit_plans.create",
+      "resource": "human_resource.benefit_plans",
+      "action": "create",
+      "description": "Create benefit plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.benefit_plans.delete",
+      "resource": "human_resource.benefit_plans",
+      "action": "delete",
+      "description": "Delete benefit plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.benefit_plans.read",
+      "resource": "human_resource.benefit_plans",
+      "action": "read",
+      "description": "Read benefit plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.benefit_plans.update",
+      "resource": "human_resource.benefit_plans",
+      "action": "update",
+      "description": "Update benefit plans",
       "is_sensitive": false
     },
     {
@@ -45,6 +220,349 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.career_path_transitions.create",
+      "resource": "human_resource.career_path_transitions",
+      "action": "create",
+      "description": "Create career path transitions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.career_path_transitions.delete",
+      "resource": "human_resource.career_path_transitions",
+      "action": "delete",
+      "description": "Delete career path transitions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.career_path_transitions.read",
+      "resource": "human_resource.career_path_transitions",
+      "action": "read",
+      "description": "Read career path transitions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.career_path_transitions.update",
+      "resource": "human_resource.career_path_transitions",
+      "action": "update",
+      "description": "Update career path transitions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.career_paths.approve",
+      "resource": "human_resource.career_paths",
+      "action": "approve",
+      "description": "Approve career paths",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.career_paths.create",
+      "resource": "human_resource.career_paths",
+      "action": "create",
+      "description": "Create career paths",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.career_paths.delete",
+      "resource": "human_resource.career_paths",
+      "action": "delete",
+      "description": "Delete career paths",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.career_paths.read",
+      "resource": "human_resource.career_paths",
+      "action": "read",
+      "description": "Read career paths",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.career_paths.update",
+      "resource": "human_resource.career_paths",
+      "action": "update",
+      "description": "Update career paths",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.collective_agreements.create",
+      "resource": "human_resource.collective_agreements",
+      "action": "create",
+      "description": "Create collective agreements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.collective_agreements.delete",
+      "resource": "human_resource.collective_agreements",
+      "action": "delete",
+      "description": "Delete collective agreements",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.collective_agreements.read",
+      "resource": "human_resource.collective_agreements",
+      "action": "read",
+      "description": "Read collective agreements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.collective_agreements.update",
+      "resource": "human_resource.collective_agreements",
+      "action": "update",
+      "description": "Update collective agreements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.compensation_bands.create",
+      "resource": "human_resource.compensation_bands",
+      "action": "create",
+      "description": "Create compensation bands",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_bands.delete",
+      "resource": "human_resource.compensation_bands",
+      "action": "delete",
+      "description": "Delete compensation bands",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_bands.read",
+      "resource": "human_resource.compensation_bands",
+      "action": "read",
+      "description": "Read compensation bands",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_bands.update",
+      "resource": "human_resource.compensation_bands",
+      "action": "update",
+      "description": "Update compensation bands",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_records.approve",
+      "resource": "human_resource.compensation_records",
+      "action": "approve",
+      "description": "Approve compensation records",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_records.create",
+      "resource": "human_resource.compensation_records",
+      "action": "create",
+      "description": "Create compensation records",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_records.delete",
+      "resource": "human_resource.compensation_records",
+      "action": "delete",
+      "description": "Delete compensation records",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_records.read",
+      "resource": "human_resource.compensation_records",
+      "action": "read",
+      "description": "Read compensation records",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.compensation_records.update",
+      "resource": "human_resource.compensation_records",
+      "action": "update",
+      "description": "Update compensation records",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.competencies.create",
+      "resource": "human_resource.competencies",
+      "action": "create",
+      "description": "Create competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.competencies.delete",
+      "resource": "human_resource.competencies",
+      "action": "delete",
+      "description": "Delete competencies",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.competencies.read",
+      "resource": "human_resource.competencies",
+      "action": "read",
+      "description": "Read competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.competencies.update",
+      "resource": "human_resource.competencies",
+      "action": "update",
+      "description": "Update competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.development_actions.complete",
+      "resource": "human_resource.development_actions",
+      "action": "complete",
+      "description": "Complete development actions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.development_actions.create",
+      "resource": "human_resource.development_actions",
+      "action": "create",
+      "description": "Create development actions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.development_actions.delete",
+      "resource": "human_resource.development_actions",
+      "action": "delete",
+      "description": "Delete development actions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.development_actions.read",
+      "resource": "human_resource.development_actions",
+      "action": "read",
+      "description": "Read development actions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.development_actions.update",
+      "resource": "human_resource.development_actions",
+      "action": "update",
+      "description": "Update development actions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.development_plans.approve",
+      "resource": "human_resource.development_plans",
+      "action": "approve",
+      "description": "Approve development plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.development_plans.complete",
+      "resource": "human_resource.development_plans",
+      "action": "complete",
+      "description": "Complete development plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.development_plans.create",
+      "resource": "human_resource.development_plans",
+      "action": "create",
+      "description": "Create development plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.development_plans.delete",
+      "resource": "human_resource.development_plans",
+      "action": "delete",
+      "description": "Delete development plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.development_plans.read",
+      "resource": "human_resource.development_plans",
+      "action": "read",
+      "description": "Read development plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.development_plans.update",
+      "resource": "human_resource.development_plans",
+      "action": "update",
+      "description": "Update development plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.emergency_contacts.create",
+      "resource": "human_resource.emergency_contacts",
+      "action": "create",
+      "description": "Create emergency contacts",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.emergency_contacts.delete",
+      "resource": "human_resource.emergency_contacts",
+      "action": "delete",
+      "description": "Delete emergency contacts",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.emergency_contacts.read",
+      "resource": "human_resource.emergency_contacts",
+      "action": "read",
+      "description": "Read emergency contacts",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.emergency_contacts.update",
+      "resource": "human_resource.emergency_contacts",
+      "action": "update",
+      "description": "Update emergency contacts",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.employee_relations_cases.create",
+      "resource": "human_resource.employee_relations_cases",
+      "action": "create",
+      "description": "Create employee relations cases",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.employee_relations_cases.delete",
+      "resource": "human_resource.employee_relations_cases",
+      "action": "delete",
+      "description": "Delete employee relations cases",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.employee_relations_cases.read",
+      "resource": "human_resource.employee_relations_cases",
+      "action": "read",
+      "description": "Read employee relations cases",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.employee_relations_cases.update",
+      "resource": "human_resource.employee_relations_cases",
+      "action": "update",
+      "description": "Update employee relations cases",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.employee_relations_events.create",
+      "resource": "human_resource.employee_relations_events",
+      "action": "create",
+      "description": "Create employee relations events",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.employee_relations_events.delete",
+      "resource": "human_resource.employee_relations_events",
+      "action": "delete",
+      "description": "Delete employee relations events",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.employee_relations_events.read",
+      "resource": "human_resource.employee_relations_events",
+      "action": "read",
+      "description": "Read employee relations events",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.employee_relations_events.update",
+      "resource": "human_resource.employee_relations_events",
+      "action": "update",
+      "description": "Update employee relations events",
+      "is_sensitive": false
+    },
+    {
       "code": "human_resource.employment_contracts.create",
       "resource": "human_resource.employment_contracts",
       "action": "create",
@@ -66,11 +584,242 @@
       "is_sensitive": true
     },
     {
+      "code": "human_resource.employment_contracts.record_signature",
+      "resource": "human_resource.employment_contracts",
+      "action": "record_signature",
+      "description": "Record signature employment contracts",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.employment_contracts.update",
       "resource": "human_resource.employment_contracts",
       "action": "update",
       "description": "Correct employment contracts",
       "is_sensitive": true
+    },
+    {
+      "code": "human_resource.engagement_survey_results.read",
+      "resource": "human_resource.engagement_survey_results",
+      "action": "read",
+      "description": "Read engagement survey results",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.engagement_surveys.create",
+      "resource": "human_resource.engagement_surveys",
+      "action": "create",
+      "description": "Create engagement surveys",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.engagement_surveys.delete",
+      "resource": "human_resource.engagement_surveys",
+      "action": "delete",
+      "description": "Delete engagement surveys",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.engagement_surveys.read",
+      "resource": "human_resource.engagement_surveys",
+      "action": "read",
+      "description": "Read engagement surveys",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.engagement_surveys.update",
+      "resource": "human_resource.engagement_surveys",
+      "action": "update",
+      "description": "Update engagement surveys",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.human_capital_metric_definitions.create",
+      "resource": "human_resource.human_capital_metric_definitions",
+      "action": "create",
+      "description": "Create human capital metric definitions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.human_capital_metric_definitions.delete",
+      "resource": "human_resource.human_capital_metric_definitions",
+      "action": "delete",
+      "description": "Delete human capital metric definitions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.human_capital_metric_definitions.read",
+      "resource": "human_resource.human_capital_metric_definitions",
+      "action": "read",
+      "description": "Read human capital metric definitions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.human_capital_metric_definitions.update",
+      "resource": "human_resource.human_capital_metric_definitions",
+      "action": "update",
+      "description": "Update human capital metric definitions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.human_capital_metric_snapshots.create",
+      "resource": "human_resource.human_capital_metric_snapshots",
+      "action": "create",
+      "description": "Create human capital metric snapshots",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.human_capital_metric_snapshots.delete",
+      "resource": "human_resource.human_capital_metric_snapshots",
+      "action": "delete",
+      "description": "Delete human capital metric snapshots",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.human_capital_metric_snapshots.read",
+      "resource": "human_resource.human_capital_metric_snapshots",
+      "action": "read",
+      "description": "Read human capital metric snapshots",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.human_capital_metric_snapshots.update",
+      "resource": "human_resource.human_capital_metric_snapshots",
+      "action": "update",
+      "description": "Update human capital metric snapshots",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interview_feedback.create",
+      "resource": "human_resource.interview_feedback",
+      "action": "create",
+      "description": "Create interview feedback",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interview_feedback.delete",
+      "resource": "human_resource.interview_feedback",
+      "action": "delete",
+      "description": "Delete interview feedback",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.interview_feedback.read",
+      "resource": "human_resource.interview_feedback",
+      "action": "read",
+      "description": "Read interview feedback",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interview_feedback.update",
+      "resource": "human_resource.interview_feedback",
+      "action": "update",
+      "description": "Update interview feedback",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interview_panelists.create",
+      "resource": "human_resource.interview_panelists",
+      "action": "create",
+      "description": "Create interview panelists",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interview_panelists.delete",
+      "resource": "human_resource.interview_panelists",
+      "action": "delete",
+      "description": "Delete interview panelists",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.interview_panelists.read",
+      "resource": "human_resource.interview_panelists",
+      "action": "read",
+      "description": "Read interview panelists",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interview_panelists.update",
+      "resource": "human_resource.interview_panelists",
+      "action": "update",
+      "description": "Update interview panelists",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interviews.cancel",
+      "resource": "human_resource.interviews",
+      "action": "cancel",
+      "description": "Cancel interviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.interviews.complete",
+      "resource": "human_resource.interviews",
+      "action": "complete",
+      "description": "Complete interviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.interviews.create",
+      "resource": "human_resource.interviews",
+      "action": "create",
+      "description": "Create interviews",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interviews.delete",
+      "resource": "human_resource.interviews",
+      "action": "delete",
+      "description": "Delete interviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.interviews.read",
+      "resource": "human_resource.interviews",
+      "action": "read",
+      "description": "Read interviews",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.interviews.start",
+      "resource": "human_resource.interviews",
+      "action": "start",
+      "description": "Start interviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.interviews.update",
+      "resource": "human_resource.interviews",
+      "action": "update",
+      "description": "Update interviews",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_competencies.create",
+      "resource": "human_resource.job_competencies",
+      "action": "create",
+      "description": "Create job competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_competencies.delete",
+      "resource": "human_resource.job_competencies",
+      "action": "delete",
+      "description": "Delete job competencies",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.job_competencies.read",
+      "resource": "human_resource.job_competencies",
+      "action": "read",
+      "description": "Read job competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_competencies.update",
+      "resource": "human_resource.job_competencies",
+      "action": "update",
+      "description": "Update job competencies",
+      "is_sensitive": false
     },
     {
       "code": "human_resource.job_families.create",
@@ -80,11 +829,74 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.job_families.delete",
+      "resource": "human_resource.job_families",
+      "action": "delete",
+      "description": "Delete job families",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.job_families.read",
       "resource": "human_resource.job_families",
       "action": "read",
       "description": "Read job families",
       "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_families.update",
+      "resource": "human_resource.job_families",
+      "action": "update",
+      "description": "Update job families",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_postings.close",
+      "resource": "human_resource.job_postings",
+      "action": "close",
+      "description": "Close job postings",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.job_postings.create",
+      "resource": "human_resource.job_postings",
+      "action": "create",
+      "description": "Create job postings",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_postings.delete",
+      "resource": "human_resource.job_postings",
+      "action": "delete",
+      "description": "Delete job postings",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.job_postings.publish",
+      "resource": "human_resource.job_postings",
+      "action": "publish",
+      "description": "Publish job postings",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.job_postings.read",
+      "resource": "human_resource.job_postings",
+      "action": "read",
+      "description": "Read job postings",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_postings.update",
+      "resource": "human_resource.job_postings",
+      "action": "update",
+      "description": "Update job postings",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_postings.withdraw",
+      "resource": "human_resource.job_postings",
+      "action": "withdraw",
+      "description": "Withdraw job postings",
+      "is_sensitive": true
     },
     {
       "code": "human_resource.jobs.create",
@@ -94,11 +906,130 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.jobs.delete",
+      "resource": "human_resource.jobs",
+      "action": "delete",
+      "description": "Delete jobs",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.jobs.read",
       "resource": "human_resource.jobs",
       "action": "read",
       "description": "Read jobs",
       "is_sensitive": false
+    },
+    {
+      "code": "human_resource.jobs.update",
+      "resource": "human_resource.jobs",
+      "action": "update",
+      "description": "Update jobs",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_course_competencies.create",
+      "resource": "human_resource.learning_course_competencies",
+      "action": "create",
+      "description": "Create learning course competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_course_competencies.delete",
+      "resource": "human_resource.learning_course_competencies",
+      "action": "delete",
+      "description": "Delete learning course competencies",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.learning_course_competencies.read",
+      "resource": "human_resource.learning_course_competencies",
+      "action": "read",
+      "description": "Read learning course competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_course_competencies.update",
+      "resource": "human_resource.learning_course_competencies",
+      "action": "update",
+      "description": "Update learning course competencies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_courses.create",
+      "resource": "human_resource.learning_courses",
+      "action": "create",
+      "description": "Create learning courses",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_courses.delete",
+      "resource": "human_resource.learning_courses",
+      "action": "delete",
+      "description": "Delete learning courses",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.learning_courses.read",
+      "resource": "human_resource.learning_courses",
+      "action": "read",
+      "description": "Read learning courses",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_courses.update",
+      "resource": "human_resource.learning_courses",
+      "action": "update",
+      "description": "Update learning courses",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_enrollments.complete",
+      "resource": "human_resource.learning_enrollments",
+      "action": "complete",
+      "description": "Complete learning enrollments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.learning_enrollments.create",
+      "resource": "human_resource.learning_enrollments",
+      "action": "create",
+      "description": "Create learning enrollments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_enrollments.delete",
+      "resource": "human_resource.learning_enrollments",
+      "action": "delete",
+      "description": "Delete learning enrollments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.learning_enrollments.read",
+      "resource": "human_resource.learning_enrollments",
+      "action": "read",
+      "description": "Read learning enrollments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_enrollments.start",
+      "resource": "human_resource.learning_enrollments",
+      "action": "start",
+      "description": "Start learning enrollments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.learning_enrollments.update",
+      "resource": "human_resource.learning_enrollments",
+      "action": "update",
+      "description": "Update learning enrollments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.learning_enrollments.withdraw",
+      "resource": "human_resource.learning_enrollments",
+      "action": "withdraw",
+      "description": "Withdraw learning enrollments",
+      "is_sensitive": true
     },
     {
       "code": "human_resource.leave_adjustments.approve",
@@ -115,6 +1046,13 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.leave_adjustments.delete",
+      "resource": "human_resource.leave_adjustments",
+      "action": "delete",
+      "description": "Delete leave adjustments",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.leave_adjustments.read",
       "resource": "human_resource.leave_adjustments",
       "action": "read",
@@ -129,10 +1067,31 @@
       "is_sensitive": true
     },
     {
+      "code": "human_resource.leave_adjustments.update",
+      "resource": "human_resource.leave_adjustments",
+      "action": "update",
+      "description": "Update leave adjustments",
+      "is_sensitive": false
+    },
+    {
       "code": "human_resource.leave_entitlements.close",
       "resource": "human_resource.leave_entitlements",
       "action": "close",
       "description": "Close leave entitlements",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.leave_entitlements.create",
+      "resource": "human_resource.leave_entitlements",
+      "action": "create",
+      "description": "Create leave entitlements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.leave_entitlements.delete",
+      "resource": "human_resource.leave_entitlements",
+      "action": "delete",
+      "description": "Delete leave entitlements",
       "is_sensitive": true
     },
     {
@@ -150,6 +1109,13 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.leave_entitlements.update",
+      "resource": "human_resource.leave_entitlements",
+      "action": "update",
+      "description": "Update leave entitlements",
+      "is_sensitive": false
+    },
+    {
       "code": "human_resource.leave_ledger_entries.read",
       "resource": "human_resource.leave_ledger_entries",
       "action": "read",
@@ -157,11 +1123,32 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.leave_policies.create",
+      "resource": "human_resource.leave_policies",
+      "action": "create",
+      "description": "Create leave policies",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.leave_policies.delete",
+      "resource": "human_resource.leave_policies",
+      "action": "delete",
+      "description": "Delete leave policies",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.leave_policies.read",
       "resource": "human_resource.leave_policies",
       "action": "read",
       "description": "Read leave policies",
       "is_sensitive": false
+    },
+    {
+      "code": "human_resource.leave_policies.update",
+      "resource": "human_resource.leave_policies",
+      "action": "update",
+      "description": "Update leave policies",
+      "is_sensitive": true
     },
     {
       "code": "human_resource.offboarding_plans.approve",
@@ -178,11 +1165,25 @@
       "is_sensitive": true
     },
     {
+      "code": "human_resource.offboarding_plans.complete",
+      "resource": "human_resource.offboarding_plans",
+      "action": "complete",
+      "description": "Complete offboarding plans",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.offboarding_plans.create",
       "resource": "human_resource.offboarding_plans",
       "action": "create",
       "description": "Create offboarding plans",
       "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_plans.delete",
+      "resource": "human_resource.offboarding_plans",
+      "action": "delete",
+      "description": "Delete offboarding plans",
+      "is_sensitive": true
     },
     {
       "code": "human_resource.offboarding_plans.read",
@@ -199,6 +1200,20 @@
       "is_sensitive": true
     },
     {
+      "code": "human_resource.offboarding_plans.update",
+      "resource": "human_resource.offboarding_plans",
+      "action": "update",
+      "description": "Update offboarding plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_tasks.complete",
+      "resource": "human_resource.offboarding_tasks",
+      "action": "complete",
+      "description": "Complete offboarding tasks",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.offboarding_tasks.create",
       "resource": "human_resource.offboarding_tasks",
       "action": "create",
@@ -206,10 +1221,24 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.offboarding_tasks.delete",
+      "resource": "human_resource.offboarding_tasks",
+      "action": "delete",
+      "description": "Delete offboarding tasks",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.offboarding_tasks.read",
       "resource": "human_resource.offboarding_tasks",
       "action": "read",
       "description": "Read offboarding tasks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_tasks.update",
+      "resource": "human_resource.offboarding_tasks",
+      "action": "update",
+      "description": "Update offboarding tasks",
       "is_sensitive": false
     },
     {
@@ -220,6 +1249,216 @@
       "is_sensitive": true
     },
     {
+      "code": "human_resource.offers.accept",
+      "resource": "human_resource.offers",
+      "action": "accept",
+      "description": "Accept offers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offers.approve",
+      "resource": "human_resource.offers",
+      "action": "approve",
+      "description": "Approve offers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offers.create",
+      "resource": "human_resource.offers",
+      "action": "create",
+      "description": "Create offers",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offers.decline",
+      "resource": "human_resource.offers",
+      "action": "decline",
+      "description": "Decline offers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offers.delete",
+      "resource": "human_resource.offers",
+      "action": "delete",
+      "description": "Delete offers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offers.issue",
+      "resource": "human_resource.offers",
+      "action": "issue",
+      "description": "Issue offers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offers.read",
+      "resource": "human_resource.offers",
+      "action": "read",
+      "description": "Read offers",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offers.update",
+      "resource": "human_resource.offers",
+      "action": "update",
+      "description": "Update offers",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offers.withdraw",
+      "resource": "human_resource.offers",
+      "action": "withdraw",
+      "description": "Withdraw offers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.onboarding_plans.complete",
+      "resource": "human_resource.onboarding_plans",
+      "action": "complete",
+      "description": "Complete onboarding plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.onboarding_plans.create",
+      "resource": "human_resource.onboarding_plans",
+      "action": "create",
+      "description": "Create onboarding plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.onboarding_plans.delete",
+      "resource": "human_resource.onboarding_plans",
+      "action": "delete",
+      "description": "Delete onboarding plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.onboarding_plans.read",
+      "resource": "human_resource.onboarding_plans",
+      "action": "read",
+      "description": "Read onboarding plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.onboarding_plans.start",
+      "resource": "human_resource.onboarding_plans",
+      "action": "start",
+      "description": "Start onboarding plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.onboarding_plans.update",
+      "resource": "human_resource.onboarding_plans",
+      "action": "update",
+      "description": "Update onboarding plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.onboarding_tasks.complete",
+      "resource": "human_resource.onboarding_tasks",
+      "action": "complete",
+      "description": "Complete onboarding tasks",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.onboarding_tasks.create",
+      "resource": "human_resource.onboarding_tasks",
+      "action": "create",
+      "description": "Create onboarding tasks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.onboarding_tasks.delete",
+      "resource": "human_resource.onboarding_tasks",
+      "action": "delete",
+      "description": "Delete onboarding tasks",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.onboarding_tasks.read",
+      "resource": "human_resource.onboarding_tasks",
+      "action": "read",
+      "description": "Read onboarding tasks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.onboarding_tasks.update",
+      "resource": "human_resource.onboarding_tasks",
+      "action": "update",
+      "description": "Update onboarding tasks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.pay_components.create",
+      "resource": "human_resource.pay_components",
+      "action": "create",
+      "description": "Create pay components",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.pay_components.delete",
+      "resource": "human_resource.pay_components",
+      "action": "delete",
+      "description": "Delete pay components",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.pay_components.read",
+      "resource": "human_resource.pay_components",
+      "action": "read",
+      "description": "Read pay components",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.pay_components.update",
+      "resource": "human_resource.pay_components",
+      "action": "update",
+      "description": "Update pay components",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.payroll_adjustments.create",
+      "resource": "human_resource.payroll_adjustments",
+      "action": "create",
+      "description": "Create payroll adjustments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_adjustments.delete",
+      "resource": "human_resource.payroll_adjustments",
+      "action": "delete",
+      "description": "Delete payroll adjustments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_adjustments.read",
+      "resource": "human_resource.payroll_adjustments",
+      "action": "read",
+      "description": "Read payroll adjustments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_adjustments.update",
+      "resource": "human_resource.payroll_adjustments",
+      "action": "update",
+      "description": "Update payroll adjustments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_groups.create",
+      "resource": "human_resource.payroll_groups",
+      "action": "create",
+      "description": "Create payroll groups",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_groups.delete",
+      "resource": "human_resource.payroll_groups",
+      "action": "delete",
+      "description": "Delete payroll groups",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.payroll_groups.read",
       "resource": "human_resource.payroll_groups",
       "action": "read",
@@ -227,11 +1466,67 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.payroll_groups.update",
+      "resource": "human_resource.payroll_groups",
+      "action": "update",
+      "description": "Update payroll groups",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_periods.create",
+      "resource": "human_resource.payroll_periods",
+      "action": "create",
+      "description": "Create payroll periods",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_periods.delete",
+      "resource": "human_resource.payroll_periods",
+      "action": "delete",
+      "description": "Delete payroll periods",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.payroll_periods.read",
       "resource": "human_resource.payroll_periods",
       "action": "read",
       "description": "Read payroll periods",
       "is_sensitive": false
+    },
+    {
+      "code": "human_resource.payroll_periods.update",
+      "resource": "human_resource.payroll_periods",
+      "action": "update",
+      "description": "Update payroll periods",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_profiles.create",
+      "resource": "human_resource.payroll_profiles",
+      "action": "create",
+      "description": "Create payroll profiles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_profiles.delete",
+      "resource": "human_resource.payroll_profiles",
+      "action": "delete",
+      "description": "Delete payroll profiles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_profiles.read",
+      "resource": "human_resource.payroll_profiles",
+      "action": "read",
+      "description": "Read payroll profiles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_profiles.update",
+      "resource": "human_resource.payroll_profiles",
+      "action": "update",
+      "description": "Update payroll profiles",
+      "is_sensitive": true
     },
     {
       "code": "human_resource.payroll_result_lines.read",
@@ -248,6 +1543,20 @@
       "is_sensitive": true
     },
     {
+      "code": "human_resource.payroll_rule_sets.create",
+      "resource": "human_resource.payroll_rule_sets",
+      "action": "create",
+      "description": "Create payroll rule sets",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_rule_sets.delete",
+      "resource": "human_resource.payroll_rule_sets",
+      "action": "delete",
+      "description": "Delete payroll rule sets",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.payroll_rule_sets.read",
       "resource": "human_resource.payroll_rule_sets",
       "action": "read",
@@ -255,10 +1564,24 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.payroll_rule_sets.update",
+      "resource": "human_resource.payroll_rule_sets",
+      "action": "update",
+      "description": "Update payroll rule sets",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.payroll_runs.approve",
       "resource": "human_resource.payroll_runs",
       "action": "approve",
       "description": "Approve payroll runs",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_runs.calculate",
+      "resource": "human_resource.payroll_runs",
+      "action": "calculate",
+      "description": "Calculate payroll runs",
       "is_sensitive": true
     },
     {
@@ -273,6 +1596,13 @@
       "resource": "human_resource.payroll_runs",
       "action": "create",
       "description": "Create payroll runs",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_runs.delete",
+      "resource": "human_resource.payroll_runs",
+      "action": "delete",
+      "description": "Delete payroll runs",
       "is_sensitive": true
     },
     {
@@ -297,6 +1627,13 @@
       "is_sensitive": true
     },
     {
+      "code": "human_resource.payroll_runs.update",
+      "resource": "human_resource.payroll_runs",
+      "action": "update",
+      "description": "Update payroll runs",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.payslips.read_self",
       "resource": "human_resource.payslips",
       "action": "read_self",
@@ -309,6 +1646,258 @@
       "action": "reissue",
       "description": "Reissue a published payslip for a worker within the granted legal entity",
       "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_cycles.close",
+      "resource": "human_resource.performance_cycles",
+      "action": "close",
+      "description": "Close performance cycles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_cycles.create",
+      "resource": "human_resource.performance_cycles",
+      "action": "create",
+      "description": "Create performance cycles",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_cycles.delete",
+      "resource": "human_resource.performance_cycles",
+      "action": "delete",
+      "description": "Delete performance cycles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_cycles.launch",
+      "resource": "human_resource.performance_cycles",
+      "action": "launch",
+      "description": "Launch performance cycles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_cycles.read",
+      "resource": "human_resource.performance_cycles",
+      "action": "read",
+      "description": "Read performance cycles",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_cycles.update",
+      "resource": "human_resource.performance_cycles",
+      "action": "update",
+      "description": "Update performance cycles",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_goal_updates.create",
+      "resource": "human_resource.performance_goal_updates",
+      "action": "create",
+      "description": "Create performance goal updates",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_goal_updates.delete",
+      "resource": "human_resource.performance_goal_updates",
+      "action": "delete",
+      "description": "Delete performance goal updates",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_goal_updates.read",
+      "resource": "human_resource.performance_goal_updates",
+      "action": "read",
+      "description": "Read performance goal updates",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_goal_updates.update",
+      "resource": "human_resource.performance_goal_updates",
+      "action": "update",
+      "description": "Update performance goal updates",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_goals.approve",
+      "resource": "human_resource.performance_goals",
+      "action": "approve",
+      "description": "Approve performance goals",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_goals.create",
+      "resource": "human_resource.performance_goals",
+      "action": "create",
+      "description": "Create performance goals",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_goals.delete",
+      "resource": "human_resource.performance_goals",
+      "action": "delete",
+      "description": "Delete performance goals",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_goals.read",
+      "resource": "human_resource.performance_goals",
+      "action": "read",
+      "description": "Read performance goals",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_goals.reject",
+      "resource": "human_resource.performance_goals",
+      "action": "reject",
+      "description": "Reject performance goals",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_goals.submit",
+      "resource": "human_resource.performance_goals",
+      "action": "submit",
+      "description": "Submit performance goals",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_goals.update",
+      "resource": "human_resource.performance_goals",
+      "action": "update",
+      "description": "Update performance goals",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_review_goal_scores.create",
+      "resource": "human_resource.performance_review_goal_scores",
+      "action": "create",
+      "description": "Create performance review goal scores",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_review_goal_scores.delete",
+      "resource": "human_resource.performance_review_goal_scores",
+      "action": "delete",
+      "description": "Delete performance review goal scores",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_review_goal_scores.read",
+      "resource": "human_resource.performance_review_goal_scores",
+      "action": "read",
+      "description": "Read performance review goal scores",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_review_goal_scores.update",
+      "resource": "human_resource.performance_review_goal_scores",
+      "action": "update",
+      "description": "Update performance review goal scores",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.performance_reviews.create",
+      "resource": "human_resource.performance_reviews",
+      "action": "create",
+      "description": "Create performance reviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_reviews.delete",
+      "resource": "human_resource.performance_reviews",
+      "action": "delete",
+      "description": "Delete performance reviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_reviews.finalize",
+      "resource": "human_resource.performance_reviews",
+      "action": "finalize",
+      "description": "Finalize performance reviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_reviews.read",
+      "resource": "human_resource.performance_reviews",
+      "action": "read",
+      "description": "Read performance reviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_reviews.submit",
+      "resource": "human_resource.performance_reviews",
+      "action": "submit",
+      "description": "Submit performance reviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.performance_reviews.update",
+      "resource": "human_resource.performance_reviews",
+      "action": "update",
+      "description": "Update performance reviews",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.policies.create",
+      "resource": "human_resource.policies",
+      "action": "create",
+      "description": "Create policies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.policies.delete",
+      "resource": "human_resource.policies",
+      "action": "delete",
+      "description": "Delete policies",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.policies.read",
+      "resource": "human_resource.policies",
+      "action": "read",
+      "description": "Read policies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.policies.update",
+      "resource": "human_resource.policies",
+      "action": "update",
+      "description": "Update policies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.policy_acknowledgements.acknowledge",
+      "resource": "human_resource.policy_acknowledgements",
+      "action": "acknowledge",
+      "description": "Acknowledge policy acknowledgements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.policy_acknowledgements.create",
+      "resource": "human_resource.policy_acknowledgements",
+      "action": "create",
+      "description": "Create policy acknowledgements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.policy_acknowledgements.delete",
+      "resource": "human_resource.policy_acknowledgements",
+      "action": "delete",
+      "description": "Delete policy acknowledgements",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.policy_acknowledgements.read",
+      "resource": "human_resource.policy_acknowledgements",
+      "action": "read",
+      "description": "Read policy acknowledgements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.policy_acknowledgements.update",
+      "resource": "human_resource.policy_acknowledgements",
+      "action": "update",
+      "description": "Update policy acknowledgements",
+      "is_sensitive": false
     },
     {
       "code": "human_resource.positions.activate",
@@ -346,39 +1935,95 @@
       "is_sensitive": true
     },
     {
-      "code": "human_resource.worker_assignments.approve",
-      "resource": "human_resource.worker_assignments",
+      "code": "human_resource.promotion_decisions.apply",
+      "resource": "human_resource.promotion_decisions",
+      "action": "apply",
+      "description": "Apply promotion decisions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_decisions.approve",
+      "resource": "human_resource.promotion_decisions",
       "action": "approve",
-      "description": "Approve proposed worker assignments",
+      "description": "Approve promotion decisions",
       "is_sensitive": true
     },
     {
-      "code": "human_resource.worker_assignments.create",
-      "resource": "human_resource.worker_assignments",
+      "code": "human_resource.promotion_decisions.create",
+      "resource": "human_resource.promotion_decisions",
       "action": "create",
-      "description": "Create draft assignments or request transfers",
-      "is_sensitive": false
-    },
-    {
-      "code": "human_resource.worker_assignments.read",
-      "resource": "human_resource.worker_assignments",
-      "action": "read",
-      "description": "Read worker assignments",
-      "is_sensitive": false
-    },
-    {
-      "code": "human_resource.worker_assignment_transfers.read",
-      "resource": "human_resource.worker_assignment_transfers",
-      "action": "read",
-      "description": "Read worker assignment transfer details",
-      "is_sensitive": false
-    },
-    {
-      "code": "human_resource.worker_assignments.transfer",
-      "resource": "human_resource.worker_assignments",
-      "action": "transfer",
-      "description": "Decide primary worker assignment transfers",
+      "description": "Create promotion decisions",
       "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_decisions.delete",
+      "resource": "human_resource.promotion_decisions",
+      "action": "delete",
+      "description": "Delete promotion decisions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_decisions.read",
+      "resource": "human_resource.promotion_decisions",
+      "action": "read",
+      "description": "Read promotion decisions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_decisions.reject",
+      "resource": "human_resource.promotion_decisions",
+      "action": "reject",
+      "description": "Reject promotion decisions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_decisions.return",
+      "resource": "human_resource.promotion_decisions",
+      "action": "return",
+      "description": "Return promotion decisions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_decisions.update",
+      "resource": "human_resource.promotion_decisions",
+      "action": "update",
+      "description": "Update promotion decisions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_recommendations.create",
+      "resource": "human_resource.promotion_recommendations",
+      "action": "create",
+      "description": "Create promotion recommendations",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.promotion_recommendations.delete",
+      "resource": "human_resource.promotion_recommendations",
+      "action": "delete",
+      "description": "Delete promotion recommendations",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_recommendations.read",
+      "resource": "human_resource.promotion_recommendations",
+      "action": "read",
+      "description": "Read promotion recommendations",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.promotion_recommendations.submit",
+      "resource": "human_resource.promotion_recommendations",
+      "action": "submit",
+      "description": "Submit promotion recommendations",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.promotion_recommendations.update",
+      "resource": "human_resource.promotion_recommendations",
+      "action": "update",
+      "description": "Update promotion recommendations",
+      "is_sensitive": false
     },
     {
       "code": "human_resource.requisitions.approve",
@@ -444,6 +2089,650 @@
       "is_sensitive": false
     },
     {
+      "code": "human_resource.service_request_events.create",
+      "resource": "human_resource.service_request_events",
+      "action": "create",
+      "description": "Create service request events",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.service_request_events.delete",
+      "resource": "human_resource.service_request_events",
+      "action": "delete",
+      "description": "Delete service request events",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.service_request_events.read",
+      "resource": "human_resource.service_request_events",
+      "action": "read",
+      "description": "Read service request events",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.service_request_events.update",
+      "resource": "human_resource.service_request_events",
+      "action": "update",
+      "description": "Update service request events",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.service_requests.assign",
+      "resource": "human_resource.service_requests",
+      "action": "assign",
+      "description": "Assign service requests",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.service_requests.cancel",
+      "resource": "human_resource.service_requests",
+      "action": "cancel",
+      "description": "Cancel service requests",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.service_requests.close",
+      "resource": "human_resource.service_requests",
+      "action": "close",
+      "description": "Close service requests",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.service_requests.create",
+      "resource": "human_resource.service_requests",
+      "action": "create",
+      "description": "Create service requests",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.service_requests.delete",
+      "resource": "human_resource.service_requests",
+      "action": "delete",
+      "description": "Delete service requests",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.service_requests.read",
+      "resource": "human_resource.service_requests",
+      "action": "read",
+      "description": "Read service requests",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.service_requests.resolve",
+      "resource": "human_resource.service_requests",
+      "action": "resolve",
+      "description": "Resolve service requests",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.service_requests.update",
+      "resource": "human_resource.service_requests",
+      "action": "update",
+      "description": "Update service requests",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.succession_candidates.create",
+      "resource": "human_resource.succession_candidates",
+      "action": "create",
+      "description": "Create succession candidates",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_candidates.delete",
+      "resource": "human_resource.succession_candidates",
+      "action": "delete",
+      "description": "Delete succession candidates",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_candidates.read",
+      "resource": "human_resource.succession_candidates",
+      "action": "read",
+      "description": "Read succession candidates",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_candidates.update",
+      "resource": "human_resource.succession_candidates",
+      "action": "update",
+      "description": "Update succession candidates",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_plans.approve",
+      "resource": "human_resource.succession_plans",
+      "action": "approve",
+      "description": "Approve succession plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_plans.create",
+      "resource": "human_resource.succession_plans",
+      "action": "create",
+      "description": "Create succession plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_plans.delete",
+      "resource": "human_resource.succession_plans",
+      "action": "delete",
+      "description": "Delete succession plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_plans.read",
+      "resource": "human_resource.succession_plans",
+      "action": "read",
+      "description": "Read succession plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.succession_plans.update",
+      "resource": "human_resource.succession_plans",
+      "action": "update",
+      "description": "Update succession plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_assessment_scores.create",
+      "resource": "human_resource.talent_assessment_scores",
+      "action": "create",
+      "description": "Create talent assessment scores",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_assessment_scores.delete",
+      "resource": "human_resource.talent_assessment_scores",
+      "action": "delete",
+      "description": "Delete talent assessment scores",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_assessment_scores.read",
+      "resource": "human_resource.talent_assessment_scores",
+      "action": "read",
+      "description": "Read talent assessment scores",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_assessment_scores.update",
+      "resource": "human_resource.talent_assessment_scores",
+      "action": "update",
+      "description": "Update talent assessment scores",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_assessments.create",
+      "resource": "human_resource.talent_assessments",
+      "action": "create",
+      "description": "Create talent assessments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_assessments.delete",
+      "resource": "human_resource.talent_assessments",
+      "action": "delete",
+      "description": "Delete talent assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_assessments.finalize",
+      "resource": "human_resource.talent_assessments",
+      "action": "finalize",
+      "description": "Finalize talent assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_assessments.read",
+      "resource": "human_resource.talent_assessments",
+      "action": "read",
+      "description": "Read talent assessments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_assessments.submit",
+      "resource": "human_resource.talent_assessments",
+      "action": "submit",
+      "description": "Submit talent assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_assessments.update",
+      "resource": "human_resource.talent_assessments",
+      "action": "update",
+      "description": "Update talent assessments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_assessments.withdraw",
+      "resource": "human_resource.talent_assessments",
+      "action": "withdraw",
+      "description": "Withdraw talent assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_calibration_decisions.create",
+      "resource": "human_resource.talent_calibration_decisions",
+      "action": "create",
+      "description": "Create talent calibration decisions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_calibration_decisions.delete",
+      "resource": "human_resource.talent_calibration_decisions",
+      "action": "delete",
+      "description": "Delete talent calibration decisions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_calibration_decisions.read",
+      "resource": "human_resource.talent_calibration_decisions",
+      "action": "read",
+      "description": "Read talent calibration decisions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_calibration_decisions.update",
+      "resource": "human_resource.talent_calibration_decisions",
+      "action": "update",
+      "description": "Update talent calibration decisions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_calibration_sessions.approve",
+      "resource": "human_resource.talent_calibration_sessions",
+      "action": "approve",
+      "description": "Approve talent calibration sessions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_calibration_sessions.create",
+      "resource": "human_resource.talent_calibration_sessions",
+      "action": "create",
+      "description": "Create talent calibration sessions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_calibration_sessions.delete",
+      "resource": "human_resource.talent_calibration_sessions",
+      "action": "delete",
+      "description": "Delete talent calibration sessions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_calibration_sessions.open",
+      "resource": "human_resource.talent_calibration_sessions",
+      "action": "open",
+      "description": "Open talent calibration sessions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_calibration_sessions.read",
+      "resource": "human_resource.talent_calibration_sessions",
+      "action": "read",
+      "description": "Read talent calibration sessions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_calibration_sessions.update",
+      "resource": "human_resource.talent_calibration_sessions",
+      "action": "update",
+      "description": "Update talent calibration sessions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_dimensions.create",
+      "resource": "human_resource.talent_dimensions",
+      "action": "create",
+      "description": "Create talent dimensions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_dimensions.delete",
+      "resource": "human_resource.talent_dimensions",
+      "action": "delete",
+      "description": "Delete talent dimensions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_dimensions.read",
+      "resource": "human_resource.talent_dimensions",
+      "action": "read",
+      "description": "Read talent dimensions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_dimensions.update",
+      "resource": "human_resource.talent_dimensions",
+      "action": "update",
+      "description": "Update talent dimensions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_frameworks.create",
+      "resource": "human_resource.talent_frameworks",
+      "action": "create",
+      "description": "Create talent frameworks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_frameworks.delete",
+      "resource": "human_resource.talent_frameworks",
+      "action": "delete",
+      "description": "Delete talent frameworks",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_frameworks.read",
+      "resource": "human_resource.talent_frameworks",
+      "action": "read",
+      "description": "Read talent frameworks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_frameworks.update",
+      "resource": "human_resource.talent_frameworks",
+      "action": "update",
+      "description": "Update talent frameworks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_pool_memberships.approve",
+      "resource": "human_resource.talent_pool_memberships",
+      "action": "approve",
+      "description": "Approve talent pool memberships",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_pool_memberships.create",
+      "resource": "human_resource.talent_pool_memberships",
+      "action": "create",
+      "description": "Create talent pool memberships",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_pool_memberships.delete",
+      "resource": "human_resource.talent_pool_memberships",
+      "action": "delete",
+      "description": "Delete talent pool memberships",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_pool_memberships.exit",
+      "resource": "human_resource.talent_pool_memberships",
+      "action": "exit",
+      "description": "Exit talent pool memberships",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_pool_memberships.read",
+      "resource": "human_resource.talent_pool_memberships",
+      "action": "read",
+      "description": "Read talent pool memberships",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_pool_memberships.reject",
+      "resource": "human_resource.talent_pool_memberships",
+      "action": "reject",
+      "description": "Reject talent pool memberships",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_pool_memberships.update",
+      "resource": "human_resource.talent_pool_memberships",
+      "action": "update",
+      "description": "Update talent pool memberships",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_pools.create",
+      "resource": "human_resource.talent_pools",
+      "action": "create",
+      "description": "Create talent pools",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_pools.delete",
+      "resource": "human_resource.talent_pools",
+      "action": "delete",
+      "description": "Delete talent pools",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_pools.read",
+      "resource": "human_resource.talent_pools",
+      "action": "read",
+      "description": "Read talent pools",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_pools.update",
+      "resource": "human_resource.talent_pools",
+      "action": "update",
+      "description": "Update talent pools",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_review_cycles.close",
+      "resource": "human_resource.talent_review_cycles",
+      "action": "close",
+      "description": "Close talent review cycles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_review_cycles.create",
+      "resource": "human_resource.talent_review_cycles",
+      "action": "create",
+      "description": "Create talent review cycles",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_review_cycles.delete",
+      "resource": "human_resource.talent_review_cycles",
+      "action": "delete",
+      "description": "Delete talent review cycles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_review_cycles.launch",
+      "resource": "human_resource.talent_review_cycles",
+      "action": "launch",
+      "description": "Launch talent review cycles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_review_cycles.read",
+      "resource": "human_resource.talent_review_cycles",
+      "action": "read",
+      "description": "Read talent review cycles",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.talent_review_cycles.start_calibration",
+      "resource": "human_resource.talent_review_cycles",
+      "action": "start_calibration",
+      "description": "Start calibration talent review cycles",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.talent_review_cycles.update",
+      "resource": "human_resource.talent_review_cycles",
+      "action": "update",
+      "description": "Update talent review cycles",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_assignment_transfers.read",
+      "resource": "human_resource.worker_assignment_transfers",
+      "action": "read",
+      "description": "Read worker assignment transfer details",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_assignments.approve",
+      "resource": "human_resource.worker_assignments",
+      "action": "approve",
+      "description": "Approve proposed worker assignments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_assignments.create",
+      "resource": "human_resource.worker_assignments",
+      "action": "create",
+      "description": "Create draft assignments or request transfers",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_assignments.delete",
+      "resource": "human_resource.worker_assignments",
+      "action": "delete",
+      "description": "Delete worker assignments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_assignments.read",
+      "resource": "human_resource.worker_assignments",
+      "action": "read",
+      "description": "Read worker assignments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_assignments.transfer",
+      "resource": "human_resource.worker_assignments",
+      "action": "transfer",
+      "description": "Decide primary worker assignment transfers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_assignments.update",
+      "resource": "human_resource.worker_assignments",
+      "action": "update",
+      "description": "Update worker assignments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_career_aspirations.create",
+      "resource": "human_resource.worker_career_aspirations",
+      "action": "create",
+      "description": "Create worker career aspirations",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_career_aspirations.delete",
+      "resource": "human_resource.worker_career_aspirations",
+      "action": "delete",
+      "description": "Delete worker career aspirations",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_career_aspirations.read",
+      "resource": "human_resource.worker_career_aspirations",
+      "action": "read",
+      "description": "Read worker career aspirations",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_career_aspirations.update",
+      "resource": "human_resource.worker_career_aspirations",
+      "action": "update",
+      "description": "Update worker career aspirations",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_competency_assessments.create",
+      "resource": "human_resource.worker_competency_assessments",
+      "action": "create",
+      "description": "Create worker competency assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_competency_assessments.delete",
+      "resource": "human_resource.worker_competency_assessments",
+      "action": "delete",
+      "description": "Delete worker competency assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_competency_assessments.read",
+      "resource": "human_resource.worker_competency_assessments",
+      "action": "read",
+      "description": "Read worker competency assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_competency_assessments.update",
+      "resource": "human_resource.worker_competency_assessments",
+      "action": "update",
+      "description": "Update worker competency assessments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_documents.create",
+      "resource": "human_resource.worker_documents",
+      "action": "create",
+      "description": "Create worker documents",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_documents.delete",
+      "resource": "human_resource.worker_documents",
+      "action": "delete",
+      "description": "Delete worker documents",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_documents.read",
+      "resource": "human_resource.worker_documents",
+      "action": "read",
+      "description": "Read worker documents",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_documents.update",
+      "resource": "human_resource.worker_documents",
+      "action": "update",
+      "description": "Update worker documents",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_lifecycle_events.read",
+      "resource": "human_resource.worker_lifecycle_events",
+      "action": "read",
+      "description": "Read worker lifecycle events",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_qualifications.create",
+      "resource": "human_resource.worker_qualifications",
+      "action": "create",
+      "description": "Create worker qualifications",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_qualifications.delete",
+      "resource": "human_resource.worker_qualifications",
+      "action": "delete",
+      "description": "Delete worker qualifications",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_qualifications.read",
+      "resource": "human_resource.worker_qualifications",
+      "action": "read",
+      "description": "Read worker qualifications",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_qualifications.update",
+      "resource": "human_resource.worker_qualifications",
+      "action": "update",
+      "description": "Update worker qualifications",
+      "is_sensitive": true
+    },
+    {
       "code": "human_resource.workers.activate",
       "resource": "human_resource.workers",
       "action": "activate",
@@ -463,6 +2752,13 @@
       "action": "create",
       "description": "Create worker records for onboarding",
       "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workers.delete",
+      "resource": "human_resource.workers",
+      "action": "delete",
+      "description": "Delete workers",
+      "is_sensitive": true
     },
     {
       "code": "human_resource.workers.read",
@@ -512,6 +2808,13 @@
       "action": "update",
       "description": "Correct lines on draft workforce plans",
       "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workforce_plans.approve",
+      "resource": "human_resource.workforce_plans",
+      "action": "approve",
+      "description": "Approve workforce plans",
+      "is_sensitive": true
     },
     {
       "code": "human_resource.workforce_plans.cancel",

@@ -58,5 +58,5 @@ type CandidateConnection {
 
 extend type Query {
   candidate(id: ID!): Candidate
-  candidates(candidate_number: String, after: String, before: String, first: Int, last: Int): CandidateConnection!
+  candidates(candidate_number: String, person_party_reference_id: ID, contact_reference_id: ID, source_type: String, candidate_status: String, created_by_principal_id: ID, after: String, before: String, first: Int, last: Int): CandidateConnection!
 }

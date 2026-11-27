@@ -1,0 +1,196 @@
+type WorkerLifecycleEvent implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  event_type: String!
+  occurred_at: Time
+  effective_date: String!
+  previous_status: String
+  new_status: String
+  source_reference: String
+  actor_principal_id: ID
+  event_payload: String
+  idempotency_key: String!
+}
+
+type WorkerLifecycleEventEdge {
+  cursor: String!
+  node: WorkerLifecycleEvent!
+}
+
+type WorkerLifecycleEventConnection {
+  edges: [WorkerLifecycleEventEdge!]!
+  nodes: [WorkerLifecycleEvent!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workerLifecycleEvent(id: ID!): WorkerLifecycleEvent
+  workerLifecycleEvents(worker_id: String, event_type: String, previous_status: String, new_status: String, actor_principal_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): WorkerLifecycleEventConnection!
+}
+
+type WorkerDocument implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  document_type: String!
+  document_reference_id: ID!
+  document_version_reference_id: ID!
+  content_digest: String
+  document_number_digest: String
+  issuing_country_code: String
+  issued_on: String
+  expires_on: String
+  verification_status: String!
+  verified_by_principal_id: ID
+  verified_at: Time
+  retention_class: String!
+  access_class: String!
+  created_at: Time
+}
+
+type WorkerDocumentEdge {
+  cursor: String!
+  node: WorkerDocument!
+}
+
+type WorkerDocumentConnection {
+  edges: [WorkerDocumentEdge!]!
+  nodes: [WorkerDocument!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workerDocument(id: ID!): WorkerDocument
+  workerDocuments(worker_id: String, document_type: String, document_reference_id: String, document_version_reference_id: String, issuing_country_code: String, verification_status: String, verified_by_principal_id: String, after: String, before: String, first: Int, last: Int): WorkerDocumentConnection!
+}
+
+input CreateWorkerDocumentInput {
+  worker_id: ID
+  document_type: String
+  document_reference_id: ID
+  document_version_reference_id: ID
+  content_digest: String
+  document_number_digest: String
+  issuing_country_code: String
+  issued_on: String
+  expires_on: String
+  verification_status: String
+  verified_by_principal_id: ID
+  verified_at: Time
+  retention_class: String
+  access_class: String
+}
+
+input UpdateWorkerDocumentInput {
+  worker_id: ID @goField(omittable: true)
+  document_type: String @goField(omittable: true)
+  document_reference_id: ID @goField(omittable: true)
+  document_version_reference_id: ID @goField(omittable: true)
+  content_digest: String @goField(omittable: true)
+  document_number_digest: String @goField(omittable: true)
+  issuing_country_code: String @goField(omittable: true)
+  issued_on: String @goField(omittable: true)
+  expires_on: String @goField(omittable: true)
+  verification_status: String @goField(omittable: true)
+  verified_by_principal_id: ID @goField(omittable: true)
+  verified_at: Time @goField(omittable: true)
+  retention_class: String @goField(omittable: true)
+  access_class: String @goField(omittable: true)
+}
+
+type CreateWorkerDocumentPayload implements MutationResult {
+  worker_document: WorkerDocument
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateWorkerDocumentPayload implements MutationResult {
+  worker_document: WorkerDocument
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkerDocumentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkerDocument(input: CreateWorkerDocumentInput!): CreateWorkerDocumentPayload!
+  updateWorkerDocument(id: ID!, input: UpdateWorkerDocumentInput!): UpdateWorkerDocumentPayload!
+  deleteWorkerDocument(id: ID!): DeleteWorkerDocumentPayload!
+}
+
+type EmergencyContact implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  contact_party_reference_id: ID!
+  relationship_code: String!
+  priority_order: Int!
+  authorization_confirmed_at: Time
+  is_active: Boolean!
+}
+
+type EmergencyContactEdge {
+  cursor: String!
+  node: EmergencyContact!
+}
+
+type EmergencyContactConnection {
+  edges: [EmergencyContactEdge!]!
+  nodes: [EmergencyContact!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  emergencyContact(id: ID!): EmergencyContact
+  emergencyContacts(worker_id: String, contact_party_reference_id: String, relationship_code: String, after: String, before: String, first: Int, last: Int): EmergencyContactConnection!
+}
+
+input CreateEmergencyContactInput {
+  worker_id: ID
+  contact_party_reference_id: ID
+  relationship_code: String
+  priority_order: Int
+  authorization_confirmed_at: Time
+  is_active: Boolean
+}
+
+input UpdateEmergencyContactInput {
+  worker_id: ID @goField(omittable: true)
+  contact_party_reference_id: ID @goField(omittable: true)
+  relationship_code: String @goField(omittable: true)
+  priority_order: Int @goField(omittable: true)
+  authorization_confirmed_at: Time @goField(omittable: true)
+  is_active: Boolean @goField(omittable: true)
+}
+
+type CreateEmergencyContactPayload implements MutationResult {
+  emergency_contact: EmergencyContact
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateEmergencyContactPayload implements MutationResult {
+  emergency_contact: EmergencyContact
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteEmergencyContactPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createEmergencyContact(input: CreateEmergencyContactInput!): CreateEmergencyContactPayload!
+  updateEmergencyContact(id: ID!, input: UpdateEmergencyContactInput!): UpdateEmergencyContactPayload!
+  deleteEmergencyContact(id: ID!): DeleteEmergencyContactPayload!
+}

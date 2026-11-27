@@ -22,9 +22,9 @@ type OffboardingPlanConnection {
 
 extend type Query {
   offboardingPlan(id: ID!): OffboardingPlan
-  offboardingPlans(worker_id: ID!, after: String, before: String, first: Int, last: Int): OffboardingPlanConnection!
+  offboardingPlans(worker_id: ID, plan_number: String, reason_code: String, status: String, exit_interview_document_version_reference_id: ID, final_payroll_run_id: ID, finance_clearance_reference_id: ID, created_by_principal_id: ID, approved_by_principal_id: ID, after: String, before: String, first: Int, last: Int): OffboardingPlanConnection!
   offboardingTask(id: ID!): OffboardingTask
-  offboardingTasks(offboarding_plan_id: ID!, after: String, before: String, first: Int, last: Int): OffboardingTaskConnection!
+  offboardingTasks(offboarding_plan_id: ID, task_code: String, assigned_principal_id: ID, status: String, owner_confirmation_reference_id: ID, waived_by_principal_id: ID, after: String, before: String, first: Int, last: Int): OffboardingTaskConnection!
 }
 
 type CreateOffboardingPlanPayload implements MutationResult {

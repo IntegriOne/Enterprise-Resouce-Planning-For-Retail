@@ -1,0 +1,18 @@
+# Mutasi alur kerja domain benefits HRM.
+
+type ApproveBenefitEnrollmentPayload implements MutationResult {
+  benefit_enrollment: BenefitEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type EndBenefitEnrollmentPayload implements MutationResult {
+  benefit_enrollment: BenefitEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  approveBenefitEnrollment(id: ID!): ApproveBenefitEnrollmentPayload!
+  endBenefitEnrollment(id: ID!, effective_to: String!): EndBenefitEnrollmentPayload!
+}

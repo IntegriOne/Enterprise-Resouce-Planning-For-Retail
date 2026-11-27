@@ -1,6 +1,6 @@
 # List operasi
 
-HRM mendeklarasikan 1.016 RPC bisnis pada 22 service gRPC privat. Tiga RPC workload tambahan melayani integrasi IAM dan Finance. Gateway menyediakan **52 Query dan 62 Mutation** HRM, di luar root bersama seperti `node`. [Inventaris gRPC](1-inventaris-operasi-grpc-hrm.md) · [Matriks Gateway](26-status-wiring-gateway-hrm.md)
+HRM mendeklarasikan 1.016 RPC bisnis pada 22 service gRPC privat. Tiga RPC workload tambahan melayani integrasi IAM dan Finance. Gateway kini menyediakan **176 Query dan 326 Mutation** HRM (**86 Node** dan **86 Relay Connection**), di luar root bersama seperti `node`, serta didukung **409 izin HRM** di manifest RBAC (`434` total izin). [Inventaris gRPC](1-inventaris-operasi-grpc-hrm.md) · [Matriks Gateway](26-status-wiring-gateway-hrm.md) · [Laporan E2E Penuh](../../e2e/gateway/185-hrm-query-mutation-penuh-dan-guard-https.md)
 
 ## Penjelasan hasil verifikasi
 

@@ -1,0 +1,234 @@
+type LearningCourse implements Node {
+  id: ID!
+  _id: ID!
+  course_code: String!
+  course_version: String!
+  course_name: String!
+  course_type: String!
+  provider_party_reference_id: ID
+  delivery_mode: String!
+  duration_hours: String
+  credential_awarded: Boolean!
+  expiry_months: Int
+  valid_from: String
+  valid_to: String
+  is_active: Boolean!
+}
+
+type LearningCourseEdge {
+  cursor: String!
+  node: LearningCourse!
+}
+
+type LearningCourseConnection {
+  edges: [LearningCourseEdge!]!
+  nodes: [LearningCourse!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  learningCourse(id: ID!): LearningCourse
+  learningCourses(course_code: String, course_type: String, provider_party_reference_id: String, after: String, before: String, first: Int, last: Int): LearningCourseConnection!
+}
+
+input CreateLearningCourseInput {
+  course_code: String
+  course_version: String
+  course_name: String
+  course_type: String
+  provider_party_reference_id: ID
+  delivery_mode: String
+  duration_hours: String
+  credential_awarded: Boolean
+  expiry_months: Int
+  valid_from: String
+  valid_to: String
+  is_active: Boolean
+}
+
+input UpdateLearningCourseInput {
+  course_code: String @goField(omittable: true)
+  course_version: String @goField(omittable: true)
+  course_name: String @goField(omittable: true)
+  course_type: String @goField(omittable: true)
+  provider_party_reference_id: ID @goField(omittable: true)
+  delivery_mode: String @goField(omittable: true)
+  duration_hours: String @goField(omittable: true)
+  credential_awarded: Boolean @goField(omittable: true)
+  expiry_months: Int @goField(omittable: true)
+  valid_from: String @goField(omittable: true)
+  valid_to: String @goField(omittable: true)
+  is_active: Boolean @goField(omittable: true)
+}
+
+type CreateLearningCoursePayload implements MutationResult {
+  learning_course: LearningCourse
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateLearningCoursePayload implements MutationResult {
+  learning_course: LearningCourse
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteLearningCoursePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createLearningCourse(input: CreateLearningCourseInput!): CreateLearningCoursePayload!
+  updateLearningCourse(id: ID!, input: UpdateLearningCourseInput!): UpdateLearningCoursePayload!
+  deleteLearningCourse(id: ID!): DeleteLearningCoursePayload!
+}
+
+type LearningEnrollment implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  course_id: ID!
+  enrollment_status: String!
+  assigned_by_principal_id: ID
+  assigned_at: Time
+  due_at: Time
+  started_at: Time
+  completed_at: Time
+  score: String
+  credential_reference_id: ID
+  funding_reference_id: ID
+  idempotency_key: String!
+}
+
+type LearningEnrollmentEdge {
+  cursor: String!
+  node: LearningEnrollment!
+}
+
+type LearningEnrollmentConnection {
+  edges: [LearningEnrollmentEdge!]!
+  nodes: [LearningEnrollment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  learningEnrollment(id: ID!): LearningEnrollment
+  learningEnrollments(worker_id: String, course_id: String, enrollment_status: String, assigned_by_principal_id: String, credential_reference_id: String, funding_reference_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): LearningEnrollmentConnection!
+}
+
+input CreateLearningEnrollmentInput {
+  worker_id: ID
+  course_id: ID
+  enrollment_status: String
+  assigned_by_principal_id: ID
+  due_at: Time
+  started_at: Time
+  completed_at: Time
+  score: String
+  credential_reference_id: ID
+  funding_reference_id: ID
+  idempotency_key: String
+}
+
+input UpdateLearningEnrollmentInput {
+  worker_id: ID @goField(omittable: true)
+  course_id: ID @goField(omittable: true)
+  enrollment_status: String @goField(omittable: true)
+  assigned_by_principal_id: ID @goField(omittable: true)
+  due_at: Time @goField(omittable: true)
+  started_at: Time @goField(omittable: true)
+  completed_at: Time @goField(omittable: true)
+  score: String @goField(omittable: true)
+  credential_reference_id: ID @goField(omittable: true)
+  funding_reference_id: ID @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreateLearningEnrollmentPayload implements MutationResult {
+  learning_enrollment: LearningEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateLearningEnrollmentPayload implements MutationResult {
+  learning_enrollment: LearningEnrollment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteLearningEnrollmentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createLearningEnrollment(input: CreateLearningEnrollmentInput!): CreateLearningEnrollmentPayload!
+  updateLearningEnrollment(id: ID!, input: UpdateLearningEnrollmentInput!): UpdateLearningEnrollmentPayload!
+  deleteLearningEnrollment(id: ID!): DeleteLearningEnrollmentPayload!
+}
+
+type LearningCourseCompetency implements Node {
+  id: ID!
+  _id: ID!
+  course_id: ID!
+  competency_id: ID!
+  target_level: Int!
+}
+
+type LearningCourseCompetencyEdge {
+  cursor: String!
+  node: LearningCourseCompetency!
+}
+
+type LearningCourseCompetencyConnection {
+  edges: [LearningCourseCompetencyEdge!]!
+  nodes: [LearningCourseCompetency!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  learningCourseCompetency(id: ID!): LearningCourseCompetency
+  learningCourseCompetencies(course_id: String, competency_id: String, after: String, before: String, first: Int, last: Int): LearningCourseCompetencyConnection!
+}
+
+input CreateLearningCourseCompetencyInput {
+  course_id: ID
+  competency_id: ID
+  target_level: Int
+}
+
+input UpdateLearningCourseCompetencyInput {
+  course_id: ID @goField(omittable: true)
+  competency_id: ID @goField(omittable: true)
+  target_level: Int @goField(omittable: true)
+}
+
+type CreateLearningCourseCompetencyPayload implements MutationResult {
+  learning_course_competency: LearningCourseCompetency
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateLearningCourseCompetencyPayload implements MutationResult {
+  learning_course_competency: LearningCourseCompetency
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteLearningCourseCompetencyPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createLearningCourseCompetency(input: CreateLearningCourseCompetencyInput!): CreateLearningCourseCompetencyPayload!
+  updateLearningCourseCompetency(id: ID!, input: UpdateLearningCourseCompetencyInput!): UpdateLearningCourseCompetencyPayload!
+  deleteLearningCourseCompetency(id: ID!): DeleteLearningCourseCompetencyPayload!
+}

@@ -1,0 +1,152 @@
+type ServiceRequest implements Node {
+  id: ID!
+  _id: ID!
+  request_number: String!
+  worker_id: ID!
+  request_type: String!
+  requested_by_principal_id: ID!
+  assigned_principal_id: ID
+  status: String!
+  restricted_details_document_version_reference_id: ID!
+  opened_at: Time
+  due_at: Time
+  resolved_at: Time
+  resolution_document_version_reference_id: ID
+  idempotency_key: String!
+}
+
+type ServiceRequestEdge {
+  cursor: String!
+  node: ServiceRequest!
+}
+
+type ServiceRequestConnection {
+  edges: [ServiceRequestEdge!]!
+  nodes: [ServiceRequest!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  serviceRequest(id: ID!): ServiceRequest
+  serviceRequests(request_number: String, worker_id: String, request_type: String, requested_by_principal_id: String, assigned_principal_id: String, status: String, restricted_details_document_version_reference_id: String, resolution_document_version_reference_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): ServiceRequestConnection!
+}
+
+input CreateServiceRequestInput {
+  request_number: String
+  worker_id: ID
+  request_type: String
+  assigned_principal_id: ID
+  status: String
+  restricted_details_document_version_reference_id: ID
+  due_at: Time
+  resolved_at: Time
+  resolution_document_version_reference_id: ID
+  idempotency_key: String
+}
+
+input UpdateServiceRequestInput {
+  request_number: String @goField(omittable: true)
+  worker_id: ID @goField(omittable: true)
+  request_type: String @goField(omittable: true)
+  assigned_principal_id: ID @goField(omittable: true)
+  status: String @goField(omittable: true)
+  restricted_details_document_version_reference_id: ID @goField(omittable: true)
+  due_at: Time @goField(omittable: true)
+  resolved_at: Time @goField(omittable: true)
+  resolution_document_version_reference_id: ID @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreateServiceRequestPayload implements MutationResult {
+  service_request: ServiceRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateServiceRequestPayload implements MutationResult {
+  service_request: ServiceRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteServiceRequestPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createServiceRequest(input: CreateServiceRequestInput!): CreateServiceRequestPayload!
+  updateServiceRequest(id: ID!, input: UpdateServiceRequestInput!): UpdateServiceRequestPayload!
+  deleteServiceRequest(id: ID!): DeleteServiceRequestPayload!
+}
+
+type ServiceRequestEvent implements Node {
+  id: ID!
+  _id: ID!
+  service_request_id: ID!
+  event_type: String!
+  decision: String
+  actor_principal_id: ID!
+  occurred_at: Time
+  evidence_document_version_reference_id: ID
+  idempotency_key: String!
+}
+
+type ServiceRequestEventEdge {
+  cursor: String!
+  node: ServiceRequestEvent!
+}
+
+type ServiceRequestEventConnection {
+  edges: [ServiceRequestEventEdge!]!
+  nodes: [ServiceRequestEvent!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  serviceRequestEvent(id: ID!): ServiceRequestEvent
+  serviceRequestEvents(service_request_id: String, event_type: String, actor_principal_id: String, evidence_document_version_reference_id: String, idempotency_key: String, after: String, before: String, first: Int, last: Int): ServiceRequestEventConnection!
+}
+
+input CreateServiceRequestEventInput {
+  service_request_id: ID
+  event_type: String
+  decision: String
+  evidence_document_version_reference_id: ID
+  idempotency_key: String
+}
+
+input UpdateServiceRequestEventInput {
+  service_request_id: ID @goField(omittable: true)
+  event_type: String @goField(omittable: true)
+  decision: String @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type CreateServiceRequestEventPayload implements MutationResult {
+  service_request_event: ServiceRequestEvent
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateServiceRequestEventPayload implements MutationResult {
+  service_request_event: ServiceRequestEvent
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteServiceRequestEventPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createServiceRequestEvent(input: CreateServiceRequestEventInput!): CreateServiceRequestEventPayload!
+  updateServiceRequestEvent(id: ID!, input: UpdateServiceRequestEventInput!): UpdateServiceRequestEventPayload!
+  deleteServiceRequestEvent(id: ID!): DeleteServiceRequestEventPayload!
+}

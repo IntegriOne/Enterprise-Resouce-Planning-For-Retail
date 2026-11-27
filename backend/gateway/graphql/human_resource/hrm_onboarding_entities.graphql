@@ -1,0 +1,157 @@
+type OnboardingPlan implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  plan_code: String!
+  plan_version: Int!
+  start_date: String!
+  target_completion_date: String
+  status: String!
+  template_reference_id: ID
+  created_by_principal_id: ID
+  started_at: Time
+  started_by_principal_id: ID
+  completed_at: Time
+  completed_by_principal_id: ID
+}
+
+type OnboardingPlanEdge {
+  cursor: String!
+  node: OnboardingPlan!
+}
+
+type OnboardingPlanConnection {
+  edges: [OnboardingPlanEdge!]!
+  nodes: [OnboardingPlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  onboardingPlan(id: ID!): OnboardingPlan
+  onboardingPlans(worker_id: String, plan_code: String, status: String, template_reference_id: String, created_by_principal_id: String, after: String, before: String, first: Int, last: Int): OnboardingPlanConnection!
+}
+
+input CreateOnboardingPlanInput {
+  worker_id: ID
+  plan_code: String
+  plan_version: Int
+  start_date: String
+  target_completion_date: String
+  status: String
+  template_reference_id: ID
+}
+
+input UpdateOnboardingPlanInput {
+  worker_id: ID @goField(omittable: true)
+  plan_code: String @goField(omittable: true)
+  plan_version: Int @goField(omittable: true)
+  start_date: String @goField(omittable: true)
+  target_completion_date: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  template_reference_id: ID @goField(omittable: true)
+}
+
+type CreateOnboardingPlanPayload implements MutationResult {
+  onboarding_plan: OnboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateOnboardingPlanPayload implements MutationResult {
+  onboarding_plan: OnboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteOnboardingPlanPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createOnboardingPlan(input: CreateOnboardingPlanInput!): CreateOnboardingPlanPayload!
+  updateOnboardingPlan(id: ID!, input: UpdateOnboardingPlanInput!): UpdateOnboardingPlanPayload!
+  deleteOnboardingPlan(id: ID!): DeleteOnboardingPlanPayload!
+}
+
+type OnboardingTask implements Node {
+  id: ID!
+  _id: ID!
+  onboarding_plan_id: ID!
+  task_code: String!
+  task_name: String!
+  task_owner_type: String!
+  assigned_principal_id: ID
+  due_at: Time
+  completed_at: Time
+  completion_evidence_reference_id: ID
+  is_mandatory: Boolean!
+  completed_by_principal_id: ID
+}
+
+type OnboardingTaskEdge {
+  cursor: String!
+  node: OnboardingTask!
+}
+
+type OnboardingTaskConnection {
+  edges: [OnboardingTaskEdge!]!
+  nodes: [OnboardingTask!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  onboardingTask(id: ID!): OnboardingTask
+  onboardingTasks(onboarding_plan_id: String, task_code: String, task_owner_type: String, assigned_principal_id: String, completion_evidence_reference_id: String, after: String, before: String, first: Int, last: Int): OnboardingTaskConnection!
+}
+
+input CreateOnboardingTaskInput {
+  onboarding_plan_id: ID
+  task_code: String
+  task_name: String
+  task_owner_type: String
+  assigned_principal_id: ID
+  due_at: Time
+  completed_at: Time
+  completion_evidence_reference_id: ID
+  is_mandatory: Boolean
+}
+
+input UpdateOnboardingTaskInput {
+  onboarding_plan_id: ID @goField(omittable: true)
+  task_code: String @goField(omittable: true)
+  task_name: String @goField(omittable: true)
+  task_owner_type: String @goField(omittable: true)
+  assigned_principal_id: ID @goField(omittable: true)
+  due_at: Time @goField(omittable: true)
+  completed_at: Time @goField(omittable: true)
+  completion_evidence_reference_id: ID @goField(omittable: true)
+  is_mandatory: Boolean @goField(omittable: true)
+}
+
+type CreateOnboardingTaskPayload implements MutationResult {
+  onboarding_task: OnboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateOnboardingTaskPayload implements MutationResult {
+  onboarding_task: OnboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteOnboardingTaskPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createOnboardingTask(input: CreateOnboardingTaskInput!): CreateOnboardingTaskPayload!
+  updateOnboardingTask(id: ID!, input: UpdateOnboardingTaskInput!): UpdateOnboardingTaskPayload!
+  deleteOnboardingTask(id: ID!): DeleteOnboardingTaskPayload!
+}

@@ -58,10 +58,10 @@ func (r *queryResolver) Position(ctx context.Context, id string) (*model.Positio
 }
 
 // Positions membaca daftar posisi.
-func (r *queryResolver) Positions(ctx context.Context, legalEntityID *string, after *string, before *string, first *int, last *int) (*model.PositionConnection, error) {
+func (r *queryResolver) Positions(ctx context.Context, legalEntityID *string, positionCode *string, jobID *string, organizationUnitReferenceID *string, reportsToPositionID *string, positionStatus *string, workLocationReferenceID *string, costCenterReferenceID *string, after *string, before *string, first *int, last *int) (*model.PositionConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.Position], error) {
-			return r.HRMAdapter.Positions(ctx, limit, offset, legalEntityID)
+			return r.HRMAdapter.PositionsFiltered(ctx, limit, offset, legalEntityID, positionCode, jobID, organizationUnitReferenceID, reportsToPositionID, positionStatus, workLocationReferenceID, costCenterReferenceID)
 		},
 		func(node *model.Position, cursor string) *model.PositionEdge {
 			return &model.PositionEdge{Node: node, Cursor: cursor}

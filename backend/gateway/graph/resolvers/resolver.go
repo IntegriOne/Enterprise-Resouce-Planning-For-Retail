@@ -67,74 +67,74 @@ func NewComplexityRoot(maxComplexity int) generated.ComplexityRoot {
 		return factor * childComplexity
 	}
 
-	c.Query.OffboardingPlans = func(childComplexity int, _ string, _, _ *string, first, last *int) int {
+	c.Query.OffboardingPlans = func(childComplexity int, _, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.OffboardingTasks = func(childComplexity int, _ string, _, _ *string, first, last *int) int {
+	c.Query.OffboardingTasks = func(childComplexity int, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.Jobs = func(childComplexity int, _ *string, _, _ *string, first, last *int) int {
+	c.Query.Jobs = func(childComplexity int, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
 	c.Query.JobsByIds = func(childComplexity int, ids []string) int {
 		size := len(ids)
 		return paginated(childComplexity, &size, nil)
 	}
-	c.Query.JobFamilies = func(childComplexity int, _, _ *string, first, last *int) int {
+	c.Query.JobFamilies = func(childComplexity int, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.Positions = func(childComplexity int, _ *string, _, _ *string, first, last *int) int {
+	c.Query.Positions = func(childComplexity int, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.LeavePolicies = func(childComplexity int, _, _ *string, first, last *int) int {
+	c.Query.LeavePolicies = func(childComplexity int, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.LeaveEntitlements = func(childComplexity int, _ string, _, _ *string, first, last *int) int {
+	c.Query.LeaveEntitlements = func(childComplexity int, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.LeaveLedgerEntries = func(childComplexity int, _ *string, _ *string, _, _ *string, first, last *int) int {
+	c.Query.LeaveLedgerEntries = func(childComplexity int, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.LeaveAdjustments = func(childComplexity int, _ *string, _ *string, _, _ *string, first, last *int) int {
+	c.Query.LeaveAdjustments = func(childComplexity int, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.PayrollResults = func(childComplexity int, _ string, _, _ *string, first, last *int) int {
+	c.Query.PayrollResults = func(childComplexity int, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.PayrollResultLines = func(childComplexity int, _ string, _, _ *string, first, last *int) int {
+	c.Query.PayrollResultLines = func(childComplexity int, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.Candidates = func(childComplexity int, _ *string, _, _ *string, first, last *int) int {
+	c.Query.Candidates = func(childComplexity int, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.Requisitions = func(childComplexity int, _ *string, _, _ *string, first, last *int) int {
+	c.Query.Requisitions = func(childComplexity int, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.PayrollRuns = func(childComplexity int, _ *string, _ *string, _, _ *string, first, last *int) int {
+	c.Query.PayrollRuns = func(childComplexity int, _, _, _, _, _, _, _ *string, _ *int, _, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.PayrollPeriods = func(childComplexity int, _ *string, _, _ *string, first, last *int) int {
+	c.Query.PayrollPeriods = func(childComplexity int, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.PayrollGroups = func(childComplexity int, _, _ *string, first, last *int) int {
+	c.Query.PayrollGroups = func(childComplexity int, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.PayrollRuleSets = func(childComplexity int, _, _ *string, first, last *int) int {
+	c.Query.PayrollRuleSets = func(childComplexity int, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.WorkforcePlans = func(childComplexity int, _, _ *string, first, last *int) int {
+	c.Query.WorkforcePlans = func(childComplexity int, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.WorkforcePlanLines = func(childComplexity int, _ *string, _, _ *string, first, last *int) int {
+	c.Query.WorkforcePlanLines = func(childComplexity int, _ *string, _ *int, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.Workers = func(childComplexity int, _ *string, _ *string, _, _ *string, first, last *int) int {
+	c.Query.Workers = func(childComplexity int, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.WorkerAssignments = func(childComplexity int, _ *string, _ *string, _, _ *string, first, last *int) int {
+	c.Query.WorkerAssignments = func(childComplexity int, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
-	c.Query.EmploymentContracts = func(childComplexity int, _ string, _, _ *string, first, last *int) int {
+	c.Query.EmploymentContracts = func(childComplexity int, _, _, _, _, _, _, _, _, _, _, _, _ *string, first, last *int) int {
 		return paginated(childComplexity, first, last)
 	}
 	c.Query.MyPayslips = func(childComplexity int, _ *string, _, _ *string, first, last *int) int {

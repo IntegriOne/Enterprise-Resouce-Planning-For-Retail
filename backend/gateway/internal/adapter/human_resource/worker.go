@@ -11,12 +11,27 @@ import (
 	"github.com/integrione/erp-retail/backend/gateway/internal/middleware"
 	"github.com/integrione/erp-retail/backend/gateway/internal/source_connections"
 	accessrequest "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/accessrequest/v1"
+	analytics "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/analytics/v1"
+	benefits "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/benefits/v1"
+	career "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/career/v1"
 	common "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/common/v1"
+	compensation "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/compensation/v1"
+	competency "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/competency/v1"
+	employeerelations "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/employeerelations/v1"
+	engagement "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/engagement/v1"
+	hrservice "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/hrservice/v1"
+	learning "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/learning/v1"
 	leave "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/leave/v1"
 	offboarding "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/offboarding/v1"
+	onboarding "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/onboarding/v1"
 	payroll "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/payroll/v1"
+	performance "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/performance/v1"
 	personnel "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/personnel/v1"
+	policy "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/policy/v1"
+	promotion "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/promotion/v1"
 	recruitment "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/recruitment/v1"
+	succession "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/succession/v1"
+	talent "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/talent/v1"
 	workforce "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/workforceplanning/v1"
 	"github.com/integrione/erp-retail/backend/shared/authz"
 	"google.golang.org/grpc"
@@ -28,16 +43,31 @@ const workerGIDPrefix = "gid://integrione/hrm-worker/"
 const workerReadPermission = "human_resource.workers.read"
 
 type Adapter struct {
-	iam            source_connections.IAMClientSet
-	accessRequests accessrequest.AccessRequestServiceClient
-	auth           *middleware.AuthManager
-	authorizer     *middleware.Authorizer
-	leave          leave.LeaveServiceClient
-	payroll        payroll.PayrollServiceClient
-	personnel      personnel.PersonnelServiceClient
-	workforce      workforce.WorkforcePlanningServiceClient
-	offboarding    offboarding.OffboardingServiceClient
-	recruitment    recruitment.RecruitmentServiceClient
+	iam               source_connections.IAMClientSet
+	accessRequests    accessrequest.AccessRequestServiceClient
+	analytics         analytics.AnalyticsServiceClient
+	auth              *middleware.AuthManager
+	authorizer        *middleware.Authorizer
+	benefits          benefits.BenefitsServiceClient
+	career            career.CareerServiceClient
+	compensation      compensation.CompensationServiceClient
+	competency        competency.CompetencyServiceClient
+	employeeRelations employeerelations.EmployeeRelationsServiceClient
+	engagement        engagement.EngagementServiceClient
+	hrService         hrservice.HRServiceClient
+	learning          learning.LearningServiceClient
+	leave             leave.LeaveServiceClient
+	offboarding       offboarding.OffboardingServiceClient
+	onboarding        onboarding.OnboardingServiceClient
+	payroll           payroll.PayrollServiceClient
+	performance       performance.PerformanceServiceClient
+	personnel         personnel.PersonnelServiceClient
+	policy            policy.PolicyServiceClient
+	promotion         promotion.PromotionServiceClient
+	recruitment       recruitment.RecruitmentServiceClient
+	succession        succession.SuccessionServiceClient
+	talent            talent.TalentServiceClient
+	workforce         workforce.WorkforcePlanningServiceClient
 }
 
 type Option func(*Adapter)
@@ -51,12 +81,27 @@ func NewAdapter(auth *middleware.AuthManager, authorizer *middleware.Authorizer,
 	a := &Adapter{auth: auth, authorizer: authorizer}
 	if conn != nil {
 		a.accessRequests = accessrequest.NewAccessRequestServiceClient(conn)
+		a.analytics = analytics.NewAnalyticsServiceClient(conn)
+		a.benefits = benefits.NewBenefitsServiceClient(conn)
+		a.career = career.NewCareerServiceClient(conn)
+		a.compensation = compensation.NewCompensationServiceClient(conn)
+		a.competency = competency.NewCompetencyServiceClient(conn)
+		a.employeeRelations = employeerelations.NewEmployeeRelationsServiceClient(conn)
+		a.engagement = engagement.NewEngagementServiceClient(conn)
+		a.hrService = hrservice.NewHRServiceClient(conn)
+		a.learning = learning.NewLearningServiceClient(conn)
 		a.leave = leave.NewLeaveServiceClient(conn)
-		a.payroll = payroll.NewPayrollServiceClient(conn)
-		a.personnel = personnel.NewPersonnelServiceClient(conn)
-		a.workforce = workforce.NewWorkforcePlanningServiceClient(conn)
 		a.offboarding = offboarding.NewOffboardingServiceClient(conn)
+		a.onboarding = onboarding.NewOnboardingServiceClient(conn)
+		a.payroll = payroll.NewPayrollServiceClient(conn)
+		a.performance = performance.NewPerformanceServiceClient(conn)
+		a.personnel = personnel.NewPersonnelServiceClient(conn)
+		a.policy = policy.NewPolicyServiceClient(conn)
+		a.promotion = promotion.NewPromotionServiceClient(conn)
 		a.recruitment = recruitment.NewRecruitmentServiceClient(conn)
+		a.succession = succession.NewSuccessionServiceClient(conn)
+		a.talent = talent.NewTalentServiceClient(conn)
+		a.workforce = workforce.NewWorkforcePlanningServiceClient(conn)
 	}
 	for _, option := range options {
 		option(a)

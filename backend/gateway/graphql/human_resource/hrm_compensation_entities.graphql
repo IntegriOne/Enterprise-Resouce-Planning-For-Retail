@@ -1,0 +1,190 @@
+type CompensationBand implements Node {
+  id: ID!
+  _id: ID!
+  band_code: String!
+  band_version: Int!
+  job_level_code: String!
+  jurisdiction_code: String!
+  currency_code: String!
+  pay_frequency: String!
+  minimum_amount: String!
+  midpoint_amount: String!
+  maximum_amount: String!
+  valid_from: String!
+  valid_to: String
+  approval_reference_id: ID
+}
+
+type CompensationBandEdge {
+  cursor: String!
+  node: CompensationBand!
+}
+
+type CompensationBandConnection {
+  edges: [CompensationBandEdge!]!
+  nodes: [CompensationBand!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  compensationBand(id: ID!): CompensationBand
+  compensationBands(band_code: String, job_level_code: String, jurisdiction_code: String, currency_code: String, approval_reference_id: String, after: String, before: String, first: Int, last: Int): CompensationBandConnection!
+}
+
+input CreateCompensationBandInput {
+  band_code: String
+  band_version: Int
+  job_level_code: String
+  jurisdiction_code: String
+  currency_code: String
+  pay_frequency: String
+  minimum_amount: String
+  midpoint_amount: String
+  maximum_amount: String
+  valid_from: String
+  valid_to: String
+  approval_reference_id: ID
+}
+
+input UpdateCompensationBandInput {
+  band_code: String @goField(omittable: true)
+  band_version: Int @goField(omittable: true)
+  job_level_code: String @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  pay_frequency: String @goField(omittable: true)
+  minimum_amount: String @goField(omittable: true)
+  midpoint_amount: String @goField(omittable: true)
+  maximum_amount: String @goField(omittable: true)
+  valid_from: String @goField(omittable: true)
+  valid_to: String @goField(omittable: true)
+  approval_reference_id: ID @goField(omittable: true)
+}
+
+type CreateCompensationBandPayload implements MutationResult {
+  compensation_band: CompensationBand
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateCompensationBandPayload implements MutationResult {
+  compensation_band: CompensationBand
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCompensationBandPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCompensationBand(input: CreateCompensationBandInput!): CreateCompensationBandPayload!
+  updateCompensationBand(id: ID!, input: UpdateCompensationBandInput!): UpdateCompensationBandPayload!
+  deleteCompensationBand(id: ID!): DeleteCompensationBandPayload!
+}
+
+type CompensationRecord implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  assignment_id: ID!
+  component_id: ID!
+  component_code_snapshot: String!
+  compensation_band_id: ID
+  compensation_type: String!
+  amount: String!
+  currency_code: String!
+  pay_frequency: String!
+  effective_from: String!
+  effective_to: String
+  status: String!
+  reason_code: String
+  approved_by_principal_id: ID
+  approved_at: Time
+  source_change_reference_id: ID
+  access_class: String!
+}
+
+type CompensationRecordEdge {
+  cursor: String!
+  node: CompensationRecord!
+}
+
+type CompensationRecordConnection {
+  edges: [CompensationRecordEdge!]!
+  nodes: [CompensationRecord!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  compensationRecord(id: ID!): CompensationRecord
+  compensationRecords(worker_id: String, assignment_id: String, component_id: String, compensation_band_id: String, compensation_type: String, currency_code: String, status: String, reason_code: String, approved_by_principal_id: String, source_change_reference_id: String, after: String, before: String, first: Int, last: Int): CompensationRecordConnection!
+}
+
+input CreateCompensationRecordInput {
+  worker_id: ID
+  assignment_id: ID
+  component_id: ID
+  component_code_snapshot: String
+  compensation_band_id: ID
+  compensation_type: String
+  amount: String
+  currency_code: String
+  pay_frequency: String
+  effective_from: String
+  effective_to: String
+  status: String
+  reason_code: String
+  approved_by_principal_id: ID
+  approved_at: Time
+  source_change_reference_id: ID
+  access_class: String
+}
+
+input UpdateCompensationRecordInput {
+  worker_id: ID @goField(omittable: true)
+  assignment_id: ID @goField(omittable: true)
+  component_id: ID @goField(omittable: true)
+  component_code_snapshot: String @goField(omittable: true)
+  compensation_band_id: ID @goField(omittable: true)
+  compensation_type: String @goField(omittable: true)
+  amount: String @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  pay_frequency: String @goField(omittable: true)
+  effective_from: String @goField(omittable: true)
+  effective_to: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  reason_code: String @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+  source_change_reference_id: ID @goField(omittable: true)
+  access_class: String @goField(omittable: true)
+}
+
+type CreateCompensationRecordPayload implements MutationResult {
+  compensation_record: CompensationRecord
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateCompensationRecordPayload implements MutationResult {
+  compensation_record: CompensationRecord
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCompensationRecordPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCompensationRecord(input: CreateCompensationRecordInput!): CreateCompensationRecordPayload!
+  updateCompensationRecord(id: ID!, input: UpdateCompensationRecordInput!): UpdateCompensationRecordPayload!
+  deleteCompensationRecord(id: ID!): DeleteCompensationRecordPayload!
+}

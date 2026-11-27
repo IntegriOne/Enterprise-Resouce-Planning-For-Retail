@@ -44,7 +44,7 @@ type PayrollRunConnection {
 extend type Query {
   payrollRun(id: ID!): PayrollRun
   # Gunakan paling banyak satu filter.
-  payrollRuns(idempotency_key: String, payroll_period_id: ID, after: String, before: String, first: Int, last: Int): PayrollRunConnection!
+  payrollRuns(idempotency_key: String, payroll_period_id: ID, payroll_group_id: ID, employing_legal_entity_reference_id: ID, currency_code: String, rule_set_id: ID, original_run_id: ID, run_number: Int, run_type: String, status: String, jurisdiction_code: String, input_snapshot_reference_id: ID, started_by_principal_id: ID, approved_by_principal_id: ID, finance_journal_reference_id: ID, payment_batch_reference_id: ID, finance_settlement_event_reference_id: ID, after: String, before: String, first: Int, last: Int): PayrollRunConnection!
 }
 
 type CalculatePayrollRunPayload implements MutationResult {
@@ -157,7 +157,7 @@ type PayrollPeriodConnection {
 
 extend type Query {
   payrollPeriod(id: ID!): PayrollPeriod
-  payrollPeriods(payroll_group_id: ID, after: String, before: String, first: Int, last: Int): PayrollPeriodConnection!
+  payrollPeriods(payroll_group_id: ID, employing_legal_entity_reference_id: ID, currency_code: String, jurisdiction_code: String, period_code: String, period_status: String, calendar_reference_id: ID, after: String, before: String, first: Int, last: Int): PayrollPeriodConnection!
 }
 
 type PayrollGroup implements Node {
@@ -188,7 +188,7 @@ type PayrollGroupConnection {
 
 extend type Query {
   payrollGroup(id: ID!): PayrollGroup
-  payrollGroups(after: String, before: String, first: Int, last: Int): PayrollGroupConnection!
+  payrollGroups(group_code: String, employing_legal_entity_reference_id: ID, jurisdiction_code: String, currency_code: String, after: String, before: String, first: Int, last: Int): PayrollGroupConnection!
 }
 
 type PayrollRuleSet implements Node {
@@ -216,5 +216,5 @@ type PayrollRuleSetConnection {
 
 extend type Query {
   payrollRuleSet(id: ID!): PayrollRuleSet
-  payrollRuleSets(after: String, before: String, first: Int, last: Int): PayrollRuleSetConnection!
+  payrollRuleSets(rule_code: String, jurisdiction_code: String, artifact_document_version_reference_id: ID, legal_basis_document_version_reference_id: ID, approved_by_principal_id: ID, after: String, before: String, first: Int, last: Int): PayrollRuleSetConnection!
 }

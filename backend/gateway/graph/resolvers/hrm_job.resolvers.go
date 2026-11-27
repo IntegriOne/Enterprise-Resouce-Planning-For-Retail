@@ -35,10 +35,10 @@ func (r *queryResolver) JobsByIds(ctx context.Context, ids []string) ([]*model.J
 }
 
 // Jobs membaca daftar jabatan.
-func (r *queryResolver) Jobs(ctx context.Context, jobFamilyID *string, after *string, before *string, first *int, last *int) (*model.JobConnection, error) {
+func (r *queryResolver) Jobs(ctx context.Context, jobFamilyID *string, jobCode *string, jobLevelCode *string, after *string, before *string, first *int, last *int) (*model.JobConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.Job], error) {
-			return r.HRMAdapter.Jobs(ctx, limit, offset, jobFamilyID)
+			return r.HRMAdapter.JobsFiltered(ctx, limit, offset, jobFamilyID, jobCode, jobLevelCode)
 		},
 		func(node *model.Job, cursor string) *model.JobEdge {
 			return &model.JobEdge{Node: node, Cursor: cursor}
@@ -56,10 +56,10 @@ func (r *queryResolver) JobFamily(ctx context.Context, id string) (*model.JobFam
 }
 
 // JobFamilies membaca daftar kelompok jabatan.
-func (r *queryResolver) JobFamilies(ctx context.Context, after *string, before *string, first *int, last *int) (*model.JobFamilyConnection, error) {
+func (r *queryResolver) JobFamilies(ctx context.Context, familyCode *string, after *string, before *string, first *int, last *int) (*model.JobFamilyConnection, error) {
 	edges, nodes, info, total, err := hrConnection(after, before, first, last,
 		func(limit, offset int) (*hrmadapter.Page[model.JobFamily], error) {
-			return r.HRMAdapter.JobFamilies(ctx, limit, offset)
+			return r.HRMAdapter.JobFamiliesFiltered(ctx, limit, offset, familyCode)
 		},
 		func(node *model.JobFamily, cursor string) *model.JobFamilyEdge {
 			return &model.JobFamilyEdge{Node: node, Cursor: cursor}

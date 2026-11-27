@@ -1,0 +1,136 @@
+# Mutasi CRUD tambahan untuk domain leave HRM.
+
+input CreateLeavePolicyInput {
+  policy_code: String
+  policy_version: Int
+  policy_name: String
+  leave_type_code: String
+  jurisdiction_code: String
+  accrual_method: String
+  annual_entitlement: String
+  carryover_limit: String
+  max_balance: String
+  minimum_service_days: Int
+  effective_from: String
+  effective_to: String
+  is_paid: Boolean
+  is_active: Boolean
+}
+
+input UpdateLeavePolicyInput {
+  policy_code: String @goField(omittable: true)
+  policy_version: Int @goField(omittable: true)
+  policy_name: String @goField(omittable: true)
+  leave_type_code: String @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  accrual_method: String @goField(omittable: true)
+  annual_entitlement: String @goField(omittable: true)
+  carryover_limit: String @goField(omittable: true)
+  max_balance: String @goField(omittable: true)
+  minimum_service_days: Int @goField(omittable: true)
+  effective_from: String @goField(omittable: true)
+  effective_to: String @goField(omittable: true)
+  is_paid: Boolean @goField(omittable: true)
+  is_active: Boolean @goField(omittable: true)
+}
+
+type CreateLeavePolicyPayload implements MutationResult {
+  leave_policy: LeavePolicy
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateLeavePolicyPayload implements MutationResult {
+  leave_policy: LeavePolicy
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteLeavePolicyPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input CreateLeaveEntitlementInput {
+  worker_id: ID
+  leave_policy_id: ID
+  leave_type_code_snapshot: String
+  entitlement_period_start: String
+  entitlement_period_end: String
+  opening_balance: String
+  accrued_quantity: String
+  used_quantity_snapshot: String
+  adjusted_quantity: String
+  closing_balance_snapshot: String
+  uom_code: String
+  revision: String
+  source_workforce_snapshot_reference_id: ID
+}
+
+input UpdateLeaveEntitlementInput {
+  worker_id: ID @goField(omittable: true)
+  leave_policy_id: ID @goField(omittable: true)
+  leave_type_code_snapshot: String @goField(omittable: true)
+  entitlement_period_start: String @goField(omittable: true)
+  entitlement_period_end: String @goField(omittable: true)
+  opening_balance: String @goField(omittable: true)
+  accrued_quantity: String @goField(omittable: true)
+  used_quantity_snapshot: String @goField(omittable: true)
+  adjusted_quantity: String @goField(omittable: true)
+  closing_balance_snapshot: String @goField(omittable: true)
+  uom_code: String @goField(omittable: true)
+  revision: String @goField(omittable: true)
+  source_workforce_snapshot_reference_id: ID @goField(omittable: true)
+}
+
+type CreateLeaveEntitlementPayload implements MutationResult {
+  leave_entitlement: LeaveEntitlement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateLeaveEntitlementPayload implements MutationResult {
+  leave_entitlement: LeaveEntitlement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteLeaveEntitlementPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateLeaveAdjustmentInput {
+  entitlement_id: ID @goField(omittable: true)
+  quantity_delta: String @goField(omittable: true)
+  reason_code: String @goField(omittable: true)
+  reason: String @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type UpdateLeaveAdjustmentPayload implements MutationResult {
+  leave_adjustment: LeaveAdjustment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteLeaveAdjustmentPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createLeavePolicy(input: CreateLeavePolicyInput!): CreateLeavePolicyPayload!
+  updateLeavePolicy(id: ID!, input: UpdateLeavePolicyInput!): UpdateLeavePolicyPayload!
+  deleteLeavePolicy(id: ID!): DeleteLeavePolicyPayload!
+  createLeaveEntitlement(input: CreateLeaveEntitlementInput!): CreateLeaveEntitlementPayload!
+  updateLeaveEntitlement(id: ID!, input: UpdateLeaveEntitlementInput!): UpdateLeaveEntitlementPayload!
+  deleteLeaveEntitlement(id: ID!): DeleteLeaveEntitlementPayload!
+  updateLeaveAdjustment(id: ID!, input: UpdateLeaveAdjustmentInput!): UpdateLeaveAdjustmentPayload!
+  deleteLeaveAdjustment(id: ID!): DeleteLeaveAdjustmentPayload!
+}

@@ -1,0 +1,389 @@
+type DevelopmentPlan implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  plan_code: String!
+  plan_version: Int!
+  target_job_id: ID
+  start_date: Time
+  target_date: Time
+  status: String!
+  mentor_worker_id: ID
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+type DevelopmentPlanEdge {
+  cursor: String!
+  node: DevelopmentPlan!
+}
+
+type DevelopmentPlanConnection {
+  edges: [DevelopmentPlanEdge!]!
+  nodes: [DevelopmentPlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  developmentPlan(id: ID!): DevelopmentPlan
+  developmentPlans(worker_id: String, plan_code: String, target_job_id: String, status: String, mentor_worker_id: String, approved_by_principal_id: String, after: String, before: String, first: Int, last: Int): DevelopmentPlanConnection!
+}
+
+input CreateDevelopmentPlanInput {
+  worker_id: ID
+  plan_code: String
+  plan_version: Int
+  target_job_id: ID
+  start_date: Time
+  target_date: Time
+  status: String
+  mentor_worker_id: ID
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+input UpdateDevelopmentPlanInput {
+  worker_id: ID @goField(omittable: true)
+  plan_code: String @goField(omittable: true)
+  plan_version: Int @goField(omittable: true)
+  target_job_id: ID @goField(omittable: true)
+  start_date: Time @goField(omittable: true)
+  target_date: Time @goField(omittable: true)
+  status: String @goField(omittable: true)
+  mentor_worker_id: ID @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+}
+
+type CreateDevelopmentPlanPayload implements MutationResult {
+  development_plan: DevelopmentPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateDevelopmentPlanPayload implements MutationResult {
+  development_plan: DevelopmentPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteDevelopmentPlanPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createDevelopmentPlan(input: CreateDevelopmentPlanInput!): CreateDevelopmentPlanPayload!
+  updateDevelopmentPlan(id: ID!, input: UpdateDevelopmentPlanInput!): UpdateDevelopmentPlanPayload!
+  deleteDevelopmentPlan(id: ID!): DeleteDevelopmentPlanPayload!
+}
+
+type DevelopmentAction implements Node {
+  id: ID!
+  _id: ID!
+  development_plan_id: ID!
+  action_number: Int!
+  competency_id: ID
+  course_id: ID
+  action_type: String!
+  objective: String!
+  target_level: Int
+  due_date: Time
+  completed_at: Time
+  evidence_document_version_reference_id: ID
+}
+
+type DevelopmentActionEdge {
+  cursor: String!
+  node: DevelopmentAction!
+}
+
+type DevelopmentActionConnection {
+  edges: [DevelopmentActionEdge!]!
+  nodes: [DevelopmentAction!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  developmentAction(id: ID!): DevelopmentAction
+  developmentActions(development_plan_id: String, action_number: Int, competency_id: String, course_id: String, action_type: String, evidence_document_version_reference_id: String, after: String, before: String, first: Int, last: Int): DevelopmentActionConnection!
+}
+
+input CreateDevelopmentActionInput {
+  development_plan_id: ID
+  action_number: Int
+  competency_id: ID
+  course_id: ID
+  action_type: String
+  objective: String
+  target_level: Int
+  due_date: Time
+  completed_at: Time
+  evidence_document_version_reference_id: ID
+}
+
+input UpdateDevelopmentActionInput {
+  development_plan_id: ID @goField(omittable: true)
+  action_number: Int @goField(omittable: true)
+  competency_id: ID @goField(omittable: true)
+  course_id: ID @goField(omittable: true)
+  action_type: String @goField(omittable: true)
+  objective: String @goField(omittable: true)
+  target_level: Int @goField(omittable: true)
+  due_date: Time @goField(omittable: true)
+  completed_at: Time @goField(omittable: true)
+  evidence_document_version_reference_id: ID @goField(omittable: true)
+}
+
+type CreateDevelopmentActionPayload implements MutationResult {
+  development_action: DevelopmentAction
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateDevelopmentActionPayload implements MutationResult {
+  development_action: DevelopmentAction
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteDevelopmentActionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createDevelopmentAction(input: CreateDevelopmentActionInput!): CreateDevelopmentActionPayload!
+  updateDevelopmentAction(id: ID!, input: UpdateDevelopmentActionInput!): UpdateDevelopmentActionPayload!
+  deleteDevelopmentAction(id: ID!): DeleteDevelopmentActionPayload!
+}
+
+type CareerPath implements Node {
+  id: ID!
+  _id: ID!
+  path_code: String!
+  path_version: Int!
+  path_name: String!
+  job_family_id: ID!
+  valid_from: Time
+  valid_to: Time
+  approved_by_principal_id: ID
+  approved_at: Time
+  status: String!
+  created_by_principal_id: ID!
+  created_at: Time
+}
+
+type CareerPathEdge {
+  cursor: String!
+  node: CareerPath!
+}
+
+type CareerPathConnection {
+  edges: [CareerPathEdge!]!
+  nodes: [CareerPath!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  careerPath(id: ID!): CareerPath
+  careerPaths(path_code: String, job_family_id: String, status: String, created_by_principal_id: String, approved_by_principal_id: String, after: String, before: String, first: Int, last: Int): CareerPathConnection!
+}
+
+input CreateCareerPathInput {
+  path_code: String
+  path_version: Int
+  path_name: String
+  job_family_id: ID
+  valid_from: Time
+  valid_to: Time
+}
+
+input UpdateCareerPathInput {
+  path_code: String @goField(omittable: true)
+  path_version: Int @goField(omittable: true)
+  path_name: String @goField(omittable: true)
+  job_family_id: ID @goField(omittable: true)
+  valid_from: Time @goField(omittable: true)
+  valid_to: Time @goField(omittable: true)
+}
+
+type CreateCareerPathPayload implements MutationResult {
+  career_path: CareerPath
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateCareerPathPayload implements MutationResult {
+  career_path: CareerPath
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCareerPathPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCareerPath(input: CreateCareerPathInput!): CreateCareerPathPayload!
+  updateCareerPath(id: ID!, input: UpdateCareerPathInput!): UpdateCareerPathPayload!
+  deleteCareerPath(id: ID!): DeleteCareerPathPayload!
+}
+
+type CareerPathTransition implements Node {
+  id: ID!
+  _id: ID!
+  career_path_id: ID!
+  from_job_id: ID!
+  to_job_id: ID!
+  movement_type: String!
+  minimum_tenure_months: Int!
+  requirements_document_version_reference_id: ID!
+  requirements_digest: String!
+}
+
+type CareerPathTransitionEdge {
+  cursor: String!
+  node: CareerPathTransition!
+}
+
+type CareerPathTransitionConnection {
+  edges: [CareerPathTransitionEdge!]!
+  nodes: [CareerPathTransition!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  careerPathTransition(id: ID!): CareerPathTransition
+  careerPathTransitions(career_path_id: String, from_job_id: String, to_job_id: String, movement_type: String, requirements_document_version_reference_id: String, after: String, before: String, first: Int, last: Int): CareerPathTransitionConnection!
+}
+
+input CreateCareerPathTransitionInput {
+  career_path_id: ID
+  from_job_id: ID
+  to_job_id: ID
+  movement_type: String
+  minimum_tenure_months: Int
+  requirements_document_version_reference_id: ID
+  requirements_digest: String
+}
+
+input UpdateCareerPathTransitionInput {
+  career_path_id: ID @goField(omittable: true)
+  from_job_id: ID @goField(omittable: true)
+  to_job_id: ID @goField(omittable: true)
+  movement_type: String @goField(omittable: true)
+  minimum_tenure_months: Int @goField(omittable: true)
+  requirements_document_version_reference_id: ID @goField(omittable: true)
+  requirements_digest: String @goField(omittable: true)
+}
+
+type CreateCareerPathTransitionPayload implements MutationResult {
+  career_path_transition: CareerPathTransition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateCareerPathTransitionPayload implements MutationResult {
+  career_path_transition: CareerPathTransition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCareerPathTransitionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCareerPathTransition(input: CreateCareerPathTransitionInput!): CreateCareerPathTransitionPayload!
+  updateCareerPathTransition(id: ID!, input: UpdateCareerPathTransitionInput!): UpdateCareerPathTransitionPayload!
+  deleteCareerPathTransition(id: ID!): DeleteCareerPathTransitionPayload!
+}
+
+type WorkerCareerAspiration implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  target_job_id: ID!
+  career_path_transition_id: ID
+  preference_rank: Int!
+  recorded_at: Time
+  recorded_by_principal_id: ID!
+  target_date: Time
+  mobility_preference: String!
+  preferred_location_reference_id: ID
+  withdrawn_at: Time
+}
+
+type WorkerCareerAspirationEdge {
+  cursor: String!
+  node: WorkerCareerAspiration!
+}
+
+type WorkerCareerAspirationConnection {
+  edges: [WorkerCareerAspirationEdge!]!
+  nodes: [WorkerCareerAspiration!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workerCareerAspiration(id: ID!): WorkerCareerAspiration
+  workerCareerAspirations(worker_id: String, target_job_id: String, career_path_transition_id: String, recorded_by_principal_id: String, preferred_location_reference_id: String, after: String, before: String, first: Int, last: Int): WorkerCareerAspirationConnection!
+}
+
+input CreateWorkerCareerAspirationInput {
+  worker_id: ID
+  target_job_id: ID
+  career_path_transition_id: ID
+  preference_rank: Int
+  target_date: Time
+  mobility_preference: String
+  preferred_location_reference_id: ID
+  withdrawn_at: Time
+}
+
+input UpdateWorkerCareerAspirationInput {
+  worker_id: ID @goField(omittable: true)
+  target_job_id: ID @goField(omittable: true)
+  career_path_transition_id: ID @goField(omittable: true)
+  preference_rank: Int @goField(omittable: true)
+  target_date: Time @goField(omittable: true)
+  mobility_preference: String @goField(omittable: true)
+  preferred_location_reference_id: ID @goField(omittable: true)
+  withdrawn_at: Time @goField(omittable: true)
+}
+
+type CreateWorkerCareerAspirationPayload implements MutationResult {
+  worker_career_aspiration: WorkerCareerAspiration
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateWorkerCareerAspirationPayload implements MutationResult {
+  worker_career_aspiration: WorkerCareerAspiration
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkerCareerAspirationPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkerCareerAspiration(input: CreateWorkerCareerAspirationInput!): CreateWorkerCareerAspirationPayload!
+  updateWorkerCareerAspiration(id: ID!, input: UpdateWorkerCareerAspirationInput!): UpdateWorkerCareerAspirationPayload!
+  deleteWorkerCareerAspiration(id: ID!): DeleteWorkerCareerAspirationPayload!
+}

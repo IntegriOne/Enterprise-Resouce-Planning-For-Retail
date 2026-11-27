@@ -26,7 +26,7 @@ type WorkerConnection {
 extend type Query {
   worker(id: ID!): Worker
   # Gunakan paling banyak satu filter.
-  workers(worker_number: String, legal_entity_id: ID, after: String, before: String, first: Int, last: Int): WorkerConnection!
+  workers(worker_number: String, legal_entity_id: ID, person_party_reference_id: ID, iam_principal_reference_id: ID, status: String, primary_assignment_id: ID, termination_reason_code: String, created_by_principal_id: ID, after: String, before: String, first: Int, last: Int): WorkerConnection!
 }
 
 input CreateWorkerInput {
@@ -121,7 +121,7 @@ extend type Query {
   workerAssignmentTransfers(worker_id: ID!, after: String, before: String, first: Int, last: Int): WorkerAssignmentTransferConnection!
   workerAssignmentTransfer(id: ID!): WorkerAssignmentTransfer
   workerAssignment(id: ID!): WorkerAssignment
-  workerAssignments(worker_id: ID, position_id: ID, after: String, before: String, first: Int, last: Int): WorkerAssignmentConnection!
+  workerAssignments(worker_id: ID, position_id: ID, manager_worker_id: ID, assignment_type: String, requested_by_principal_id: ID, approved_by_principal_id: ID, after: String, before: String, first: Int, last: Int): WorkerAssignmentConnection!
 }
 
 input CreateWorkerAssignmentInput {
@@ -229,7 +229,7 @@ type EmploymentContractConnection {
 
 extend type Query {
   employmentContract(id: ID!): EmploymentContract
-  employmentContracts(worker_id: ID!, after: String, before: String, first: Int, last: Int): EmploymentContractConnection!
+  employmentContracts(worker_id: ID, contract_number: String, employing_legal_entity_reference_id: ID, contract_type: String, contract_status: String, governing_jurisdiction_code: String, work_country_code: String, collective_agreement_id: ID, signed_document_reference_id: ID, signed_document_version_reference_id: ID, after: String, before: String, first: Int, last: Int): EmploymentContractConnection!
 }
 
 input CreateEmploymentContractInput {

@@ -1,0 +1,184 @@
+# Mutasi CRUD tambahan untuk domain payroll HRM.
+
+input CreatePayrollPeriodInput {
+  payroll_group_id: ID
+  employing_legal_entity_reference_id: ID
+  currency_code: String
+  jurisdiction_code: String
+  period_code: String
+  period_start: String
+  period_end: String
+  pay_date: String
+  period_status: String
+  calendar_reference_id: ID
+}
+
+input UpdatePayrollPeriodInput {
+  payroll_group_id: ID @goField(omittable: true)
+  employing_legal_entity_reference_id: ID @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  period_code: String @goField(omittable: true)
+  period_start: String @goField(omittable: true)
+  period_end: String @goField(omittable: true)
+  pay_date: String @goField(omittable: true)
+  period_status: String @goField(omittable: true)
+  calendar_reference_id: ID @goField(omittable: true)
+}
+
+type CreatePayrollPeriodPayload implements MutationResult {
+  payroll_period: PayrollPeriod
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePayrollPeriodPayload implements MutationResult {
+  payroll_period: PayrollPeriod
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePayrollPeriodPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input CreatePayrollGroupInput {
+  group_code: String
+  group_name: String
+  employing_legal_entity_reference_id: ID
+  jurisdiction_code: String
+  currency_code: String
+  currency_scale: Int
+  pay_frequency: String
+  timezone: String
+  is_active: Boolean
+}
+
+input UpdatePayrollGroupInput {
+  group_code: String @goField(omittable: true)
+  group_name: String @goField(omittable: true)
+  employing_legal_entity_reference_id: ID @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  currency_scale: Int @goField(omittable: true)
+  pay_frequency: String @goField(omittable: true)
+  timezone: String @goField(omittable: true)
+  is_active: Boolean @goField(omittable: true)
+}
+
+type CreatePayrollGroupPayload implements MutationResult {
+  payroll_group: PayrollGroup
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePayrollGroupPayload implements MutationResult {
+  payroll_group: PayrollGroup
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePayrollGroupPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input CreatePayrollRuleSetInput {
+  rule_code: String
+  rule_version: String
+  jurisdiction_code: String
+  effective_from: String
+  effective_to: String
+  artifact_document_version_reference_id: ID
+  artifact_digest: String
+  legal_basis_document_version_reference_id: ID
+  approved_by_principal_id: ID
+  approved_at: Time
+}
+
+input UpdatePayrollRuleSetInput {
+  rule_code: String @goField(omittable: true)
+  rule_version: String @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  effective_from: String @goField(omittable: true)
+  effective_to: String @goField(omittable: true)
+  artifact_document_version_reference_id: ID @goField(omittable: true)
+  artifact_digest: String @goField(omittable: true)
+  legal_basis_document_version_reference_id: ID @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+}
+
+type CreatePayrollRuleSetPayload implements MutationResult {
+  payroll_rule_set: PayrollRuleSet
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePayrollRuleSetPayload implements MutationResult {
+  payroll_rule_set: PayrollRuleSet
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePayrollRuleSetPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdatePayrollRunInput {
+  payroll_period_id: ID @goField(omittable: true)
+  payroll_group_id: ID @goField(omittable: true)
+  employing_legal_entity_reference_id: ID @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  rule_set_id: ID @goField(omittable: true)
+  original_run_id: ID @goField(omittable: true)
+  settlement_direction: String @goField(omittable: true)
+  run_number: Int @goField(omittable: true)
+  run_type: String @goField(omittable: true)
+  status: String @goField(omittable: true)
+  jurisdiction_code: String @goField(omittable: true)
+  rule_engine_name: String @goField(omittable: true)
+  rule_engine_version: String @goField(omittable: true)
+  input_snapshot_reference_id: ID @goField(omittable: true)
+  input_digest: String @goField(omittable: true)
+  output_digest: String @goField(omittable: true)
+  calculated_at: Time @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+  finance_journal_reference_id: ID @goField(omittable: true)
+  payment_batch_reference_id: ID @goField(omittable: true)
+  finance_settlement_event_reference_id: ID @goField(omittable: true)
+  finance_settled_at: Time @goField(omittable: true)
+  idempotency_key: String @goField(omittable: true)
+}
+
+type UpdatePayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePayrollRunPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPayrollPeriod(input: CreatePayrollPeriodInput!): CreatePayrollPeriodPayload!
+  updatePayrollPeriod(id: ID!, input: UpdatePayrollPeriodInput!): UpdatePayrollPeriodPayload!
+  deletePayrollPeriod(id: ID!): DeletePayrollPeriodPayload!
+  createPayrollGroup(input: CreatePayrollGroupInput!): CreatePayrollGroupPayload!
+  updatePayrollGroup(id: ID!, input: UpdatePayrollGroupInput!): UpdatePayrollGroupPayload!
+  deletePayrollGroup(id: ID!): DeletePayrollGroupPayload!
+  createPayrollRuleSet(input: CreatePayrollRuleSetInput!): CreatePayrollRuleSetPayload!
+  updatePayrollRuleSet(id: ID!, input: UpdatePayrollRuleSetInput!): UpdatePayrollRuleSetPayload!
+  deletePayrollRuleSet(id: ID!): DeletePayrollRuleSetPayload!
+  updatePayrollRun(id: ID!, input: UpdatePayrollRunInput!): UpdatePayrollRunPayload!
+  deletePayrollRun(id: ID!): DeletePayrollRunPayload!
+}

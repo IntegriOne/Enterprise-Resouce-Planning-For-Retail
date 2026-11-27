@@ -1,0 +1,53 @@
+# Mutasi alur kerja domain performance HRM.
+
+type LaunchPerformanceCyclePayload implements MutationResult {
+  performance_cycle: PerformanceCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ClosePerformanceCyclePayload implements MutationResult {
+  performance_cycle: PerformanceCycle
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SubmitPerformanceGoalPayload implements MutationResult {
+  performance_goal: PerformanceGoal
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApprovePerformanceGoalPayload implements MutationResult {
+  performance_goal: PerformanceGoal
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectPerformanceGoalPayload implements MutationResult {
+  performance_goal: PerformanceGoal
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SubmitPerformanceReviewPayload implements MutationResult {
+  performance_review: PerformanceReview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type FinalizePerformanceReviewPayload implements MutationResult {
+  performance_review: PerformanceReview
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  launchPerformanceCycle(id: ID!): LaunchPerformanceCyclePayload!
+  closePerformanceCycle(id: ID!): ClosePerformanceCyclePayload!
+  submitPerformanceGoal(id: ID!): SubmitPerformanceGoalPayload!
+  approvePerformanceGoal(id: ID!): ApprovePerformanceGoalPayload!
+  rejectPerformanceGoal(id: ID!): RejectPerformanceGoalPayload!
+  submitPerformanceReview(id: ID!): SubmitPerformanceReviewPayload!
+  finalizePerformanceReview(id: ID!): FinalizePerformanceReviewPayload!
+}

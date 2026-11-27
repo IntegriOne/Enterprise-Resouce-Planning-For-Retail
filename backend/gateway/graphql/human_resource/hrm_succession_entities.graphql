@@ -1,0 +1,154 @@
+type SuccessionPlan implements Node {
+  id: ID!
+  _id: ID!
+  position_id: ID!
+  plan_code: String!
+  plan_version: Int!
+  review_date: Time
+  confidentiality_class: String!
+  approved_by_principal_id: ID
+  approved_at: Time
+  succession_risk: String
+  approval_mandate_reference_id: ID
+  created_by_principal_id: ID
+  created_at: Time
+}
+
+type SuccessionPlanEdge {
+  cursor: String!
+  node: SuccessionPlan!
+}
+
+type SuccessionPlanConnection {
+  edges: [SuccessionPlanEdge!]!
+  nodes: [SuccessionPlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  successionPlan(id: ID!): SuccessionPlan
+  successionPlans(position_id: String, plan_code: String, approved_by_principal_id: String, after: String, before: String, first: Int, last: Int): SuccessionPlanConnection!
+}
+
+input CreateSuccessionPlanInput {
+  position_id: ID
+  plan_code: String
+  plan_version: Int
+  review_date: Time
+  confidentiality_class: String
+  approved_by_principal_id: ID
+  approved_at: Time
+  succession_risk: String
+}
+
+input UpdateSuccessionPlanInput {
+  position_id: ID @goField(omittable: true)
+  plan_code: String @goField(omittable: true)
+  plan_version: Int @goField(omittable: true)
+  review_date: Time @goField(omittable: true)
+  confidentiality_class: String @goField(omittable: true)
+  approved_by_principal_id: ID @goField(omittable: true)
+  approved_at: Time @goField(omittable: true)
+  succession_risk: String @goField(omittable: true)
+}
+
+type CreateSuccessionPlanPayload implements MutationResult {
+  succession_plan: SuccessionPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateSuccessionPlanPayload implements MutationResult {
+  succession_plan: SuccessionPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteSuccessionPlanPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createSuccessionPlan(input: CreateSuccessionPlanInput!): CreateSuccessionPlanPayload!
+  updateSuccessionPlan(id: ID!, input: UpdateSuccessionPlanInput!): UpdateSuccessionPlanPayload!
+  deleteSuccessionPlan(id: ID!): DeleteSuccessionPlanPayload!
+}
+
+type SuccessionCandidate implements Node {
+  id: ID!
+  _id: ID!
+  succession_plan_id: ID!
+  candidate_worker_id: ID!
+  readiness_code: String!
+  readiness_assessed_at: Time
+  readiness_rationale: String
+  talent_assessment_id: ID
+  development_plan_id: ID
+  risk_of_loss: String
+}
+
+type SuccessionCandidateEdge {
+  cursor: String!
+  node: SuccessionCandidate!
+}
+
+type SuccessionCandidateConnection {
+  edges: [SuccessionCandidateEdge!]!
+  nodes: [SuccessionCandidate!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  successionCandidate(id: ID!): SuccessionCandidate
+  successionCandidates(succession_plan_id: String, candidate_worker_id: String, readiness_code: String, talent_assessment_id: String, development_plan_id: String, after: String, before: String, first: Int, last: Int): SuccessionCandidateConnection!
+}
+
+input CreateSuccessionCandidateInput {
+  succession_plan_id: ID
+  candidate_worker_id: ID
+  readiness_code: String
+  readiness_assessed_at: Time
+  readiness_rationale: String
+  talent_assessment_id: ID
+  development_plan_id: ID
+  risk_of_loss: String
+}
+
+input UpdateSuccessionCandidateInput {
+  succession_plan_id: ID @goField(omittable: true)
+  candidate_worker_id: ID @goField(omittable: true)
+  readiness_code: String @goField(omittable: true)
+  readiness_assessed_at: Time @goField(omittable: true)
+  readiness_rationale: String @goField(omittable: true)
+  talent_assessment_id: ID @goField(omittable: true)
+  development_plan_id: ID @goField(omittable: true)
+  risk_of_loss: String @goField(omittable: true)
+}
+
+type CreateSuccessionCandidatePayload implements MutationResult {
+  succession_candidate: SuccessionCandidate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateSuccessionCandidatePayload implements MutationResult {
+  succession_candidate: SuccessionCandidate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteSuccessionCandidatePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createSuccessionCandidate(input: CreateSuccessionCandidateInput!): CreateSuccessionCandidatePayload!
+  updateSuccessionCandidate(id: ID!, input: UpdateSuccessionCandidateInput!): UpdateSuccessionCandidatePayload!
+  deleteSuccessionCandidate(id: ID!): DeleteSuccessionCandidatePayload!
+}

@@ -31,7 +31,7 @@ type RequisitionConnection {
 
 extend type Query {
   requisition(id: ID!): Requisition
-  requisitions(requisition_number: String, after: String, before: String, first: Int, last: Int): RequisitionConnection!
+  requisitions(requisition_number: String, workforce_plan_line_id: ID, position_id: ID, job_id: ID, organization_unit_reference_id: ID, hiring_manager_principal_id: ID, recruiter_principal_id: ID, requisition_type: String, status: String, budget_reference_id: ID, work_location_reference_id: ID, approved_by_principal_id: ID, rejection_reason_code: String, rejected_by_principal_id: ID, idempotency_key: String, after: String, before: String, first: Int, last: Int): RequisitionConnection!
 }
 
 input CreateRequisitionInput {
