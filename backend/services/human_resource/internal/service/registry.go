@@ -96,6 +96,7 @@ type registryOptions struct {
 type RegistryOption func(*registryOptions)
 
 // WithWorkforceBudgetVerifier memasukkan verifier untuk domain WorkforcePlanning.
+// Finance memiliki keputusan anggaran; cocokkan bukti dengan versi workforce plan.
 func WithWorkforceBudgetVerifier(verifier workforceplanningservice.WorkforceBudgetVerifier) RegistryOption {
 	return func(options *registryOptions) {
 		options.workforceBudget = verifier
@@ -103,6 +104,7 @@ func WithWorkforceBudgetVerifier(verifier workforceplanningservice.WorkforceBudg
 }
 
 // WithOnboardingEvidenceVerifier memasukkan verifier untuk domain Onboarding.
+// DRM memverifikasi versi bukti yang terikat pada tugas dan rencana onboarding.
 func WithOnboardingEvidenceVerifier(verifier onboardingservice.EvidenceVerifier) RegistryOption {
 	return func(options *registryOptions) {
 		options.onboardingEvidence = verifier
@@ -110,6 +112,7 @@ func WithOnboardingEvidenceVerifier(verifier onboardingservice.EvidenceVerifier)
 }
 
 // WithHRServiceResolutionVerifier memasukkan verifier untuk domain HRService.
+// DRM memverifikasi versi bukti, permintaan, pekerja, serta akses principal.
 func WithHRServiceResolutionVerifier(verifier hrserviceservice.ResolutionVerifier) RegistryOption {
 	return func(options *registryOptions) {
 		options.hrServiceResolution = verifier
@@ -117,6 +120,7 @@ func WithHRServiceResolutionVerifier(verifier hrserviceservice.ResolutionVerifie
 }
 
 // WithOffboardingVerifiers memasukkan adapter bukti yang tersedia saat startup.
+// Finance memberikan clearance payroll; bukti tugas diverifikasi oleh pemilik tugas.
 func WithOffboardingVerifiers(verifiers OffboardingVerifiers) RegistryOption {
 	return func(options *registryOptions) {
 		options.offboarding = verifiers
@@ -131,6 +135,7 @@ func WithRequisitionMandateVerifier(verifier recruitmentservice.RequisitionManda
 }
 
 // WithRecruitmentVerifiers memasukkan adapter rekrutmen yang tersedia pada startup.
+// Finance memverifikasi anggaran requisition. DRM memverifikasi versi bukti posting, asesmen, dan penawaran.
 func WithRecruitmentVerifiers(verifiers RecruitmentVerifiers) RegistryOption {
 	return func(options *registryOptions) {
 		options.recruitment = verifiers
@@ -145,6 +150,7 @@ func WithSuccessionApprovalVerifier(verifier successionservice.ApprovalVerifier)
 }
 
 // WithPayrollCalculator memasukkan adapter mesin kalkulasi payroll.
+// Kalkulator memerlukan snapshot immutable dan artefak aturan DRM dengan digest yang cocok.
 func WithPayrollCalculator(calculator payrollservice.Calculator) RegistryOption {
 	return func(options *registryOptions) {
 		options.payrollCalculator = calculator
@@ -159,6 +165,7 @@ func WithPrincipalLinkVerifier(verifier personnelservice.PrincipalLinkVerifier) 
 }
 
 // WithPayslipVerifier memasang pemeriksa penerbitan Finance dan akses dokumen DRM.
+// DRM memeriksa akses principal pemilik sebelum membuka versi slip yang sudah diterbitkan.
 func WithPayslipVerifier(verifier payrollservice.PayslipVerifier) RegistryOption {
 	return func(options *registryOptions) {
 		options.payslipVerifier = verifier
@@ -166,6 +173,7 @@ func WithPayslipVerifier(verifier payrollservice.PayslipVerifier) RegistryOption
 }
 
 // WithPayslipReissue memasang verifier untuk cetak ulang slip oleh petugas HR.
+// Petugas HR dapat memulihkan blob yang hilang pada versi yang sama setelah DRM mencocokkan digest.
 func WithPayslipReissue(verifier payrollservice.PayslipReissueVerifier) RegistryOption {
 	return func(cfg *registryOptions) {
 		cfg.payslipReissue = verifier
@@ -194,6 +202,7 @@ func WithPayrollPostingVerifier(verifier payrollservice.PayrollPostingVerifier) 
 }
 
 // WithPayslipPublication memasang adapter penerbitan dan penyimpanan PDF.
+// Finance mengonfirmasi penerbitan. DRM menyimpan PDF privat secara idempoten setelah penerbitan.
 func WithPayslipPublication(processor payrollservice.PayslipPublicationProcessor) RegistryOption {
 	return func(options *registryOptions) {
 		options.payslipPublication = processor
@@ -201,6 +210,7 @@ func WithPayslipPublication(processor payrollservice.PayslipPublicationProcessor
 }
 
 // WithContractSignatureVerifier memasang verifier tanda tangan kontrak dari DRM.
+// DRM memverifikasi tanda tangan dan ikatan versi immutable dengan kontrak serta pekerja.
 func WithContractSignatureVerifier(verifier personnelservice.ContractSignatureVerifier) RegistryOption {
 	return func(options *registryOptions) {
 		options.contractSignature = verifier

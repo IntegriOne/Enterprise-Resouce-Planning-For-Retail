@@ -73,6 +73,10 @@ func run(logger *slog.Logger) error {
 			terminationPublisher = mandate
 		}
 	}
+	// TODO(finance_accounting): Pasang adapter bukti anggaran, clearance, jurnal, penerbitan,
+	// pembayaran, dan settlement saat layanan Finance tersedia. Lihat agents/notes/finance_accounting.
+	// TODO(document_records_management): Pasang adapter bukti dan penyimpanan PDF privat
+	// saat layanan DRM tersedia. Lihat agents/notes/document_records_management.
 	dependencies, err := buildDependencies(startup, cfg, policy, logger, terminationPublisher, serviceOptions...)
 	if err != nil {
 		return fmt.Errorf("initialize HRM dependencies: %w", err)
