@@ -12,10 +12,7 @@ import (
 )
 
 // CalculationSnapshot memuat isi immutable dan cakupan yang disimpan oleh penerbit snapshot.
-type CalculationSnapshot struct {
-	ID, PeriodID, GroupID, EmployerID string
-	Content                           []byte
-}
+type CalculationSnapshot = entity.PayrollInputSnapshot
 
 type CalculationSnapshotReader interface {
 	ReadCalculationSnapshot(ctx context.Context, id string) (CalculationSnapshot, error)

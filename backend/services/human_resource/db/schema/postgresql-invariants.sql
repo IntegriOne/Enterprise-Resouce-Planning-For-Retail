@@ -367,3 +367,6 @@ CREATE TRIGGER tr_hr_talent_dimension_guard BEFORE INSERT OR UPDATE OR DELETE ON
 ALTER TABLE hr_talent_pool_memberships ADD CONSTRAINT ex_hr_talent_pool_membership
   EXCLUDE USING gist (talent_pool_id WITH =, worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
   WHERE (status IN ('active','exited'));
+
+CREATE TRIGGER tr_hr_payroll_input_snapshot_immutable BEFORE UPDATE OR DELETE ON hr_payroll_input_snapshots
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();

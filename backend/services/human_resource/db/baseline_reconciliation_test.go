@@ -14,7 +14,7 @@ func TestReconciliationTargetsVerifiedBaseline(t *testing.T) {
 	}
 
 	offset := -1
-	for _, marker := range []string{"-- Assignment cancellation\n", "-- Worker principal uniqueness\n", "-- HRM runtime\n"} {
+	for _, marker := range []string{"-- Assignment cancellation\n", "-- Worker principal uniqueness\n", "-- HRM runtime\n", "-- HRM payroll input snapshots\n"} {
 		index := strings.Index(baselineReconciliationSQL, marker)
 		if index <= offset || strings.Count(baselineReconciliationSQL, marker) != 1 {
 			t.Fatalf("invalid reconciliation section %q", marker)

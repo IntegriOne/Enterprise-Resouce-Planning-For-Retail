@@ -677,6 +677,25 @@ Table hr_payroll_periods {
   checks { `period_end >= period_start` [name: 'ck_hr_payroll_period_dates'] }
 }
 
+Table hr_payroll_input_snapshots {
+  id uuid [pk]
+  payroll_period_id uuid [not null]
+  payroll_group_id uuid [not null]
+  employing_legal_entity_reference_id uuid [not null]
+  jurisdiction_code varchar(80) [not null]
+  currency_code char(3) [not null]
+  content bytea [not null]
+  digest bytea [not null]
+  created_by_principal_id uuid [not null]
+  created_at timestamptz [not null]
+
+  checks {
+    `octet_length(content) > 0 AND digest = sha256(content)` [name: 'ck_hr_payroll_input_snapshot_digest']
+  }
+}
+
+Ref fk_hr_payroll_input_snapshot_period: hr_payroll_input_snapshots.(payroll_period_id, payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) > hr_payroll_periods.(id, payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id) [delete: restrict]
+
 Table hr_payroll_runs {
   id uuid [pk]
   payroll_period_id uuid [not null]
@@ -2120,6 +2139,7 @@ TableGroup compensation_and_benefits {
 }
 
 TableGroup payroll {
+  hr_payroll_input_snapshots
   hr_payroll_groups
   hr_payroll_rule_sets
   hr_payroll_profiles

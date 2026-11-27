@@ -3,7 +3,9 @@
 package db_test
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"net/url"
@@ -13,7 +15,9 @@ import (
 	"time"
 
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
+	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	payrollrepo "github.com/integrione/erp-retail/backend/services/human_resource/repository/payroll"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -67,6 +71,15 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 	if err := hrdb.RunMigrationsUp(ctx, pool); err != nil {
 		t.Fatalf("repeat HRM schema: %v", err)
 	}
+	if _, err := pool.ExecContext(ctx, `DROP TABLE hr_payroll_input_snapshots;
+		UPDATE hrm_schema_migrations SET checksum = 'c0ad8ee18cb67fb2fd29be226bb326168c7107c821181df43be4dd71f9c305d4' WHERE version = 1;`); err != nil {
+		t.Fatal(err)
+	}
+	if err := hrdb.RunMigrationsUp(ctx, pool); err != nil {
+		t.Fatalf("reconcile payroll snapshot storage: %v", err)
+	}
+	verifyPayrollInputSnapshots(t, ctx, isolatedDB)
+
 	var installed int
 	if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM hrm_schema_migrations").Scan(&installed); err != nil || installed != 1 {
 		t.Fatalf("installed migration count: got %d, error %v", installed, err)
@@ -104,5 +117,56 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 	}
 	if err := hrdb.RunMigrationsUp(ctx, pool); !errors.Is(err, hrerrors.ErrConflict) {
 		t.Fatalf("checksum mismatch: got %v, want conflict", err)
+	}
+}
+
+func verifyPayrollInputSnapshots(t *testing.T, ctx context.Context, db *gorm.DB) {
+	t.Helper()
+	const period = "10000000-0000-4000-8000-000000000001"
+	const group = "10000000-0000-4000-8000-000000000002"
+	const employer = "10000000-0000-4000-8000-000000000003"
+	const snapshotID = "10000000-0000-4000-8000-000000000004"
+	const creator = "10000000-0000-4000-8000-000000000005"
+	if err := db.WithContext(ctx).Exec(`INSERT INTO hr_payroll_groups
+		(id, group_code, group_name, employing_legal_entity_reference_id, jurisdiction_code, currency_code, currency_scale, pay_frequency, timezone)
+		VALUES (?, 'TEST', 'Fixture', ?, 'ID', 'IDR', 0, 'monthly', 'Asia/Jakarta')`, group, employer).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.WithContext(ctx).Exec(`INSERT INTO hr_payroll_periods
+		(id, payroll_group_id, employing_legal_entity_reference_id, currency_code, jurisdiction_code, period_code, period_start, period_end, pay_date)
+		VALUES (?, ?, ?, 'IDR', 'ID', 'TEST', CURRENT_DATE, CURRENT_DATE, CURRENT_DATE)`, period, group, employer).Error; err != nil {
+		t.Fatal(err)
+	}
+	repo, err := payrollrepo.NewInputSnapshotRepository(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := []byte("frozen fixture")
+	digest := sha256.Sum256(content)
+	snapshot := entity.PayrollInputSnapshot{
+		ID: snapshotID, PeriodID: period, GroupID: group, EmployerID: employer, JurisdictionCode: "ID",
+		CurrencyCode: "IDR", Content: content, Digest: digest[:], CreatedBy: creator, CreatedAt: time.Now(),
+	}
+	invalid := snapshot
+	invalid.Digest = make([]byte, sha256.Size)
+	if err := repo.Insert(ctx, &invalid); !errors.Is(err, hrerrors.ErrConstraintViolation) {
+		t.Fatalf("bad digest: %v", err)
+	}
+	invalid = snapshot
+	invalid.GroupID = employer
+	if err := repo.Insert(ctx, &invalid); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("wrong group: %v", err)
+	}
+	if err := repo.Insert(ctx, &snapshot); err != nil {
+		t.Fatal(err)
+	}
+	got, err := repo.ReadCalculationSnapshot(ctx, snapshotID)
+	if err != nil || got.PeriodID != period || got.GroupID != group || got.EmployerID != employer || !bytes.Equal(got.Content, content) {
+		t.Fatalf("read immutable snapshot: %v", err)
+	}
+	for _, query := range []string{"UPDATE hr_payroll_input_snapshots SET content = content WHERE id = ?", "DELETE FROM hr_payroll_input_snapshots WHERE id = ?"} {
+		if err := db.WithContext(ctx).Exec(query, snapshotID).Error; err == nil {
+			t.Fatalf("immutable snapshot allowed mutation: %q", query)
+		}
 	}
 }

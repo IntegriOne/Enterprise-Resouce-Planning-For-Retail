@@ -2737,3 +2737,25 @@ ALTER TABLE hr_worker_assignments
 
 CREATE INDEX ix_hr_assignment_requester
   ON hr_worker_assignments (requested_by_principal_id, requested_at);
+
+-- HRM payroll input snapshots
+CREATE TABLE hr_payroll_input_snapshots (
+  id uuid PRIMARY KEY,
+  payroll_period_id uuid NOT NULL,
+  payroll_group_id uuid NOT NULL,
+  employing_legal_entity_reference_id uuid NOT NULL,
+  jurisdiction_code varchar(80) NOT NULL,
+  currency_code char(3) NOT NULL,
+  content bytea NOT NULL,
+  digest bytea NOT NULL,
+  created_by_principal_id uuid NOT NULL,
+  created_at timestamptz NOT NULL,
+  CONSTRAINT ck_hr_payroll_input_snapshot_digest CHECK (octet_length(content) > 0 AND digest = sha256(content)),
+  CONSTRAINT fk_hr_payroll_input_snapshot_period
+    FOREIGN KEY (payroll_period_id, payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id)
+    REFERENCES hr_payroll_periods (id, payroll_group_id, jurisdiction_code, currency_code, employing_legal_entity_reference_id)
+    ON DELETE RESTRICT
+);
+
+CREATE TRIGGER tr_hr_payroll_input_snapshot_immutable BEFORE UPDATE OR DELETE ON hr_payroll_input_snapshots
+  FOR EACH ROW EXECUTE FUNCTION hr_reject_immutable_change();

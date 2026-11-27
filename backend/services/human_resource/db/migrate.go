@@ -179,12 +179,15 @@ func matchesLegacyBaseline(installed map[int64]string) bool {
 const assignmentCancellationBaselineChecksum = "bc4570a9506e1accfe10ff513f5003c60cea9d58493959c31b47d4441f484952"
 
 const workerLinkBaselineChecksum = "39b7b89da9e5c9f2efa5b1bf8dc6c0207984b0457b00dde3c7e8a906cf631898"
-const runtimeBaselineChecksum = "c0ad8ee18cb67fb2fd29be226bb326168c7107c821181df43be4dd71f9c305d4"
+const previousRuntimeBaselineChecksum = "c0ad8ee18cb67fb2fd29be226bb326168c7107c821181df43be4dd71f9c305d4"
+const runtimeBaselineChecksum = "73d9af04f0e8bb2c0c2590915e969f4439f310a7d1e73826ad311cf3de061a08"
 
 // reconcileKnownBaseline menerapkan perubahan skema lewat jalur yang cocok dengan checksum ledger.
 func reconcileKnownBaseline(ctx context.Context, tx *sql.Tx, installed map[int64]string) (bool, error) {
 	var marker string
 	switch {
+	case len(installed) == 1 && installed[1] == previousRuntimeBaselineChecksum:
+		marker = "-- HRM payroll input snapshots\n"
 	case len(installed) == 1 && installed[1] == workerLinkBaselineChecksum:
 		marker = "-- HRM runtime\n"
 	case len(installed) == 1 && installed[1] == assignmentCancellationBaselineChecksum:
