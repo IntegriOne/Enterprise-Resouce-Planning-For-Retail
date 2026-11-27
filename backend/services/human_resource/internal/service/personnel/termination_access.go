@@ -95,3 +95,27 @@ func (s *Service) VerifyTerminationAccess(ctx context.Context, workerID, planID 
 	decision.MayDisable = matchingWorker
 	return decision, nil
 }
+
+// VerifyWorkerAccountLink memeriksa bahwa akun provisioning menunjuk pada pekerja aktif dalam badan hukum yang sama.
+func (s *Service) VerifyWorkerAccountLink(ctx context.Context, workerID, principalID, legalEntityID string) error {
+	if s == nil {
+		return hrerrors.ErrUnavailable
+	}
+	for _, attribute := range []struct{ name, id string }{
+		{"worker_id", workerID}, {"principal_id", principalID}, {"legal_entity_id", legalEntityID},
+	} {
+		if err := entity.ValidateUUID(attribute.name, attribute.id); err != nil {
+			return err
+		}
+	}
+	worker, err := s.transferDependencies.Worker.SelectByID(ctx, workerID)
+	if err != nil {
+		return err
+	}
+	if worker == nil || worker.Status != entity.WorkerStatusActive || worker.TerminationDate != nil ||
+		worker.IAMPrincipalReferenceID == nil || !strings.EqualFold(*worker.IAMPrincipalReferenceID, principalID) ||
+		!strings.EqualFold(worker.ID, workerID) || !strings.EqualFold(worker.PrimaryLegalEntityReferenceID, legalEntityID) {
+		return hrerrors.ErrReferenceConflict
+	}
+	return nil
+}

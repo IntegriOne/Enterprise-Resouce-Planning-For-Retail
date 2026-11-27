@@ -157,6 +157,126 @@ func (x *VerifyTerminationAccessResponse) GetMayDisable() bool {
 	return false
 }
 
+type VerifyWorkerAccountLinkRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkerId      string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	PrincipalId   string                 `protobuf:"bytes,2,opt,name=principal_id,json=principalId,proto3" json:"principal_id,omitempty"`
+	LegalEntityId string                 `protobuf:"bytes,3,opt,name=legal_entity_id,json=legalEntityId,proto3" json:"legal_entity_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyWorkerAccountLinkRequest) Reset() {
+	*x = VerifyWorkerAccountLinkRequest{}
+	mi := &file_human_resource_workload_termination_v1_termination_access_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyWorkerAccountLinkRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyWorkerAccountLinkRequest) ProtoMessage() {}
+
+func (x *VerifyWorkerAccountLinkRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_workload_termination_v1_termination_access_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyWorkerAccountLinkRequest.ProtoReflect.Descriptor instead.
+func (*VerifyWorkerAccountLinkRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_workload_termination_v1_termination_access_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *VerifyWorkerAccountLinkRequest) GetWorkerId() string {
+	if x != nil {
+		return x.WorkerId
+	}
+	return ""
+}
+
+func (x *VerifyWorkerAccountLinkRequest) GetPrincipalId() string {
+	if x != nil {
+		return x.PrincipalId
+	}
+	return ""
+}
+
+func (x *VerifyWorkerAccountLinkRequest) GetLegalEntityId() string {
+	if x != nil {
+		return x.LegalEntityId
+	}
+	return ""
+}
+
+type VerifyWorkerAccountLinkResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkerId      string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	PrincipalId   string                 `protobuf:"bytes,2,opt,name=principal_id,json=principalId,proto3" json:"principal_id,omitempty"`
+	LegalEntityId string                 `protobuf:"bytes,3,opt,name=legal_entity_id,json=legalEntityId,proto3" json:"legal_entity_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyWorkerAccountLinkResponse) Reset() {
+	*x = VerifyWorkerAccountLinkResponse{}
+	mi := &file_human_resource_workload_termination_v1_termination_access_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyWorkerAccountLinkResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyWorkerAccountLinkResponse) ProtoMessage() {}
+
+func (x *VerifyWorkerAccountLinkResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_workload_termination_v1_termination_access_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyWorkerAccountLinkResponse.ProtoReflect.Descriptor instead.
+func (*VerifyWorkerAccountLinkResponse) Descriptor() ([]byte, []int) {
+	return file_human_resource_workload_termination_v1_termination_access_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *VerifyWorkerAccountLinkResponse) GetWorkerId() string {
+	if x != nil {
+		return x.WorkerId
+	}
+	return ""
+}
+
+func (x *VerifyWorkerAccountLinkResponse) GetPrincipalId() string {
+	if x != nil {
+		return x.PrincipalId
+	}
+	return ""
+}
+
+func (x *VerifyWorkerAccountLinkResponse) GetLegalEntityId() string {
+	if x != nil {
+		return x.LegalEntityId
+	}
+	return ""
+}
+
 var File_human_resource_workload_termination_v1_termination_access_proto protoreflect.FileDescriptor
 
 const file_human_resource_workload_termination_v1_termination_access_proto_rawDesc = "" +
@@ -173,9 +293,18 @@ const file_human_resource_workload_termination_v1_termination_access_proto_rawDe
 	"\x1atermination_effective_date\x18\x03 \x01(\tR\x18terminationEffectiveDate\x12!\n" +
 	"\fprincipal_id\x18\x04 \x01(\tR\vprincipalId\x12\x1f\n" +
 	"\vmay_disable\x18\x05 \x01(\bR\n" +
-	"mayDisable2\xc7\x01\n" +
+	"mayDisable\"\x88\x01\n" +
+	"\x1eVerifyWorkerAccountLinkRequest\x12\x1b\n" +
+	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12!\n" +
+	"\fprincipal_id\x18\x02 \x01(\tR\vprincipalId\x12&\n" +
+	"\x0flegal_entity_id\x18\x03 \x01(\tR\rlegalEntityId\"\x89\x01\n" +
+	"\x1fVerifyWorkerAccountLinkResponse\x12\x1b\n" +
+	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12!\n" +
+	"\fprincipal_id\x18\x02 \x01(\tR\vprincipalId\x12&\n" +
+	"\x0flegal_entity_id\x18\x03 \x01(\tR\rlegalEntityId2\xf4\x02\n" +
 	"\x18TerminationAccessService\x12\xaa\x01\n" +
-	"\x17VerifyTerminationAccess\x12F.human_resource.workload.termination.v1.VerifyTerminationAccessRequest\x1aG.human_resource.workload.termination.v1.VerifyTerminationAccessResponseB\x85\x01Z\x82\x01github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/workload/termination/v1;terminationv1b\x06proto3"
+	"\x17VerifyTerminationAccess\x12F.human_resource.workload.termination.v1.VerifyTerminationAccessRequest\x1aG.human_resource.workload.termination.v1.VerifyTerminationAccessResponse\x12\xaa\x01\n" +
+	"\x17VerifyWorkerAccountLink\x12F.human_resource.workload.termination.v1.VerifyWorkerAccountLinkRequest\x1aG.human_resource.workload.termination.v1.VerifyWorkerAccountLinkResponseB\x85\x01Z\x82\x01github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/workload/termination/v1;terminationv1b\x06proto3"
 
 var (
 	file_human_resource_workload_termination_v1_termination_access_proto_rawDescOnce sync.Once
@@ -189,16 +318,20 @@ func file_human_resource_workload_termination_v1_termination_access_proto_rawDes
 	return file_human_resource_workload_termination_v1_termination_access_proto_rawDescData
 }
 
-var file_human_resource_workload_termination_v1_termination_access_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_human_resource_workload_termination_v1_termination_access_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_human_resource_workload_termination_v1_termination_access_proto_goTypes = []any{
 	(*VerifyTerminationAccessRequest)(nil),  // 0: human_resource.workload.termination.v1.VerifyTerminationAccessRequest
 	(*VerifyTerminationAccessResponse)(nil), // 1: human_resource.workload.termination.v1.VerifyTerminationAccessResponse
+	(*VerifyWorkerAccountLinkRequest)(nil),  // 2: human_resource.workload.termination.v1.VerifyWorkerAccountLinkRequest
+	(*VerifyWorkerAccountLinkResponse)(nil), // 3: human_resource.workload.termination.v1.VerifyWorkerAccountLinkResponse
 }
 var file_human_resource_workload_termination_v1_termination_access_proto_depIdxs = []int32{
 	0, // 0: human_resource.workload.termination.v1.TerminationAccessService.VerifyTerminationAccess:input_type -> human_resource.workload.termination.v1.VerifyTerminationAccessRequest
-	1, // 1: human_resource.workload.termination.v1.TerminationAccessService.VerifyTerminationAccess:output_type -> human_resource.workload.termination.v1.VerifyTerminationAccessResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: human_resource.workload.termination.v1.TerminationAccessService.VerifyWorkerAccountLink:input_type -> human_resource.workload.termination.v1.VerifyWorkerAccountLinkRequest
+	1, // 2: human_resource.workload.termination.v1.TerminationAccessService.VerifyTerminationAccess:output_type -> human_resource.workload.termination.v1.VerifyTerminationAccessResponse
+	3, // 3: human_resource.workload.termination.v1.TerminationAccessService.VerifyWorkerAccountLink:output_type -> human_resource.workload.termination.v1.VerifyWorkerAccountLinkResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -216,7 +349,7 @@ func file_human_resource_workload_termination_v1_termination_access_proto_init()
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_workload_termination_v1_termination_access_proto_rawDesc), len(file_human_resource_workload_termination_v1_termination_access_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

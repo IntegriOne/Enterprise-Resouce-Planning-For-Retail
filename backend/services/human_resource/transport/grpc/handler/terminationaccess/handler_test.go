@@ -69,3 +69,37 @@ func TestVerifyTerminationAccessRequiresIAMWorkload(t *testing.T) {
 		})
 	}
 }
+
+func (v *verificationStub) VerifyWorkerAccountLink(context.Context, string, string, string) error {
+	v.calls++
+	return nil
+}
+
+func TestVerifyWorkerAccountLinkRequiresIAMWorkload(t *testing.T) {
+	service := &verificationStub{}
+	h := &handler{verifier: service}
+	req := &pb.VerifyWorkerAccountLinkRequest{WorkerId: "worker", PrincipalId: "account", LegalEntityId: "entity"}
+	if _, err := h.VerifyWorkerAccountLink(t.Context(), req); status.Code(err) != codes.Unauthenticated {
+		t.Fatalf("without certificate: %v", err)
+	}
+	for _, workload := range []string{"spiffe://integrione/gateway", iamWorkloadURI} {
+		uri, err := url.Parse(workload)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx := peer.NewContext(t.Context(), &peer.Peer{AuthInfo: credentials.TLSInfo{State: tls.ConnectionState{
+			VerifiedChains: [][]*x509.Certificate{{{URIs: []*url.URL{uri}}}},
+		}}})
+		result, err := h.VerifyWorkerAccountLink(ctx, req)
+		if workload != iamWorkloadURI {
+			if status.Code(err) != codes.PermissionDenied || service.calls != 0 {
+				t.Fatalf("other workload reached verification: %v", err)
+			}
+			continue
+		}
+		if err != nil || result.GetWorkerId() != req.GetWorkerId() || result.GetPrincipalId() != req.GetPrincipalId() ||
+			result.GetLegalEntityId() != req.GetLegalEntityId() || service.calls != 1 {
+			t.Fatalf("IAM verification: %v, %v", result, err)
+		}
+	}
+}

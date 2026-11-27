@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	TerminationAccessService_VerifyTerminationAccess_FullMethodName = "/human_resource.workload.termination.v1.TerminationAccessService/VerifyTerminationAccess"
+	TerminationAccessService_VerifyWorkerAccountLink_FullMethodName = "/human_resource.workload.termination.v1.TerminationAccessService/VerifyWorkerAccountLink"
 )
 
 // TerminationAccessServiceClient is the client API for TerminationAccessService service.
@@ -29,6 +30,7 @@ const (
 // Layanan ini dibuka hanya pada listener mTLS untuk workload IAM.
 type TerminationAccessServiceClient interface {
 	VerifyTerminationAccess(ctx context.Context, in *VerifyTerminationAccessRequest, opts ...grpc.CallOption) (*VerifyTerminationAccessResponse, error)
+	VerifyWorkerAccountLink(ctx context.Context, in *VerifyWorkerAccountLinkRequest, opts ...grpc.CallOption) (*VerifyWorkerAccountLinkResponse, error)
 }
 
 type terminationAccessServiceClient struct {
@@ -49,6 +51,16 @@ func (c *terminationAccessServiceClient) VerifyTerminationAccess(ctx context.Con
 	return out, nil
 }
 
+func (c *terminationAccessServiceClient) VerifyWorkerAccountLink(ctx context.Context, in *VerifyWorkerAccountLinkRequest, opts ...grpc.CallOption) (*VerifyWorkerAccountLinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyWorkerAccountLinkResponse)
+	err := c.cc.Invoke(ctx, TerminationAccessService_VerifyWorkerAccountLink_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TerminationAccessServiceServer is the server API for TerminationAccessService service.
 // All implementations must embed UnimplementedTerminationAccessServiceServer
 // for forward compatibility.
@@ -56,6 +68,7 @@ func (c *terminationAccessServiceClient) VerifyTerminationAccess(ctx context.Con
 // Layanan ini dibuka hanya pada listener mTLS untuk workload IAM.
 type TerminationAccessServiceServer interface {
 	VerifyTerminationAccess(context.Context, *VerifyTerminationAccessRequest) (*VerifyTerminationAccessResponse, error)
+	VerifyWorkerAccountLink(context.Context, *VerifyWorkerAccountLinkRequest) (*VerifyWorkerAccountLinkResponse, error)
 	mustEmbedUnimplementedTerminationAccessServiceServer()
 }
 
@@ -68,6 +81,9 @@ type UnimplementedTerminationAccessServiceServer struct{}
 
 func (UnimplementedTerminationAccessServiceServer) VerifyTerminationAccess(context.Context, *VerifyTerminationAccessRequest) (*VerifyTerminationAccessResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method VerifyTerminationAccess not implemented")
+}
+func (UnimplementedTerminationAccessServiceServer) VerifyWorkerAccountLink(context.Context, *VerifyWorkerAccountLinkRequest) (*VerifyWorkerAccountLinkResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VerifyWorkerAccountLink not implemented")
 }
 func (UnimplementedTerminationAccessServiceServer) mustEmbedUnimplementedTerminationAccessServiceServer() {
 }
@@ -109,6 +125,24 @@ func _TerminationAccessService_VerifyTerminationAccess_Handler(srv interface{}, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TerminationAccessService_VerifyWorkerAccountLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyWorkerAccountLinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TerminationAccessServiceServer).VerifyWorkerAccountLink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TerminationAccessService_VerifyWorkerAccountLink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TerminationAccessServiceServer).VerifyWorkerAccountLink(ctx, req.(*VerifyWorkerAccountLinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TerminationAccessService_ServiceDesc is the grpc.ServiceDesc for TerminationAccessService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -119,6 +153,10 @@ var TerminationAccessService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyTerminationAccess",
 			Handler:    _TerminationAccessService_VerifyTerminationAccess_Handler,
+		},
+		{
+			MethodName: "VerifyWorkerAccountLink",
+			Handler:    _TerminationAccessService_VerifyWorkerAccountLink_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -19,6 +19,7 @@ import (
 const iamWorkloadURI = "spiffe://integrione/iam"
 
 type verifier interface {
+	VerifyWorkerAccountLink(context.Context, string, string, string) error
 	VerifyTerminationAccess(context.Context, string, string, *time.Time) (personnel.TerminationAccessDecision, error)
 }
 
@@ -37,17 +38,8 @@ func Register(registrar grpc.ServiceRegistrar, service verifier) error {
 }
 
 func (h *handler) VerifyTerminationAccess(ctx context.Context, req *pb.VerifyTerminationAccessRequest) (*pb.VerifyTerminationAccessResponse, error) {
-	caller, ok := peer.FromContext(ctx)
-	if !ok || caller == nil {
-		return nil, status.Error(codes.Unauthenticated, "verified workload certificate required")
-	}
-	info, ok := caller.AuthInfo.(credentials.TLSInfo)
-	if !ok || len(info.State.VerifiedChains) == 0 || len(info.State.VerifiedChains[0]) == 0 {
-		return nil, status.Error(codes.Unauthenticated, "verified workload certificate required")
-	}
-	workload := info.State.VerifiedChains[0][0]
-	if workload == nil || len(workload.URIs) != 1 || workload.URIs[0] == nil || workload.URIs[0].String() != iamWorkloadURI {
-		return nil, status.Error(codes.PermissionDenied, "workload is not authorized to verify termination access")
+	if err := requireIAMWorkload(ctx); err != nil {
+		return nil, err
 	}
 	var effectiveDate *time.Time
 	if req != nil && req.TerminationEffectiveDate != nil {
@@ -66,4 +58,31 @@ func (h *handler) VerifyTerminationAccess(ctx context.Context, req *pb.VerifyTer
 		TerminationEffectiveDate: decision.EffectiveDate.Format(time.DateOnly),
 		PrincipalId:              decision.PrincipalID, MayDisable: decision.MayDisable,
 	}, nil
+}
+
+func (h *handler) VerifyWorkerAccountLink(ctx context.Context, req *pb.VerifyWorkerAccountLinkRequest) (*pb.VerifyWorkerAccountLinkResponse, error) {
+	if err := requireIAMWorkload(ctx); err != nil {
+		return nil, err
+	}
+	workerID, principalID, legalEntityID := req.GetWorkerId(), req.GetPrincipalId(), req.GetLegalEntityId()
+	if err := h.verifier.VerifyWorkerAccountLink(ctx, workerID, principalID, legalEntityID); err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.VerifyWorkerAccountLinkResponse{WorkerId: workerID, PrincipalId: principalID, LegalEntityId: legalEntityID}, nil
+}
+
+func requireIAMWorkload(ctx context.Context) error {
+	caller, ok := peer.FromContext(ctx)
+	if !ok || caller == nil {
+		return status.Error(codes.Unauthenticated, "verified workload certificate required")
+	}
+	info, ok := caller.AuthInfo.(credentials.TLSInfo)
+	if !ok || len(info.State.VerifiedChains) == 0 || len(info.State.VerifiedChains[0]) == 0 {
+		return status.Error(codes.Unauthenticated, "verified workload certificate required")
+	}
+	workload := info.State.VerifiedChains[0][0]
+	if workload == nil || len(workload.URIs) != 1 || workload.URIs[0] == nil || workload.URIs[0].String() != iamWorkloadURI {
+		return status.Error(codes.PermissionDenied, "workload is not authorized to access HRM verification")
+	}
+	return nil
 }
