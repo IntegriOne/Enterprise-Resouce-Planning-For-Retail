@@ -3,7 +3,11 @@
 package test
 
 import (
+	"bytes"
 	"context"
+	"crypto/hmac"
+	"github.com/integrione/erp-retail/backend/services/human_resource/contract/provisioning"
+	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	"net"
 	"net/url"
 	"os"
@@ -49,6 +53,16 @@ func (integrationPolicy) ReadScope(context.Context, operation.Access) (operation
 	return operation.Scope{All: true}, nil
 }
 
+type integrationLinkVerifier struct{ key []byte }
+
+func (v integrationLinkVerifier) VerifyPrincipalLink(_ context.Context, check personnelservice.PrincipalLinkCheck) error {
+	evidence, err := provisioning.WorkerLinkEvidence(v.key, check.WorkerID, check.PersonPartyID, check.PrincipalID, check.RequestedByPrincipalID)
+	if err != nil || !hmac.Equal([]byte(evidence), []byte(check.EvidenceID)) {
+		return hrerrors.ErrReferenceConflict
+	}
+	return nil
+}
+
 type fixedClock struct{ instant time.Time }
 
 func (c fixedClock) Now() time.Time { return c.instant }
@@ -84,6 +98,13 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	workerValidators, err := security.WorkerValidators(repos, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for table, validator := range workerValidators {
+		validators[table] = validator
+	}
 	instant := time.Now().UTC().Add(time.Hour)
 	runtime := operation.Dependencies{Clock: fixedClock{instant: instant}, Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
 		Policy: integrationPolicy{}, Integrity: security.NewIntegrity(validators)}
@@ -93,10 +114,11 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	linkVerifier := integrationLinkVerifier{key: bytes.Repeat([]byte{0x61}, 32)}
 	personnel, err := personnelservice.NewService(personnelservice.Dependencies{
 		Runtime: runtime, Worker: repos.Worker, EmploymentContract: repos.EmploymentContract, WorkerAssignment: repos.WorkerAssignment,
 		WorkerLifecycleEvent: repos.WorkerLifecycleEvent, WorkerDocument: repos.WorkerDocument,
-		EmergencyContact: repos.EmergencyContact, OffboardingPlan: repos.OffboardingPlan,
+		EmergencyContact: repos.EmergencyContact, OffboardingPlan: repos.OffboardingPlan, PrincipalLinkVerifier: linkVerifier,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -155,6 +177,32 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 		workerID, "OFFBOARD-"+workerID, workerID, "employee", "active", workerID,
 	).Error; err != nil {
 		t.Fatal(err)
+	}
+	const operator = "00000000-0000-4000-8000-000000000001"
+	const principal = "00000000-0000-4000-8000-000000000004"
+	personnelClient := personnelpb.NewPersonnelServiceClient(connection)
+	forged := &personnelpb.LinkWorkerPrincipalRequest{WorkerId: workerID, PrincipalId: principal, EvidenceId: operator}
+	if _, err := personnelClient.LinkWorkerPrincipal(ctx, forged); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("forged account proof: %v", err)
+	}
+	if _, err := personnelClient.UpdateWorker(ctx, &personnelpb.UpdateWorkerRequest{
+		Id: workerID, Input: &personnelpb.WorkerInput{IamPrincipalReferenceId: new(principal)},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"iam_principal_reference_id"}},
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("generic worker update bypass: %v", err)
+	}
+	proof, err := provisioning.WorkerLinkEvidence(linkVerifier.key, workerID, workerID, principal, operator)
+	if err != nil {
+		t.Fatal(err)
+	}
+	linked, err := personnelClient.LinkWorkerPrincipal(ctx, &personnelpb.LinkWorkerPrincipalRequest{
+		WorkerId: workerID, PrincipalId: principal, EvidenceId: proof,
+	})
+	if err != nil || linked.GetItem().GetIamPrincipalReferenceId() != principal {
+		t.Fatalf("worker account link: %v, %v", linked, err)
+	}
+	if err := personnel.VerifyWorkerAccountLink(ctx, workerID, principal, workerID); err != nil {
+		t.Fatalf("verify persisted worker link: %v", err)
 	}
 	number, reason := "EXIT-"+workerID, "resignation"
 	notice := timestamppb.New(time.Date(2027, 1, 10, 0, 0, 0, 0, time.UTC))
@@ -247,7 +295,6 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	planID = created.GetValue().GetId()
 	planRequest := &common.IDRequest{Id: planID}
-	personnelClient := personnelpb.NewPersonnelServiceClient(connection)
 	terminationRequest := &personnelpb.TerminateWorkerRequest{WorkerId: workerID, OffboardingPlanId: planID}
 	if _, err := personnelClient.TerminateWorker(ctx, terminationRequest); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("terminate before approval and start: %v", err)

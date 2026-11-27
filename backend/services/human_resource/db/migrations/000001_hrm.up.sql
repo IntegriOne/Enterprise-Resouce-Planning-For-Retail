@@ -2618,3 +2618,9 @@ ALTER TABLE hr_worker_assignments DROP CONSTRAINT ex_hr_primary_assignment_perio
 ALTER TABLE hr_worker_assignments ADD CONSTRAINT ex_hr_primary_assignment_period
   EXCLUDE USING gist (worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
   WHERE (assignment_type = 'primary' AND cancelled_at IS NULL);
+-- HRM worker principal uniqueness
+CREATE INDEX ix_hr_worker_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_hr_worker_current_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL
+    AND status IN ('active', 'leave_of_absence', 'suspended', 'notice_period');

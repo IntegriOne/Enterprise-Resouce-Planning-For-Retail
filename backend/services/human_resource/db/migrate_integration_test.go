@@ -98,6 +98,8 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 	const restorePreviousAssignment = `
+		DROP INDEX uq_hr_worker_current_iam_principal;
+		DROP INDEX ix_hr_worker_iam_principal;
 		ALTER TABLE hr_worker_assignments DROP CONSTRAINT ex_hr_primary_assignment_period;
 		DROP INDEX uq_hr_worker_assignment_period;
 		ALTER TABLE hr_worker_assignments DROP COLUMN cancelled_at;
@@ -140,4 +142,18 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 		AND column_name = 'cancelled_at'`).Scan(&columns); err != nil || columns != 1 {
 		t.Fatalf("assignment cancellation column count: got %d, error %v", columns, err)
 	}
+	if _, err := pool.ExecContext(ctx, "DROP INDEX uq_hr_worker_current_iam_principal; DROP INDEX ix_hr_worker_iam_principal"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = $1 WHERE version = 1", assignmentCancellationBaselineChecksum); err != nil {
+		t.Fatal(err)
+	}
+	if err := RunMigrationsUp(ctx, pool); err != nil {
+		t.Fatalf("upgrade assignment cancellation baseline: %v", err)
+	}
+	var uniqueIndex bool
+	if err := pool.QueryRowContext(ctx, `SELECT to_regclass('uq_hr_worker_current_iam_principal') IS NOT NULL`).Scan(&uniqueIndex); err != nil || !uniqueIndex {
+		t.Fatalf("unique active worker principal index exists=%t error=%v", uniqueIndex, err)
+	}
+
 }

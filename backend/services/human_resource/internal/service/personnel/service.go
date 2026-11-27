@@ -12,14 +12,15 @@ import (
 )
 
 type Dependencies struct {
-	Runtime              operation.Dependencies
-	Worker               domainrepo.RecordRepository[entity.Worker, string]
-	EmploymentContract   domainrepo.RecordRepository[entity.EmploymentContract, string]
-	WorkerAssignment     domainrepo.RecordRepository[entity.WorkerAssignment, string]
-	WorkerLifecycleEvent domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
-	WorkerDocument       domainrepo.RecordRepository[entity.WorkerDocument, string]
-	EmergencyContact     domainrepo.RecordRepository[entity.EmergencyContact, string]
-	OffboardingPlan      domainrepo.RecordRepository[entity.OffboardingPlan, string]
+	PrincipalLinkVerifier PrincipalLinkVerifier
+	Runtime               operation.Dependencies
+	Worker                domainrepo.RecordRepository[entity.Worker, string]
+	EmploymentContract    domainrepo.RecordRepository[entity.EmploymentContract, string]
+	WorkerAssignment      domainrepo.RecordRepository[entity.WorkerAssignment, string]
+	WorkerLifecycleEvent  domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
+	WorkerDocument        domainrepo.RecordRepository[entity.WorkerDocument, string]
+	EmergencyContact      domainrepo.RecordRepository[entity.EmergencyContact, string]
+	OffboardingPlan       domainrepo.RecordRepository[entity.OffboardingPlan, string]
 }
 
 // Service mengoordinasikan operasi domain personnel.

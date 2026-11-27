@@ -81,7 +81,7 @@ func RunMigrationsUp(ctx context.Context, pool *sql.DB) (resultErr error) {
 	if err := rows.Close(); err != nil {
 		return migrationError(ctx, "close migration tracker", err)
 	}
-	upgraded, err := reconcileAssignmentCancellation(ctx, tx, installed)
+	upgraded, err := reconcileKnownBaseline(ctx, tx, installed)
 	if err != nil {
 		return err
 	}
@@ -173,25 +173,38 @@ func matchesLegacyBaseline(installed map[int64]string) bool {
 	return true
 }
 
-// reconcileAssignmentCancellation menambahkan bukti pembatalan pada baseline lama yang terverifikasi.
-func reconcileAssignmentCancellation(ctx context.Context, tx *sql.Tx, installed map[int64]string) (bool, error) {
-	previous, delta, ok := strings.Cut(baselineSQL, "-- HRM assignment cancellation\n")
-	if !ok || (len(installed) != 1 || installed[1] != consolidatedBaselineChecksum) && !matchesLegacyBaseline(installed) {
-		return false, nil
+const assignmentCancellationBaselineChecksum = "bc4570a9506e1accfe10ff513f5003c60cea9d58493959c31b47d4441f484952"
+
+// reconcileKnownBaseline menerapkan perubahan terkendali setelah riwayat sebelumnya terverifikasi.
+func reconcileKnownBaseline(ctx context.Context, tx *sql.Tx, installed map[int64]string) (bool, error) {
+	var delta string
+	switch {
+	case len(installed) == 1 && installed[1] == assignmentCancellationBaselineChecksum:
+		delta = baselineDelta("-- HRM worker principal uniqueness\n", assignmentCancellationBaselineChecksum)
+	case len(installed) == 1 && installed[1] == consolidatedBaselineChecksum, matchesLegacyBaseline(installed):
+		delta = baselineDelta("-- HRM assignment cancellation\n", consolidatedBaselineChecksum)
 	}
-	previousDigest := sha256.Sum256([]byte(previous))
-	if hex.EncodeToString(previousDigest[:]) != consolidatedBaselineChecksum {
+	if delta == "" {
 		return false, nil
 	}
 	if _, err := tx.ExecContext(ctx, delta); err != nil {
-		return false, migrationError(ctx, "apply HRM assignment cancellation baseline changes", err)
+		return false, migrationError(ctx, "apply HRM baseline changes", err)
 	}
 	digest := sha256.Sum256([]byte(baselineSQL))
 	if _, err := tx.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = $1 WHERE version = 1", hex.EncodeToString(digest[:])); err != nil {
-		return false, migrationError(ctx, "record HRM assignment cancellation baseline checksum", err)
+		return false, migrationError(ctx, "record HRM baseline checksum", err)
 	}
 	if _, err := tx.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version BETWEEN 2 AND 7"); err != nil {
 		return false, migrationError(ctx, "consolidate HRM migration history", err)
 	}
 	return true, nil
+}
+
+func baselineDelta(marker, checksum string) string {
+	previous, delta, found := strings.Cut(baselineSQL, marker)
+	digest := sha256.Sum256([]byte(previous))
+	if !found || hex.EncodeToString(digest[:]) != checksum {
+		return ""
+	}
+	return delta
 }

@@ -66,6 +66,11 @@ func (h *Handler) ActivateWorker(ctx context.Context, request *common.IDRequest)
 	return workerResponse(h.service.ActivateWorker(ctx, request.Id))
 }
 
+// LinkWorkerPrincipal meneruskan bukti pengaitan akun employee ke Personnel.
+func (h *Handler) LinkWorkerPrincipal(ctx context.Context, request *pb.LinkWorkerPrincipalRequest) (*pb.WorkerResponse, error) {
+	return workerResponse(h.service.LinkWorkerPrincipal(ctx, request.GetWorkerId(), request.GetPrincipalId(), request.GetEvidenceId()))
+}
+
 // TerminateWorker mencatat terminasi dari rencana offboarding yang disetujui.
 func (h *Handler) TerminateWorker(ctx context.Context, request *pb.TerminateWorkerRequest) (*pb.WorkerResponse, error) {
 	return workerResponse(h.service.TerminateWorker(ctx, request.GetWorkerId(), request.GetOffboardingPlanId()))

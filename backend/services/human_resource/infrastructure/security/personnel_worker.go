@@ -107,6 +107,16 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 	if previous != nil && previous.Status == entity.WorkerStatusPreboarding && worker.Status == entity.WorkerStatusActive {
 		return v.validateActivation(ctx, previous, worker)
 	}
+	if previous != nil && previous.Status == entity.WorkerStatusActive && worker.Status == previous.Status &&
+		previous.IAMPrincipalReferenceID == nil && worker.IAMPrincipalReferenceID != nil {
+		expected := *previous
+		expected.IAMPrincipalReferenceID = worker.IAMPrincipalReferenceID
+		expected.UpdatedAt = worker.UpdatedAt
+		if worker.UpdatedAt.Before(previous.UpdatedAt) || !reflect.DeepEqual(&expected, worker) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		return nil
+	}
 	if previous != nil && previous.Status != entity.WorkerStatusPreboarding {
 		return hrerrors.ErrWorkflowRequired
 	}

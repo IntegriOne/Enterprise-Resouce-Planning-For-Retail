@@ -17,18 +17,18 @@ import (
 func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 	t.Parallel()
 	catalog := security.PermissionCatalog()
-	if len(catalog) != 429 {
-		t.Fatalf("operation mapping count = %d, want 429", len(catalog))
+	if len(catalog) != 430 {
+		t.Fatalf("operation mapping count = %d, want 430", len(catalog))
 	}
 	codes := make(map[string]struct{}, len(catalog))
 	for operation, code := range catalog {
-		if !strings.HasPrefix(operation, "hr_") || !strings.HasPrefix(code, "human_resource.") {
+		if !strings.HasPrefix(operation, "hr_") || (!strings.HasPrefix(code, "human_resource.") && operation != "hr_workers.link_principal") {
 			t.Fatalf("invalid catalog mapping: %q -> %q", operation, code)
 		}
 		codes[code] = struct{}{}
 	}
-	if len(codes) != 345 {
-		t.Fatalf("permission count = %d, want 345", len(codes))
+	if len(codes) != 346 {
+		t.Fatalf("permission count = %d, want 346", len(codes))
 	}
 	for operation, want := range map[string]string{
 		"hr_workers.list":                        "human_resource.workers.read",

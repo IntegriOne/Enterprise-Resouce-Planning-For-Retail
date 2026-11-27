@@ -219,7 +219,8 @@ func buildDependencies(
 		validators[resource] = validator
 	}
 	integrity := security.NewIntegrity(validators)
-	services, err := appservice.NewRegistry(repos, operation.Dependencies{Policy: policy, Integrity: integrity})
+	services, err := appservice.NewRegistry(repos, operation.Dependencies{Policy: policy, Integrity: integrity},
+		appservice.WithPrincipalLinkVerifier(workerLinkVerifier{key: cfg.GatewayHMACSecret}))
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM services: %w", err))
 	}

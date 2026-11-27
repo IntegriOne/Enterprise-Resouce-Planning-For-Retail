@@ -9,6 +9,7 @@ import "human_resource/common/v1/common.proto";
 service PersonnelService {
   rpc CreateWorker(CreateWorkerRequest) returns (WorkerResponse);
   rpc ActivateWorker(human_resource.common.v1.IDRequest) returns (WorkerResponse);
+  rpc LinkWorkerPrincipal(LinkWorkerPrincipalRequest) returns (WorkerResponse);
   rpc TerminateWorker(TerminateWorkerRequest) returns (WorkerResponse);
   rpc ApplyPrimaryAssignment(ApplyPrimaryAssignmentRequest) returns (WorkerResponse);
   rpc UpdateWorker(UpdateWorkerRequest) returns (WorkerResponse);
@@ -81,6 +82,12 @@ service PersonnelService {
   rpc FindEmergencyContactByWorkerID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
   rpc FindEmergencyContactByContactPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
   rpc FindEmergencyContactByRelationshipCode(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
+}
+
+message LinkWorkerPrincipalRequest {
+  string worker_id = 1;
+  string principal_id = 2;
+  string evidence_id = 3;
 }
 
 message TerminateWorkerRequest {

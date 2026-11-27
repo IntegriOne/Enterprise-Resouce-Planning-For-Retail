@@ -303,3 +303,9 @@ CREATE TRIGGER tr_hr_talent_dimension_guard BEFORE INSERT OR UPDATE OR DELETE ON
 ALTER TABLE hr_talent_pool_memberships ADD CONSTRAINT ex_hr_talent_pool_membership
   EXCLUDE USING gist (talent_pool_id WITH =, worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
   WHERE (status IN ('active','exited'));
+-- HRM worker principal uniqueness
+CREATE INDEX ix_hr_worker_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_hr_worker_current_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL
+    AND status IN ('active', 'leave_of_absence', 'suspended', 'notice_period');

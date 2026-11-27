@@ -57,7 +57,13 @@ type Registry struct {
 }
 
 // NewRegistry mengikat service domain ke registry repository yang telah tersedia.
-func NewRegistry(repos *repository.Registry, runtime operation.Dependencies) (*Registry, error) {
+func NewRegistry(repos *repository.Registry, runtime operation.Dependencies, options ...RegistryOption) (*Registry, error) {
+	var cfg registryConfig
+	for _, option := range options {
+		if option != nil {
+			option(&cfg)
+		}
+	}
 	if repos == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
@@ -77,7 +83,7 @@ func NewRegistry(repos *repository.Registry, runtime operation.Dependencies) (*R
 		Runtime: runtime, Worker: repos.Worker, EmploymentContract: repos.EmploymentContract,
 		WorkerAssignment: repos.WorkerAssignment, WorkerLifecycleEvent: repos.WorkerLifecycleEvent,
 		WorkerDocument: repos.WorkerDocument, EmergencyContact: repos.EmergencyContact,
-		OffboardingPlan: repos.OffboardingPlan,
+		OffboardingPlan: repos.OffboardingPlan, PrincipalLinkVerifier: cfg.principalLink,
 	})
 	if err != nil {
 		return nil, err
@@ -225,4 +231,16 @@ func NewRegistry(repos *repository.Registry, runtime operation.Dependencies) (*R
 		return nil, err
 	}
 	return r, nil
+}
+
+type registryConfig struct {
+	principalLink personnelservice.PrincipalLinkVerifier
+}
+
+// RegistryOption mengatur integrasi milik service aplikasi HRM.
+type RegistryOption func(*registryConfig)
+
+// WithPrincipalLinkVerifier mengatur sumber bukti penautan akun pekerja.
+func WithPrincipalLinkVerifier(verifier personnelservice.PrincipalLinkVerifier) RegistryOption {
+	return func(cfg *registryConfig) { cfg.principalLink = verifier }
 }
