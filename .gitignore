@@ -1,0 +1,9 @@
+# Abaikan file dan direktori lokal di root di luar agents, docs, backend, dan frontend
+/.env
+/.agents/
+/.claude/
+/GEMINI.md
+/agent/
+/dbml-error.log
+/owner/
+/skills-lock.json
