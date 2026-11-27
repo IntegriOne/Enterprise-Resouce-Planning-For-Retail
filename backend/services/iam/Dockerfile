@@ -35,6 +35,7 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 
 WORKDIR /src
 COPY shared /src/shared
+COPY services/human_resource/go.mod services/human_resource/go.sum /src/services/human_resource/
 COPY services/iam/go.mod services/iam/go.sum /src/services/iam/
 WORKDIR /src/services/iam
 RUN go mod download
@@ -42,6 +43,7 @@ RUN go mod download
 # Tahap 3: Mengompilasi binary server IAM dan probe healthcheck gRPC statis.
 FROM deps AS builder
 
+COPY services/human_resource/contract /src/services/human_resource/contract
 COPY services/iam /src/services/iam
 
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/iam-server ./cmd && \

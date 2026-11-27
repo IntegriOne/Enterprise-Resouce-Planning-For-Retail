@@ -8,7 +8,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.21.0
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.79.9
 	github.com/aws/smithy-go v1.28.9
-	github.com/integrione/erp-retail/backend/shared/authcontext v0.0.0-00010101000000-000000000000
+	github.com/integrione/erp-retail/backend/services/human_resource v0.0.0
+	github.com/integrione/erp-retail/backend/shared/authcontext v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authsession v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authz v0.0.0
 	github.com/jackc/pgx/v5 v5.13.0
@@ -20,12 +21,6 @@ require (
 	gorm.io/driver/postgres v1.6.3
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.2
-)
-
-replace (
-	github.com/integrione/erp-retail/backend/shared/authcontext => ../../shared/authcontext
-	github.com/integrione/erp-retail/backend/shared/authsession => ../../shared/authsession
-	github.com/integrione/erp-retail/backend/shared/authz => ../../shared/authz
 )
 
 require (
@@ -52,3 +47,11 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 )
+
+replace (
+	github.com/integrione/erp-retail/backend/shared/authcontext => ../../shared/authcontext
+	github.com/integrione/erp-retail/backend/shared/authsession => ../../shared/authsession
+	github.com/integrione/erp-retail/backend/shared/authz => ../../shared/authz
+)
+
+replace github.com/integrione/erp-retail/backend/services/human_resource => ../human_resource
