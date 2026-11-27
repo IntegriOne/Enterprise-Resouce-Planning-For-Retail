@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package human_resource.workload.termination.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/workload/termination/v1;terminationv1";
+
+// Layanan ini dibuka hanya pada listener mTLS untuk workload IAM.
+service TerminationAccessService {
+  rpc VerifyTerminationAccess(VerifyTerminationAccessRequest) returns (VerifyTerminationAccessResponse);
+}
+
+message VerifyTerminationAccessRequest {
+  string worker_id = 1;
+  string offboarding_plan_id = 2;
+  optional string termination_effective_date = 3;
+}
+
+message VerifyTerminationAccessResponse {
+  string worker_id = 1;
+  string offboarding_plan_id = 2;
+  string termination_effective_date = 3;
+  string principal_id = 4;
+  bool may_disable = 5;
+}
