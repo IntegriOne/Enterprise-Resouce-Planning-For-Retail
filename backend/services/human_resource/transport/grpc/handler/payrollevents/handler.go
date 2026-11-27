@@ -2,6 +2,7 @@ package payrollevents
 
 import (
 	"context"
+	"errors"
 
 	pb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/workload/payroll/v1"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -64,6 +65,10 @@ func (h *handler) DeliverPayrollEvent(ctx context.Context, req *pb.DeliverPayrol
 			SourceManagement: source, EventType: "payroll.published", SchemaVersion: version,
 			PayrollRunID: runID, PublicationID: proof.Publication.GetPublicationId(),
 		})
+		// Satu kegagalan sementara tetap memerlukan retry meski hasil lain sudah selesai atau ditolak.
+		if ctx.Err() == nil && errors.Is(err, hrerrors.ErrUnavailable) {
+			return nil, response.Error(hrerrors.ErrUnavailable)
+		}
 	case *pb.DeliverPayrollEventRequest_Payment:
 		err = inbox.HandlePayrollPayment(ctx, h.receiver, inbox.PayrollPaymentDelivery{
 			SourceManagement: source, EventType: "payroll.result_paid", SchemaVersion: version,

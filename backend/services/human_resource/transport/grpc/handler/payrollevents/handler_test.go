@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"net/url"
 	"testing"
 
@@ -66,6 +67,43 @@ func TestDeliverPayrollEventRequiresFinanceWorkload(t *testing.T) {
 			})
 			if status.Code(err) != tc.code || fixture.calls != tc.calls || (tc.code == codes.OK) != (got != nil) {
 				t.Fatalf("delivery code=%v, calls=%d, response=%v", status.Code(err), fixture.calls, got)
+			}
+		})
+	}
+}
+
+func (r *payrollReceiverFixture) PublishPayslipsForRun(context.Context, string, string) error {
+	r.calls++
+	return r.err
+}
+
+func TestPublicationPreservesRetryablePartialFailure(t *testing.T) {
+	uri, err := url.Parse("spiffe://integrione/finance-accounting")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := peer.NewContext(t.Context(), &peer.Peer{AuthInfo: credentials.TLSInfo{
+		State: tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{{{URIs: []*url.URL{uri}}}}},
+	}})
+	for _, tc := range []struct {
+		name string
+		err  error
+		code codes.Code
+	}{
+		{"retryable partial failure", errors.Join(hrerrors.ErrNotFound, hrerrors.ErrUnavailable), codes.Unavailable},
+		{"permanent failure", hrerrors.ErrNotFound, codes.NotFound},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			receiver := &payrollReceiverFixture{err: tc.err}
+			h := handler{receiver: receiver}
+			got, err := h.DeliverPayrollEvent(ctx, &pb.DeliverPayrollEventRequest{
+				PayrollRunId: "10000000-0000-4000-8000-000000000001", SchemaVersion: 1,
+				Evidence: &pb.DeliverPayrollEventRequest_Publication{
+					Publication: &pb.PublicationEvidence{PublicationId: "10000000-0000-4000-8000-000000000002"},
+				},
+			})
+			if status.Code(err) != tc.code || got != nil || receiver.calls != 1 {
+				t.Fatalf("publication delivery: status=%v response=%v calls=%d", status.Code(err), got, receiver.calls)
 			}
 		})
 	}

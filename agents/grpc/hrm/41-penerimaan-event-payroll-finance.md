@@ -27,3 +27,5 @@ Regresi `TestPayrollEventServerAuthenticatesFinanceCertificate` membuat CA dan s
 Daemon menghentikan listener bisnis dan payroll dalam tenggat shutdown yang sama. Event payroll aktif diberi kesempatan selesai sebelum koneksi diputus. Uji mTLS memblokir receiver sampai tenggat dan memastikan event yang belum selesai tidak mendapat acknowledgement sukses.
 
 Setelah tenggat, daemon memutus koneksi gRPC dan melanjutkan shutdown meski verifier mengabaikan pembatalan context. Regresi menahan receiver secara sengaja sampai koneksi diputus dan memeriksa bahwa pemanggil tidak menerima sukses.
+
+Untuk `payroll.published`, bila satu hasil gagal sementara dan hasil lain gagal permanen pada pengiriman yang sama, respons gRPC tetap `Unavailable`. Finance dapat mencoba ulang event yang sama. PDF dengan versi sah yang telah tersimpan digunakan kembali melalui jalur idempoten.
