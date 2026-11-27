@@ -1,0 +1,11 @@
+# Uji 47 Mutation HRM melalui HTTPS dengan superadmin
+
+Image IAM uji memuat 67 izin wiring HRM dari manifest pada konteks build lokal di luar checkout. Untuk masing-masing dari dua batch, permission yang relevan dimasukkan ke role uji dan diassign ke superadmin. Login ulang menghasilkan sesi employee tanpa MFA. Permintaan dikirim ke `/api/graphql` dengan CA lokal, cookie sesi, Origin sesuai, dan CSRF valid. Batch dipisahkan 60 detik untuk mengikuti rate limit.
+
+| Hasil aktual | Jumlah | Mutation |
+| --- | ---: | --- |
+| INVALID_ARGUMENT, input sintetik ditolak | 11 | `hrmCreateOffboardingPlan`, `hrmCreateOffboardingTask`, `hrmCreateWorker`, `hrmUpdateWorker`, `hrmCreateWorkerAssignment`, `hrmCreateLeaveAdjustment`, `hrmSubmitWorkerAssignmentTransfer`, `hrmCreateWorkforcePlan`, `hrmUpdateWorkforcePlan`, `hrmUpdateWorkforcePlanLine`, `hrmCreateWorkforcePlanLine` |
+| FORBIDDEN, MFA diperlukan | 36 | `hrmCompleteOffboardingTask`, `hrmWaiveOffboardingTask`, `hrmApproveOffboardingPlan`, `hrmStartOffboardingPlan`, `hrmCancelOffboardingPlan`, `hrmCompleteOffboardingPlan`, `hrmActivatePosition`, `hrmCreatePosition`, `hrmUpdatePosition`, `hrmDeletePosition`, `hrmActivateWorker`, `hrmTerminateWorker`, `hrmApplyPrimaryAssignment`, `hrmApproveWorkerAssignment`, `hrmCreateEmploymentContract`, `hrmRecordSignedEmploymentContract`, `hrmDeleteEmploymentContract`, `hrmUpdateEmploymentContract`, `hrmApproveLeaveAdjustment`, `hrmRejectLeaveAdjustment`, `hrmCloseLeaveEntitlement`, `hrmPostLeaveAdjustment`, `hrmRequestPayrollPosting`, `hrmCalculatePayrollRun`, `hrmSubmitPayrollRunForReview`, `hrmApprovePayrollRun`, `hrmCancelPayrollRun`, `hrmCreatePayrollRun`, `hrmLinkWorkerPrincipal`, `hrmDecideWorkerAssignmentTransfer`, `hrmSubmitWorkforcePlan`, `hrmCancelWorkforcePlan`, `hrmDeleteWorkforcePlan`, `hrmApproveWorkforcePlan`, `hrmSupersedeWorkforcePlan`, `hrmDeleteWorkforcePlanLine` |
+
+
+Input ID sengaja memakai teks invalid. Seluruh 47 permintaan mencapai guard MFA atau validasi input, sehingga uji ini belum membuktikan perubahan state bisnis. Kedua assignment dicabut, role uji dihapus, dan sesi ditutup. Image IAM uji dengan 67 kode masih berjalan di development. [Uji Query berakun](95-hrm-query-seluruh-schema-superadmin-https.md).
