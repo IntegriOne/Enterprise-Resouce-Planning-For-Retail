@@ -287,6 +287,18 @@ message ResendValidationEmailTokenResponse {
   google.protobuf.Timestamp expires_at = 4;
 }
 
+// CheckUsernameAvailabilityRequest memeriksa ketersediaan username tanpa mengekspos PII atau keberadaan akun.
+message CheckUsernameAvailabilityRequest {
+  string username = 1;
+}
+
+// CheckUsernameAvailabilityResponse mengembalikan hasil ketersediaan username yang sudah dinormalisasi.
+message CheckUsernameAvailabilityResponse {
+  bool available = 1;
+  string normalized_username = 2;
+  string reason = 3;
+}
+
 // UserService mengelola siklus hidup akun pengguna, profil, snapshot akses, dan identitas login.
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
@@ -309,4 +321,5 @@ service UserService {
   rpc ConfirmEmailVerificationByToken(ConfirmEmailVerificationByTokenRequest) returns (ConfirmEmailVerificationByTokenResponse);
   rpc SetPrimaryUserIdentity(SetPrimaryUserIdentityRequest) returns (SetPrimaryUserIdentityResponse);
   rpc RemoveUserIdentity(RemoveUserIdentityRequest) returns (RemoveUserIdentityResponse);
+  rpc CheckUsernameAvailability(CheckUsernameAvailabilityRequest) returns (CheckUsernameAvailabilityResponse);
 }

@@ -613,3 +613,69 @@ func enrollAndConfirmTOTPAt(
 	}
 	return secretBytes
 }
+func TestCheckUsernameAvailability_Bufconn(t *testing.T) {
+	t.Parallel()
+
+	env := startBufconnServer(t)
+	ctx := t.Context()
+	userClient := iamv1.NewUserServiceClient(env.conn)
+
+	// Daftarkan 1 employee dan 1 customer agar dapat diuji apakah username terdeteksi tanpa membocorkan PII atau jenis akun.
+	if _, err := userClient.CreateUser(ctx, &iamv1.CreateUserRequest{
+		Kind:                   iamv1.UserKind_USER_KIND_EMPLOYEE,
+		Status:                 iamv1.UserStatus_USER_STATUS_ACTIVE,
+		DisplayName:            "Staff Gudang",
+		Email:                  "staff.uname@integrione.local",
+		Username:               "staff.uname",
+		Password:               "K9#Bufconn!2026",
+		MarkIdentitiesVerified: true,
+	}); err != nil {
+		t.Fatalf("CreateUser(employee) error = %v", err)
+	}
+	if _, err := userClient.CreateUser(ctx, &iamv1.CreateUserRequest{
+		Kind:        iamv1.UserKind_USER_KIND_CUSTOMER,
+		Status:      iamv1.UserStatus_USER_STATUS_PENDING,
+		DisplayName: "Customer Name",
+		Email:       "cust.uname@integrione.local",
+		Username:    "cust.uname",
+		Password:    "L8#Bufconn!2026",
+	}); err != nil {
+		t.Fatalf("CreateUser(customer) error = %v", err)
+	}
+
+	availResp, err := userClient.CheckUsernameAvailability(ctx, &iamv1.CheckUsernameAvailabilityRequest{
+		Username: "  Fresh.Candidate01 ",
+	})
+	if err != nil {
+		t.Fatalf("CheckUsernameAvailability(available) error = %v", err)
+	}
+	if !availResp.GetAvailable() || availResp.GetNormalizedUsername() != "fresh.candidate01" || availResp.GetReason() != "username is available" {
+		t.Fatalf("unexpected available response = %+v", availResp)
+	}
+
+	takenEmpResp, err := userClient.CheckUsernameAvailability(ctx, &iamv1.CheckUsernameAvailabilityRequest{
+		Username: "STAFF.UNAME",
+	})
+	if err != nil {
+		t.Fatalf("CheckUsernameAvailability(employee taken) error = %v", err)
+	}
+	if takenEmpResp.GetAvailable() || takenEmpResp.GetNormalizedUsername() != "staff.uname" || takenEmpResp.GetReason() != "username is already taken" {
+		t.Fatalf("unexpected employee taken response = %+v", takenEmpResp)
+	}
+
+	takenCustResp, err := userClient.CheckUsernameAvailability(ctx, &iamv1.CheckUsernameAvailabilityRequest{
+		Username: "cust.uname",
+	})
+	if err != nil {
+		t.Fatalf("CheckUsernameAvailability(customer taken) error = %v", err)
+	}
+	if takenCustResp.GetAvailable() || takenCustResp.GetReason() != takenEmpResp.GetReason() {
+		t.Fatalf("expected identical anti-enumeration reason for customer vs employee, got %+v vs %+v", takenCustResp, takenEmpResp)
+	}
+
+	for _, bad := range []string{"", "   ", "ab", "bad user", "staff.uname@integrione.local"} {
+		if _, err := userClient.CheckUsernameAvailability(ctx, &iamv1.CheckUsernameAvailabilityRequest{Username: bad}); status.Code(err) != codes.InvalidArgument {
+			t.Fatalf("CheckUsernameAvailability(%q) code = %s (%v), want InvalidArgument", bad, status.Code(err), err)
+		}
+	}
+}

@@ -333,6 +333,40 @@ func (s *Service) ensureEmailAndUsernameAvailable(ctx context.Context, normEmail
 	return nil
 }
 
+// CheckUsernameAvailability memeriksa ketersediaan username menggunakan normalisasi domain resmi tanpa membeberkan PII atau jenis akun.
+func (s *Service) CheckUsernameAvailability(ctx context.Context, rawUsername string) (*UsernameAvailabilityResult, error) {
+	if err := s.ensureReady(); err != nil {
+		return nil, err
+	}
+	normUsername, err := entity.ValidateUsername(rawUsername)
+	if err != nil {
+		return nil, iamerrors.WithField(iamerrors.ErrInvalidUsername, "username", err.Error())
+	}
+	existing, err := s.identities.FindUserIdentityByUsernameKind(ctx, normUsername)
+	if err != nil {
+		if errors.Is(err, iamerrors.ErrIdentityNotFound) {
+			return &UsernameAvailabilityResult{
+				Available:          true,
+				NormalizedUsername: normUsername,
+				Reason:             "username is available",
+			}, nil
+		}
+		return nil, err
+	}
+	if existing != nil {
+		return &UsernameAvailabilityResult{
+			Available:          false,
+			NormalizedUsername: normUsername,
+			Reason:             "username is already taken",
+		}, nil
+	}
+	return &UsernameAvailabilityResult{
+		Available:          true,
+		NormalizedUsername: normUsername,
+		Reason:             "username is available",
+	}, nil
+}
+
 func (s *Service) ensureSingleIdentityKindPerUser(ctx context.Context, userID string, kind entity.IdentityKind) error {
 	existing, err := s.identities.SelectByUserID(ctx, userID)
 	if err != nil {

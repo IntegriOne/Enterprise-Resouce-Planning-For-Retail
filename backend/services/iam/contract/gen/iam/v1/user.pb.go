@@ -2764,6 +2764,112 @@ func (x *ResendValidationEmailTokenResponse) GetExpiresAt() *timestamppb.Timesta
 	return nil
 }
 
+// CheckUsernameAvailabilityRequest memeriksa ketersediaan username tanpa mengekspos PII atau keberadaan akun.
+type CheckUsernameAvailabilityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckUsernameAvailabilityRequest) Reset() {
+	*x = CheckUsernameAvailabilityRequest{}
+	mi := &file_iam_v1_user_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckUsernameAvailabilityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckUsernameAvailabilityRequest) ProtoMessage() {}
+
+func (x *CheckUsernameAvailabilityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_iam_v1_user_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckUsernameAvailabilityRequest.ProtoReflect.Descriptor instead.
+func (*CheckUsernameAvailabilityRequest) Descriptor() ([]byte, []int) {
+	return file_iam_v1_user_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *CheckUsernameAvailabilityRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+// CheckUsernameAvailabilityResponse mengembalikan hasil ketersediaan username yang sudah dinormalisasi.
+type CheckUsernameAvailabilityResponse struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Available          bool                   `protobuf:"varint,1,opt,name=available,proto3" json:"available,omitempty"`
+	NormalizedUsername string                 `protobuf:"bytes,2,opt,name=normalized_username,json=normalizedUsername,proto3" json:"normalized_username,omitempty"`
+	Reason             string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *CheckUsernameAvailabilityResponse) Reset() {
+	*x = CheckUsernameAvailabilityResponse{}
+	mi := &file_iam_v1_user_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckUsernameAvailabilityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckUsernameAvailabilityResponse) ProtoMessage() {}
+
+func (x *CheckUsernameAvailabilityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_iam_v1_user_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckUsernameAvailabilityResponse.ProtoReflect.Descriptor instead.
+func (*CheckUsernameAvailabilityResponse) Descriptor() ([]byte, []int) {
+	return file_iam_v1_user_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *CheckUsernameAvailabilityResponse) GetAvailable() bool {
+	if x != nil {
+		return x.Available
+	}
+	return false
+}
+
+func (x *CheckUsernameAvailabilityResponse) GetNormalizedUsername() string {
+	if x != nil {
+		return x.NormalizedUsername
+	}
+	return ""
+}
+
+func (x *CheckUsernameAvailabilityResponse) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
 var File_iam_v1_user_proto protoreflect.FileDescriptor
 
 const file_iam_v1_user_proto_rawDesc = "" +
@@ -2977,13 +3083,19 @@ const file_iam_v1_user_proto_rawDesc = "" +
 	"\rpending_email\x18\x02 \x01(\tR\fpendingEmail\x12-\n" +
 	"\x12verification_token\x18\x03 \x01(\tR\x11verificationToken\x129\n" +
 	"\n" +
-	"expires_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt*\xc2\x01\n" +
+	"expires_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\">\n" +
+	" CheckUsernameAvailabilityRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\"\x8a\x01\n" +
+	"!CheckUsernameAvailabilityResponse\x12\x1c\n" +
+	"\tavailable\x18\x01 \x01(\bR\tavailable\x12/\n" +
+	"\x13normalized_username\x18\x02 \x01(\tR\x12normalizedUsername\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason*\xc2\x01\n" +
 	"\x11VerifyEmailStatus\x12#\n" +
 	"\x1fVERIFY_EMAIL_STATUS_UNSPECIFIED\x10\x00\x12 \n" +
 	"\x1cVERIFY_EMAIL_STATUS_VERIFIED\x10\x01\x12\x1f\n" +
 	"\x1bVERIFY_EMAIL_STATUS_EXPIRED\x10\x02\x12$\n" +
 	" VERIFY_EMAIL_STATUS_ALREADY_USED\x10\x03\x12\x1f\n" +
-	"\x1bVERIFY_EMAIL_STATUS_INVALID\x10\x042\xc3\x0e\n" +
+	"\x1bVERIFY_EMAIL_STATUS_INVALID\x10\x042\xb5\x0f\n" +
 	"\vUserService\x12C\n" +
 	"\n" +
 	"CreateUser\x12\x19.iam.v1.CreateUserRequest\x1a\x1a.iam.v1.CreateUserResponse\x12F\n" +
@@ -3005,7 +3117,8 @@ const file_iam_v1_user_proto_rawDesc = "" +
 	"\x1bConfirmIdentityVerification\x12*.iam.v1.ConfirmIdentityVerificationRequest\x1a+.iam.v1.ConfirmIdentityVerificationResponse\x12\x82\x01\n" +
 	"\x1fConfirmEmailVerificationByToken\x12..iam.v1.ConfirmEmailVerificationByTokenRequest\x1a/.iam.v1.ConfirmEmailVerificationByTokenResponse\x12g\n" +
 	"\x16SetPrimaryUserIdentity\x12%.iam.v1.SetPrimaryUserIdentityRequest\x1a&.iam.v1.SetPrimaryUserIdentityResponse\x12[\n" +
-	"\x12RemoveUserIdentity\x12!.iam.v1.RemoveUserIdentityRequest\x1a\".iam.v1.RemoveUserIdentityResponseBQZOgithub.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1b\x06proto3"
+	"\x12RemoveUserIdentity\x12!.iam.v1.RemoveUserIdentityRequest\x1a\".iam.v1.RemoveUserIdentityResponse\x12p\n" +
+	"\x19CheckUsernameAvailability\x12(.iam.v1.CheckUsernameAvailabilityRequest\x1a).iam.v1.CheckUsernameAvailabilityResponseBQZOgithub.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1b\x06proto3"
 
 var (
 	file_iam_v1_user_proto_rawDescOnce sync.Once
@@ -3020,7 +3133,7 @@ func file_iam_v1_user_proto_rawDescGZIP() []byte {
 }
 
 var file_iam_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_iam_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 46)
+var file_iam_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 48)
 var file_iam_v1_user_proto_goTypes = []any{
 	(VerifyEmailStatus)(0),                          // 0: iam.v1.VerifyEmailStatus
 	(*User)(nil),                                    // 1: iam.v1.User
@@ -3069,56 +3182,58 @@ var file_iam_v1_user_proto_goTypes = []any{
 	(*DeletePendingUserEmailResponse)(nil),          // 44: iam.v1.DeletePendingUserEmailResponse
 	(*ResendValidationEmailTokenRequest)(nil),       // 45: iam.v1.ResendValidationEmailTokenRequest
 	(*ResendValidationEmailTokenResponse)(nil),      // 46: iam.v1.ResendValidationEmailTokenResponse
-	(UserKind)(0),                                   // 47: iam.v1.UserKind
-	(UserStatus)(0),                                 // 48: iam.v1.UserStatus
-	(*timestamppb.Timestamp)(nil),                   // 49: google.protobuf.Timestamp
-	(IdentityKind)(0),                               // 50: iam.v1.IdentityKind
-	(*Scope)(nil),                                   // 51: iam.v1.Scope
-	(*Role)(nil),                                    // 52: iam.v1.Role
-	(TokenPurpose)(0),                               // 53: iam.v1.TokenPurpose
-	(TokenStatus)(0),                                // 54: iam.v1.TokenStatus
-	(*PageRequest)(nil),                             // 55: iam.v1.PageRequest
-	(*PageInfo)(nil),                                // 56: iam.v1.PageInfo
+	(*CheckUsernameAvailabilityRequest)(nil),        // 47: iam.v1.CheckUsernameAvailabilityRequest
+	(*CheckUsernameAvailabilityResponse)(nil),       // 48: iam.v1.CheckUsernameAvailabilityResponse
+	(UserKind)(0),                                   // 49: iam.v1.UserKind
+	(UserStatus)(0),                                 // 50: iam.v1.UserStatus
+	(*timestamppb.Timestamp)(nil),                   // 51: google.protobuf.Timestamp
+	(IdentityKind)(0),                               // 52: iam.v1.IdentityKind
+	(*Scope)(nil),                                   // 53: iam.v1.Scope
+	(*Role)(nil),                                    // 54: iam.v1.Role
+	(TokenPurpose)(0),                               // 55: iam.v1.TokenPurpose
+	(TokenStatus)(0),                                // 56: iam.v1.TokenStatus
+	(*PageRequest)(nil),                             // 57: iam.v1.PageRequest
+	(*PageInfo)(nil),                                // 58: iam.v1.PageInfo
 }
 var file_iam_v1_user_proto_depIdxs = []int32{
-	47, // 0: iam.v1.User.kind:type_name -> iam.v1.UserKind
-	48, // 1: iam.v1.User.status:type_name -> iam.v1.UserStatus
-	49, // 2: iam.v1.User.last_login_at:type_name -> google.protobuf.Timestamp
-	49, // 3: iam.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	49, // 4: iam.v1.User.updated_at:type_name -> google.protobuf.Timestamp
-	49, // 5: iam.v1.User.deleted_at:type_name -> google.protobuf.Timestamp
-	50, // 6: iam.v1.UserIdentity.kind:type_name -> iam.v1.IdentityKind
-	49, // 7: iam.v1.UserIdentity.verified_at:type_name -> google.protobuf.Timestamp
-	49, // 8: iam.v1.UserIdentity.created_at:type_name -> google.protobuf.Timestamp
-	49, // 9: iam.v1.UserIdentity.updated_at:type_name -> google.protobuf.Timestamp
-	51, // 10: iam.v1.ScopedPermission.scope:type_name -> iam.v1.Scope
-	47, // 11: iam.v1.AccessSnapshot.user_kind:type_name -> iam.v1.UserKind
-	48, // 12: iam.v1.AccessSnapshot.user_status:type_name -> iam.v1.UserStatus
-	52, // 13: iam.v1.AccessSnapshot.roles:type_name -> iam.v1.Role
+	49, // 0: iam.v1.User.kind:type_name -> iam.v1.UserKind
+	50, // 1: iam.v1.User.status:type_name -> iam.v1.UserStatus
+	51, // 2: iam.v1.User.last_login_at:type_name -> google.protobuf.Timestamp
+	51, // 3: iam.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	51, // 4: iam.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	51, // 5: iam.v1.User.deleted_at:type_name -> google.protobuf.Timestamp
+	52, // 6: iam.v1.UserIdentity.kind:type_name -> iam.v1.IdentityKind
+	51, // 7: iam.v1.UserIdentity.verified_at:type_name -> google.protobuf.Timestamp
+	51, // 8: iam.v1.UserIdentity.created_at:type_name -> google.protobuf.Timestamp
+	51, // 9: iam.v1.UserIdentity.updated_at:type_name -> google.protobuf.Timestamp
+	53, // 10: iam.v1.ScopedPermission.scope:type_name -> iam.v1.Scope
+	49, // 11: iam.v1.AccessSnapshot.user_kind:type_name -> iam.v1.UserKind
+	50, // 12: iam.v1.AccessSnapshot.user_status:type_name -> iam.v1.UserStatus
+	54, // 13: iam.v1.AccessSnapshot.roles:type_name -> iam.v1.Role
 	3,  // 14: iam.v1.AccessSnapshot.permissions:type_name -> iam.v1.ScopedPermission
-	49, // 15: iam.v1.AccessSnapshot.checked_at:type_name -> google.protobuf.Timestamp
-	53, // 16: iam.v1.UserToken.purpose:type_name -> iam.v1.TokenPurpose
-	49, // 17: iam.v1.UserToken.expires_at:type_name -> google.protobuf.Timestamp
-	49, // 18: iam.v1.UserToken.used_at:type_name -> google.protobuf.Timestamp
-	49, // 19: iam.v1.UserToken.created_at:type_name -> google.protobuf.Timestamp
-	54, // 20: iam.v1.UserToken.status:type_name -> iam.v1.TokenStatus
+	51, // 15: iam.v1.AccessSnapshot.checked_at:type_name -> google.protobuf.Timestamp
+	55, // 16: iam.v1.UserToken.purpose:type_name -> iam.v1.TokenPurpose
+	51, // 17: iam.v1.UserToken.expires_at:type_name -> google.protobuf.Timestamp
+	51, // 18: iam.v1.UserToken.used_at:type_name -> google.protobuf.Timestamp
+	51, // 19: iam.v1.UserToken.created_at:type_name -> google.protobuf.Timestamp
+	56, // 20: iam.v1.UserToken.status:type_name -> iam.v1.TokenStatus
 	5,  // 21: iam.v1.IssuedToken.token:type_name -> iam.v1.UserToken
-	47, // 22: iam.v1.CreateUserRequest.kind:type_name -> iam.v1.UserKind
-	48, // 23: iam.v1.CreateUserRequest.status:type_name -> iam.v1.UserStatus
+	49, // 22: iam.v1.CreateUserRequest.kind:type_name -> iam.v1.UserKind
+	50, // 23: iam.v1.CreateUserRequest.status:type_name -> iam.v1.UserStatus
 	1,  // 24: iam.v1.CreateUserResponse.user:type_name -> iam.v1.User
 	1,  // 25: iam.v1.GetUserByIdResponse.user:type_name -> iam.v1.User
 	4,  // 26: iam.v1.GetUserAccessSnapshotResponse.snapshot:type_name -> iam.v1.AccessSnapshot
-	47, // 27: iam.v1.ListUsersRequest.kind:type_name -> iam.v1.UserKind
-	48, // 28: iam.v1.ListUsersRequest.status:type_name -> iam.v1.UserStatus
-	55, // 29: iam.v1.ListUsersRequest.page:type_name -> iam.v1.PageRequest
+	49, // 27: iam.v1.ListUsersRequest.kind:type_name -> iam.v1.UserKind
+	50, // 28: iam.v1.ListUsersRequest.status:type_name -> iam.v1.UserStatus
+	57, // 29: iam.v1.ListUsersRequest.page:type_name -> iam.v1.PageRequest
 	1,  // 30: iam.v1.ListUsersResponse.items:type_name -> iam.v1.User
-	56, // 31: iam.v1.ListUsersResponse.page:type_name -> iam.v1.PageInfo
+	58, // 31: iam.v1.ListUsersResponse.page:type_name -> iam.v1.PageInfo
 	1,  // 32: iam.v1.UpdateUserProfileResponse.user:type_name -> iam.v1.User
 	1,  // 33: iam.v1.ActivateUserResponse.user:type_name -> iam.v1.User
 	1,  // 34: iam.v1.SuspendUserResponse.user:type_name -> iam.v1.User
 	1,  // 35: iam.v1.DisableUserResponse.user:type_name -> iam.v1.User
 	2,  // 36: iam.v1.ListUserIdentitiesResponse.identities:type_name -> iam.v1.UserIdentity
-	50, // 37: iam.v1.AddUserIdentityRequest.kind:type_name -> iam.v1.IdentityKind
+	52, // 37: iam.v1.AddUserIdentityRequest.kind:type_name -> iam.v1.IdentityKind
 	2,  // 38: iam.v1.AddUserIdentityResponse.identity:type_name -> iam.v1.UserIdentity
 	6,  // 39: iam.v1.RequestIdentityVerificationResponse.issued_token:type_name -> iam.v1.IssuedToken
 	2,  // 40: iam.v1.ConfirmIdentityVerificationResponse.identity:type_name -> iam.v1.UserIdentity
@@ -3126,10 +3241,10 @@ var file_iam_v1_user_proto_depIdxs = []int32{
 	0,  // 42: iam.v1.ConfirmEmailVerificationByTokenResponse.status:type_name -> iam.v1.VerifyEmailStatus
 	1,  // 43: iam.v1.ConfirmEmailVerificationByTokenResponse.user:type_name -> iam.v1.User
 	2,  // 44: iam.v1.ConfirmEmailVerificationByTokenResponse.identity:type_name -> iam.v1.UserIdentity
-	49, // 45: iam.v1.UpdateUserEmailResponse.expires_at:type_name -> google.protobuf.Timestamp
+	51, // 45: iam.v1.UpdateUserEmailResponse.expires_at:type_name -> google.protobuf.Timestamp
 	2,  // 46: iam.v1.UpdateUserEmailResponse.identity:type_name -> iam.v1.UserIdentity
 	2,  // 47: iam.v1.UpdateUserUsernameResponse.identity:type_name -> iam.v1.UserIdentity
-	49, // 48: iam.v1.ResendValidationEmailTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
+	51, // 48: iam.v1.ResendValidationEmailTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
 	7,  // 49: iam.v1.UserService.CreateUser:input_type -> iam.v1.CreateUserRequest
 	9,  // 50: iam.v1.UserService.GetUserById:input_type -> iam.v1.GetUserByIdRequest
 	11, // 51: iam.v1.UserService.GetUserAccessSnapshot:input_type -> iam.v1.GetUserAccessSnapshotRequest
@@ -3150,28 +3265,30 @@ var file_iam_v1_user_proto_depIdxs = []int32{
 	37, // 66: iam.v1.UserService.ConfirmEmailVerificationByToken:input_type -> iam.v1.ConfirmEmailVerificationByTokenRequest
 	33, // 67: iam.v1.UserService.SetPrimaryUserIdentity:input_type -> iam.v1.SetPrimaryUserIdentityRequest
 	35, // 68: iam.v1.UserService.RemoveUserIdentity:input_type -> iam.v1.RemoveUserIdentityRequest
-	8,  // 69: iam.v1.UserService.CreateUser:output_type -> iam.v1.CreateUserResponse
-	10, // 70: iam.v1.UserService.GetUserById:output_type -> iam.v1.GetUserByIdResponse
-	12, // 71: iam.v1.UserService.GetUserAccessSnapshot:output_type -> iam.v1.GetUserAccessSnapshotResponse
-	14, // 72: iam.v1.UserService.ListUsers:output_type -> iam.v1.ListUsersResponse
-	16, // 73: iam.v1.UserService.UpdateUserProfile:output_type -> iam.v1.UpdateUserProfileResponse
-	40, // 74: iam.v1.UserService.UpdateUserEmail:output_type -> iam.v1.UpdateUserEmailResponse
-	42, // 75: iam.v1.UserService.UpdateUserUsername:output_type -> iam.v1.UpdateUserUsernameResponse
-	44, // 76: iam.v1.UserService.DeletePendingUserEmail:output_type -> iam.v1.DeletePendingUserEmailResponse
-	46, // 77: iam.v1.UserService.ResendValidationEmailToken:output_type -> iam.v1.ResendValidationEmailTokenResponse
-	18, // 78: iam.v1.UserService.ActivateUser:output_type -> iam.v1.ActivateUserResponse
-	20, // 79: iam.v1.UserService.SuspendUser:output_type -> iam.v1.SuspendUserResponse
-	22, // 80: iam.v1.UserService.DisableUser:output_type -> iam.v1.DisableUserResponse
-	24, // 81: iam.v1.UserService.SoftDeleteUser:output_type -> iam.v1.SoftDeleteUserResponse
-	26, // 82: iam.v1.UserService.ListUserIdentities:output_type -> iam.v1.ListUserIdentitiesResponse
-	28, // 83: iam.v1.UserService.AddUserIdentity:output_type -> iam.v1.AddUserIdentityResponse
-	30, // 84: iam.v1.UserService.RequestIdentityVerification:output_type -> iam.v1.RequestIdentityVerificationResponse
-	32, // 85: iam.v1.UserService.ConfirmIdentityVerification:output_type -> iam.v1.ConfirmIdentityVerificationResponse
-	38, // 86: iam.v1.UserService.ConfirmEmailVerificationByToken:output_type -> iam.v1.ConfirmEmailVerificationByTokenResponse
-	34, // 87: iam.v1.UserService.SetPrimaryUserIdentity:output_type -> iam.v1.SetPrimaryUserIdentityResponse
-	36, // 88: iam.v1.UserService.RemoveUserIdentity:output_type -> iam.v1.RemoveUserIdentityResponse
-	69, // [69:89] is the sub-list for method output_type
-	49, // [49:69] is the sub-list for method input_type
+	47, // 69: iam.v1.UserService.CheckUsernameAvailability:input_type -> iam.v1.CheckUsernameAvailabilityRequest
+	8,  // 70: iam.v1.UserService.CreateUser:output_type -> iam.v1.CreateUserResponse
+	10, // 71: iam.v1.UserService.GetUserById:output_type -> iam.v1.GetUserByIdResponse
+	12, // 72: iam.v1.UserService.GetUserAccessSnapshot:output_type -> iam.v1.GetUserAccessSnapshotResponse
+	14, // 73: iam.v1.UserService.ListUsers:output_type -> iam.v1.ListUsersResponse
+	16, // 74: iam.v1.UserService.UpdateUserProfile:output_type -> iam.v1.UpdateUserProfileResponse
+	40, // 75: iam.v1.UserService.UpdateUserEmail:output_type -> iam.v1.UpdateUserEmailResponse
+	42, // 76: iam.v1.UserService.UpdateUserUsername:output_type -> iam.v1.UpdateUserUsernameResponse
+	44, // 77: iam.v1.UserService.DeletePendingUserEmail:output_type -> iam.v1.DeletePendingUserEmailResponse
+	46, // 78: iam.v1.UserService.ResendValidationEmailToken:output_type -> iam.v1.ResendValidationEmailTokenResponse
+	18, // 79: iam.v1.UserService.ActivateUser:output_type -> iam.v1.ActivateUserResponse
+	20, // 80: iam.v1.UserService.SuspendUser:output_type -> iam.v1.SuspendUserResponse
+	22, // 81: iam.v1.UserService.DisableUser:output_type -> iam.v1.DisableUserResponse
+	24, // 82: iam.v1.UserService.SoftDeleteUser:output_type -> iam.v1.SoftDeleteUserResponse
+	26, // 83: iam.v1.UserService.ListUserIdentities:output_type -> iam.v1.ListUserIdentitiesResponse
+	28, // 84: iam.v1.UserService.AddUserIdentity:output_type -> iam.v1.AddUserIdentityResponse
+	30, // 85: iam.v1.UserService.RequestIdentityVerification:output_type -> iam.v1.RequestIdentityVerificationResponse
+	32, // 86: iam.v1.UserService.ConfirmIdentityVerification:output_type -> iam.v1.ConfirmIdentityVerificationResponse
+	38, // 87: iam.v1.UserService.ConfirmEmailVerificationByToken:output_type -> iam.v1.ConfirmEmailVerificationByTokenResponse
+	34, // 88: iam.v1.UserService.SetPrimaryUserIdentity:output_type -> iam.v1.SetPrimaryUserIdentityResponse
+	36, // 89: iam.v1.UserService.RemoveUserIdentity:output_type -> iam.v1.RemoveUserIdentityResponse
+	48, // 90: iam.v1.UserService.CheckUsernameAvailability:output_type -> iam.v1.CheckUsernameAvailabilityResponse
+	70, // [70:91] is the sub-list for method output_type
+	49, // [49:70] is the sub-list for method input_type
 	49, // [49:49] is the sub-list for extension type_name
 	49, // [49:49] is the sub-list for extension extendee
 	0,  // [0:49] is the sub-list for field type_name
@@ -3192,7 +3309,7 @@ func file_iam_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_iam_v1_user_proto_rawDesc), len(file_iam_v1_user_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   46,
+			NumMessages:   48,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

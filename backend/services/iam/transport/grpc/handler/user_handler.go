@@ -354,6 +354,25 @@ func (h *UserHandler) RemoveUserIdentity(ctx context.Context, req *iamv1.RemoveU
 	return &iamv1.RemoveUserIdentityResponse{}, nil
 }
 
+// CheckUsernameAvailability memeriksa ketersediaan username tanpa mengekspos PII atau keberadaan identitas pengguna.
+func (h *UserHandler) CheckUsernameAvailability(ctx context.Context, req *iamv1.CheckUsernameAvailabilityRequest) (*iamv1.CheckUsernameAvailabilityResponse, error) {
+	if req == nil {
+		return nil, nilRequestError(h.errMapper)
+	}
+	res, err := h.svc.CheckUsernameAvailability(ctx, req.GetUsername())
+	if err != nil {
+		return nil, h.errMapper.ToStatus(err)
+	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.identity.empty_username_check_result"), "username availability check returned empty result"))
+	}
+	return &iamv1.CheckUsernameAvailabilityResponse{
+		Available:          res.Available,
+		NormalizedUsername: res.NormalizedUsername,
+		Reason:             res.Reason,
+	}, nil
+}
+
 // ConfirmEmailVerificationByToken memverifikasi tautan verifikasi email sekali pakai dan mengaktifkan akun pending.
 func (h *UserHandler) ConfirmEmailVerificationByToken(ctx context.Context, req *iamv1.ConfirmEmailVerificationByTokenRequest) (*iamv1.ConfirmEmailVerificationByTokenResponse, error) {
 	if req == nil {

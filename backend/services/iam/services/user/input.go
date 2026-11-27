@@ -219,3 +219,10 @@ type ConfirmTOTPResult struct {
 	Factor        *entity.UserTOTPFactor
 	RecoveryCodes []string
 }
+
+// UsernameAvailabilityResult membawa status ketersediaan username terstandardisasi tanpa mengekspos data akun.
+type UsernameAvailabilityResult struct {
+	Available          bool
+	NormalizedUsername string
+	Reason             string
+}

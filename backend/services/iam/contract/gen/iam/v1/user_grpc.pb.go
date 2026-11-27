@@ -39,6 +39,7 @@ const (
 	UserService_ConfirmEmailVerificationByToken_FullMethodName = "/iam.v1.UserService/ConfirmEmailVerificationByToken"
 	UserService_SetPrimaryUserIdentity_FullMethodName          = "/iam.v1.UserService/SetPrimaryUserIdentity"
 	UserService_RemoveUserIdentity_FullMethodName              = "/iam.v1.UserService/RemoveUserIdentity"
+	UserService_CheckUsernameAvailability_FullMethodName       = "/iam.v1.UserService/CheckUsernameAvailability"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -67,6 +68,7 @@ type UserServiceClient interface {
 	ConfirmEmailVerificationByToken(ctx context.Context, in *ConfirmEmailVerificationByTokenRequest, opts ...grpc.CallOption) (*ConfirmEmailVerificationByTokenResponse, error)
 	SetPrimaryUserIdentity(ctx context.Context, in *SetPrimaryUserIdentityRequest, opts ...grpc.CallOption) (*SetPrimaryUserIdentityResponse, error)
 	RemoveUserIdentity(ctx context.Context, in *RemoveUserIdentityRequest, opts ...grpc.CallOption) (*RemoveUserIdentityResponse, error)
+	CheckUsernameAvailability(ctx context.Context, in *CheckUsernameAvailabilityRequest, opts ...grpc.CallOption) (*CheckUsernameAvailabilityResponse, error)
 }
 
 type userServiceClient struct {
@@ -277,6 +279,16 @@ func (c *userServiceClient) RemoveUserIdentity(ctx context.Context, in *RemoveUs
 	return out, nil
 }
 
+func (c *userServiceClient) CheckUsernameAvailability(ctx context.Context, in *CheckUsernameAvailabilityRequest, opts ...grpc.CallOption) (*CheckUsernameAvailabilityResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckUsernameAvailabilityResponse)
+	err := c.cc.Invoke(ctx, UserService_CheckUsernameAvailability_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -303,6 +315,7 @@ type UserServiceServer interface {
 	ConfirmEmailVerificationByToken(context.Context, *ConfirmEmailVerificationByTokenRequest) (*ConfirmEmailVerificationByTokenResponse, error)
 	SetPrimaryUserIdentity(context.Context, *SetPrimaryUserIdentityRequest) (*SetPrimaryUserIdentityResponse, error)
 	RemoveUserIdentity(context.Context, *RemoveUserIdentityRequest) (*RemoveUserIdentityResponse, error)
+	CheckUsernameAvailability(context.Context, *CheckUsernameAvailabilityRequest) (*CheckUsernameAvailabilityResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -372,6 +385,9 @@ func (UnimplementedUserServiceServer) SetPrimaryUserIdentity(context.Context, *S
 }
 func (UnimplementedUserServiceServer) RemoveUserIdentity(context.Context, *RemoveUserIdentityRequest) (*RemoveUserIdentityResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemoveUserIdentity not implemented")
+}
+func (UnimplementedUserServiceServer) CheckUsernameAvailability(context.Context, *CheckUsernameAvailabilityRequest) (*CheckUsernameAvailabilityResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CheckUsernameAvailability not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -754,6 +770,24 @@ func _UserService_RemoveUserIdentity_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_CheckUsernameAvailability_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckUsernameAvailabilityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).CheckUsernameAvailability(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_CheckUsernameAvailability_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).CheckUsernameAvailability(ctx, req.(*CheckUsernameAvailabilityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -840,6 +874,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveUserIdentity",
 			Handler:    _UserService_RemoveUserIdentity_Handler,
+		},
+		{
+			MethodName: "CheckUsernameAvailability",
+			Handler:    _UserService_CheckUsernameAvailability_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
