@@ -145,7 +145,7 @@ func buildMIMEMessage(fromHeader, replyToHeader string, msg domainservice.EmailM
 	out.WriteString("Date: " + now.UTC().Format(time.RFC1123Z) + "\r\n")
 	out.WriteString("Message-ID: " + msgID + "\r\n")
 	out.WriteString("MIME-Version: 1.0\r\n")
-	out.WriteString(fmt.Sprintf("Content-Type: multipart/alternative; boundary=%q\r\n", boundary))
+	fmt.Fprintf(&out, "Content-Type: multipart/alternative; boundary=%q\r\n", boundary)
 	out.WriteString("\r\n")
 	out.Write(bodyBuf.Bytes())
 

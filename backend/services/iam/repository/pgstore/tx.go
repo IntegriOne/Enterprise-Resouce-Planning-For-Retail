@@ -126,3 +126,18 @@ func DBFromContext(ctx context.Context, fallback *gorm.DB) (*gorm.DB, error) {
 	}
 	return fallback.WithContext(ctx), nil
 }
+
+// AcquireAdvisoryXactLock mengambil kunci transaksi PostgreSQL bila transaksi aktif berjalan di atas dialektor Postgres.
+func AcquireAdvisoryXactLock(ctx context.Context, lockID int64) error {
+	if ctx == nil {
+		return nil
+	}
+	tx, ok := ctx.Value(txContextKey{}).(*gorm.DB)
+	if !ok || tx == nil || tx.Dialector == nil {
+		return nil
+	}
+	if tx.Name() != "postgres" {
+		return nil
+	}
+	return MapError(tx.WithContext(ctx).Exec("SELECT pg_advisory_xact_lock(?)", lockID).Error, nil)
+}

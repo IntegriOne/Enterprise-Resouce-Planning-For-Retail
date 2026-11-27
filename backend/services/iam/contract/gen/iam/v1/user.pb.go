@@ -660,6 +660,7 @@ func (x *IssuedToken) GetPlaintextToken() string {
 	return ""
 }
 
+// CreateUserRequest membuat akun IAM baru; untuk USER_KIND_SYSTEM hanya username yang diizinkan (tanpa email dan tanpa password).
 type CreateUserRequest struct {
 	state                  protoimpl.MessageState `protogen:"open.v1"`
 	Kind                   UserKind               `protobuf:"varint,1,opt,name=kind,proto3,enum=iam.v1.UserKind" json:"kind,omitempty"`

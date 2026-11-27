@@ -45,8 +45,11 @@ func InternalContextUnaryInterceptor(hmacSecret []byte, requireProof bool) grpc.
 	}
 }
 
-// RecoveryUnaryInterceptor menangkap panic pada handler gRPC agar server tidak crash.
+// RecoveryUnaryInterceptor menangkap panic pada handler gRPC unary agar server tidak crash.
 func RecoveryUnaryInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
+	if logger == nil {
+		logger = slog.Default()
+	}
 	return func(
 		ctx context.Context,
 		req any,
@@ -72,8 +75,41 @@ func RecoveryUnaryInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
 	}
 }
 
+// RecoveryStreamInterceptor menangkap panic pada handler gRPC stream agar server tetap stabil.
+func RecoveryStreamInterceptor(logger *slog.Logger) grpc.StreamServerInterceptor {
+	if logger == nil {
+		logger = slog.Default()
+	}
+	return func(
+		srv any,
+		ss grpc.ServerStream,
+		info *grpc.StreamServerInfo,
+		handler grpc.StreamHandler,
+	) (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				method := ""
+				if info != nil {
+					method = info.FullMethod
+				}
+				logger.Error("grpc stream handler panic recovered",
+					slog.String("method", method),
+					slog.Any("panic", r),
+					slog.String("stack", string(debug.Stack())),
+				)
+				err = status.Error(codes.Internal, "internal server error")
+			}
+		}()
+
+		return handler(srv, ss)
+	}
+}
+
 // LoggingUnaryInterceptor mencatat metode, durasi eksekusi, dan kode status setiap panggilan gRPC.
 func LoggingUnaryInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
+	if logger == nil {
+		logger = slog.Default()
+	}
 	return func(
 		ctx context.Context,
 		req any,
@@ -90,12 +126,18 @@ func LoggingUnaryInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
 
 		code := status.Code(err)
 		if err != nil {
-			logger.Warn("grpc request failed",
+			attrs := []any{
 				slog.String("method", method),
 				slog.String("code", code.String()),
 				slog.Duration("duration", duration),
 				slog.String("error", err.Error()),
-			)
+			}
+			// Pisahkan kegagalan infrastruktur/server (Error) dari penolakan domain/validasi klien (Warn).
+			if isServerFailureCode(code) {
+				logger.Error("grpc request failed with server error", attrs...)
+			} else {
+				logger.Warn("grpc request failed", attrs...)
+			}
 			return resp, err
 		}
 
@@ -105,5 +147,14 @@ func LoggingUnaryInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
 			slog.Duration("duration", duration),
 		)
 		return resp, nil
+	}
+}
+
+func isServerFailureCode(code codes.Code) bool {
+	switch code {
+	case codes.Internal, codes.Unavailable, codes.Unknown, codes.DataLoss, codes.DeadlineExceeded:
+		return true
+	default:
+		return false
 	}
 }

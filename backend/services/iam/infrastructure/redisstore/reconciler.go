@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -110,7 +112,7 @@ func (r *Reconciler) bootstrapGateAndDrainLocked(ctx context.Context) error {
 	if _, err := r.projector.SyncGate(ctx, true, recEpoch, "iam_ready"); err != nil {
 		return err
 	}
-	r.logger.Info("iam redis security gate opened", slog.Int64("recovery_epoch", recEpoch))
+	r.effectiveLogger().Info("iam redis security gate opened", slog.Int64("recovery_epoch", recEpoch))
 	return nil
 }
 
@@ -140,8 +142,24 @@ func (r *Reconciler) Run(ctx context.Context) {
 	if r == nil || r.projector == nil || !r.projector.IsEnabled() {
 		return
 	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	log := r.effectiveLogger()
+	defer func() {
+		if rec := recover(); rec != nil {
+			log.Error("iam outbox reconciler loop panic recovered",
+				slog.Any("panic", rec),
+				slog.String("stack", string(debug.Stack())),
+			)
+		}
+	}()
 
-	ticker := time.NewTicker(r.interval)
+	interval := r.interval
+	if interval <= 0 {
+		interval = defaultReconcileInterval
+	}
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	var notifyCh <-chan struct{}
@@ -162,9 +180,13 @@ func (r *Reconciler) Run(ctx context.Context) {
 }
 
 func (r *Reconciler) stepOnce(ctx context.Context) {
+	log := r.effectiveLogger()
 	defer func() {
 		if rec := recover(); rec != nil {
-			r.logger.Error("iam outbox reconciler panic recovered", slog.Any("panic", rec))
+			log.Error("iam outbox reconciler panic recovered",
+				slog.Any("panic", rec),
+				slog.String("stack", string(debug.Stack())),
+			)
 		}
 	}()
 
@@ -172,13 +194,15 @@ func (r *Reconciler) stepOnce(ctx context.Context) {
 	defer cancel()
 
 	if err := r.DrainPending(stepCtx); err != nil {
-		r.logger.Warn("iam outbox reconcile cycle failed", slog.String("error", err.Error()))
+		log.Warn("iam outbox reconcile cycle failed", slog.String("error", err.Error()))
 	}
 }
 
 func (r *Reconciler) drainPendingLoop(ctx context.Context, recoveryEpoch int64, includeScheduled bool) error {
+	clock := r.effectiveClock()
+	log := r.effectiveLogger()
 	for {
-		now := r.clock.Now()
+		now := clock.Now()
 		dueCutoff := now
 		if includeScheduled {
 			// Saat bootstrap/pemulihan penuh, kuras seluruh antrean pending tanpa menunggu sisa backoff.
@@ -194,21 +218,29 @@ func (r *Reconciler) drainPendingLoop(ctx context.Context, recoveryEpoch int64, 
 
 		var batchErr error
 		for _, ev := range events {
-			if err := r.applyEvent(ctx, ev, recoveryEpoch); err != nil {
-				nextAttempt := ev.AttemptCount + 1
-				if nextAttempt >= maxOutboxAttempts {
-					_ = r.runtimeRepo.MarkFailed(ctx, ev.ID, err.Error())
-				} else {
-					backoff := computeBackoff(nextAttempt)
-					_ = r.runtimeRepo.MarkRetry(ctx, ev.ID, nextAttempt, now.Add(backoff), err.Error())
-				}
-				if batchErr == nil {
-					batchErr = err
-				}
+			if ev == nil {
 				continue
 			}
-			if err := r.runtimeRepo.MarkEffective(ctx, ev.ID, r.clock.Now()); err != nil && batchErr == nil {
-				batchErr = err
+			if err := r.applyEvent(ctx, ev, recoveryEpoch); err != nil {
+				nextAttempt := ev.AttemptCount + 1
+				var markErr error
+				if nextAttempt >= maxOutboxAttempts {
+					if mErr := r.runtimeRepo.MarkFailed(ctx, ev.ID, err.Error()); mErr != nil {
+						markErr = fmt.Errorf("mark outbox event %s failed: %w", ev.ID, mErr)
+						log.Warn("failed to mark outbox event failed", slog.String("event_id", ev.ID), slog.String("error", mErr.Error()))
+					}
+				} else {
+					backoff := computeBackoff(nextAttempt)
+					if mErr := r.runtimeRepo.MarkRetry(ctx, ev.ID, nextAttempt, now.Add(backoff), err.Error()); mErr != nil {
+						markErr = fmt.Errorf("mark outbox event %s retry: %w", ev.ID, mErr)
+						log.Warn("failed to schedule outbox event retry", slog.String("event_id", ev.ID), slog.String("error", mErr.Error()))
+					}
+				}
+				batchErr = errors.Join(batchErr, err, markErr)
+				continue
+			}
+			if err := r.runtimeRepo.MarkEffective(ctx, ev.ID, clock.Now()); err != nil {
+				batchErr = errors.Join(batchErr, err)
 			}
 		}
 		if batchErr != nil {
@@ -224,19 +256,22 @@ func (r *Reconciler) hydrateActiveSessions(ctx context.Context, recoveryEpoch in
 	if r.sessions == nil || r.users == nil {
 		return nil
 	}
-	now := r.clock.Now()
+	now := r.effectiveClock().Now()
 	sessions, err := r.runtimeRepo.SelectActiveSessionsForRecovery(ctx, now, recoverySessionBatchCap)
 	if err != nil {
 		return err
 	}
 	if len(sessions) >= recoverySessionBatchCap {
-		r.logger.Warn("active session recovery reached batch cap; older sessions truncated",
+		r.effectiveLogger().Warn("active session recovery reached batch cap; older sessions truncated",
 			slog.Int("cap", recoverySessionBatchCap),
 			slog.Int("loaded", len(sessions)),
 		)
 	}
 	userCache := make(map[string]*entity.User, len(sessions))
 	for _, sess := range sessions {
+		if sess == nil {
+			continue
+		}
 		u, ok := userCache[sess.UserID]
 		if !ok {
 			loaded, loadErr := r.users.SelectByID(ctx, sess.UserID)
@@ -265,11 +300,16 @@ func (r *Reconciler) hydrateActiveSessions(ctx context.Context, recoveryEpoch in
 func (r *Reconciler) applyEvent(ctx context.Context, ev *entity.OutboxEvent, recoveryEpoch int64) error {
 	var payload OutboxPayload
 	if len(ev.Payload) > 0 {
-		_ = json.Unmarshal(ev.Payload, &payload)
+		if err := json.Unmarshal(ev.Payload, &payload); err != nil {
+			return fmt.Errorf("decode iam outbox payload (%s): %w", ev.EventType, err)
+		}
 	}
 
 	switch ev.EventType {
 	case entity.OutboxEventSessionIssued, entity.OutboxEventSessionUpdated:
+		if r.sessions == nil || r.users == nil {
+			return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.repo_unavailable"), "session or user repository is unavailable")
+		}
 		sessID := ev.AggregateID
 		if payload.SessionID != "" {
 			sessID = payload.SessionID
@@ -291,32 +331,60 @@ func (r *Reconciler) applyEvent(ctx context.Context, ev *entity.OutboxEvent, rec
 		return r.projector.ProjectSessionUpdated(ctx, u, sess, recoveryEpoch)
 
 	case entity.OutboxEventSessionRevoked:
-		digests := decodeDigestsHex(payload.TokenDigestsHex)
+		digests, err := decodeDigestsHex(payload.TokenDigestsHex)
+		if err != nil {
+			return fmt.Errorf("decode session revoked token digests: %w", err)
+		}
 		var u *entity.User
 		if payload.UserID != "" {
-			if loaded, err := r.users.SelectByID(ctx, payload.UserID); err == nil {
-				u = loaded
+			if r.users == nil {
+				return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.repo_unavailable"), "user repository is unavailable")
 			}
+			loaded, err := r.users.SelectByID(ctx, payload.UserID)
+			if err != nil && !errors.Is(err, iamerrors.ErrUserNotFound) {
+				return err
+			}
+			u = loaded
 		}
 		if len(digests) == 0 && payload.SessionID != "" {
-			if sess, err := r.sessions.SelectByID(ctx, payload.SessionID); err == nil {
+			if r.sessions == nil {
+				return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.repo_unavailable"), "session repository is unavailable")
+			}
+			sess, err := r.sessions.SelectByID(ctx, payload.SessionID)
+			if err != nil && !errors.Is(err, iamerrors.ErrSessionNotFound) {
+				return err
+			}
+			if sess != nil {
 				digests = [][]byte{sess.TokenDigest()}
-				if u == nil {
-					u, _ = r.users.SelectByID(ctx, sess.UserID)
+				if u == nil && r.users != nil {
+					loaded, userErr := r.users.SelectByID(ctx, sess.UserID)
+					if userErr != nil && !errors.Is(userErr, iamerrors.ErrUserNotFound) {
+						return userErr
+					}
+					u = loaded
 				}
 			}
 		}
 		return r.projector.ProjectUserSessionsRevoked(ctx, u, digests, recoveryEpoch)
 
 	case entity.OutboxEventUserSessionsRevoked:
+		if r.users == nil {
+			return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.repo_unavailable"), "user repository is unavailable")
+		}
 		u, err := r.users.SelectByID(ctx, ev.AggregateID)
 		if err != nil && !errors.Is(err, iamerrors.ErrUserNotFound) {
 			return err
 		}
-		digests := decodeDigestsHex(payload.TokenDigestsHex)
+		digests, err := decodeDigestsHex(payload.TokenDigestsHex)
+		if err != nil {
+			return fmt.Errorf("decode user sessions revoked digests: %w", err)
+		}
 		return r.projector.ProjectUserSessionsRevoked(ctx, u, digests, recoveryEpoch)
 
 	case entity.OutboxEventUserSecurityChanged, entity.OutboxEventUserPermissionsChanged:
+		if r.users == nil {
+			return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.repo_unavailable"), "user repository is unavailable")
+		}
 		u, err := r.users.SelectByID(ctx, ev.AggregateID)
 		if err != nil {
 			if errors.Is(err, iamerrors.ErrUserNotFound) {
@@ -327,6 +395,9 @@ func (r *Reconciler) applyEvent(ctx context.Context, ev *entity.OutboxEvent, rec
 		return r.projector.ProjectUserSecurityChanged(ctx, u, recoveryEpoch, payload.InvalidateAuthz || ev.EventType == entity.OutboxEventUserPermissionsChanged)
 
 	case entity.OutboxEventRolePermissionsChanged, entity.OutboxEventGroupPermissionsChanged:
+		if r.users == nil {
+			return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.repo_unavailable"), "user repository is unavailable")
+		}
 		for _, uid := range payload.AffectedUserIDs {
 			u, err := r.users.SelectByID(ctx, uid)
 			if err != nil {
@@ -342,22 +413,40 @@ func (r *Reconciler) applyEvent(ctx context.Context, ev *entity.OutboxEvent, rec
 		return nil
 
 	default:
-		return nil
+		return fmt.Errorf("unsupported iam outbox event type %q", ev.EventType)
 	}
 }
 
-func decodeDigestsHex(items []string) [][]byte {
+func (r *Reconciler) effectiveLogger() *slog.Logger {
+	if r != nil && r.logger != nil {
+		return r.logger
+	}
+	return slog.Default()
+}
+
+func (r *Reconciler) effectiveClock() domainservice.Clock {
+	if r != nil && r.clock != nil {
+		return r.clock
+	}
+	return domainservice.SystemClock{}
+}
+
+func decodeDigestsHex(items []string) ([][]byte, error) {
 	if len(items) == 0 {
-		return nil
+		return nil, nil
 	}
 	out := make([][]byte, 0, len(items))
 	for _, s := range items {
 		b, err := hex.DecodeString(s)
-		if err == nil && len(b) > 0 {
-			out = append(out, b)
+		if err != nil {
+			return nil, fmt.Errorf("invalid hex digest: %w", err)
 		}
+		if len(b) == 0 {
+			return nil, errors.New("empty hex digest entry")
+		}
+		out = append(out, b)
 	}
-	return out
+	return out, nil
 }
 
 func computeBackoff(attempt int) time.Duration {

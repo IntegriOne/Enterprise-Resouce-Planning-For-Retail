@@ -35,6 +35,8 @@ message IssuedSession {
   string csrf_token = 3;
 }
 
+// IssueSessionRequest meminta penerbitan sesi stateful bagi pengguna manusia aktif (non-system).
+// Kontrak IAM: target USER_KIND_SYSTEM wajib ditolak dengan PermissionDenied ("system cannot login").
 message IssueSessionRequest {
   string user_id = 1;
   // Nilai true ditolak; status MFA hanya ditetapkan setelah verifikasi kode melalui AuthService.

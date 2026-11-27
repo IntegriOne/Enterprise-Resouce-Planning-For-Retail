@@ -469,3 +469,115 @@ func TestGroupService_RejectsMissingSecurityRuntime(t *testing.T) {
 		t.Fatal("expected error without outbox coordinator")
 	}
 }
+
+type stubGroupScopeVerifier struct {
+	fn    func(context.Context, entity.Scope) error
+	calls int
+}
+
+func (s *stubGroupScopeVerifier) VerifyScope(ctx context.Context, scope entity.Scope) error {
+	s.calls++
+	if s.fn != nil {
+		return s.fn(ctx, scope)
+	}
+	return nil
+}
+
+type countingGroupOutboxRuntime struct {
+	mockSecurityRuntime
+	inserted *int
+}
+
+func (c countingGroupOutboxRuntime) Insert(_ context.Context, _ *entity.OutboxEvent) error {
+	*c.inserted++
+	return nil
+}
+
+// TestGroupService_AssignRoleWithScopeVerifier memastikan verifikasi scope EF berlaku penuh pada penugasan peran grup.
+func TestGroupService_AssignRoleWithScopeVerifier(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	idGen := crypto.NewUUIDGenerator()
+	groupID, _ := idGen.NewUUID()
+	roleID, _ := idGen.NewUUID()
+	targetID, _ := idGen.NewUUID()
+
+	store := newMockGroupStore()
+	store.groups[groupID], _ = entity.NewGroup(groupID, "ef_ops_grp", "EF Ops Group", "Team EF", now)
+	store.roles[roleID], _ = entity.NewRole(roleID, "ef_operator", "EF Operator", "EF ops", "enterprise_foundation", "/identity", 20, false, now)
+
+	outboxCount := 0
+	runtime := countingGroupOutboxRuntime{mockSecurityRuntime: mockSecurityRuntime{store: store}, inserted: &outboxCount}
+	verifier := &stubGroupScopeVerifier{}
+
+	svc, err := group.NewService(group.Dependencies{
+		Transactor:      passthroughTx{},
+		Groups:          store,
+		GroupMembers:    mockMemberRepo{store: store},
+		GroupRoles:      mockGroupRoleRepo{store: store},
+		Roles:           mockRoleRepo{store: store},
+		Users:           mockUserRepo{store: store},
+		SecurityRuntime: runtime,
+		OutboxCoord:     redisstore.NewCoordinator(runtime, nil, idGen, fixedClock{now: now}, nil),
+		Clock:           fixedClock{now: now},
+		IDGen:           idGen,
+		ScopeVerifier:   verifier,
+	})
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+
+	gr, err := svc.AssignRole(context.Background(), group.AssignGroupRoleInput{
+		GroupID: groupID, RoleID: roleID, ScopeType: entity.ScopeTypeVendorParty, ScopeID: &targetID,
+	})
+	if err != nil {
+		t.Fatalf("AssignRole() unexpected error = %v", err)
+	}
+	if gr.Scope.Type != entity.ScopeTypeVendorParty || gr.Scope.ID == nil || *gr.Scope.ID != targetID {
+		t.Fatalf("AssignRole() scope = %+v, want vendor_party/%s", gr.Scope, targetID)
+	}
+	if verifier.calls != 1 || len(store.groupRoles) != 1 || outboxCount != 1 {
+		t.Fatalf("AssignRole() counts verifier=%d rows=%d outbox=%d, want 1/1/1", verifier.calls, len(store.groupRoles), outboxCount)
+	}
+
+	for _, wantErr := range []error{
+		iamerrors.ErrScopeTargetNotFound,
+		iamerrors.ErrScopeTargetNotEligible,
+		iamerrors.ErrScopeOwnerVerificationUnavailable,
+	} {
+		storeFail := newMockGroupStore()
+		storeFail.groups[groupID], _ = entity.NewGroup(groupID, "ef_ops_grp", "EF Ops Group", "Team EF", now)
+		storeFail.roles[roleID], _ = entity.NewRole(roleID, "ef_operator", "EF Operator", "EF ops", "enterprise_foundation", "/identity", 20, false, now)
+
+		failOutbox := 0
+		failRuntime := countingGroupOutboxRuntime{mockSecurityRuntime: mockSecurityRuntime{store: storeFail}, inserted: &failOutbox}
+		failVerifier := &stubGroupScopeVerifier{
+			fn: func(context.Context, entity.Scope) error { return wantErr },
+		}
+		failSvc, err := group.NewService(group.Dependencies{
+			Transactor:      passthroughTx{},
+			Groups:          storeFail,
+			GroupMembers:    mockMemberRepo{store: storeFail},
+			GroupRoles:      mockGroupRoleRepo{store: storeFail},
+			Roles:           mockRoleRepo{store: storeFail},
+			Users:           mockUserRepo{store: storeFail},
+			SecurityRuntime: failRuntime,
+			OutboxCoord:     redisstore.NewCoordinator(failRuntime, nil, idGen, fixedClock{now: now}, nil),
+			Clock:           fixedClock{now: now},
+			IDGen:           idGen,
+			ScopeVerifier:   failVerifier,
+		})
+		if err != nil {
+			t.Fatalf("NewService() error = %v", err)
+		}
+		if _, err := failSvc.AssignRole(context.Background(), group.AssignGroupRoleInput{
+			GroupID: groupID, RoleID: roleID, ScopeType: entity.ScopeTypeOrganizationUnit, ScopeID: &targetID,
+		}); !errors.Is(err, wantErr) {
+			t.Fatalf("AssignRole() error = %v, want %v", err, wantErr)
+		}
+		if len(storeFail.groupRoles) != 0 || failOutbox != 0 {
+			t.Fatalf("AssignRole(%v) must leave 0 rows and 0 outbox events, got rows=%d outbox=%d", wantErr, len(storeFail.groupRoles), failOutbox)
+		}
+	}
+}

@@ -348,6 +348,13 @@ func (r *memCredentialRepo) Update(_ context.Context, c *entity.UserCredential) 
 	return nil
 }
 
+func (r *memCredentialRepo) DeleteByUserID(_ context.Context, userID string) error {
+	r.s.mu.Lock()
+	defer r.s.mu.Unlock()
+	delete(r.s.credentials, userID)
+	return nil
+}
+
 func (r *memCredentialRepo) RecordFailedAttemptAtomic(_ context.Context, userID string, maxAttempts int, lockDuration time.Duration, now time.Time) (int, *time.Time, error) {
 	r.s.mu.Lock()
 	defer r.s.mu.Unlock()
@@ -416,7 +423,9 @@ func (r *memTOTPRepo) UpdateLastUsedStepIfGreater(_ context.Context, factorID st
 			if f.LastUsedStep != nil && step <= *f.LastUsedStep {
 				return false, nil
 			}
-			f.MarkStepUsed(step, updatedAt)
+			if err := f.MarkStepUsed(step, updatedAt); err != nil {
+				return false, err
+			}
 			return true, nil
 		}
 	}

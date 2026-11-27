@@ -77,6 +77,7 @@ message IssuedToken {
   string plaintext_token = 2;
 }
 
+// CreateUserRequest membuat akun IAM baru; untuk USER_KIND_SYSTEM hanya username yang diizinkan (tanpa email dan tanpa password).
 message CreateUserRequest {
   UserKind kind = 1;
   UserStatus status = 2;

@@ -10,10 +10,12 @@ var (
 	ErrRoleInactive = newSentinel(KindForbidden, "iam.role.inactive", "role is inactive")
 	// ErrSystemRoleImmutable menandakan peran bawaan sistem tidak boleh diubah kode atau dihapus sembarangan.
 	ErrSystemRoleImmutable = newSentinel(KindConflict, "iam.role.system_immutable", "system role is immutable")
+	// ErrRoleInUse menandakan peran masih ditugaskan pada pengguna atau grup dan tidak dapat dihapus.
+	ErrRoleInUse = newSentinel(KindConflict, "iam.role.in_use", "role is currently assigned to users or groups")
 	// ErrInvalidRoleCode menandakan format atau panjang kode peran tidak valid.
 	ErrInvalidRoleCode = newSentinel(KindInvalidInput, "iam.role.invalid_code", "invalid role code")
-	// ErrInvalidRedirectPriority menandakan prioritas redirect bernilai negatif.
-	ErrInvalidRedirectPriority = newSentinel(KindInvalidInput, "iam.role.invalid_redirect_priority", "redirect priority must be non-negative")
+	// ErrInvalidRedirectPriority menandakan prioritas redirect berada di luar rentang smallint PostgreSQL (0..32767).
+	ErrInvalidRedirectPriority = newSentinel(KindInvalidInput, "iam.role.invalid_redirect_priority", "redirect priority must be between 0 and 32767")
 
 	// ErrPermissionNotFound menandakan izin atomik tidak ditemukan.
 	ErrPermissionNotFound = newSentinel(KindNotFound, "iam.permission.not_found", "permission not found")
@@ -58,12 +60,14 @@ var (
 	ErrRedirectPathInvalid = newSentinel(KindInvalidInput, "iam.rbac.invalid_redirect_path", "invalid internal redirect path")
 	// ErrPermissionDenied menandakan principal tidak memiliki izin yang disyaratkan pada scope target.
 	ErrPermissionDenied = newSentinel(KindForbidden, "iam.rbac.permission_denied", "permission denied")
+	// ErrRoleUserKindMismatch menandakan peran tidak sesuai dengan kategori akun pengguna target.
+	ErrRoleUserKindMismatch = newSentinel(KindForbidden, "iam.rbac.role_user_kind_mismatch", "role assignment is incompatible with target user kind")
 	// ErrSensitiveReauthRequired menandakan izin sensitif memerlukan autentikasi ulang sesi terkini.
 	ErrSensitiveReauthRequired = newSentinel(KindForbidden, "iam.rbac.sensitive_reauth_required", "sensitive permission requires recent authentication")
+	// ErrScopeTargetNotFound menandakan entitas target scope di layanan pemilik tidak ditemukan.
+	ErrScopeTargetNotFound = newSentinel(KindNotFound, "iam.scope.target_not_found", "scope target not found")
+	// ErrScopeTargetNotEligible menandakan entitas target scope tidak aktif atau belum memenuhi syarat transaksi/peran.
+	ErrScopeTargetNotEligible = newSentinel(KindConflict, "iam.scope.target_not_eligible", "scope target is not active or eligible")
+	// ErrScopeOwnerVerificationUnavailable menandakan layanan pemilik objek scope tidak tersedia untuk memvalidasi target.
+	ErrScopeOwnerVerificationUnavailable = newSentinel(KindUnavailable, "iam.scope.owner_verification_unavailable", "scope owner verification is unavailable")
 )
-
-var ErrScopeOwnerVerificationUnavailable = newSentinel(KindUnavailable, "iam.scope.owner_verification_unavailable", "scope owner verification is unavailable")
-
-var ErrScopeTargetNotEligible = newSentinel(KindConflict, "iam.scope.target_not_eligible", "scope target is not active or eligible")
-
-var ErrScopeTargetNotFound = newSentinel(KindNotFound, "iam.scope.target_not_found", "scope target not found")

@@ -41,23 +41,23 @@ func (noopTx) WithinTransaction(ctx context.Context, fn func(context.Context) er
 }
 
 type mockStore struct {
-	permissions map[string][]entity.ScopedPermission
-	mu          sync.Mutex
-	users       map[string]*entity.User
-	identities  map[string]*entity.UserIdentity
-	credentials map[string]*entity.UserCredential
-	totp        map[string]*entity.UserTOTPFactor
-	recovery    map[string]*entity.UserRecoveryCode
-	tokens      map[string]*entity.UserToken
-	sessions    map[string]*entity.Session
-	roles       map[string][]entity.Role
-	roleDefs    map[string]*entity.Role
-	userRoles   map[string][]*entity.UserRole
+	mu              sync.Mutex
+	users           map[string]*entity.User
+	identities      map[string]*entity.UserIdentity
+	credentials     map[string]*entity.UserCredential
+	totp            map[string]*entity.UserTOTPFactor
+	recovery        map[string]*entity.UserRecoveryCode
+	tokens          map[string]*entity.UserToken
+	sessions        map[string]*entity.Session
+	roles           map[string][]entity.Role
+	permissions     map[string][]entity.ScopedPermission
+	roleDefs        map[string]*entity.Role
+	userRoles       map[string][]*entity.UserRole
+	findUsernameErr error
 }
 
 func newMockStore() *mockStore {
 	return &mockStore{
-		permissions: make(map[string][]entity.ScopedPermission),
 		users:       make(map[string]*entity.User),
 		identities:  make(map[string]*entity.UserIdentity),
 		credentials: make(map[string]*entity.UserCredential),
@@ -66,42 +66,20 @@ func newMockStore() *mockStore {
 		tokens:      make(map[string]*entity.UserToken),
 		sessions:    make(map[string]*entity.Session),
 		roles:       make(map[string][]entity.Role),
+		permissions: make(map[string][]entity.ScopedPermission),
 		roleDefs:    make(map[string]*entity.Role),
 		userRoles:   make(map[string][]*entity.UserRole),
 	}
 }
 
-type mockEmailSender struct {
-	mu   sync.Mutex
-	sent []domainservice.EmailMessage
-}
-
-func (m *mockEmailSender) ProviderName() string { return "mock" }
-
-func (m *mockEmailSender) Send(_ context.Context, msg domainservice.EmailMessage) (*domainservice.EmailSendResult, error) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.sent = append(m.sent, msg)
-	return &domainservice.EmailSendResult{Provider: "mock", MessageID: "mock-msg-id"}, nil
-}
-
-func (m *mockEmailSender) Messages() []domainservice.EmailMessage {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	out := make([]domainservice.EmailMessage, len(m.sent))
-	copy(out, m.sent)
-	return out
-}
-
 type testHarness struct {
-	store       *mockStore
-	clock       *mutableClock
-	idGen       *crypto.UUIDGenerator
-	tokGen      *crypto.OpaqueTokenGenerator
-	totpProv    *totp.RFC6238Provider
-	sessSvc     *session.Service
-	userSvc     *user.Service
-	emailSender *mockEmailSender
+	store    *mockStore
+	clock    *mutableClock
+	idGen    *crypto.UUIDGenerator
+	tokGen   *crypto.OpaqueTokenGenerator
+	totpProv *totp.RFC6238Provider
+	sessSvc  *session.Service
+	userSvc  *user.Service
 }
 
 func newTestHarness(t interface{ Fatalf(string, ...any) }) *testHarness {
@@ -311,6 +289,12 @@ func (r *mockIdentityRepo) FindUserIdentityByEmailKind(ctx context.Context, emai
 	return r.SelectByKindAndValue(ctx, entity.IdentityKindEmail, norm)
 }
 func (r *mockIdentityRepo) FindUserIdentityByUsernameKind(ctx context.Context, username string) (*entity.UserIdentity, error) {
+	r.s.mu.Lock()
+	injectedErr := r.s.findUsernameErr
+	r.s.mu.Unlock()
+	if injectedErr != nil {
+		return nil, injectedErr
+	}
 	norm, err := entity.ValidateUsername(username)
 	if err != nil {
 		return nil, err
@@ -438,6 +422,12 @@ func (r *mockCredentialRepo) Update(_ context.Context, c *entity.UserCredential)
 		return iamerrors.ErrCredentialNotFound
 	}
 	r.s.credentials[c.UserID] = cloneCred(c)
+	return nil
+}
+func (r *mockCredentialRepo) DeleteByUserID(_ context.Context, userID string) error {
+	r.s.mu.Lock()
+	defer r.s.mu.Unlock()
+	delete(r.s.credentials, userID)
 	return nil
 }
 func (r *mockCredentialRepo) RecordFailedAttemptAtomic(_ context.Context, userID string, maxAttempts int, lockDuration time.Duration, now time.Time) (int, *time.Time, error) {

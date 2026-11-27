@@ -14,6 +14,10 @@ var (
 	ErrUserDisabled = newSentinel(KindForbidden, "iam.user.disabled", "user account is disabled")
 	// ErrUserDeleted menandakan akun pengguna sudah dihapus secara lunak.
 	ErrUserDeleted = newSentinel(KindConflict, "iam.user.deleted", "user account has been deleted")
+	// ErrSystemUserInteractiveForbidden menandakan akun layanan otomasi system dilarang memakai autentikasi maupun kredensial manusia interaktif.
+	ErrSystemUserInteractiveForbidden = newSentinel(KindForbidden, "iam.user.system_interactive_forbidden", "system automation account cannot use interactive human authentication")
+	// ErrSystemCannotLogin menandakan akun layanan otomasi system dilarang keras melakukan login atau menerbitkan sesi login dalam kondisi apa pun.
+	ErrSystemCannotLogin = newSentinel(KindForbidden, "iam.user.system_cannot_login", "system cannot login")
 
 	// ErrInvalidDisplayName menandakan nama tampilan kosong atau melebihi batas panjang.
 	ErrInvalidDisplayName = newSentinel(KindInvalidInput, "iam.user.invalid_display_name", "invalid display name")

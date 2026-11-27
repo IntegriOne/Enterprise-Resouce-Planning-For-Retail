@@ -25,7 +25,7 @@ import (
 func wireIAMServices(gormDB *gorm.DB, cfg *config.Config, logger *slog.Logger) (*services.Registry, error) {
 	repos, err := repository.New(gormDB)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("wire iam repositories: %w", err)
 	}
 
 	appEnv := ""
@@ -34,15 +34,15 @@ func wireIAMServices(gormDB *gorm.DB, cfg *config.Config, logger *slog.Logger) (
 	}
 	secCfg, err := config.LoadSecurity(appEnv)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("load iam security config: %w", err)
 	}
 
 	reg, err := services.NewRegistryFromConfig(repos, secCfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("build iam service registry: %w", err)
 	}
 	if err := reg.Validate(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("validate iam service registry: %w", err)
 	}
 
 	if logger != nil {
@@ -198,10 +198,11 @@ func wireGRPCServer(cfg *config.Config, reg *services.Registry, logger *slog.Log
 
 	srv := iamgrpc.NewServer(cfg, logger)
 	if err := handler.RegisterAll(srv.GRPCServer(), reg, logger); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("register iam grpc handlers: %w", err)
 	}
 	return srv, nil
 }
+
 func wrapOptionalClose(action string, err error) error {
 	if err == nil {
 		return nil

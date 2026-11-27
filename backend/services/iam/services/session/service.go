@@ -469,7 +469,7 @@ func parseOptionalIP(raw string) (*netip.Addr, error) {
 	}
 	parsed, err := netip.ParseAddr(trimmed)
 	if err != nil {
-		return nil, iamerrors.WithField(iamerrors.ErrInvalidIPAddress, "ip_address", err.Error())
+		return nil, iamerrors.WithField(iamerrors.ErrInvalidIPAddress, "ip_address", iamerrors.ErrInvalidIPAddress.Message)
 	}
 	unmapped := parsed.Unmap()
 	return &unmapped, nil
@@ -493,7 +493,7 @@ func (s *Service) ensureSessionOwnerActive(ctx context.Context, sess *entity.Ses
 		}
 		return err
 	}
-	if err := u.CanAuthenticate(); err != nil {
+	if err := u.CanAuthenticate(); err != nil || u.Kind == entity.UserKindSystem {
 		return iamerrors.ErrUnauthorized
 	}
 	return nil

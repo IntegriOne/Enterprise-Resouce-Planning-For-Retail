@@ -162,24 +162,24 @@ func (h *Argon2idHasher) Verify(password, encodedHash string) (bool, error) {
 func decodeArgon2idPHC(encoded string) (Argon2Params, []byte, []byte, error) {
 	parts := strings.Split(encoded, "$")
 	if len(parts) != 6 || parts[0] != "" || parts[1] != "argon2id" {
-		return Argon2Params{}, nil, nil, iamerrors.NewValidation("password_hash", iamerrors.Code("iam.crypto.invalid_phc_format"), "invalid argon2id hash format")
+		return Argon2Params{}, nil, nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.invalid_phc_format"), "invalid argon2id hash format")
 	}
 
 	versionPart := strings.TrimPrefix(parts[2], "v=")
 	version, err := strconv.Atoi(versionPart)
 	if err != nil || version != argon2.Version {
-		return Argon2Params{}, nil, nil, iamerrors.NewValidation("password_hash", iamerrors.Code("iam.crypto.unsupported_argon2_version"), "unsupported argon2id version")
+		return Argon2Params{}, nil, nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.unsupported_argon2_version"), "unsupported argon2id version")
 	}
 
 	var params Argon2Params
 	for _, kv := range strings.Split(parts[3], ",") {
 		pair := strings.SplitN(kv, "=", 2)
 		if len(pair) != 2 {
-			return Argon2Params{}, nil, nil, iamerrors.NewValidation("password_hash", iamerrors.Code("iam.crypto.invalid_phc_params"), "invalid argon2id parameters")
+			return Argon2Params{}, nil, nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.invalid_phc_params"), "invalid argon2id parameters")
 		}
 		val, parseErr := strconv.ParseUint(pair[1], 10, 32)
 		if parseErr != nil {
-			return Argon2Params{}, nil, nil, iamerrors.NewValidation("password_hash", iamerrors.Code("iam.crypto.invalid_phc_params"), "invalid argon2id parameter value")
+			return Argon2Params{}, nil, nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.invalid_phc_params"), "invalid argon2id parameter value")
 		}
 		switch pair[0] {
 		case "m":
@@ -188,27 +188,27 @@ func decodeArgon2idPHC(encoded string) (Argon2Params, []byte, []byte, error) {
 			params.Iterations = uint32(val)
 		case "p":
 			if val > 255 {
-				return Argon2Params{}, nil, nil, iamerrors.NewValidation("password_hash", iamerrors.Code("iam.crypto.invalid_phc_params"), "argon2id parallelism overflow")
+				return Argon2Params{}, nil, nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.invalid_phc_params"), "argon2id parallelism overflow")
 			}
 			params.Parallelism = uint8(val)
 		default:
-			return Argon2Params{}, nil, nil, iamerrors.NewValidation("password_hash", iamerrors.Code("iam.crypto.invalid_phc_params"), "unknown argon2id parameter")
+			return Argon2Params{}, nil, nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.invalid_phc_params"), "unknown argon2id parameter")
 		}
 	}
 
 	salt, err := base64.RawStdEncoding.DecodeString(parts[4])
 	if err != nil {
-		return Argon2Params{}, nil, nil, iamerrors.Wrap(err, iamerrors.KindInvalidInput, iamerrors.Code("iam.crypto.invalid_phc_salt"), "failed to decode argon2id salt")
+		return Argon2Params{}, nil, nil, iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.invalid_phc_salt"), "failed to decode argon2id salt")
 	}
 	expectedHash, err := base64.RawStdEncoding.DecodeString(parts[5])
 	if err != nil {
-		return Argon2Params{}, nil, nil, iamerrors.Wrap(err, iamerrors.KindInvalidInput, iamerrors.Code("iam.crypto.invalid_phc_digest"), "failed to decode argon2id digest")
+		return Argon2Params{}, nil, nil, iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.invalid_phc_digest"), "failed to decode argon2id digest")
 	}
 
 	params.SaltLength = uint32(len(salt))
 	params.KeyLength = uint32(len(expectedHash))
 	if err := validateArgon2Params(params); err != nil {
-		return Argon2Params{}, nil, nil, err
+		return Argon2Params{}, nil, nil, iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.CodeOf(err), "stored argon2id parameters are invalid")
 	}
 	return params, salt, expectedHash, nil
 }

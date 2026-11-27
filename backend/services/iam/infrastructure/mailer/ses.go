@@ -88,6 +88,9 @@ func (s *SESSender) ProviderName() string {
 
 // Send memanggil operasi sesv2 SendEmail berformat UTF-8 untuk pesan teks maupun HTML.
 func (s *SESSender) Send(ctx context.Context, msg domainservice.EmailMessage) (*domainservice.EmailSendResult, error) {
+	if s == nil || s.client == nil {
+		return nil, errors.New("ses sender is not initialized")
+	}
 	toAddr, err := extractEnvelopeAddress(msg.To)
 	if err != nil {
 		return nil, &PermanentError{Err: err}
@@ -149,9 +152,13 @@ func (s *SESSender) Send(ctx context.Context, msg domainservice.EmailMessage) (*
 		return nil, classifySESError(err)
 	}
 
+	msgID := ""
+	if out != nil {
+		msgID = aws.ToString(out.MessageId)
+	}
 	return &domainservice.EmailSendResult{
 		Provider:  string(ProviderSES),
-		MessageID: aws.ToString(out.MessageId),
+		MessageID: msgID,
 	}, nil
 }
 
@@ -175,8 +182,7 @@ func sanitizeSESTagValue(v string) string {
 }
 
 func classifySESError(err error) error {
-	var apiErr smithy.APIError
-	if errors.As(err, &apiErr) {
+	if apiErr, ok := errors.AsType[smithy.APIError](err); ok {
 		code := apiErr.ErrorCode()
 		switch code {
 		case "MessageRejected", "BadRequestException", "MailFromDomainNotVerifiedException", "InvalidParameterValue":

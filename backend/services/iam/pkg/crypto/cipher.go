@@ -163,7 +163,7 @@ func (c *AESGCMKeyringCipher) Decrypt(ciphertext []byte, keyVersion int16) ([]by
 	}
 	key, ok := c.keys[keyVersion]
 	if !ok {
-		return nil, iamerrors.New(iamerrors.KindUnauthorized, iamerrors.Code("iam.crypto.unknown_key_version"), "unknown totp encryption key version")
+		return nil, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.unknown_key_version"), "unknown totp encryption key version")
 	}
 
 	block, err := aes.NewCipher(key)
@@ -187,7 +187,7 @@ func (c *AESGCMKeyringCipher) Decrypt(ciphertext []byte, keyVersion int16) ([]by
 
 	plaintext, err := gcm.Open(nil, nonce, payload, aad[:])
 	if err != nil {
-		return nil, iamerrors.Wrap(err, iamerrors.KindUnauthorized, iamerrors.Code("iam.crypto.decryption_failed"), "failed to decrypt protected secret")
+		return nil, iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.Code("iam.crypto.decryption_failed"), "failed to decrypt protected secret")
 	}
 	return bytes.Clone(plaintext), nil
 }

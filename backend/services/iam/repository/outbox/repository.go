@@ -496,7 +496,7 @@ func (r *Repository) SelectActiveSessionsForRecovery(ctx context.Context, now ti
 			pgstore.NormalizeLocalTime(row.CreatedAt),
 		)
 		if err != nil {
-			continue
+			return nil, iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.corrupted_session_row"), "stored active session row is invalid")
 		}
 		sess.SetSecurityMetadata(row.Generation, row.CSRFKeyVersion)
 		out = append(out, sess)

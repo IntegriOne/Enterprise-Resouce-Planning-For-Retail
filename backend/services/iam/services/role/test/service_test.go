@@ -610,3 +610,130 @@ func TestRoleService_RejectsMissingSecurityRuntime(t *testing.T) {
 		t.Fatal("expected error without outbox coordinator")
 	}
 }
+
+type stubScopeVerifier struct {
+	fn    func(context.Context, entity.Scope) error
+	calls int
+}
+
+func (s *stubScopeVerifier) VerifyScope(ctx context.Context, scope entity.Scope) error {
+	s.calls++
+	if s.fn != nil {
+		return s.fn(ctx, scope)
+	}
+	return nil
+}
+
+type countingOutboxRuntime struct {
+	mockSecurityRuntime
+	inserted *int
+}
+
+func (c countingOutboxRuntime) Insert(_ context.Context, _ *entity.OutboxEvent) error {
+	*c.inserted++
+	return nil
+}
+
+// TestRoleService_AssignToUserWithScopeVerifier memastikan verifikasi scope EF mengeksekusi penugasan yang sah dan menolak target invalid tanpa penulisan DB atau outbox.
+func TestRoleService_AssignToUserWithScopeVerifier(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	idGen := crypto.NewUUIDGenerator()
+	userID, _ := idGen.NewUUID()
+	roleID, _ := idGen.NewUUID()
+	targetID, _ := idGen.NewUUID()
+
+	validKinds := []entity.ScopeType{
+		entity.ScopeTypeLegalEntity,
+		entity.ScopeTypeOrganizationUnit,
+		entity.ScopeTypeFacility,
+		entity.ScopeTypeSupplierParty,
+		entity.ScopeTypeVendorParty,
+	}
+	for _, st := range validKinds {
+		store := newMockRoleStore()
+		store.users[userID], _ = entity.NewUser(userID, entity.UserKindEmployee, entity.UserStatusActive, "Operator", now)
+		store.roles[roleID], _ = entity.NewRole(roleID, "ef_operator", "EF Operator", "EF ops", "enterprise_foundation", "/identity", 20, false, now)
+
+		outboxCount := 0
+		runtime := countingOutboxRuntime{mockSecurityRuntime: mockSecurityRuntime{store: store}, inserted: &outboxCount}
+		verifier := &stubScopeVerifier{}
+
+		svc, err := role.NewService(role.Dependencies{
+			Transactor:      &passthroughTx{},
+			Roles:           store,
+			RolePermissions: mockRolePermRepo{store: store},
+			Permissions:     mockPermRepo{store: store},
+			Users:           mockUserRepo{store: store},
+			UserRoles:       mockUserRoleRepo{store: store},
+			SecurityRuntime: runtime,
+			OutboxCoord:     redisstore.NewCoordinator(runtime, nil, idGen, fixedClock{now: now}, nil),
+			Clock:           fixedClock{now: now},
+			IDGen:           idGen,
+			ScopeVerifier:   verifier,
+		})
+		if err != nil {
+			t.Fatalf("NewService() error = %v", err)
+		}
+
+		ur, err := svc.AssignToUser(context.Background(), role.AssignUserRoleInput{
+			UserID: userID, RoleID: roleID, ScopeType: st, ScopeID: &targetID,
+		})
+		if err != nil {
+			t.Fatalf("AssignToUser(%s) unexpected error = %v", st, err)
+		}
+		if ur.Scope.Type != st || ur.Scope.ID == nil || *ur.Scope.ID != targetID {
+			t.Fatalf("AssignToUser(%s) scope = %+v, want %s", st, ur.Scope, targetID)
+		}
+		if verifier.calls != 1 || len(store.userRole) != 1 || outboxCount != 1 {
+			t.Fatalf("AssignToUser(%s) counts verifier=%d rows=%d outbox=%d, want 1/1/1", st, verifier.calls, len(store.userRole), outboxCount)
+		}
+	}
+
+	rejectCases := []struct {
+		name    string
+		wantErr error
+	}{
+		{name: "not found", wantErr: iamerrors.ErrScopeTargetNotFound},
+		{name: "not eligible", wantErr: iamerrors.ErrScopeTargetNotEligible},
+		{name: "unavailable", wantErr: iamerrors.ErrScopeOwnerVerificationUnavailable},
+	}
+	for _, tc := range rejectCases {
+		store := newMockRoleStore()
+		store.users[userID], _ = entity.NewUser(userID, entity.UserKindEmployee, entity.UserStatusActive, "Operator", now)
+		store.roles[roleID], _ = entity.NewRole(roleID, "ef_operator", "EF Operator", "EF ops", "enterprise_foundation", "/identity", 20, false, now)
+
+		outboxCount := 0
+		runtime := countingOutboxRuntime{mockSecurityRuntime: mockSecurityRuntime{store: store}, inserted: &outboxCount}
+		verifier := &stubScopeVerifier{
+			fn: func(context.Context, entity.Scope) error { return tc.wantErr },
+		}
+
+		svc, err := role.NewService(role.Dependencies{
+			Transactor:      &passthroughTx{},
+			Roles:           store,
+			RolePermissions: mockRolePermRepo{store: store},
+			Permissions:     mockPermRepo{store: store},
+			Users:           mockUserRepo{store: store},
+			UserRoles:       mockUserRoleRepo{store: store},
+			SecurityRuntime: runtime,
+			OutboxCoord:     redisstore.NewCoordinator(runtime, nil, idGen, fixedClock{now: now}, nil),
+			Clock:           fixedClock{now: now},
+			IDGen:           idGen,
+			ScopeVerifier:   verifier,
+		})
+		if err != nil {
+			t.Fatalf("NewService() error = %v", err)
+		}
+
+		if _, err := svc.AssignToUser(context.Background(), role.AssignUserRoleInput{
+			UserID: userID, RoleID: roleID, ScopeType: entity.ScopeTypeFacility, ScopeID: &targetID,
+		}); !errors.Is(err, tc.wantErr) {
+			t.Fatalf("AssignToUser(%s) error = %v, want %v", tc.name, err, tc.wantErr)
+		}
+		if len(store.userRole) != 0 || outboxCount != 0 {
+			t.Fatalf("AssignToUser(%s) must leave 0 rows and 0 outbox events, got rows=%d outbox=%d", tc.name, len(store.userRole), outboxCount)
+		}
+	}
+}

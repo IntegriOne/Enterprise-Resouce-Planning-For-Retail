@@ -91,7 +91,7 @@ func MustLocalNow(now time.Time) time.Time {
 func ValidateUUIDParam(field, raw string) (string, error) {
 	trimmed := strings.ToLower(strings.TrimSpace(raw))
 	if err := entity.ValidateUUID(field, trimmed); err != nil {
-		return "", iamerrors.WithField(err, field, "must be a valid uuid")
+		return "", err
 	}
 	return trimmed, nil
 }

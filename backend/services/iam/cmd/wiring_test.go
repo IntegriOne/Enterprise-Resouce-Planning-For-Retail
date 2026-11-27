@@ -99,3 +99,19 @@ func TestWireGRPCServer_RegistersAllIAMServices(t *testing.T) {
 		}
 	}
 }
+
+func TestConfig_EFScopeVerifierValidation(t *testing.T) {
+	cfg := &config.Config{
+		AppEnv:                    "development",
+		InternalGatewayHMACSecret: "0123456789abcdef0123456789abcdef",
+		EFGRPCEnabled:             true,
+		EFGRPCTarget:              "",
+	}
+	if err := cfg.ValidateRuntimeStrict(config.SecurityConfig{}); err == nil {
+		t.Fatal("expected fail-closed validation error when IAM_EF_GRPC_ENABLED=true without target")
+	}
+	cfg.EFGRPCTarget = "enterprise-foundation:9002"
+	if err := cfg.ValidateRuntimeStrict(config.SecurityConfig{}); err != nil {
+		t.Fatalf("expected valid EF gRPC config, got %v", err)
+	}
+}

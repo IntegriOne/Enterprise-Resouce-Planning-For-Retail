@@ -25,7 +25,6 @@ import (
 
 // SecurityOptions mengonfigurasi adaptor kriptografi, keyring 2FA/CSRF, kebijakan lockout, allowlist rute redirect, dan proyeksi Redis IAM.
 type SecurityOptions struct {
-	ScopeVerifier         domainservice.ScopeOwnerVerifier
 	TOTPIssuer            string
 	TOTPActiveKeyVersion  int16
 	TOTPKeyring           map[int16][]byte
@@ -45,6 +44,7 @@ type SecurityOptions struct {
 	TOTPProvider   domainservice.TOTPProvider
 	CSRFDeriver    domainservice.CSRFDeriver
 	EmailSender    domainservice.EmailSender
+	ScopeVerifier  domainservice.ScopeOwnerVerifier
 	PublicBaseURL  string
 
 	RedisClient *redis.Client
@@ -54,12 +54,12 @@ type SecurityOptions struct {
 
 // Registry menyatukan seluruh layanan domain aplikasi IAM beserta koordinator outbox dan worker rekonsiliasi Redis.
 type Registry struct {
-	EmployeeProvisioning *provisioning.Service
 	Permissions          *permission.Service
 	Roles                *role.Service
 	Groups               *group.Service
 	Sessions             *session.Service
 	Users                *user.Service
+	EmployeeProvisioning *provisioning.Service
 
 	Projector       *redisstore.Projector
 	OutboxCoord     *redisstore.Coordinator
@@ -174,6 +174,7 @@ func NewRegistry(repos *iamrepo.Registry, opts SecurityOptions) (*Registry, erro
 		Redirect:        redirectResolver,
 		OutboxCoord:     outboxCoord,
 		Projector:       projector,
+		ScopeVerifier:   opts.ScopeVerifier,
 	})
 	if err != nil {
 		return nil, err
@@ -191,6 +192,7 @@ func NewRegistry(repos *iamrepo.Registry, opts SecurityOptions) (*Registry, erro
 		IDGen:           idGen,
 		OutboxCoord:     outboxCoord,
 		Projector:       projector,
+		ScopeVerifier:   opts.ScopeVerifier,
 	})
 	if err != nil {
 		return nil, err
@@ -235,9 +237,9 @@ func NewRegistry(repos *iamrepo.Registry, opts SecurityOptions) (*Registry, erro
 	}
 
 	userSvc, err := user.NewService(user.Dependencies{
-		EmployeeProvisioning: repos.EmployeeProvisioning,
 		Transactor:           repos.Transactor,
 		Users:                repos.Users,
+		EmployeeProvisioning: repos.EmployeeProvisioning,
 		Identities:           repos.UserIdentities,
 		Credentials:          repos.UserCredentials,
 		TOTPFactors:          repos.UserTOTPFactors,
@@ -266,12 +268,12 @@ func NewRegistry(repos *iamrepo.Registry, opts SecurityOptions) (*Registry, erro
 	}
 
 	reg := &Registry{
-		EmployeeProvisioning: provisioning.NewService(repos.EmployeeProvisioning, repos.Users, repos.Roles, opts.ScopeVerifier, clock),
 		Permissions:          permSvc,
 		Roles:                roleSvc,
 		Groups:               groupSvc,
 		Sessions:             sessSvc,
 		Users:                userSvc,
+		EmployeeProvisioning: provisioning.NewService(repos.EmployeeProvisioning, repos.Users, repos.Roles, opts.ScopeVerifier, clock),
 		Projector:            projector,
 		OutboxCoord:          outboxCoord,
 		Reconciler:           reconciler,

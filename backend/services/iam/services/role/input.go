@@ -23,6 +23,7 @@ type Dependencies struct {
 	Redirect        domainservice.RedirectResolver
 	OutboxCoord     *redisstore.Coordinator
 	Projector       domainservice.RuntimeSecurityProjector
+	ScopeVerifier   domainservice.ScopeOwnerVerifier
 }
 
 // CreateInput membawa data pembentukan peran RBAC baru.

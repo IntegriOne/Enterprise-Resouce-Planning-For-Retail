@@ -24,37 +24,51 @@ func (s *Service) AuthenticatePassword(ctx context.Context, in AuthenticatePassw
 	if strings.TrimSpace(in.Identifier) == "" {
 		return nil, iamerrors.WithField(iamerrors.ErrInvalidInput, "identifier", "login identifier is required")
 	}
+
+	kind, normalizedValue, parseErr := parseLoginIdentifier(in.Identifier)
+	var ident *entity.UserIdentity
+	var u *entity.User
+	if parseErr == nil {
+		var identErr error
+		if kind == entity.IdentityKindEmail {
+			ident, identErr = s.identities.FindUserIdentityByEmailKind(ctx, normalizedValue)
+		} else {
+			ident, identErr = s.identities.FindUserIdentityByUsernameKind(ctx, normalizedValue)
+		}
+		if identErr != nil && !errors.Is(identErr, iamerrors.ErrIdentityNotFound) {
+			return nil, identErr
+		}
+		if ident != nil {
+			loadedUser, uErr := s.users.SelectByID(ctx, ident.UserID)
+			if uErr != nil && !errors.Is(uErr, iamerrors.ErrUserNotFound) {
+				return nil, uErr
+			}
+			u = loadedUser
+		}
+	}
+
+	// Tolak akun otomasi system SEBELUM validasi kata sandi kosong agar upaya login memakai auto_system_iam
+	// (baik kata sandi kosong maupun terisi) selalu mengembalikan "system cannot login".
+	if u != nil && u.Kind == entity.UserKindSystem {
+		if in.Password != "" {
+			s.verifyDummyPassword(in.Password)
+		}
+		if s.logger != nil {
+			s.logger.Warn("authentication rejected",
+				slog.String("reason", "system_cannot_login"),
+				slog.String("user_id", u.ID),
+				slog.Bool("empty_password", in.Password == ""),
+			)
+		}
+		return nil, iamerrors.ErrSystemCannotLogin
+	}
+
 	if in.Password == "" {
 		return nil, iamerrors.WithField(iamerrors.ErrInvalidInput, "password", "password is required")
 	}
-
-	kind, normalizedValue, err := parseLoginIdentifier(in.Identifier)
-	if err != nil {
+	if parseErr != nil || ident == nil || u == nil {
 		s.verifyDummyPassword(in.Password)
 		return nil, iamerrors.ErrInvalidCredentials
-	}
-
-	var ident *entity.UserIdentity
-	if kind == entity.IdentityKindEmail {
-		ident, err = s.identities.FindUserIdentityByEmailKind(ctx, normalizedValue)
-	} else {
-		ident, err = s.identities.FindUserIdentityByUsernameKind(ctx, normalizedValue)
-	}
-	if err != nil {
-		if errors.Is(err, iamerrors.ErrIdentityNotFound) {
-			s.verifyDummyPassword(in.Password)
-			return nil, iamerrors.ErrInvalidCredentials
-		}
-		return nil, err
-	}
-
-	u, err := s.users.SelectByID(ctx, ident.UserID)
-	if err != nil {
-		if errors.Is(err, iamerrors.ErrUserNotFound) {
-			s.verifyDummyPassword(in.Password)
-			return nil, iamerrors.ErrInvalidCredentials
-		}
-		return nil, err
 	}
 	if u.IsDeleted() {
 		s.verifyDummyPassword(in.Password)
@@ -469,6 +483,9 @@ func (s *Service) RequestPasswordReset(ctx context.Context, email string) (*Issu
 	if err != nil {
 		return nil, err
 	}
+	if u.Kind == entity.UserKindSystem {
+		return nil, iamerrors.ErrSystemUserInteractiveForbidden
+	}
 	if err := u.CanAuthenticate(); err != nil {
 		return nil, err
 	}
@@ -515,9 +532,9 @@ func (s *Service) ConfirmPasswordReset(ctx context.Context, in ConfirmPasswordRe
 		}
 		return err
 	}
-	if err := u.CanAuthenticate(); err != nil {
+	if err := u.CanAuthenticate(); err != nil || u.Kind == entity.UserKindSystem {
 		if s.logger != nil {
-			s.logger.Warn("password reset confirmation rejected", slog.String("reason", "user_status"), slog.String("user_id", u.ID), slog.String("status", u.Status.String()))
+			s.logger.Warn("password reset confirmation rejected", slog.String("reason", "user_status_or_kind"), slog.String("user_id", u.ID), slog.String("status", u.Status.String()), slog.String("kind", u.Kind.String()))
 		}
 		return iamerrors.ErrTokenNotFound
 	}
@@ -537,6 +554,12 @@ func (s *Service) applyNewPassword(
 	newPassword string,
 	consumeTokenID *string,
 ) (int64, error) {
+	if u == nil {
+		return 0, iamerrors.ErrUserNotFound
+	}
+	if u.Kind == entity.UserKindSystem {
+		return 0, iamerrors.ErrSystemUserInteractiveForbidden
+	}
 	idents, err := s.identities.SelectByUserID(ctx, u.ID)
 	if err != nil {
 		return 0, err
@@ -606,6 +629,9 @@ func (s *Service) loadValidMFAChallengeUser(ctx context.Context, rawChallenge st
 	if err != nil {
 		return nil, nil, time.Time{}, err
 	}
+	if u.Kind == entity.UserKindSystem {
+		return nil, nil, time.Time{}, iamerrors.ErrSystemUserInteractiveForbidden
+	}
 	if err := u.CanAuthenticate(); err != nil {
 		return nil, nil, time.Time{}, err
 	}
@@ -640,7 +666,9 @@ func isAmbiguousMFAChallengeError(err error) bool {
 		errors.Is(err, iamerrors.ErrUserDeleted) ||
 		errors.Is(err, iamerrors.ErrUserSuspended) ||
 		errors.Is(err, iamerrors.ErrUserDisabled) ||
-		errors.Is(err, iamerrors.ErrUserInactive)
+		errors.Is(err, iamerrors.ErrUserInactive) ||
+		errors.Is(err, iamerrors.ErrSystemCannotLogin) ||
+		errors.Is(err, iamerrors.ErrSystemUserInteractiveForbidden)
 }
 
 func (s *Service) finalizeAuthenticatedLogin(
@@ -651,6 +679,9 @@ func (s *Service) finalizeAuthenticatedLogin(
 	userAgent string,
 	now time.Time,
 ) (*session.IssuedSession, string, error) {
+	if err := u.CanAuthenticate(); err != nil {
+		return nil, "", err
+	}
 	u.RecordLogin(now)
 	if err := s.users.UpdateLastLogin(ctx, u.ID, now); err != nil {
 		return nil, "", err

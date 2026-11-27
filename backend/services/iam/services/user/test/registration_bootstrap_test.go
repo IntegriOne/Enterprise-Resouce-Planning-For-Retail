@@ -205,11 +205,11 @@ func TestUserService_CustomerRegisterVerifyResendAndPendingEmailLifecycle(t *tes
 	}
 }
 
-func TestBootstrapSystemPrincipalAndRBAC_Idempotent(t *testing.T) {
+func TestBootstrapPrincipalsAndRBAC_Idempotent(t *testing.T) {
 	t.Parallel()
 
 	// Uji struktur bootstrap gagal-tertutup dengan dependensi nil.
-	if err := services.BootstrapSystemPrincipalAndRBAC(context.Background(), nil, nil, config.SystemBootstrapConfig{}, nil); err == nil {
+	if err := services.BootstrapPrincipalsAndRBAC(context.Background(), nil, nil, config.BootstrapConfig{}, nil); err == nil {
 		t.Fatal("expected error for nil bootstrap dependencies")
 	}
 
@@ -280,11 +280,11 @@ func TestUserService_ResendValidationEmailToken_Case1PendingAndVerified(t *testi
 		t.Parallel()
 		h := newTestHarness(t)
 		u, err := h.userSvc.CreateUser(ctx, user.CreateUserInput{
-			Kind:                   entity.UserKindSystem,
+			Kind:                   entity.UserKindEmployee,
 			Status:                 entity.UserStatusActive,
-			DisplayName:            "Username Only",
-			Username:               "system.only",
-			Password:               "VaultSys#2026!B",
+			DisplayName:            "Staff Identity",
+			Username:               "staff.only",
+			Password:               "VaultStrong#2026!Q",
 			MarkIdentitiesVerified: true,
 		})
 		if err != nil {
@@ -296,6 +296,62 @@ func TestUserService_ResendValidationEmailToken_Case1PendingAndVerified(t *testi
 		})
 		if !errors.Is(err, iamerrors.ErrPendingEmailNotFound) || errors.Is(err, iamerrors.ErrEmailAlreadyVerified) {
 			t.Fatalf("ResendValidationEmailToken(username-only) error = %v, want ErrPendingEmailNotFound", err)
+		}
+	})
+
+	t.Run("system automation account rejects interactive credentials and allows passwordless creation", func(t *testing.T) {
+		t.Parallel()
+		h := newTestHarness(t)
+		if _, err := h.userSvc.CreateUser(ctx, user.CreateUserInput{
+			Kind:        entity.UserKindSystem,
+			Status:      entity.UserStatusActive,
+			DisplayName: "Bad System With Password",
+			Username:    "bad.sys.pass",
+			Password:    "VaultSys#2026!B",
+		}); !errors.Is(err, iamerrors.ErrSystemUserInteractiveForbidden) {
+			t.Fatalf("CreateUser(system+password) error = %v, want ErrSystemUserInteractiveForbidden", err)
+		}
+		if _, err := h.userSvc.CreateUser(ctx, user.CreateUserInput{
+			Kind:        entity.UserKindSystem,
+			Status:      entity.UserStatusActive,
+			DisplayName: "Bad System With Email",
+			Username:    "bad.sys.email",
+			Email:       "badsys@integrione.local",
+		}); !errors.Is(err, iamerrors.ErrSystemUserInteractiveForbidden) {
+			t.Fatalf("CreateUser(system+email) error = %v, want ErrSystemUserInteractiveForbidden", err)
+		}
+
+		sysUser, err := h.userSvc.CreateUser(ctx, user.CreateUserInput{
+			Kind:        entity.UserKindSystem,
+			Status:      entity.UserStatusActive,
+			DisplayName: "Auto System Demo",
+			Username:    "auto_system_demo",
+		})
+		if err != nil {
+			t.Fatalf("CreateUser(passwordless system) error = %v", err)
+		}
+		for _, badPass := range []string{"", "Anything#2026!A"} {
+			if _, err := h.userSvc.AuthenticatePassword(ctx, user.AuthenticatePasswordInput{
+				Identifier: "auto_system_demo",
+				Password:   badPass,
+				IPAddress:  "127.0.0.1",
+			}); !errors.Is(err, iamerrors.ErrSystemCannotLogin) || err.Error() != "system cannot login" {
+				t.Fatalf("AuthenticatePassword(system, passLen=%d) error = %v, want ErrSystemCannotLogin", len(badPass), err)
+			}
+		}
+		if _, err := h.userSvc.AuthenticatePassword(ctx, user.AuthenticatePasswordInput{
+			Identifier: "unknown.human",
+			Password:   "",
+			IPAddress:  "127.0.0.1",
+		}); !errors.Is(err, iamerrors.ErrInvalidInput) {
+			t.Fatalf("AuthenticatePassword(unknown, empty pass) error = %v, want ErrInvalidInput", err)
+		}
+		if _, err := h.userSvc.ChangePassword(ctx, user.ChangePasswordInput{
+			UserID:          sysUser.ID,
+			CurrentPassword: "Any",
+			NewPassword:     "VaultSys#2027!C",
+		}); !errors.Is(err, iamerrors.ErrSystemUserInteractiveForbidden) {
+			t.Fatalf("ChangePassword(system) error = %v, want ErrSystemUserInteractiveForbidden", err)
 		}
 	})
 

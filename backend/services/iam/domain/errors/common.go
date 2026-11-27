@@ -141,11 +141,17 @@ func WithField(err error, field, message string) *DomainError {
 	if err == nil {
 		return nil
 	}
+	msg := strings.TrimSpace(message)
+	if msg == "" {
+		if domErr, ok := errors.AsType[*DomainError](err); ok {
+			msg = strings.TrimSpace(domErr.Message)
+		}
+	}
 	return &DomainError{
 		Kind:    KindOf(err),
 		Code:    CodeOf(err),
 		Field:   strings.TrimSpace(field),
-		Message: strings.TrimSpace(message),
+		Message: msg,
 		Err:     err,
 	}
 }
@@ -164,10 +170,16 @@ func (d *DomainError) Error() string {
 		}
 	}
 	if d.Err != nil {
-		if msg != "" {
-			return msg + ": " + d.Err.Error()
+		errStr := d.Err.Error()
+		if errStr != "" {
+			if msg == "" {
+				return errStr
+			}
+			// Hindari pengulangan pesan yang identik saat WithField membungkus sentinel dengan pesan yang sama.
+			if errStr != d.Message {
+				return msg + ": " + errStr
+			}
 		}
-		return d.Err.Error()
 	}
 	if msg != "" {
 		return msg

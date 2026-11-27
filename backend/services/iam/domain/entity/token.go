@@ -175,6 +175,11 @@ func (t UserToken) String() string {
 		t.ID, t.UserID, t.Purpose, t.Status, t.UsedAt != nil, redactedSecret)
 }
 
+// GoString menyembunyikan digest token pada format %#v.
+func (t UserToken) GoString() string {
+	return t.String()
+}
+
 // LogValue memancarkan atribut aman token untuk slog tanpa digest mentah.
 func (t UserToken) LogValue() slog.Value {
 	return slog.GroupValue(

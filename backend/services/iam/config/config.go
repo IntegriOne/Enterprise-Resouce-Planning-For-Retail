@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -12,8 +13,36 @@ import (
 	"github.com/integrione/erp-retail/backend/shared/authsession"
 )
 
-// SystemBootstrapConfig menyimpan parameter akun system bootstrap IAM dari environment.
-type SystemBootstrapConfig struct {
+func redactPresence(val string) string {
+	if strings.TrimSpace(val) == "" {
+		return "<empty>"
+	}
+	return "[REDACTED]"
+}
+
+// String menyamarkan kata sandi superadmin agar tidak pernah tercetak ke log.
+func (s SuperadminBootstrapConfig) String() string {
+	return fmt.Sprintf("SuperadminBootstrapConfig{Username:%s, UserKind:%s, RoleCode:%s, Password:%s}",
+		s.Username, s.UserKind, s.RoleCode, redactPresence(s.Password))
+}
+
+// GoString menyamarkan kata sandi superadmin pada format %#v.
+func (s SuperadminBootstrapConfig) GoString() string {
+	return s.String()
+}
+
+// LogValue memancarkan ringkasan konfigurasi superadmin tanpa kata sandi maupun email mentah.
+func (s SuperadminBootstrapConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("username", s.Username),
+		slog.String("user_kind", s.UserKind),
+		slog.String("role_code", s.RoleCode),
+		slog.String("password", redactPresence(s.Password)),
+	)
+}
+
+// SuperadminBootstrapConfig menyimpan parameter akun human Super Administrator perdana pada rilis awal sistem.
+type SuperadminBootstrapConfig struct {
 	UserUID     string
 	Username    string
 	Email       string
@@ -21,6 +50,22 @@ type SystemBootstrapConfig struct {
 	DisplayName string
 	UserKind    string
 	RoleCode    string
+}
+
+// AutomationBootstrapConfig menyimpan parameter akun layanan otomasi non-interaktif per management.
+type AutomationBootstrapConfig struct {
+	ManagementDomain string
+	UserUID          string
+	Username         string
+	DisplayName      string
+	RoleCode         string
+	LegacyAliases    []string
+}
+
+// BootstrapConfig mengelompokkan konfigurasi bootstrap human superadmin serta principal otomasi tiap management.
+type BootstrapConfig struct {
+	Superadmin           SuperadminBootstrapConfig
+	AutomationPrincipals []AutomationBootstrapConfig
 }
 
 type HRMTerminationAccessConfig struct {
@@ -38,8 +83,6 @@ type RequisitionMandateConfig struct {
 
 // Config menyimpan seluruh konfigurasi runtime untuk layanan IAM.
 type Config struct {
-	RequisitionMandate        RequisitionMandateConfig
-	HRMTerminationAccess      HRMTerminationAccessConfig
 	AppEnv                    string
 	ServiceName               string
 	GRPCHost                  string
@@ -51,11 +94,13 @@ type Config struct {
 	RedisEnv                  string
 	Redis                     authsession.RedisConfig
 	InternalGatewayHMACSecret string
-	SystemBootstrap           SystemBootstrapConfig
-	Email                     mailer.Config
 	EFGRPCEnabled             bool
 	EFGRPCTarget              string
 	EFGRPCTimeout             time.Duration
+	RequisitionMandate        RequisitionMandateConfig
+	HRMTerminationAccess      HRMTerminationAccessConfig
+	Bootstrap                 BootstrapConfig
+	Email                     mailer.Config
 }
 
 // Load membaca konfigurasi dari environment variables dengan nilai default pengembangan.
@@ -125,20 +170,8 @@ func Load() (*Config, error) {
 	if err != nil || efGRPCTimeoutSec <= 0 {
 		return nil, fmt.Errorf("invalid IAM_EF_GRPC_TIMEOUT_SECONDS")
 	}
+
 	return &Config{
-		HRMTerminationAccess: HRMTerminationAccessConfig{
-			Target:     strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_TARGET", "")),
-			ServerName: strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_SERVER_NAME", "")),
-			CertFile:   strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_CERT_FILE", "")),
-			KeyFile:    strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_KEY_FILE", "")),
-			CAFile:     strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_CA_FILE", "")),
-		},
-		RequisitionMandate: RequisitionMandateConfig{
-			Address:      strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_ADDR", "")),
-			CertFile:     strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_CERT_FILE", "")),
-			KeyFile:      strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_KEY_FILE", "")),
-			ClientCAFile: strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_CLIENT_CA_FILE", "")),
-		},
 		AppEnv:          appEnv,
 		ServiceName:     getEnv("IAM_SERVICE_NAME", "integrione-iam"),
 		GRPCHost:        getEnv("IAM_GRPC_HOST", "0.0.0.0"),
@@ -162,20 +195,83 @@ func Load() (*Config, error) {
 			MinIdleConns:          minIdle,
 		},
 		InternalGatewayHMACSecret: strings.TrimSpace(getEnv("IAM_INTERNAL_GATEWAY_HMAC_SECRET", "")),
-		SystemBootstrap: SystemBootstrapConfig{
-			UserUID:     strings.TrimSpace(getEnv("IAM_SYSTEM_USER_UID", "")),
-			Username:    strings.TrimSpace(getEnv("IAM_SYSTEM_USERNAME", "systemiam")),
-			Email:       strings.TrimSpace(getEnv("IAM_SYSTEM_EMAIL", "systemiam@integrione.local")),
-			Password:    getEnv("IAM_SYSTEM_PASSWORD", ""),
-			DisplayName: strings.TrimSpace(getEnv("IAM_SYSTEM_DISPLAY_NAME", "IntegriOne System Administrator")),
-			UserKind:    strings.TrimSpace(getEnv("IAM_SYSTEM_USER_KIND", "system")),
-			RoleCode:    strings.TrimSpace(getEnv("IAM_SYSTEM_ROLE_CODE", "superadmin")),
+		EFGRPCEnabled:             efGRPCEnabled,
+		EFGRPCTarget:              strings.TrimSpace(getEnv("IAM_EF_GRPC_TARGET", "enterprise-foundation:9002")),
+		EFGRPCTimeout:             time.Duration(efGRPCTimeoutSec) * time.Second,
+		HRMTerminationAccess: HRMTerminationAccessConfig{
+			Target:     strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_TARGET", "")),
+			ServerName: strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_SERVER_NAME", "")),
+			CertFile:   strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_CERT_FILE", "")),
+			KeyFile:    strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_KEY_FILE", "")),
+			CAFile:     strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_CA_FILE", "")),
 		},
-		Email:         emailCfg,
-		EFGRPCEnabled: efGRPCEnabled,
-		EFGRPCTarget:  strings.TrimSpace(getEnv("IAM_EF_GRPC_TARGET", "enterprise-foundation:9002")),
-		EFGRPCTimeout: time.Duration(efGRPCTimeoutSec) * time.Second,
+		RequisitionMandate: RequisitionMandateConfig{
+			Address:      strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_ADDR", "")),
+			CertFile:     strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_CERT_FILE", "")),
+			KeyFile:      strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_KEY_FILE", "")),
+			ClientCAFile: strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_CLIENT_CA_FILE", "")),
+		},
+		Bootstrap: BootstrapConfig{
+			Superadmin: SuperadminBootstrapConfig{
+				UserUID:     strings.TrimSpace(getEnv("IAM_SUPERADMIN_USER_UID", "")),
+				Username:    strings.TrimSpace(getEnv("IAM_SUPERADMIN_USERNAME", "superadmin")),
+				Email:       strings.TrimSpace(getEnv("IAM_SUPERADMIN_EMAIL", "superadmin@integrione.local")),
+				Password:    getEnv("IAM_SUPERADMIN_PASSWORD", ""),
+				DisplayName: strings.TrimSpace(getEnv("IAM_SUPERADMIN_DISPLAY_NAME", "Super Administrator")),
+				UserKind:    strings.TrimSpace(getEnv("IAM_SUPERADMIN_USER_KIND", "employee")),
+				RoleCode:    strings.TrimSpace(getEnv("IAM_SUPERADMIN_ROLE_CODE", "superadmin")),
+			},
+			AutomationPrincipals: []AutomationBootstrapConfig{
+				{
+					ManagementDomain: "iam",
+					UserUID:          strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_IAM_USER_UID", "")),
+					Username:         strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_IAM_USERNAME", "auto_system_iam")),
+					DisplayName:      strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_IAM_DISPLAY_NAME", "Auto System IAM")),
+					RoleCode:         strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_IAM_ROLE_CODE", "iam_automation")),
+					LegacyAliases:    []string{"systemiam", "systemiam@integrione.local"},
+				},
+				{
+					ManagementDomain: "enterprise_foundation",
+					UserUID:          strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_EF_USER_UID", "")),
+					Username:         strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_EF_USERNAME", "auto_system_ef")),
+					DisplayName:      strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_EF_DISPLAY_NAME", "Auto System Enterprise Foundation")),
+					RoleCode:         strings.TrimSpace(getEnv("IAM_AUTO_SYSTEM_EF_ROLE_CODE", "ef_automation")),
+				},
+			},
+		},
+		Email: emailCfg,
 	}, nil
+}
+
+// String menyamarkan DSN database, kredensial Redis, kunci HMAC internal, dan rahasia email pada Config.
+func (c Config) String() string {
+	return fmt.Sprintf("config.Config{AppEnv:%s, ServiceName:%s, Host:%s, Port:%d, DatabaseDSN:%s, TestDatabaseDSN:%s, RedisEnabled:%t, RedisPassword:%s, InternalHMAC:%s, Bootstrap:%s, Email:%s}",
+		c.AppEnv, c.ServiceName, c.GRPCHost, c.GRPCPort,
+		redactPresence(c.DatabaseDSN), redactPresence(c.TestDatabaseDSN),
+		c.RedisEnabled, redactPresence(c.Redis.Password), redactPresence(c.InternalGatewayHMACSecret),
+		c.Bootstrap.Superadmin.String(), c.Email.String())
+}
+
+// GoString menyamarkan rahasia runtime IAM pada format %#v.
+func (c Config) GoString() string {
+	return c.String()
+}
+
+// LogValue memancarkan ringkasan konfigurasi IAM aman untuk slog tanpa kredensial atau DSN.
+func (c Config) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("app_env", c.AppEnv),
+		slog.String("service_name", c.ServiceName),
+		slog.String("grpc_host", c.GRPCHost),
+		slog.Int("grpc_port", c.GRPCPort),
+		slog.String("database_dsn", redactPresence(c.DatabaseDSN)),
+		slog.String("test_database_dsn", redactPresence(c.TestDatabaseDSN)),
+		slog.Bool("redis_enabled", c.RedisEnabled),
+		slog.String("redis_password", redactPresence(c.Redis.Password)),
+		slog.String("internal_gateway_hmac_secret", redactPresence(c.InternalGatewayHMACSecret)),
+		slog.Any("superadmin_bootstrap", c.Bootstrap.Superadmin),
+		slog.Any("email", c.Email),
+	)
 }
 
 // IsProduction melaporkan apakah layanan IAM dijalankan pada mode non-development/test.
@@ -189,14 +285,14 @@ func (c *Config) IsProduction() bool {
 
 // GRPCAddress mengembalikan alamat lengkap host:port untuk listener gRPC.
 func (c *Config) GRPCAddress() string {
+	if c == nil {
+		return ""
+	}
 	return fmt.Sprintf("%s:%d", c.GRPCHost, c.GRPCPort)
 }
 
 // ValidateRuntimeStrict menegakkan kebijakan fail-closed saat daemon IAM dijalankan di lingkungan non-pengembangan.
 func (c *Config) ValidateRuntimeStrict(sec SecurityConfig) error {
-	if c != nil && c.EFGRPCEnabled && strings.TrimSpace(c.EFGRPCTarget) == "" {
-		return errors.New("IAM_EF_GRPC_TARGET is required when IAM_EF_GRPC_ENABLED is true")
-	}
 	if c == nil {
 		return errors.New("iam config is required")
 	}
@@ -205,6 +301,9 @@ func (c *Config) ValidateRuntimeStrict(sec SecurityConfig) error {
 	}
 	if !strings.EqualFold(strings.TrimSpace(c.AppEnv), "test") && len(strings.TrimSpace(c.InternalGatewayHMACSecret)) < 32 {
 		return fmt.Errorf("IAM_INTERNAL_GATEWAY_HMAC_SECRET (>= 32 bytes) is required in %q environment", c.AppEnv)
+	}
+	if c.EFGRPCEnabled && strings.TrimSpace(c.EFGRPCTarget) == "" {
+		return errors.New("IAM_EF_GRPC_TARGET is required when IAM_EF_GRPC_ENABLED is true")
 	}
 	if !c.IsProduction() {
 		return nil

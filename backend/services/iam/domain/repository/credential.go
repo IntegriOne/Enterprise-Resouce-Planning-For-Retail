@@ -12,6 +12,8 @@ type UserCredentialRepository interface {
 	SelectByUserID(ctx context.Context, userID string) (*entity.UserCredential, error)
 	Insert(ctx context.Context, credential *entity.UserCredential) error
 	Update(ctx context.Context, credential *entity.UserCredential) error
+	// DeleteByUserID menghapus baris kredensial kata sandi milik user tertentu secara idempoten.
+	DeleteByUserID(ctx context.Context, userID string) error
 	// RecordFailedAttemptAtomic menambah penghitung gagal login secara atomik dan mengembalikan jumlah serta batas waktu kunci terbaru.
 	RecordFailedAttemptAtomic(ctx context.Context, userID string, maxAttempts int, lockDuration time.Duration, now time.Time) (int, *time.Time, error)
 	// ResetFailedAttemptsAtomic membersihkan penghitung kegagalan login dan kunci sementara secara atomik bila masih ada.

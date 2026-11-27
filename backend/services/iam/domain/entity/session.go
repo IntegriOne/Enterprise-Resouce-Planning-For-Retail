@@ -303,6 +303,11 @@ func (s Session) String() string {
 		s.ID, s.UserID, s.MFAVerified, redactedSecret, redactedSecret)
 }
 
+// GoString menyembunyikan digest token sesi dan CSRF pada format %#v.
+func (s Session) GoString() string {
+	return s.String()
+}
+
 // LogValue memancarkan atribut sesi aman untuk slog tanpa token mentah atau digest.
 func (s Session) LogValue() slog.Value {
 	return slog.GroupValue(

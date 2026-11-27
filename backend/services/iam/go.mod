@@ -8,10 +8,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.21.0
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.79.9
 	github.com/aws/smithy-go v1.28.9
+	github.com/integrione/erp-retail/backend/services/enterprise_foundation v0.0.0
 	github.com/integrione/erp-retail/backend/services/human_resource v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authcontext v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authsession v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authz v0.0.0
+	github.com/integrione/erp-retail/backend/shared/rbac v0.0.0
 	github.com/jackc/pgx/v5 v5.13.0
 	github.com/redis/go-redis/v9 v9.22.0
 	golang.org/x/crypto v0.58.0
@@ -35,7 +37,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.44.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.52.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/integrione/erp-retail/backend/services/enterprise_foundation v0.0.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.3 // indirect
@@ -50,11 +51,12 @@ require (
 )
 
 replace (
+	github.com/integrione/erp-retail/backend/services/enterprise_foundation => ../enterprise_foundation
 	github.com/integrione/erp-retail/backend/shared/authcontext => ../../shared/authcontext
 	github.com/integrione/erp-retail/backend/shared/authsession => ../../shared/authsession
 	github.com/integrione/erp-retail/backend/shared/authz => ../../shared/authz
 )
 
-replace github.com/integrione/erp-retail/backend/services/human_resource => ../human_resource
+replace github.com/integrione/erp-retail/backend/shared/rbac => ../../shared/rbac
 
-replace github.com/integrione/erp-retail/backend/services/enterprise_foundation => ../enterprise_foundation
+replace github.com/integrione/erp-retail/backend/services/human_resource => ../human_resource

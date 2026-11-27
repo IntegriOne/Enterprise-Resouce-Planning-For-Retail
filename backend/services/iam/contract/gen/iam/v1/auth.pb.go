@@ -123,6 +123,10 @@ func (x *UserTotpFactor) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// AuthenticatePasswordRequest membawa kredensial login interaktif pengguna non-system.
+// Kontrak keamanan IAM: principal USER_KIND_SYSTEM (mis. auto_system_iam, auto_system_ef)
+// wajib ditolak dengan PermissionDenied (ErrorInfo.reason = "iam.user.system_cannot_login",
+// message = "system cannot login") baik kata sandi kosong maupun terisi.
 type AuthenticatePasswordRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Identifier    string                 `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty"`

@@ -123,6 +123,11 @@ func (c UserCredential) String() string {
 		c.UserID, c.MustChangePassword, c.FailedLoginAttempts, redactedSecret)
 }
 
+// GoString menyamarkan hash Argon2id pada format %#v.
+func (c UserCredential) GoString() string {
+	return c.String()
+}
+
 // LogValue memancarkan representasi slog aman tanpa hash kata sandi.
 func (c UserCredential) LogValue() slog.Value {
 	return slog.GroupValue(
@@ -201,6 +206,11 @@ func (r *UserRecoveryCode) Consume(now time.Time) error {
 func (r UserRecoveryCode) String() string {
 	return fmt.Sprintf("UserRecoveryCode{ID:%s, UserID:%s, Used:%t, CodeHash:%s}",
 		r.ID, r.UserID, r.UsedAt != nil, redactedSecret)
+}
+
+// GoString menyamarkan hash kode pemulihan pada format %#v.
+func (r UserRecoveryCode) GoString() string {
+	return r.String()
 }
 
 // LogValue memancarkan representasi slog aman untuk kode pemulihan.

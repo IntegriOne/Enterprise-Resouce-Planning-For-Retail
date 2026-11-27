@@ -6,6 +6,7 @@ import (
 	"time"
 
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
+	"github.com/integrione/erp-retail/backend/shared/authz"
 )
 
 // Scope merepresentasikan batasan lingkup akses yang menegakkan aturan global vs non-global berserta ID.
@@ -271,6 +272,9 @@ func (s AccessSnapshot) HasPermission(code string, required Scope) (ScopedPermis
 		}
 	}
 	for _, perm := range s.Permissions {
+		if normalized == authz.PermPayslipsReadSelf && perm.Scope.Type != ScopeTypeSelf {
+			continue
+		}
 		if NormalizeCode(perm.PermissionCode) == normalized && perm.Scope.Matches(required) {
 			return perm, true
 		}

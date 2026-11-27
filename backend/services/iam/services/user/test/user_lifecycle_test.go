@@ -8,6 +8,7 @@ import (
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
+	"github.com/integrione/erp-retail/backend/services/iam/services/session"
 	"github.com/integrione/erp-retail/backend/services/iam/services/user"
 )
 
@@ -136,6 +137,30 @@ func TestUserService_LifecycleRevokesSessionsOnSuspendDisableDelete(t *testing.T
 	})
 	if err != nil || updated.DisplayName != "Sari Dewi Wijaya" {
 		t.Fatalf("UpdateProfile() = (%+v, %v)", updated, err)
+	}
+
+	loginInput := user.AuthenticatePasswordInput{
+		Identifier: "sari@integrione.local",
+		Password:   "Pq7#GreenShield!2026",
+		IPAddress:  "127.0.0.1",
+	}
+	active, err := h.userSvc.AuthenticatePassword(context.Background(), loginInput)
+	if err != nil {
+		t.Fatalf("login after activation: %v", err)
+	}
+	disabled, err := h.userSvc.Disable(context.Background(), u.ID)
+	if err != nil || disabled == nil || disabled.Status != entity.UserStatusDisabled {
+		t.Fatalf("disable employee: %+v, %v", disabled, err)
+	}
+	if _, err := h.sessSvc.Authenticate(context.Background(), active.IssuedSession.SessionToken); !errors.Is(err, iamerrors.ErrSessionRevoked) {
+		t.Fatalf("expected ErrSessionRevoked after disabling employee, got %v", err)
+	}
+	if result, err := h.userSvc.AuthenticatePassword(context.Background(), loginInput); result != nil || !errors.Is(err, iamerrors.ErrInvalidCredentials) {
+		t.Fatalf("expected new login to fail after disabling employee: result returned=%t, %v", result != nil, err)
+	}
+
+	if issued, err := h.sessSvc.Issue(context.Background(), session.IssueInput{UserID: u.ID}); issued != nil || !errors.Is(err, iamerrors.ErrUserDisabled) {
+		t.Fatalf("expected session issuance to fail after disabling employee: session returned=%t, %v", issued != nil, err)
 	}
 
 	if err := h.userSvc.SoftDelete(context.Background(), u.ID); err != nil {

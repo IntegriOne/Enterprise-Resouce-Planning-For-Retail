@@ -3,10 +3,12 @@ package session_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	"github.com/integrione/erp-retail/backend/services/iam/services/session"
@@ -48,12 +50,12 @@ func TestSessionService_DeterministicMultiTabCSRFAndRefreshSnapshot(t *testing.T
 	}
 
 	adminID, _ := idGen.NewUUID()
-	adminUser, _ := entity.NewUser(adminID, entity.UserKindSystem, entity.UserStatusActive, "SystemIAM", clock.Now())
+	adminUser, _ := entity.NewUser(adminID, entity.UserKindEmployee, entity.UserStatusActive, "Super Administrator", clock.Now())
 	userRepo.users[adminID] = adminUser
 	roleIdentity, _ := entity.NewRole("11111111-1111-4111-8111-111111111111", "superadmin", "Super Admin", "All", "iam", "/identity", 1, true, clock.Now())
 	userRepo.snapshots[adminID] = &entity.AccessSnapshot{
 		UserID:       adminID,
-		UserKind:     entity.UserKindSystem,
+		UserKind:     entity.UserKindEmployee,
 		UserStatus:   entity.UserStatusActive,
 		AuthEpoch:    1,
 		PermRevision: 1,
@@ -123,5 +125,33 @@ func TestSessionService_DeterministicMultiTabCSRFAndRefreshSnapshot(t *testing.T
 	}
 	if resCust.CanAccessIdentity || resCust.DefaultRedirectPath != "/" {
 		t.Fatalf("customer must NOT have identity dashboard access: %+v", resCust)
+	}
+
+	// Akun otomasi system wajib ditolak saat penerbitan sesi interaktif dan tidak pernah mendapat akses /identity.
+	sysID, _ := idGen.NewUUID()
+	sysUser, _ := entity.NewUser(sysID, entity.UserKindSystem, entity.UserStatusActive, "Auto System IAM", clock.Now())
+	userRepo.users[sysID] = sysUser
+	userRepo.snapshots[sysID] = &entity.AccessSnapshot{
+		UserID:     sysID,
+		UserKind:   entity.UserKindSystem,
+		UserStatus: entity.UserStatusActive,
+		Roles:      []entity.Role{*roleIdentity},
+		Permissions: []entity.ScopedPermission{
+			{PermissionCode: "iam.dashboard.view", Scope: entity.Scope{Type: entity.ScopeTypeGlobal}},
+		},
+		CheckedAt: clock.Now(),
+	}
+	if _, err := svc.Issue(context.Background(), session.IssueInput{
+		UserID:    sysID,
+		IPAddress: "127.0.0.1",
+	}); !errors.Is(err, iamerrors.ErrSystemCannotLogin) {
+		t.Fatalf("Issue(system) error = %v, want ErrSystemCannotLogin", err)
+	}
+	resSys, err := svc.RefreshAccessSnapshot(context.Background(), sysID)
+	if err != nil {
+		t.Fatalf("RefreshAccessSnapshot(system) error = %v", err)
+	}
+	if resSys.CanAccessIdentity || resSys.DefaultRedirectPath != "/" {
+		t.Fatalf("system account must NOT have identity dashboard access: %+v", resSys)
 	}
 }

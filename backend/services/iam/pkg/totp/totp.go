@@ -100,6 +100,9 @@ func (p *RFC6238Provider) GenerateSecret(accountName, issuer string) ([]byte, st
 	if p == nil {
 		return nil, "", iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.totp.nil_provider"), "totp provider is nil")
 	}
+	if p.cfg.Digits <= 0 || p.cfg.PeriodSeconds <= 0 || p.cfg.SecretBytes < minSecretBytes {
+		return nil, "", iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.totp.invalid_provider_config"), "totp provider is not configured")
+	}
 	trimmedAccount := strings.TrimSpace(accountName)
 	if trimmedAccount == "" || hasControlRune(trimmedAccount) {
 		return nil, "", iamerrors.NewValidation("account_name", iamerrors.Code("iam.totp.invalid_account_name"), "account name must not be empty or contain control characters")
@@ -141,6 +144,9 @@ func (p *RFC6238Provider) VerifyCode(secret []byte, code string, at time.Time) (
 	if p == nil {
 		return false, 0, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.totp.nil_provider"), "totp provider is nil")
 	}
+	if p.cfg.PeriodSeconds <= 0 || p.cfg.Digits <= 0 {
+		return false, 0, iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.totp.invalid_provider_config"), "totp provider period and digits must be positive")
+	}
 	if len(secret) < minSecretBytes {
 		return false, 0, iamerrors.NewValidation("secret", iamerrors.Code("iam.totp.invalid_secret_length"), "totp secret must be at least 16 bytes")
 	}
@@ -177,6 +183,9 @@ func (p *RFC6238Provider) VerifyCode(secret []byte, code string, at time.Time) (
 func (p *RFC6238Provider) GenerateCodeAt(secret []byte, at time.Time) (string, error) {
 	if p == nil {
 		return "", iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.totp.nil_provider"), "totp provider is nil")
+	}
+	if p.cfg.PeriodSeconds <= 0 || p.cfg.Digits <= 0 {
+		return "", iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.totp.invalid_provider_config"), "totp provider period and digits must be positive")
 	}
 	if len(secret) < minSecretBytes {
 		return "", iamerrors.NewValidation("secret", iamerrors.Code("iam.totp.invalid_secret_length"), "totp secret must be at least 16 bytes")

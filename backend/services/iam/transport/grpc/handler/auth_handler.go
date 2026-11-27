@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	iamv1 "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	"github.com/integrione/erp-retail/backend/services/iam/services/user"
 )
 
@@ -43,6 +44,9 @@ func (h *AuthHandler) AuthenticatePassword(ctx context.Context, req *iamv1.Authe
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
 	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.auth.empty_result"), "authentication returned empty result"))
+	}
 	return &iamv1.AuthenticatePasswordResponse{
 		Status:                toProtoAuthStatus(res.Status),
 		User:                  toProtoUser(res.User),
@@ -68,6 +72,9 @@ func (h *AuthHandler) VerifyMfaChallenge(ctx context.Context, req *iamv1.VerifyM
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
 	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.auth.empty_result"), "mfa challenge verification returned empty result"))
+	}
 	return &iamv1.VerifyMfaChallengeResponse{
 		Status:             toProtoAuthStatus(res.Status),
 		User:               toProtoUser(res.User),
@@ -91,6 +98,9 @@ func (h *AuthHandler) VerifyRecoveryCodeChallenge(ctx context.Context, req *iamv
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
 	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.auth.empty_result"), "recovery code verification returned empty result"))
+	}
 	return &iamv1.VerifyRecoveryCodeChallengeResponse{
 		Status:             toProtoAuthStatus(res.Status),
 		User:               toProtoUser(res.User),
@@ -111,6 +121,9 @@ func (h *AuthHandler) VerifySessionMfa(ctx context.Context, req *iamv1.VerifySes
 	res, err := h.svc.VerifySessionMFA(ctx, req.GetUserId(), req.GetSessionId(), req.GetCode())
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.auth.empty_result"), "session mfa verification returned empty result"))
 	}
 	return &iamv1.VerifySessionMfaResponse{
 		Session:   toProtoSession(res.Session),
@@ -133,6 +146,9 @@ func (h *AuthHandler) ChangePassword(ctx context.Context, req *iamv1.ChangePassw
 	})
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.auth.empty_result"), "password change returned empty result"))
 	}
 	return &iamv1.ChangePasswordResponse{
 		Changed:           res.Changed,
@@ -183,6 +199,9 @@ func (h *AuthHandler) EnrollTotp(ctx context.Context, req *iamv1.EnrollTotpReque
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
 	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.auth.empty_result"), "totp enrollment returned empty result"))
+	}
 	return &iamv1.EnrollTotpResponse{
 		FactorId:   res.FactorID,
 		OtpAuthUri: res.OTPAuthURI,
@@ -200,6 +219,9 @@ func (h *AuthHandler) ConfirmTotp(ctx context.Context, req *iamv1.ConfirmTotpReq
 	res, err := h.svc.ConfirmTOTP(ctx, req.GetUserId(), req.GetCode())
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.auth.empty_result"), "totp confirmation returned empty result"))
 	}
 	return &iamv1.ConfirmTotpResponse{
 		Factor:        toProtoTOTPFactor(res.Factor),

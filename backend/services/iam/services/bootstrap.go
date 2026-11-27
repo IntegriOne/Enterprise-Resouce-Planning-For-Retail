@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/integrione/erp-retail/backend/services/iam/config"
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
@@ -13,166 +14,73 @@ import (
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	iamrepo "github.com/integrione/erp-retail/backend/services/iam/repository"
-	"github.com/integrione/erp-retail/backend/services/iam/services/permission"
 	"github.com/integrione/erp-retail/backend/services/iam/services/role"
 )
 
-type bootstrapPermissionSpec struct {
-	Code        string
-	Domain      string
-	Description string
-	IsSensitive bool
-}
-
-type bootstrapRoleSpec struct {
-	Code                string
-	Name                string
-	Description         string
-	Domain              string
-	DefaultRedirectPath string
-	RedirectPriority    int
-	PermissionCodes     []string
-}
-
-var defaultBootstrapPermissions = []bootstrapPermissionSpec{
-	{Code: "iam.dashboard.view", Domain: "iam", Description: "View IntegriOne Identity dashboard", IsSensitive: false},
-	{Code: "iam.users.read", Domain: "iam", Description: "Read IAM user principals and identities", IsSensitive: false},
-	{Code: "iam.users.readself", Domain: "iam", Description: "Read own IAM user profile, identities, and assigned roles", IsSensitive: false},
-	{Code: "iam.users.write", Domain: "iam", Description: "Create, update, suspend, or disable IAM users", IsSensitive: true},
-	{Code: "iam.users.updateself", Domain: "iam", Description: "Update own IAM profile, email, username, password, and MFA factors", IsSensitive: false},
-	{Code: "iam.users.deleteself", Domain: "iam", Description: "Delete own unverified pending email address", IsSensitive: false},
-	{Code: "iam.roles.read", Domain: "iam", Description: "Read RBAC roles and assignments", IsSensitive: false},
-	{Code: "iam.roles.write", Domain: "iam", Description: "Create, edit, or assign RBAC roles", IsSensitive: true},
-	{Code: "iam.groups.read", Domain: "iam", Description: "Read IAM groups and memberships", IsSensitive: false},
-	{Code: "iam.groups.write", Domain: "iam", Description: "Manage IAM groups and role bindings", IsSensitive: true},
-	{Code: "iam.permissions.read", Domain: "iam", Description: "Read IAM permission catalog", IsSensitive: false},
-	{Code: "iam.sessions.read", Domain: "iam", Description: "Inspect active IAM sessions", IsSensitive: false},
-	{Code: "iam.sessions.readself", Domain: "iam", Description: "Inspect own active IAM sessions", IsSensitive: false},
-	{Code: "iam.sessions.revoke", Domain: "iam", Description: "Revoke active IAM user sessions", IsSensitive: true},
-	{Code: "iam.sessions.deleteself", Domain: "iam", Description: "Revoke own active IAM sessions", IsSensitive: true},
-}
-
-var defaultBootstrapRoles = []bootstrapRoleSpec{
-	{
-		Code:                "superadmin",
-		Name:                "Super Administrator",
-		Description:         "IntegriOne full platform and IAM governance super administrator",
-		Domain:              "iam",
-		DefaultRedirectPath: "/identity",
-		RedirectPriority:    1,
-		PermissionCodes: []string{
-			"iam.dashboard.view",
-			"iam.users.read", "iam.users.readself", "iam.users.write", "iam.users.updateself", "iam.users.deleteself",
-			"iam.roles.read", "iam.roles.write",
-			"iam.groups.read", "iam.groups.write",
-			"iam.permissions.read",
-			"iam.sessions.read", "iam.sessions.readself", "iam.sessions.revoke", "iam.sessions.deleteself",
-		},
-	},
-	{
-		Code:                "iam_operator",
-		Name:                "IAM Operator",
-		Description:         "Operates user onboarding, group assignments, and session revocations",
-		Domain:              "iam",
-		DefaultRedirectPath: "/identity",
-		RedirectPriority:    10,
-		PermissionCodes: []string{
-			"iam.dashboard.view",
-			"iam.users.read", "iam.users.readself", "iam.users.write", "iam.users.updateself", "iam.users.deleteself",
-			"iam.roles.read",
-			"iam.groups.read", "iam.groups.write",
-			"iam.permissions.read",
-			"iam.sessions.read", "iam.sessions.readself", "iam.sessions.revoke", "iam.sessions.deleteself",
-		},
-	},
-	{
-		Code:                "iam_readonly",
-		Name:                "IAM Auditor Read-Only",
-		Description:         "Read-only visibility into IAM principals, roles, and sessions",
-		Domain:              "iam",
-		DefaultRedirectPath: "/identity",
-		RedirectPriority:    20,
-		PermissionCodes: []string{
-			"iam.dashboard.view",
-			"iam.users.read", "iam.users.readself",
-			"iam.roles.read",
-			"iam.groups.read",
-			"iam.permissions.read",
-			"iam.sessions.read", "iam.sessions.readself",
-		},
-	},
-	{
-		Code:                "customer",
-		Name:                "Web Commerce Customer",
-		Description:         "Default authenticated storefront customer role",
-		Domain:              "commerce",
-		DefaultRedirectPath: "/",
-		RedirectPriority:    100,
-		PermissionCodes: []string{
-			"iam.users.readself",
-			"iam.users.updateself",
-			"iam.users.deleteself",
-			"iam.sessions.readself",
-			"iam.sessions.deleteself",
-		},
-	},
-	{
-		Code:                "iam_selfservice",
-		Name:                "IAM Account Self-Service",
-		Description:         "Default self-scoped profile, security, and session controls for internal and partner accounts",
-		Domain:              "iam",
-		DefaultRedirectPath: "",
-		RedirectPriority:    999,
-		PermissionCodes: []string{
-			"iam.users.readself",
-			"iam.users.updateself",
-			"iam.users.deleteself",
-			"iam.sessions.readself",
-			"iam.sessions.deleteself",
-		},
-	},
-}
-
-// BootstrapSystemPrincipalAndRBAC menjamin katalog permission IAM, template peran bawaan, dan akun system bootstrap terbentuk idempoten saat startup.
-func BootstrapSystemPrincipalAndRBAC(
+// BootstrapPrincipalsAndRBAC menjamin katalog permission, template peran bawaan, akun otomasi non-interaktif per management, dan akun human superadmin perdana terbentuk idempoten saat startup.
+func BootstrapPrincipalsAndRBAC(
 	ctx context.Context,
 	repos *iamrepo.Registry,
 	reg *Registry,
-	cfg config.SystemBootstrapConfig,
+	cfg config.BootstrapConfig,
 	logger *slog.Logger,
 ) error {
 	if repos == nil || reg == nil {
 		return iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.bootstrap.nil_dependencies"), "bootstrap dependencies are required")
 	}
 
-	permByCode, err := ensureBootstrapPermissions(ctx, repos.Permissions, reg)
+	_, roleByCode, err := syncEmbeddedRBACCatalogs(ctx, repos, reg, logger)
 	if err != nil {
 		return err
 	}
-	roleByCode, err := ensureBootstrapRoles(ctx, repos.Roles, reg, permByCode)
-	if err != nil {
+
+	// Jalankan migrasi & isolasi akun otomasi system terlebih dahulu sebelum akun human superadmin perdana dibuat.
+	if err := ensureAutomationPrincipals(ctx, repos, reg, roleByCode, cfg.AutomationPrincipals, logger); err != nil {
 		return err
 	}
+
 	if err := ensureBaselineSelfRolesForExistingUsers(ctx, repos, reg, roleByCode, logger); err != nil {
 		return err
 	}
 
+	return ensureSuperadminPrincipal(ctx, repos, reg, roleByCode, cfg.Superadmin, logger)
+}
+
+func ensureSuperadminPrincipal(
+	ctx context.Context,
+	repos *iamrepo.Registry,
+	reg *Registry,
+	roleByCode map[string]*entity.Role,
+	cfg config.SuperadminBootstrapConfig,
+	logger *slog.Logger,
+) error {
 	if strings.TrimSpace(cfg.Password) == "" || (strings.TrimSpace(cfg.Email) == "" && strings.TrimSpace(cfg.Username) == "") {
 		return nil
 	}
 
-	userID, err := ensureBootstrapUser(ctx, repos, cfg)
-	if err != nil {
-		return err
-	}
-
-	roleCode := strings.ToLower(strings.TrimSpace(cfg.RoleCode))
+	roleCode := entity.NormalizeCode(cfg.RoleCode)
 	if roleCode == "" {
 		roleCode = "superadmin"
 	}
+	if !entity.IsSuperAdminRoleCode(roleCode) {
+		return iamerrors.WithField(iamerrors.ErrRoleUserKindMismatch, "role_code", "initial superadmin bootstrap must use superadmin role")
+	}
 	targetRole, ok := roleByCode[roleCode]
 	if !ok {
-		return iamerrors.WithField(iamerrors.ErrRoleNotFound, "role_code", "bootstrap role does not exist")
+		return iamerrors.WithField(iamerrors.ErrRoleNotFound, "role_code", "bootstrap superadmin role does not exist")
+	}
+
+	userKind := entity.UserKind(strings.ToLower(strings.TrimSpace(cfg.UserKind)))
+	if userKind == "" {
+		userKind = entity.UserKindEmployee
+	}
+	if userKind != entity.UserKindEmployee {
+		return iamerrors.WithField(iamerrors.ErrInvalidUserKind, "user_kind", "superadmin principal must be a human employee account")
+	}
+
+	userID, err := ensureHumanSuperadminUser(ctx, repos, cfg)
+	if err != nil {
+		return err
 	}
 
 	globalScope := entity.Scope{Type: entity.ScopeTypeGlobal}
@@ -186,6 +94,23 @@ func BootstrapSystemPrincipalAndRBAC(
 		}
 	}
 
+	// Pastikan human superadmin juga memegang peran dasar self-service untuk mengelola profil dan MFA pribadinya.
+	if selfRoleCode := entity.BaselineSelfRoleCodeForUserKind(entity.UserKindEmployee); selfRoleCode != "" {
+		if selfRole := roleByCode[selfRoleCode]; selfRole != nil && selfRole.IsActive {
+			uid := userID
+			selfScope := entity.Scope{Type: entity.ScopeTypeSelf, ID: &uid}
+			hasSelf, err := repos.UserRoles.CheckExists(ctx, userID, selfRole.ID, selfScope)
+			if err != nil {
+				return err
+			}
+			if !hasSelf {
+				if _, err := reg.Roles.AssignToUser(ctx, selfRoleAssignmentInput(userID, selfRole.ID)); err != nil && !errors.Is(err, iamerrors.ErrUserRoleExists) {
+					return err
+				}
+			}
+		}
+	}
+
 	if reg.Sessions != nil {
 		if _, err := reg.Sessions.RefreshAccessSnapshot(ctx, userID); err != nil {
 			return err
@@ -193,110 +118,380 @@ func BootstrapSystemPrincipalAndRBAC(
 	}
 
 	if logger != nil {
-		logger.Info("iam system bootstrap verified idempotently",
-			slog.String("system_user_id", userID),
-			slog.String("system_role", roleCode),
+		logger.Info("iam human superadmin bootstrap verified idempotently",
+			slog.String("superadmin_user_id", userID),
+			slog.String("superadmin_role", roleCode),
+			slog.String("user_kind", userKind.String()),
 		)
 	}
 	return nil
 }
 
-func ensureBootstrapPermissions(ctx context.Context, repo domainrepo.PermissionRepository, reg *Registry) (map[string]*entity.Permission, error) {
-	permByCode := make(map[string]*entity.Permission, len(defaultBootstrapPermissions))
-	for _, spec := range defaultBootstrapPermissions {
-		p, err := reg.Permissions.GetByCode(ctx, spec.Code)
-		if errors.Is(err, iamerrors.ErrPermissionNotFound) {
-			created, createErr := reg.Permissions.Create(ctx, permissionCreateInput(spec))
-			if errors.Is(createErr, iamerrors.ErrPermissionAlreadyExists) {
-				p, err = reg.Permissions.GetByCode(ctx, spec.Code)
-				if err != nil {
-					return nil, err
-				}
-			} else if createErr != nil {
-				return nil, createErr
-			} else {
-				p = created
-			}
-		} else if err != nil {
-			return nil, err
+func ensureAutomationPrincipals(
+	ctx context.Context,
+	repos *iamrepo.Registry,
+	reg *Registry,
+	roleByCode map[string]*entity.Role,
+	specs []config.AutomationBootstrapConfig,
+	logger *slog.Logger,
+) error {
+	for _, spec := range specs {
+		if strings.TrimSpace(spec.Username) == "" || strings.TrimSpace(spec.RoleCode) == "" {
+			continue
 		}
-		expected := permissionCreateInput(spec)
-		if p.IsSensitive != expected.IsSensitive {
-			return nil, iamerrors.New(iamerrors.KindConflict, iamerrors.Code("iam.bootstrap.permission_sensitivity_mismatch"), "bootstrap permission sensitivity does not match the approved catalog")
+		if err := ensureSingleAutomationPrincipal(ctx, repos, reg, roleByCode, spec, logger); err != nil {
+			return err
 		}
-		if p.Resource != expected.Resource || p.Action != expected.Action {
-			corrected := *p
-			corrected.Resource = expected.Resource
-			corrected.Action = expected.Action
-			if err := repo.Update(ctx, &corrected); err != nil {
-				return nil, err
-			}
-			p = &corrected
-		}
-		permByCode[spec.Code] = p
 	}
-	return permByCode, nil
+	return nil
 }
 
-func ensureBootstrapRoles(
+func ensureSingleAutomationPrincipal(
 	ctx context.Context,
-	roleRepo domainrepo.RoleRepository,
+	repos *iamrepo.Registry,
 	reg *Registry,
-	permByCode map[string]*entity.Permission,
-) (map[string]*entity.Role, error) {
-	roleByCode := make(map[string]*entity.Role, len(defaultBootstrapRoles))
-	for _, spec := range defaultBootstrapRoles {
-		r, err := reg.Roles.GetByCode(ctx, spec.Code)
-		if errors.Is(err, iamerrors.ErrRoleNotFound) {
-			created, createErr := reg.Roles.Create(ctx, roleCreateInput(spec))
-			if errors.Is(createErr, iamerrors.ErrRoleAlreadyExists) {
-				r, err = reg.Roles.GetByCode(ctx, spec.Code)
-				if err != nil {
-					return nil, err
+	roleByCode map[string]*entity.Role,
+	spec config.AutomationBootstrapConfig,
+	logger *slog.Logger,
+) error {
+	normUsername, err := entity.ValidateUsername(spec.Username)
+	if err != nil {
+		return err
+	}
+	roleCode := entity.NormalizeCode(spec.RoleCode)
+	if !entity.IsAutomationRoleCode(roleCode) {
+		return iamerrors.WithField(iamerrors.ErrRoleUserKindMismatch, "role_code", "automation principal must use a management *_automation role")
+	}
+	targetRole, ok := roleByCode[roleCode]
+	if !ok || !targetRole.IsActive {
+		return iamerrors.WithField(iamerrors.ErrRoleNotFound, "role_code", "automation role does not exist")
+	}
+
+	displayName := strings.TrimSpace(spec.DisplayName)
+	if displayName == "" {
+		displayName = "Automation System (" + normUsername + ")"
+	}
+
+	uid := strings.ToLower(strings.TrimSpace(spec.UserUID))
+	if uid != "" {
+		if err := entity.ValidateUUID("automation_user_uid", uid); err != nil {
+			return err
+		}
+	}
+
+	existingUser, err := findExistingAutomationUser(ctx, repos, uid, normUsername, spec.LegacyAliases)
+	if err != nil {
+		return err
+	}
+
+	now := domainservice.SystemClock{}.Now()
+	var userID string
+	var migratedLegacy bool
+
+	if existingUser != nil {
+		userID = existingUser.ID
+		migratedLegacy = existingUser.Kind != entity.UserKindSystem || existingUser.DisplayName != displayName
+		if err := repos.Transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
+			if existingUser.Status != entity.UserStatusActive && !existingUser.IsDeleted() {
+				if actErr := existingUser.Activate(now); actErr != nil {
+					return actErr
 				}
-			} else if createErr != nil {
-				return nil, createErr
-			} else {
-				r = created
 			}
-		} else if err != nil {
-			return nil, err
-		} else if roleRepo != nil && r.IsSystem {
-			specRedirect := strings.TrimSpace(spec.DefaultRedirectPath)
-			if strings.TrimSpace(r.DefaultRedirectPath) != specRedirect || r.RedirectPriority != spec.RedirectPriority {
-				// Sinkronkan metadata redirect peran sistem bawaan jika DB lama sempat menyimpan nilai lama (mis. "/").
-				r.DefaultRedirectPath = specRedirect
-				r.RedirectPriority = spec.RedirectPriority
-				r.UpdatedAt = domainservice.SystemClock{}.Now()
-				if updateErr := roleRepo.Update(ctx, r); updateErr != nil {
-					return nil, updateErr
+			if recErr := existingUser.ReconcileBootstrapIdentity(entity.UserKindSystem, displayName, now); recErr != nil {
+				return recErr
+			}
+			if updErr := repos.Users.Update(txCtx, existingUser); updErr != nil {
+				return updErr
+			}
+			if idErr := reconcileAutomationIdentitiesInTx(txCtx, repos, userID, normUsername, now); idErr != nil {
+				return idErr
+			}
+			if credErr := stripInteractiveCredentialsInTx(txCtx, repos, userID); credErr != nil {
+				return credErr
+			}
+			if roleErr := stripIncompatibleSystemRolesInTx(txCtx, repos, userID, targetRole.ID, now); roleErr != nil {
+				return roleErr
+			}
+			if repos.SecurityRuntime != nil {
+				if _, _, secErr := repos.SecurityRuntime.IncrementUserSecurityCounters(txCtx, userID, true, true); secErr != nil {
+					return secErr
 				}
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+		if reg.Sessions != nil {
+			if _, revErr := reg.Sessions.RevokeAllUserSessions(ctx, userID, entity.SessionEndUserDisabled); revErr != nil {
+				return revErr
 			}
 		}
+	} else {
+		if uid == "" {
+			genID, genErr := crypto.NewUUIDGenerator().NewUUID()
+			if genErr != nil {
+				return genErr
+			}
+			uid = genID
+		}
+		u, err := entity.NewUser(uid, entity.UserKindSystem, entity.UserStatusActive, displayName, now)
+		if err != nil {
+			return err
+		}
+		identID, err := crypto.NewUUIDGenerator().NewUUID()
+		if err != nil {
+			return err
+		}
+		userIdent, err := entity.NewUserIdentity(identID, u.ID, entity.IdentityKindUsername, normUsername, true, now)
+		if err != nil {
+			return err
+		}
+		userIdent.MarkVerified(now)
 
-		for _, permCode := range spec.PermissionCodes {
-			perm := permByCode[permCode]
-			if perm == nil {
+		txErr := repos.Transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
+			return repos.Users.InsertWithIdentities(txCtx, u, []*entity.UserIdentity{userIdent})
+		})
+		if txErr != nil {
+			// Tangani race kondisi startup antar replika dengan lookup ulang identitas yang baru terbentuk.
+			if retryUser, findErr := findExistingAutomationUser(ctx, repos, uid, normUsername, spec.LegacyAliases); findErr == nil && retryUser != nil {
+				userID = retryUser.ID
+			} else {
+				return txErr
+			}
+		} else {
+			userID = u.ID
+		}
+	}
+
+	globalScope := entity.Scope{Type: entity.ScopeTypeGlobal}
+	hasTargetRole, err := repos.UserRoles.CheckExists(ctx, userID, targetRole.ID, globalScope)
+	if err != nil {
+		return err
+	}
+	if !hasTargetRole {
+		if _, err := reg.Roles.AssignToUser(ctx, roleAssignmentInput(userID, targetRole.ID)); err != nil && !errors.Is(err, iamerrors.ErrUserRoleExists) {
+			return err
+		}
+	}
+
+	if reg.Sessions != nil {
+		if _, err := reg.Sessions.RefreshAccessSnapshot(ctx, userID); err != nil {
+			return err
+		}
+	}
+
+	if logger != nil {
+		logger.Info("iam management automation principal verified",
+			slog.String("automation_user_id", userID),
+			slog.String("username", normUsername),
+			slog.String("management_domain", entity.NormalizeCode(spec.ManagementDomain)),
+			slog.String("role_code", roleCode),
+			slog.Bool("reconciled_existing", migratedLegacy),
+		)
+	}
+	return nil
+}
+
+func findExistingAutomationUser(
+	ctx context.Context,
+	repos *iamrepo.Registry,
+	uid, normUsername string,
+	legacyAliases []string,
+) (*entity.User, error) {
+	if uid != "" {
+		u, err := repos.Users.SelectByID(ctx, uid)
+		if err == nil && u != nil {
+			return u, nil
+		}
+		if err != nil && !errors.Is(err, iamerrors.ErrUserNotFound) {
+			return nil, err
+		}
+	}
+
+	candidates := append([]string{normUsername}, legacyAliases...)
+	for _, rawAlias := range candidates {
+		alias := strings.TrimSpace(rawAlias)
+		if alias == "" {
+			continue
+		}
+		var ident *entity.UserIdentity
+		var err error
+		if strings.Contains(alias, "@") {
+			var normEmail string
+			normEmail, err = entity.ValidateEmail(alias)
+			if err != nil {
 				continue
 			}
-			_, assignErr := reg.Roles.BootstrapAssignPermission(ctx, r.ID, perm.ID)
-			if assignErr != nil && !errors.Is(assignErr, iamerrors.ErrRolePermissionExists) {
-				return nil, assignErr
+			ident, err = repos.UserIdentities.FindUserIdentityByEmailKind(ctx, normEmail)
+		} else {
+			var normUser string
+			normUser, err = entity.ValidateUsername(alias)
+			if err != nil {
+				continue
 			}
+			ident, err = repos.UserIdentities.FindUserIdentityByUsernameKind(ctx, normUser)
 		}
-		roleByCode[spec.Code] = r
+		if err == nil && ident != nil {
+			return repos.Users.SelectByID(ctx, ident.UserID)
+		}
+		if err != nil && !errors.Is(err, iamerrors.ErrIdentityNotFound) {
+			return nil, err
+		}
 	}
-	return roleByCode, nil
+	return nil, nil
 }
 
-func ensureBootstrapUser(ctx context.Context, repos *iamrepo.Registry, cfg config.SystemBootstrapConfig) (string, error) {
+func reconcileAutomationIdentitiesInTx(
+	txCtx context.Context,
+	repos *iamrepo.Registry,
+	userID, normUsername string,
+	now time.Time,
+) error {
+	idents, err := repos.UserIdentities.SelectByUserID(txCtx, userID)
+	if err != nil && !errors.Is(err, iamerrors.ErrIdentityNotFound) {
+		return err
+	}
+
+	var currentUsername *entity.UserIdentity
+	for _, item := range idents {
+		if item == nil {
+			continue
+		}
+		if item.Kind == entity.IdentityKindEmail {
+			// Akun otomasi system tidak pernah memiliki email login interaktif.
+			if delErr := repos.UserIdentities.Delete(txCtx, item.ID); delErr != nil && !errors.Is(delErr, iamerrors.ErrIdentityNotFound) {
+				return delErr
+			}
+			continue
+		}
+		if item.Kind == entity.IdentityKindUsername {
+			if currentUsername == nil {
+				currentUsername = item
+			} else if delErr := repos.UserIdentities.Delete(txCtx, item.ID); delErr != nil && !errors.Is(delErr, iamerrors.ErrIdentityNotFound) {
+				return delErr
+			}
+		}
+	}
+
+	if currentUsername != nil {
+		if currentUsername.Value != normUsername || !currentUsername.IsPrimary || !currentUsername.IsVerified {
+			if err := currentUsername.UpdateUsernameValue(normUsername, now); err != nil {
+				return err
+			}
+			currentUsername.SetPrimary(true, now)
+			return repos.UserIdentities.Update(txCtx, currentUsername)
+		}
+		return nil
+	}
+
+	idGen := crypto.NewUUIDGenerator()
+	newID, err := idGen.NewUUID()
+	if err != nil {
+		return err
+	}
+	newIdent, err := entity.NewUserIdentity(newID, userID, entity.IdentityKindUsername, normUsername, true, now)
+	if err != nil {
+		return err
+	}
+	newIdent.MarkVerified(now)
+	return repos.UserIdentities.Insert(txCtx, newIdent)
+}
+
+func stripInteractiveCredentialsInTx(txCtx context.Context, repos *iamrepo.Registry, userID string) error {
+	if repos.UserCredentials != nil {
+		if err := repos.UserCredentials.DeleteByUserID(txCtx, userID); err != nil && !errors.Is(err, iamerrors.ErrCredentialNotFound) {
+			return err
+		}
+	}
+	if repos.UserTOTPFactors != nil {
+		if err := repos.UserTOTPFactors.DeleteByUserID(txCtx, userID); err != nil && !errors.Is(err, iamerrors.ErrTOTPNotFound) {
+			return err
+		}
+	}
+	if repos.UserRecoveryCodes != nil {
+		if err := repos.UserRecoveryCodes.DeleteByUserID(txCtx, userID); err != nil && !errors.Is(err, iamerrors.ErrRecoveryCodeNotFound) {
+			return err
+		}
+	}
+	return nil
+}
+
+func stripIncompatibleSystemRolesInTx(
+	txCtx context.Context,
+	repos *iamrepo.Registry,
+	userID, allowedRoleID string,
+	now time.Time,
+) error {
+	if repos.UserRoles != nil {
+		assignments, err := repos.UserRoles.SelectByUserID(txCtx, userID, true, now)
+		if err != nil {
+			return err
+		}
+		for _, ur := range assignments {
+			if ur == nil {
+				continue
+			}
+			if ur.RoleID == allowedRoleID && ur.Scope.Type == entity.ScopeTypeGlobal {
+				continue
+			}
+			if err := repos.UserRoles.DeleteByID(txCtx, ur.ID); err != nil && !errors.Is(err, iamerrors.ErrUserRoleNotFound) {
+				return err
+			}
+		}
+	}
+	if repos.GroupMembers != nil {
+		groups, err := repos.GroupMembers.SelectGroupsByUserID(txCtx, userID)
+		if err != nil {
+			return err
+		}
+		for _, grp := range groups {
+			if grp == nil {
+				continue
+			}
+			incompatible := true
+			if repos.GroupRoles != nil && repos.Roles != nil {
+				grs, grErr := repos.GroupRoles.SelectByGroupID(txCtx, grp.ID, true, now)
+				if grErr != nil {
+					return grErr
+				}
+				incompatible = false
+				for _, gr := range grs {
+					if gr == nil {
+						continue
+					}
+					roleObj, rErr := repos.Roles.SelectByID(txCtx, gr.RoleID)
+					if rErr != nil {
+						if errors.Is(rErr, iamerrors.ErrRoleNotFound) {
+							continue
+						}
+						return rErr
+					}
+					if roleObj != nil && !entity.IsRoleCompatibleWithUserKind(roleObj.Code, entity.UserKindSystem) {
+						incompatible = true
+						break
+					}
+				}
+			}
+			if incompatible {
+				if err := repos.GroupMembers.Delete(txCtx, grp.ID, userID); err != nil && !errors.Is(err, iamerrors.ErrGroupMemberNotFound) {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func ensureHumanSuperadminUser(ctx context.Context, repos *iamrepo.Registry, cfg config.SuperadminBootstrapConfig) (string, error) {
 	var normEmail, normUsername string
+	var forbiddenTerms []string
 	if strings.TrimSpace(cfg.Email) != "" {
 		val, err := entity.ValidateEmail(cfg.Email)
 		if err != nil {
 			return "", err
 		}
 		normEmail = val
+		forbiddenTerms = append(forbiddenTerms, normEmail)
 	}
 	if strings.TrimSpace(cfg.Username) != "" {
 		val, err := entity.ValidateUsername(cfg.Username)
@@ -304,6 +499,17 @@ func ensureBootstrapUser(ctx context.Context, repos *iamrepo.Registry, cfg confi
 			return "", err
 		}
 		normUsername = val
+		forbiddenTerms = append(forbiddenTerms, normUsername)
+	}
+
+	displayName := strings.TrimSpace(cfg.DisplayName)
+	if displayName == "" {
+		displayName = "Super Administrator"
+	}
+	forbiddenTerms = append(forbiddenTerms, displayName)
+
+	if err := domainservice.NewDefaultPasswordPolicy().Validate(cfg.Password, forbiddenTerms...); err != nil {
+		return "", err
 	}
 
 	if existingUID, err := findBootstrapUserIDByIdentities(ctx, repos.UserIdentities, normEmail, normUsername); err != nil {
@@ -313,24 +519,27 @@ func ensureBootstrapUser(ctx context.Context, repos *iamrepo.Registry, cfg confi
 		if err != nil {
 			return "", err
 		}
-		if existingUser.Status != entity.UserStatusActive && !existingUser.IsDeleted() {
-			now := domainservice.SystemClock{}.Now()
-			if err := existingUser.Activate(now); err != nil {
-				return "", err
-			}
-			if err := repos.Users.Update(ctx, existingUser); err != nil {
-				return "", err
-			}
+		if existingUser.Kind == entity.UserKindSystem {
+			return "", iamerrors.ErrSystemUserInteractiveForbidden
+		}
+		if err := activateOrUpdateHumanSuperadmin(ctx, repos, existingUser, displayName, cfg.Password); err != nil {
+			return "", err
 		}
 		return existingUID, nil
 	}
 
 	uid := strings.ToLower(strings.TrimSpace(cfg.UserUID))
 	if uid != "" {
-		if err := entity.ValidateUUID("system_user_uid", uid); err != nil {
+		if err := entity.ValidateUUID("superadmin_user_uid", uid); err != nil {
 			return "", err
 		}
 		if existingByID, err := repos.Users.SelectByID(ctx, uid); err == nil && existingByID != nil {
+			if existingByID.Kind == entity.UserKindSystem {
+				return "", iamerrors.ErrSystemUserInteractiveForbidden
+			}
+			if err := activateOrUpdateHumanSuperadmin(ctx, repos, existingByID, displayName, cfg.Password); err != nil {
+				return "", err
+			}
 			return existingByID.ID, nil
 		} else if err != nil && !errors.Is(err, iamerrors.ErrUserNotFound) {
 			return "", err
@@ -343,17 +552,8 @@ func ensureBootstrapUser(ctx context.Context, repos *iamrepo.Registry, cfg confi
 		uid = genID
 	}
 
-	kind := entity.UserKind(strings.ToLower(strings.TrimSpace(cfg.UserKind)))
-	if !kind.IsValid() {
-		kind = entity.UserKindSystem
-	}
-	displayName := strings.TrimSpace(cfg.DisplayName)
-	if displayName == "" {
-		displayName = "IntegriOne System Administrator"
-	}
-
 	now := domainservice.SystemClock{}.Now()
-	u, err := entity.NewUser(uid, kind, entity.UserStatusActive, displayName, now)
+	u, err := entity.NewUser(uid, entity.UserKindEmployee, entity.UserStatusActive, displayName, now)
 	if err != nil {
 		return "", err
 	}
@@ -410,6 +610,49 @@ func ensureBootstrapUser(ctx context.Context, repos *iamrepo.Registry, cfg confi
 	return u.ID, nil
 }
 
+func activateOrUpdateHumanSuperadmin(ctx context.Context, repos *iamrepo.Registry, existingUser *entity.User, displayName, rawPassword string) error {
+	if existingUser == nil {
+		return iamerrors.ErrUserNotFound
+	}
+	needsUpdate := false
+	now := domainservice.SystemClock{}.Now()
+	if existingUser.Status != entity.UserStatusActive && !existingUser.IsDeleted() {
+		if err := existingUser.Activate(now); err != nil {
+			return err
+		}
+		needsUpdate = true
+	}
+	if existingUser.Kind != entity.UserKindEmployee || existingUser.DisplayName != displayName {
+		if err := existingUser.ReconcileBootstrapIdentity(entity.UserKindEmployee, displayName, now); err != nil {
+			return err
+		}
+		needsUpdate = true
+	}
+	if needsUpdate {
+		if err := repos.Users.Update(ctx, existingUser); err != nil {
+			return err
+		}
+	}
+	if repos.UserCredentials != nil {
+		if _, err := repos.UserCredentials.SelectByUserID(ctx, existingUser.ID); errors.Is(err, iamerrors.ErrCredentialNotFound) {
+			hash, hashErr := crypto.NewDefaultArgon2idHasher().Hash(rawPassword)
+			if hashErr != nil {
+				return hashErr
+			}
+			cred, credErr := entity.NewUserCredential(existingUser.ID, hash, false, now)
+			if credErr != nil {
+				return credErr
+			}
+			if insErr := repos.UserCredentials.Insert(ctx, cred); insErr != nil && !errors.Is(insErr, iamerrors.ErrCredentialAlreadyExists) {
+				return insErr
+			}
+		} else if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // findBootstrapUserIDByIdentities mencari ID pengguna bootstrap yang sudah ada melalui lookup eksplisit email dan username.
 func findBootstrapUserIDByIdentities(
 	ctx context.Context,
@@ -438,35 +681,6 @@ func findBootstrapUserIDByIdentities(
 		}
 	}
 	return "", nil
-}
-
-func permissionCreateInput(spec bootstrapPermissionSpec) permission.CreateInput {
-	separator := strings.LastIndexByte(spec.Code, '.')
-	resource := spec.Domain
-	action := spec.Code
-	if separator > 0 && separator < len(spec.Code)-1 {
-		resource = spec.Code[:separator]
-		action = spec.Code[separator+1:]
-	}
-	return permission.CreateInput{
-		Code:        spec.Code,
-		Resource:    resource,
-		Action:      action,
-		Description: spec.Description,
-		IsSensitive: spec.IsSensitive,
-	}
-}
-
-func roleCreateInput(spec bootstrapRoleSpec) role.CreateInput {
-	return role.CreateInput{
-		Code:                spec.Code,
-		Name:                spec.Name,
-		Description:         spec.Description,
-		ManagementDomain:    spec.Domain,
-		DefaultRedirectPath: spec.DefaultRedirectPath,
-		RedirectPriority:    spec.RedirectPriority,
-		IsSystem:            true,
-	}
 }
 
 func roleAssignmentInput(userID, roleID string) role.AssignUserRoleInput {

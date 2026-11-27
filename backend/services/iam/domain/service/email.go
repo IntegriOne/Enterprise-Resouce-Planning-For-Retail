@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"strings"
 	"time"
+
+	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
 )
 
 // EmailPurpose mengklasifikasikan jenis pesan email transaksional yang dikirim oleh layanan IAM.
@@ -41,18 +42,5 @@ type EmailSender interface {
 
 // MaskEmailForLog menyamarkan local-part alamat email sebelum dicatat ke log agar PII tetap terlindungi.
 func MaskEmailForLog(email string) string {
-	clean := strings.TrimSpace(strings.ToLower(email))
-	at := strings.IndexByte(clean, '@')
-	if at <= 0 || at == len(clean)-1 {
-		if clean == "" {
-			return "<empty>"
-		}
-		return "<redacted>"
-	}
-	local := clean[:at]
-	domain := clean[at+1:]
-	if len(local) == 1 {
-		return "*@" + domain
-	}
-	return local[:1] + "***@" + domain
+	return entity.MaskEmail(email)
 }

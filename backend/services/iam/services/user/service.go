@@ -169,9 +169,6 @@ func (s *Service) CreateUser(ctx context.Context, in CreateUserInput) (*entity.U
 		status = entity.UserStatusPending
 	}
 
-	if (in.ProvisioningRequestID == "") != (in.WorkerID == "") {
-		return nil, iamerrors.ErrInvalidInput
-	}
 	if in.ProvisioningRequestID != "" && (in.Kind != entity.UserKindEmployee || status != entity.UserStatusPending || in.MarkIdentitiesVerified) {
 		return nil, iamerrors.ErrInvalidInput
 	}
@@ -192,22 +189,35 @@ func (s *Service) CreateUser(ctx context.Context, in CreateUserInput) (*entity.U
 		}
 	}
 
+	if in.Kind == entity.UserKindSystem {
+		// Akun layanan otomasi system bersifat non-interaktif: hanya username, tanpa email dan tanpa kata sandi.
+		if strings.TrimSpace(in.Email) != "" {
+			return nil, iamerrors.WithField(iamerrors.ErrSystemUserInteractiveForbidden, "email", "system automation account must not have an interactive email")
+		}
+		if in.Password != "" {
+			return nil, iamerrors.WithField(iamerrors.ErrSystemUserInteractiveForbidden, "password", "system automation account must not have a password")
+		}
+	}
+
 	normEmail, normUsername, idents, forbiddenTerms, err := s.buildInitialIdentities(userID, in, now)
 	if err != nil {
 		return nil, err
 	}
 	forbiddenTerms = append(forbiddenTerms, u.DisplayName)
 
-	if err := s.passwordPolicy.Validate(in.Password, forbiddenTerms...); err != nil {
-		return nil, err
-	}
-	passwordHash, err := s.passwordHasher.Hash(in.Password)
-	if err != nil {
-		return nil, err
-	}
-	cred, err := entity.NewUserCredential(userID, passwordHash, in.RequirePasswordChange, now)
-	if err != nil {
-		return nil, err
+	var cred *entity.UserCredential
+	if in.Kind != entity.UserKindSystem {
+		if err := s.passwordPolicy.Validate(in.Password, forbiddenTerms...); err != nil {
+			return nil, err
+		}
+		passwordHash, err := s.passwordHasher.Hash(in.Password)
+		if err != nil {
+			return nil, err
+		}
+		cred, err = entity.NewUserCredential(userID, passwordHash, in.RequirePasswordChange, now)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var issuedVerification *IssuedTokenResult
@@ -231,8 +241,10 @@ func (s *Service) CreateUser(ctx context.Context, in CreateUserInput) (*entity.U
 		if err := s.users.InsertWithIdentities(txCtx, u, idents); err != nil {
 			return err
 		}
-		if err := s.credentials.Insert(txCtx, cred); err != nil {
-			return err
+		if cred != nil {
+			if err := s.credentials.Insert(txCtx, cred); err != nil {
+				return err
+			}
 		}
 		if in.ProvisioningRequestID != "" {
 			if err := s.associateProvisionedAccount(txCtx, in.ProvisioningRequestID, u.ID); err != nil {
@@ -523,11 +535,14 @@ func (s *Service) transitionUserStatus(
 	return updated, nil
 }
 
-// loadAuthenticatableUser mengambil akun pengguna berdasarkan ID dan memastikan statusnya ACTIVE serta tidak terhapus.
+// loadAuthenticatableUser mengambil akun pengguna manusia berdasarkan ID dan memastikan statusnya ACTIVE serta bukan akun system.
 func (s *Service) loadAuthenticatableUser(ctx context.Context, userID string) (*entity.User, error) {
 	u, err := s.users.SelectByID(ctx, userID)
 	if err != nil {
 		return nil, err
+	}
+	if u.Kind == entity.UserKindSystem {
+		return nil, iamerrors.ErrSystemUserInteractiveForbidden
 	}
 	if err := u.CanAuthenticate(); err != nil {
 		return nil, err

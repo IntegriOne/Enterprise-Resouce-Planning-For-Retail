@@ -139,6 +139,24 @@ func TestMapError(t *testing.T) {
 			wantKind:   iamerrors.KindInvalidInput,
 		},
 		{
+			name:       "numeric out of range maps to ErrInvalidInput",
+			err:        &pgconn.PgError{Code: "22003"},
+			wantTarget: iamerrors.ErrInvalidInput,
+			wantKind:   iamerrors.KindInvalidInput,
+		},
+		{
+			name:       "duplicate token digest maps to ErrAlreadyExists",
+			err:        &pgconn.PgError{Code: "23505", ConstraintName: "user_tokens_token_digest_key"},
+			wantTarget: iamerrors.ErrAlreadyExists,
+			wantKind:   iamerrors.KindAlreadyExists,
+		},
+		{
+			name:       "fk missing identity maps to ErrIdentityNotFound",
+			err:        &pgconn.PgError{Code: "23503", ConstraintName: "user_tokens_identity_id_fkey"},
+			wantTarget: iamerrors.ErrIdentityNotFound,
+			wantKind:   iamerrors.KindNotFound,
+		},
+		{
 			name:       "deadlock maps to conflict",
 			err:        &pgconn.PgError{Code: "40P01"},
 			wantTarget: iamerrors.ErrConflict,

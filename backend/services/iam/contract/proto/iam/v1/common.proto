@@ -11,6 +11,7 @@ enum UserKind {
   USER_KIND_EMPLOYEE = 2;
   USER_KIND_VENDOR = 3;
   USER_KIND_SUPPLIER = 4;
+  // USER_KIND_SYSTEM adalah akun layanan otomasi non-interaktif per-management (tanpa email/kata sandi) yang dilarang login interaktif (iam.user.system_cannot_login).
   USER_KIND_SYSTEM = 5;
 }
 

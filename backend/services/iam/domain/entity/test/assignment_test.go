@@ -173,4 +173,15 @@ func TestSelfScopeRoleAndSnapshotGuards(t *testing.T) {
 	if _, ok := snap.HasPermission("iam.users.readself", scopeA); !ok {
 		t.Fatal("*self permission must allow matching own self scope")
 	}
+
+	const payslipPermission = "human_resource.payslips.read_self"
+	snap.UserKind = entity.UserKindEmployee
+	snap.Permissions = []entity.ScopedPermission{{PermissionCode: payslipPermission, Scope: entity.GlobalScope()}}
+	if _, ok := snap.HasPermission(payslipPermission, scopeA); ok {
+		t.Fatal("global grant must not authorize the owner's payslip")
+	}
+	snap.Permissions = append(snap.Permissions, entity.ScopedPermission{PermissionCode: payslipPermission, Scope: scopeA})
+	if grant, ok := snap.HasPermission(payslipPermission, scopeA); !ok || grant.Scope.Type != entity.ScopeTypeSelf {
+		t.Fatal("explicit self grant must authorize the owner's payslip")
+	}
 }

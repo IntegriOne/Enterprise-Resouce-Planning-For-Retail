@@ -3,9 +3,11 @@ package crypto_test
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"strings"
 	"testing"
 
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 )
@@ -115,8 +117,10 @@ func TestAESGCMKeyringCipher_ConfigValidationAndKeyParsing(t *testing.T) {
 	if err != nil || kv != 1 || len(ct) == 0 {
 		t.Fatalf("ephemeral Encrypt() failed: kv=%d err=%v", kv, err)
 	}
-	pt, err := cipher.Decrypt(ct, kv)
-	if err != nil || !strings.EqualFold(string(pt), "abc") {
+	if pt, err := cipher.Decrypt(ct, kv); err != nil || !strings.EqualFold(string(pt), "abc") {
 		t.Fatalf("ephemeral Decrypt() = (%q, %v)", pt, err)
+	}
+	if _, err := cipher.Decrypt(ct, 99); !errors.Is(err, iamerrors.ErrUnavailable) {
+		t.Fatalf("Decrypt(unknown key version) = %v, want ErrUnavailable", err)
 	}
 }

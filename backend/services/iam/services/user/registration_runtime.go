@@ -58,22 +58,24 @@ func (s *Service) recordUserSecurityChangedInTx(
 	}
 
 	pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
-		u, err := s.users.SelectByID(postCtx, userID)
-		if err != nil {
-			return
-		}
-		if s.outboxCoord != nil {
-			s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
-				if s.projector == nil {
+		projectUser := func(recEpoch int64) error {
+			if s.projector == nil || !s.projector.IsEnabled() {
+				return nil
+			}
+			u, err := s.users.SelectByID(postCtx, userID)
+			if err != nil {
+				if errors.Is(err, iamerrors.ErrUserNotFound) {
 					return nil
 				}
-				return s.projector.ProjectUserSecurityChanged(postCtx, u, recEpoch, bumpPermRevision)
-			})
+				return err
+			}
+			return s.projector.ProjectUserSecurityChanged(postCtx, u, recEpoch, bumpPermRevision)
+		}
+		if s.outboxCoord != nil {
+			s.outboxCoord.CompleteAfterCommit(postCtx, evID, projectUser)
 			return
 		}
-		if s.projector != nil && s.projector.IsEnabled() {
-			_ = s.projector.ProjectUserSecurityChanged(postCtx, u, 1, bumpPermRevision)
-		}
+		_ = projectUser(1)
 	})
 	return nil
 }
@@ -274,8 +276,8 @@ func (s *Service) ConfirmEmailVerificationByToken(ctx context.Context, rawToken 
 			return err
 		}
 		if err := u.CanAuthenticate(); err != nil {
-			// Jangan membocorkan status deleted/suspended/disabled kepada pemanggil publik verifyEmail.
-			if u.IsDeleted() || u.Status == entity.UserStatusSuspended || u.Status == entity.UserStatusDisabled {
+			// Jangan membocorkan status deleted/suspended/disabled maupun kategori system kepada pemanggil publik verifyEmail.
+			if u.IsDeleted() || u.Kind == entity.UserKindSystem || u.Status == entity.UserStatusSuspended || u.Status == entity.UserStatusDisabled {
 				result = &VerifyEmailResult{
 					Status:  VerifyEmailStatusInvalid,
 					Message: "verification token is invalid",

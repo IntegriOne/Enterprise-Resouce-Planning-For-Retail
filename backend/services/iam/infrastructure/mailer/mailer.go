@@ -81,6 +81,41 @@ type Config struct {
 	APIBaseURL string
 }
 
+// String menyamarkan kredensial SMTP, SES, dan API key email agar tidak bocor lewat fmt/log.
+func (c Config) String() string {
+	return fmt.Sprintf("mailer.Config{Provider:%s, DeliveryMode:%s, Host:%s, Port:%d, AccessKey:%s, Secret:%s, SessionToken:%s, SMTPPassword:%s, APIKey:%s}",
+		c.Provider, c.DeliveryMode, c.SMTPHost, c.SMTPPort,
+		maskConfigFlag(c.SESAccessKeyID), maskConfigFlag(c.SESSecretAccessKey),
+		maskConfigFlag(c.SESSessionToken), maskConfigFlag(c.SMTPPassword), maskConfigFlag(c.APIKey))
+}
+
+// GoString menyamarkan kredensial pada format %#v.
+func (c Config) GoString() string {
+	return c.String()
+}
+
+// LogValue memancarkan metadata konfigurasi email aman untuk slog tanpa kredensial mentah.
+func (c Config) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("provider", string(c.Provider)),
+		slog.String("delivery_mode", string(c.DeliveryMode)),
+		slog.String("smtp_host", c.SMTPHost),
+		slog.Int("smtp_port", c.SMTPPort),
+		slog.String("ses_access_key_id", maskConfigFlag(c.SESAccessKeyID)),
+		slog.String("ses_secret_access_key", maskConfigFlag(c.SESSecretAccessKey)),
+		slog.String("ses_session_token", maskConfigFlag(c.SESSessionToken)),
+		slog.String("smtp_password", maskConfigFlag(c.SMTPPassword)),
+		slog.String("api_key", maskConfigFlag(c.APIKey)),
+	)
+}
+
+func maskConfigFlag(val string) string {
+	if strings.TrimSpace(val) == "" {
+		return "<empty>"
+	}
+	return "[REDACTED]"
+}
+
 // DefaultConfig mengembalikan konfigurasi bawaan yang aman untuk lingkungan pengembangan lokal.
 func DefaultConfig() Config {
 	return Config{
@@ -266,8 +301,8 @@ func (e *PermanentError) Unwrap() error {
 
 // IsPermanent melaporkan apakah error pengiriman bersifat permanen sehingga tidak perlu retry.
 func IsPermanent(err error) bool {
-	var p *PermanentError
-	return errors.As(err, &p)
+	_, ok := errors.AsType[*PermanentError](err)
+	return ok
 }
 
 // SenderLifecycle menggabungkan EmailSender dengan antrean/worker lifecycle agar dapat didrain saat shutdown.

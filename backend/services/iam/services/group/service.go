@@ -25,6 +25,7 @@ type Service struct {
 	idGen           domainservice.IDGenerator
 	outboxCoord     *redisstore.Coordinator
 	projector       domainservice.RuntimeSecurityProjector
+	scopeVerifier   domainservice.ScopeOwnerVerifier
 }
 
 // NewService membentuk Service grup dengan validasi fail-closed atas seluruh ketergantungan wajib.
@@ -72,6 +73,7 @@ func NewService(deps Dependencies) (*Service, error) {
 		idGen:           deps.IDGen,
 		outboxCoord:     deps.OutboxCoord,
 		projector:       deps.Projector,
+		scopeVerifier:   deps.ScopeVerifier,
 	}, nil
 }
 
@@ -272,6 +274,9 @@ func (s *Service) AddMember(ctx context.Context, groupID, userID string) (*entit
 		if u.IsDeleted() {
 			return iamerrors.ErrUserDeleted
 		}
+		if err := s.ensureMemberCompatibleWithGroupRoles(txCtx, groupID, u.Kind); err != nil {
+			return err
+		}
 
 		exists, err := s.members.CheckExists(txCtx, groupID, userID)
 		if err != nil {
@@ -370,7 +375,7 @@ func (s *Service) AssignRole(ctx context.Context, in AssignGroupRoleInput) (*ent
 	if err != nil {
 		return nil, err
 	}
-	if err := domainservice.RequireScopeOwnerVerification(scope); err != nil {
+	if err := domainservice.VerifyScope(ctx, s.scopeVerifier, scope); err != nil {
 		return nil, err
 	}
 	assignmentID, err := s.idGen.NewUUID()
@@ -394,6 +399,9 @@ func (s *Service) AssignRole(ctx context.Context, in AssignGroupRoleInput) (*ent
 		}
 		if !r.IsActive {
 			return iamerrors.ErrRoleInactive
+		}
+		if err := s.ensureRoleCompatibleWithGroupMembers(txCtx, in.GroupID, r.Code); err != nil {
+			return err
 		}
 
 		exists, err := s.gRoles.CheckExists(txCtx, in.GroupID, in.RoleID, scope)
@@ -463,6 +471,58 @@ func (s *Service) ListGroupRoles(ctx context.Context, groupID string, includeExp
 		return nil, err
 	}
 	return s.gRoles.SelectByGroupID(ctx, groupID, includeExpired, s.clock.Now())
+}
+
+func (s *Service) ensureMemberCompatibleWithGroupRoles(txCtx context.Context, groupID string, kind entity.UserKind) error {
+	if s.gRoles == nil || s.roles == nil {
+		return nil
+	}
+	groupRoles, err := s.gRoles.SelectByGroupID(txCtx, groupID, true, s.clock.Now())
+	if err != nil {
+		return err
+	}
+	for _, gr := range groupRoles {
+		if gr == nil {
+			continue
+		}
+		r, err := s.roles.SelectByID(txCtx, gr.RoleID)
+		if err != nil {
+			return err
+		}
+		if !entity.IsRoleCompatibleWithUserKind(r.Code, kind) {
+			return iamerrors.WithField(iamerrors.ErrRoleUserKindMismatch, "user_id", "target user kind is incompatible with roles assigned to this group")
+		}
+	}
+	return nil
+}
+
+func (s *Service) ensureRoleCompatibleWithGroupMembers(txCtx context.Context, groupID, roleCode string) error {
+	if s.members == nil {
+		return nil
+	}
+	offset := 0
+	for {
+		page, err := s.members.SelectUsersByGroupID(txCtx, groupID, domainrepo.PageRequest{
+			Limit:  domainrepo.MaxPageLimit,
+			Offset: offset,
+		})
+		if err != nil {
+			return err
+		}
+		for _, member := range page.Items {
+			if member == nil || member.IsDeleted() {
+				continue
+			}
+			if !entity.IsRoleCompatibleWithUserKind(roleCode, member.Kind) {
+				return iamerrors.WithField(iamerrors.ErrRoleUserKindMismatch, "role_id", "role is incompatible with one or more group members")
+			}
+		}
+		if !page.HasMore || len(page.Items) == 0 {
+			break
+		}
+		offset += len(page.Items)
+	}
+	return nil
 }
 
 func (s *Service) ensureReady() error {

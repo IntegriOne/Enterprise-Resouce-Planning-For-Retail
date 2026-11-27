@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -61,13 +63,16 @@ func (u *User) IsDeleted() bool {
 	return u != nil && u.DeletedAt != nil
 }
 
-// CanAuthenticate mengevaluasi secara fail-closed apakah status akun mengizinkan proses login.
+// CanAuthenticate mengevaluasi secara fail-closed apakah status serta jenis akun mengizinkan autentikasi interaktif.
 func (u *User) CanAuthenticate() error {
 	if u == nil {
 		return iamerrors.ErrUserNotFound
 	}
 	if u.IsDeleted() {
 		return iamerrors.ErrUserDeleted
+	}
+	if u.Kind == UserKindSystem {
+		return iamerrors.ErrSystemCannotLogin
 	}
 	switch u.Status {
 	case UserStatusActive:
@@ -92,6 +97,27 @@ func (u *User) Activate(now time.Time) error {
 		return iamerrors.ErrUserDeleted
 	}
 	u.Status = UserStatusActive
+	u.UpdatedAt = normalizeLocalTime(now)
+	return nil
+}
+
+// ReconcileBootstrapIdentity menyelaraskan kategori akun dan nama tampilan saat bootstrap/migrasi idempoten sistem.
+func (u *User) ReconcileBootstrapIdentity(kind UserKind, displayName string, now time.Time) error {
+	if u == nil {
+		return iamerrors.ErrUserNotFound
+	}
+	if u.IsDeleted() {
+		return iamerrors.ErrUserDeleted
+	}
+	if !kind.IsValid() {
+		return iamerrors.ErrInvalidUserKind
+	}
+	trimmedName := strings.TrimSpace(displayName)
+	if trimmedName == "" || utf8.RuneCountInString(trimmedName) > MaxDisplayNameLength || HasControlChar(trimmedName) {
+		return iamerrors.ErrInvalidDisplayName
+	}
+	u.Kind = kind
+	u.DisplayName = trimmedName
 	u.UpdatedAt = normalizeLocalTime(now)
 	return nil
 }
@@ -296,4 +322,53 @@ func (i *UserIdentity) UpdateUsernameValue(value string, now time.Time) error {
 	}
 	i.UpdatedAt = ts
 	return nil
+}
+
+// MaskEmail menyamarkan bagian lokal alamat email sebelum dicatat ke log atau string debug agar PII tetap terlindungi.
+func MaskEmail(email string) string {
+	clean := strings.TrimSpace(strings.ToLower(email))
+	at := strings.IndexByte(clean, '@')
+	if at <= 0 || at == len(clean)-1 {
+		if clean == "" {
+			return "<empty>"
+		}
+		return "<redacted>"
+	}
+	local := clean[:at]
+	domain := clean[at+1:]
+	if len(local) == 1 {
+		return "*@" + domain
+	}
+	return local[:1] + "***@" + domain
+}
+
+// String menyembunyikan alamat email lengkap pada keluaran fmt agar PII identitas tetap aman.
+func (i UserIdentity) String() string {
+	displayVal := i.Value
+	if i.Kind == IdentityKindEmail {
+		displayVal = MaskEmail(i.Value)
+	}
+	return fmt.Sprintf("UserIdentity{ID:%s, UserID:%s, Kind:%s, Value:%s, Verified:%t, Primary:%t}",
+		i.ID, i.UserID, i.Kind, displayVal, i.IsVerified, i.IsPrimary)
+}
+
+// GoString menyamarkan alamat email pada format %#v.
+func (i UserIdentity) GoString() string {
+	return i.String()
+}
+
+// LogValue memancarkan atribut UserIdentity aman untuk slog tanpa alamat email mentah.
+func (i UserIdentity) LogValue() slog.Value {
+	displayVal := i.Value
+	if i.Kind == IdentityKindEmail {
+		displayVal = MaskEmail(i.Value)
+	}
+	return slog.GroupValue(
+		slog.String("id", i.ID),
+		slog.String("user_id", i.UserID),
+		slog.String("kind", i.Kind.String()),
+		slog.String("value", displayVal),
+		slog.Bool("is_verified", i.IsVerified),
+		slog.Bool("is_primary", i.IsPrimary),
+	)
 }

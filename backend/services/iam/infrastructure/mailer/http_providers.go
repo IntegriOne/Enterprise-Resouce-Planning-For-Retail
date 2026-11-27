@@ -9,10 +9,13 @@ import (
 	"io"
 	"net/http"
 	"net/mail"
+	"regexp"
 	"strings"
 
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 )
+
+var providerEmailRedactor = regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`)
 
 const (
 	defaultSendGridBaseURL = "https://api.sendgrid.com"
@@ -123,11 +126,17 @@ func NewHTTPProviderSender(rawCfg Config) (*HTTPProviderSender, error) {
 
 // ProviderName mengembalikan nama provider aktif.
 func (s *HTTPProviderSender) ProviderName() string {
+	if s == nil {
+		return ""
+	}
 	return string(s.spec.provider)
 }
 
 // Send mengirim email ke endpoint REST API provider dan membedakan error sementara (5xx/429) vs permanen (4xx).
 func (s *HTTPProviderSender) Send(ctx context.Context, msg domainservice.EmailMessage) (*domainservice.EmailSendResult, error) {
+	if s == nil || s.httpClient == nil || s.spec.buildPayload == nil {
+		return nil, errors.New("http email sender is not initialized")
+	}
 	toAddr, err := extractEnvelopeAddress(msg.To)
 	if err != nil {
 		return nil, &PermanentError{Err: err}
@@ -158,9 +167,14 @@ func (s *HTTPProviderSender) Send(ctx context.Context, msg domainservice.EmailMe
 	if err != nil {
 		return nil, fmt.Errorf("%s request failed: %w", s.spec.provider, err)
 	}
-	defer func() { _ = resp.Body.Close() }()
-
-	respBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+	if resp == nil {
+		return nil, fmt.Errorf("%s request returned empty response", s.spec.provider)
+	}
+	var respBytes []byte
+	if resp.Body != nil {
+		defer func() { _ = resp.Body.Close() }()
+		respBytes, _ = io.ReadAll(io.LimitReader(resp.Body, 4096))
+	}
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		msgID := s.spec.extractRespID(respBytes, resp.Header)
 		return &domainservice.EmailSendResult{
@@ -279,6 +293,7 @@ func sanitizeProviderErrorSummary(raw []byte) string {
 		}
 		return r
 	}, strings.TrimSpace(string(raw)))
+	cleaned = providerEmailRedactor.ReplaceAllString(cleaned, "[REDACTED_EMAIL]")
 	if len(cleaned) > maxSummaryLen {
 		cleaned = cleaned[:maxSummaryLen] + "..."
 	}

@@ -204,9 +204,10 @@ func TestUserService_EmailVerificationTokenIsBoundToIdentity(t *testing.T) {
 	}
 	var emailID, usernameID string
 	for _, ident := range identities {
-		if ident.Kind == entity.IdentityKindEmail {
+		switch ident.Kind {
+		case entity.IdentityKindEmail:
 			emailID = ident.ID
-		} else if ident.Kind == entity.IdentityKindUsername {
+		case entity.IdentityKindUsername:
 			usernameID = ident.ID
 		}
 	}
@@ -425,5 +426,73 @@ func TestUserService_ConfirmEmailVerificationByTokenOnDeletedUser(t *testing.T) 
 	}
 	if res.Status != user.VerifyEmailStatusInvalid {
 		t.Fatalf("expected VerifyEmailStatusInvalid for deleted user, got %q", res.Status)
+	}
+}
+
+func TestUserService_CheckUsernameAvailability(t *testing.T) {
+	t.Parallel()
+
+	h := newTestHarness(t)
+	ctx := context.Background()
+
+	// Buat satu pengguna employee dan satu pengguna customer untuk menguji deteksi ketersediaan tanpa membocorkan jenis akun.
+	if _, err := h.userSvc.CreateUser(ctx, user.CreateUserInput{
+		Kind:                   entity.UserKindEmployee,
+		Status:                 entity.UserStatusActive,
+		DisplayName:            "Operator Gudang Rahasia",
+		Email:                  "op.gudang@integrione.local",
+		Username:               "op.gudang",
+		Password:               "K9#StrongPass!2026",
+		MarkIdentitiesVerified: true,
+	}); err != nil {
+		t.Fatalf("CreateUser(employee) error = %v", err)
+	}
+	if _, err := h.userSvc.CreateUser(ctx, user.CreateUserInput{
+		Kind:        entity.UserKindCustomer,
+		Status:      entity.UserStatusPending,
+		DisplayName: "Pembeli Rahasia",
+		Email:       "buyer.secret@integrione.local",
+		Username:    "buyer.taken",
+		Password:    "L8#StrongPass!2026",
+	}); err != nil {
+		t.Fatalf("CreateUser(customer) error = %v", err)
+	}
+
+	avail, err := h.userSvc.CheckUsernameAvailability(ctx, "  Alice.Retail_01  ")
+	if err != nil {
+		t.Fatalf("CheckUsernameAvailability(available) error = %v", err)
+	}
+	if !avail.Available || avail.NormalizedUsername != "alice.retail_01" || avail.Reason != "username is available" {
+		t.Fatalf("unexpected available result = %+v", avail)
+	}
+
+	takenEmp, err := h.userSvc.CheckUsernameAvailability(ctx, "  OP.GUDANG ")
+	if err != nil {
+		t.Fatalf("CheckUsernameAvailability(employee taken) error = %v", err)
+	}
+	if takenEmp.Available || takenEmp.NormalizedUsername != "op.gudang" || takenEmp.Reason != "username is already taken" {
+		t.Fatalf("unexpected employee taken result = %+v", takenEmp)
+	}
+
+	takenCust, err := h.userSvc.CheckUsernameAvailability(ctx, "Buyer.Taken")
+	if err != nil {
+		t.Fatalf("CheckUsernameAvailability(customer taken) error = %v", err)
+	}
+	if takenCust.Available || takenCust.NormalizedUsername != "buyer.taken" || takenCust.Reason != takenEmp.Reason {
+		t.Fatalf("expected identical non-leaking reason for customer vs employee, got %+v vs %+v", takenCust, takenEmp)
+	}
+
+	for _, invalid := range []string{"", "   ", "ab", "alice space", ".alice", "alice.", "op.gudang@integrione.local"} {
+		if _, err := h.userSvc.CheckUsernameAvailability(ctx, invalid); !errors.Is(err, iamerrors.ErrInvalidUsername) {
+			t.Fatalf("CheckUsernameAvailability(%q) error = %v, want ErrInvalidUsername", invalid, err)
+		}
+	}
+
+	// Gangguan repositori harus fail-closed dan tidak pernah mengembalikan available=true secara keliru.
+	h.store.mu.Lock()
+	h.store.findUsernameErr = errors.New("postgres read failure")
+	h.store.mu.Unlock()
+	if res, err := h.userSvc.CheckUsernameAvailability(ctx, "fresh.user"); err == nil || res != nil {
+		t.Fatalf("expected fail-closed error when repository fails, got res=%+v err=%v", res, err)
 	}
 }

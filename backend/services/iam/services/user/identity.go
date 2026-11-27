@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
@@ -51,6 +52,9 @@ func (s *Service) AddIdentity(ctx context.Context, in AddIdentityInput) (*entity
 		}
 		if u.IsDeleted() {
 			return iamerrors.ErrUserDeleted
+		}
+		if u.Kind == entity.UserKindSystem && ident.Kind == entity.IdentityKindEmail {
+			return iamerrors.ErrSystemUserInteractiveForbidden
 		}
 
 		// Pastikan maksimal satu identitas email dan satu identitas username per pengguna serta nilai belum dipakai akun lain.
@@ -105,6 +109,9 @@ func (s *Service) RequestIdentityVerification(ctx context.Context, identityID st
 	if u.IsDeleted() {
 		return nil, iamerrors.ErrUserDeleted
 	}
+	if u.Kind == entity.UserKindSystem {
+		return nil, iamerrors.ErrSystemUserInteractiveForbidden
+	}
 
 	var issued *IssuedTokenResult
 	err = s.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
@@ -141,6 +148,9 @@ func (s *Service) UpdateEmail(ctx context.Context, in UpdateEmailInput) (*Update
 	u, err := s.users.SelectByID(ctx, in.UserID)
 	if err != nil {
 		return nil, err
+	}
+	if u.Kind == entity.UserKindSystem {
+		return nil, iamerrors.ErrSystemUserInteractiveForbidden
 	}
 	if err := u.CanAuthenticate(); err != nil {
 		return nil, err
@@ -247,6 +257,9 @@ func (s *Service) UpdateUsername(ctx context.Context, in UpdateUsernameInput) (*
 		u, err := s.users.SelectByID(txCtx, in.UserID)
 		if err != nil {
 			return err
+		}
+		if u.Kind == entity.UserKindSystem {
+			return iamerrors.ErrSystemUserInteractiveForbidden
 		}
 		if err := u.CanAuthenticate(); err != nil {
 			return err
@@ -555,22 +568,25 @@ func (s *Service) SetPrimaryIdentity(ctx context.Context, userID, identityID str
 	if err := entity.ValidateUUID("identity_id", identityID); err != nil {
 		return nil, err
 	}
+	normUserID := strings.ToLower(strings.TrimSpace(userID))
+	normIdentityID := strings.ToLower(strings.TrimSpace(identityID))
 
 	var target *entity.UserIdentity
 	err := s.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
-		ident, err := s.identities.SelectByID(txCtx, identityID)
+		ident, err := s.identities.SelectByID(txCtx, normIdentityID)
 		if err != nil {
 			return err
 		}
-		if ident.UserID != userID {
-			return iamerrors.ErrForbidden
+		if !strings.EqualFold(ident.UserID, normUserID) {
+			// Kembalikan NotFound agar tidak membocorkan keberadaan identity milik user lain.
+			return iamerrors.ErrIdentityNotFound
 		}
 		if !ident.IsVerified {
 			return iamerrors.ErrIdentityNotVerified
 		}
 
 		now := s.clock.Now()
-		if err := s.demotePrimaryIdentities(txCtx, userID, now); err != nil {
+		if err := s.demotePrimaryIdentities(txCtx, normUserID, now); err != nil {
 			return err
 		}
 		ident.SetPrimary(true, now)

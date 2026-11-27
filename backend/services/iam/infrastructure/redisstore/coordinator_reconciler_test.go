@@ -122,38 +122,59 @@ func TestLivePGAndTLSRedis_OutboxBootstrapAndOutageRecovery(t *testing.T) {
 		t.Fatalf("NewRegistryFromConfigWithRuntime() error = %v", err)
 	}
 
-	// 1. Uji idempotensi BootstrapSystemPrincipalAndRBAC sebanyak dua kali pada PostgreSQL nyata.
-	sysCfg := config.SystemBootstrapConfig{
-		UserUID:     "00000000-0000-4000-8000-000000000001",
-		Username:    "systemiam",
-		Email:       "systemiam@integrione.local",
-		Password:    "SysAdm#LiveTest2026!Z",
-		DisplayName: "SystemIAM",
-		UserKind:    "system",
-		RoleCode:    "superadmin",
+	// 1. Uji idempotensi BootstrapPrincipalsAndRBAC sebanyak dua kali pada PostgreSQL nyata.
+	bootCfg := config.BootstrapConfig{
+		Superadmin: config.SuperadminBootstrapConfig{
+			UserUID:     "00000000-0000-4000-8000-000000000001",
+			Username:    "superadmin_test",
+			Email:       "superadmin-test@integrione.local",
+			Password:    "SysAdm#LiveTest2026!Z",
+			DisplayName: "Super Administrator",
+			UserKind:    "employee",
+			RoleCode:    "superadmin",
+		},
+		AutomationPrincipals: []config.AutomationBootstrapConfig{
+			{
+				ManagementDomain: "iam",
+				UserUID:          "00000000-0000-4000-8000-000000000002",
+				Username:         "auto_system_iam",
+				DisplayName:      "Auto System IAM",
+				RoleCode:         "iam_automation",
+			},
+		},
 	}
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, reg, sysCfg, logger); err != nil {
-		t.Fatalf("BootstrapSystemPrincipalAndRBAC(1) error = %v", err)
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, reg, bootCfg, logger); err != nil {
+		t.Fatalf("BootstrapPrincipalsAndRBAC(1) error = %v", err)
 	}
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, reg, sysCfg, logger); err != nil {
-		t.Fatalf("BootstrapSystemPrincipalAndRBAC(2) error = %v", err)
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, reg, bootCfg, logger); err != nil {
+		t.Fatalf("BootstrapPrincipalsAndRBAC(2) error = %v", err)
 	}
 	if err := reg.Reconciler.BootstrapGateAndDrain(ctx); err != nil {
 		t.Fatalf("BootstrapGateAndDrain(initial) error = %v", err)
 	}
 
-	// 2. Uji login systemiam -> penerbitan sesi -> outbox langsung effective dan terproyeksi ke Redis TLS.
+	// Akun otomasi non-interaktif tidak boleh dapat login via kata sandi.
+	if _, err := reg.Users.AuthenticatePassword(ctx, user.AuthenticatePasswordInput{
+		Identifier: "auto_system_iam",
+		Password:   bootCfg.Superadmin.Password,
+		IPAddress:  "127.0.0.1",
+		UserAgent:  "live-pg-redis-test",
+	}); err == nil {
+		t.Fatal("AuthenticatePassword(auto_system_iam) unexpectedly succeeded")
+	}
+
+	// 2. Uji login superadmin human -> penerbitan sesi -> outbox langsung effective dan terproyeksi ke Redis TLS.
 	authRes, err := reg.Users.AuthenticatePassword(ctx, user.AuthenticatePasswordInput{
-		Identifier: "systemiam",
-		Password:   sysCfg.Password,
+		Identifier: "superadmin_test",
+		Password:   bootCfg.Superadmin.Password,
 		IPAddress:  "127.0.0.1",
 		UserAgent:  "live-pg-redis-test",
 	})
 	if err != nil || authRes.User == nil || authRes.IssuedSession == nil {
-		t.Fatalf("AuthenticatePassword(systemiam) error = (%+v, %v)", authRes, err)
+		t.Fatalf("AuthenticatePassword(superadmin_test) error = (%+v, %v)", authRes, err)
 	}
 	if authRes.RedirectPath != "/identity" {
-		t.Fatalf("expected /identity redirect for systemiam, got %q", authRes.RedirectPath)
+		t.Fatalf("expected /identity redirect for superadmin_test, got %q", authRes.RedirectPath)
 	}
 
 	sum := sha256.Sum256([]byte(authRes.IssuedSession.SessionToken))

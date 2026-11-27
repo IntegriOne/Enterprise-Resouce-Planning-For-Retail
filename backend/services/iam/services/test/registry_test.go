@@ -69,6 +69,7 @@ func (stubCredRepo) SelectByUserID(context.Context, string) (*entity.UserCredent
 }
 func (stubCredRepo) Insert(context.Context, *entity.UserCredential) error { return nil }
 func (stubCredRepo) Update(context.Context, *entity.UserCredential) error { return nil }
+func (stubCredRepo) DeleteByUserID(context.Context, string) error         { return nil }
 func (stubCredRepo) RecordFailedAttemptAtomic(context.Context, string, int, time.Duration, time.Time) (int, *time.Time, error) {
 	return 0, nil, nil
 }

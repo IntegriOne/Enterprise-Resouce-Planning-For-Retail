@@ -96,6 +96,22 @@ func (r *CredentialRepository) Update(ctx context.Context, credential *entity.Us
 	return nil
 }
 
+// DeleteByUserID menghapus baris kredensial kata sandi pengguna secara idempoten (digunakan saat konversi/isolasi akun system).
+func (r *CredentialRepository) DeleteByUserID(ctx context.Context, userID string) error {
+	if r == nil {
+		return pgstore.CheckDB(nil)
+	}
+	uid, err := pgstore.ValidateUUIDParam("user_id", userID)
+	if err != nil {
+		return err
+	}
+	db, err := pgstore.DBFromContext(ctx, r.db)
+	if err != nil {
+		return err
+	}
+	return pgstore.MapError(db.Where("user_id = ?", uid).Delete(&userCredentialModel{}).Error, nil)
+}
+
 // RecordFailedAttemptAtomic menambah penghitung gagal login secara atomik di PostgreSQL untuk mencegah race condition lost-update.
 func (r *CredentialRepository) RecordFailedAttemptAtomic(
 	ctx context.Context,

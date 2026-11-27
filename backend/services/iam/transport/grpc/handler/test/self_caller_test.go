@@ -8,17 +8,21 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/integrione/erp-retail/backend/services/iam/config"
 	iamv1 "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1"
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainrepo "github.com/integrione/erp-retail/backend/services/iam/domain/repository"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 	iamrepo "github.com/integrione/erp-retail/backend/services/iam/repository"
 	"github.com/integrione/erp-retail/backend/services/iam/services"
+	"github.com/integrione/erp-retail/backend/services/iam/services/group"
+	"github.com/integrione/erp-retail/backend/services/iam/services/role"
 	"github.com/integrione/erp-retail/backend/services/iam/services/user"
 	"github.com/integrione/erp-retail/backend/services/iam/transport/grpc/handler"
 	"github.com/integrione/erp-retail/backend/shared/authcontext"
@@ -96,8 +100,8 @@ func TestBootstrapBackfillAndCreateUserBaselineSelfRoles(t *testing.T) {
 	env.store.users[legacyCustID] = legacyCust
 	env.store.users[legacyEmpID] = legacyEmp
 
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, config.SystemBootstrapConfig{}, logger); err != nil {
-		t.Fatalf("BootstrapSystemPrincipalAndRBAC() first run error = %v", err)
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, env.registry, config.BootstrapConfig{}, logger); err != nil {
+		t.Fatalf("BootstrapPrincipalsAndRBAC() first run error = %v", err)
 	}
 	legacy, err := repos.Permissions.SelectByCode(ctx, "iam.users.read")
 	if err != nil {
@@ -107,8 +111,8 @@ func TestBootstrapBackfillAndCreateUserBaselineSelfRoles(t *testing.T) {
 	env.store.permissions[legacy.ID].Resource = "users"
 	env.store.mu.Unlock()
 	// Jalankan ulang bootstrap untuk memastikan backfill tidak menduplikasi penugasan peran.
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, config.SystemBootstrapConfig{}, logger); err != nil {
-		t.Fatalf("BootstrapSystemPrincipalAndRBAC() second run error = %v", err)
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, env.registry, config.BootstrapConfig{}, logger); err != nil {
+		t.Fatalf("BootstrapPrincipalsAndRBAC() second run error = %v", err)
 	}
 	repaired, err := repos.Permissions.SelectByCode(ctx, "iam.users.read")
 	if err != nil || repaired.Resource != "iam.users" || repaired.Action != "read" {
@@ -174,8 +178,23 @@ func TestBootstrapBackfillAndCreateUserBaselineSelfRoles(t *testing.T) {
 	env.store.mu.Lock()
 	env.store.permissions[sensitive.ID].IsSensitive = false
 	env.store.mu.Unlock()
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, config.SystemBootstrapConfig{}, logger); err == nil {
-		t.Fatal("bootstrap must reject a sensitivity mismatch in the existing catalog")
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, env.registry, config.BootstrapConfig{}, logger); err != nil {
+		t.Fatalf("bootstrap should tighten sensitivity false -> true idempotently, got error = %v", err)
+	}
+	upgradedSensitive, err := repos.Permissions.SelectByCode(ctx, "iam.users.write")
+	if err != nil || !upgradedSensitive.IsSensitive {
+		t.Fatalf("iam.users.write sensitivity = (%v, %v), want true after upgrade", upgradedSensitive, err)
+	}
+
+	nonSensitive, err := repos.Permissions.SelectByCode(ctx, "iam.users.read")
+	if err != nil {
+		t.Fatal(err)
+	}
+	env.store.mu.Lock()
+	env.store.permissions[nonSensitive.ID].IsSensitive = true
+	env.store.mu.Unlock()
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, env.registry, config.BootstrapConfig{}, logger); err == nil {
+		t.Fatal("bootstrap must reject a sensitivity downgrade true -> false in the existing catalog")
 	}
 }
 
@@ -185,12 +204,14 @@ func TestBootstrapFailsWhenAccessSnapshotRefreshFails(t *testing.T) {
 	env := startBufconnServer(t)
 	ctx := context.Background()
 	repos := buildMemRepoRegistry(env.store)
-	cfg := config.SystemBootstrapConfig{
-		Email:    "bootstrap-snapshot@example.com",
-		Username: "bootstrap.snapshot",
-		Password: "ValidPass!2026Strong",
+	cfg := config.BootstrapConfig{
+		Superadmin: config.SuperadminBootstrapConfig{
+			Email:    "bootstrap-snapshot@example.com",
+			Username: "bootstrap.snapshot",
+			Password: "ValidPass!2026Strong",
+		},
 	}
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, cfg, nil); err != nil {
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, env.registry, cfg, nil); err != nil {
 		t.Fatalf("initial bootstrap error = %v", err)
 	}
 
@@ -203,7 +224,7 @@ func TestBootstrapFailsWhenAccessSnapshotRefreshFails(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewRegistry() error = %v", err)
 	}
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, reg, cfg, nil); !errors.Is(err, snapshotErr) {
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, reg, cfg, nil); !errors.Is(err, snapshotErr) {
 		t.Fatalf("bootstrap error = %v, want snapshot error", err)
 	}
 }
@@ -214,15 +235,17 @@ func TestBootstrapFailsWhenExistingUserActivationCannotPersist(t *testing.T) {
 	env := startBufconnServer(t)
 	ctx := context.Background()
 	repos := buildMemRepoRegistry(env.store)
-	cfg := config.SystemBootstrapConfig{
-		Email:    "bootstrap-activation@example.com",
-		Username: "bootstrap.activation",
-		Password: "ValidPass!2026Strong",
+	cfg := config.BootstrapConfig{
+		Superadmin: config.SuperadminBootstrapConfig{
+			Email:    "bootstrap-activation@example.com",
+			Username: "bootstrap.activation",
+			Password: "ValidPass!2026Strong",
+		},
 	}
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, env.registry, cfg, nil); err != nil {
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, env.registry, cfg, nil); err != nil {
 		t.Fatalf("initial bootstrap error = %v", err)
 	}
-	identity, err := repos.UserIdentities.FindUserIdentityByEmailKind(ctx, cfg.Email)
+	identity, err := repos.UserIdentities.FindUserIdentityByEmailKind(ctx, cfg.Superadmin.Email)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,7 +262,7 @@ func TestBootstrapFailsWhenExistingUserActivationCannotPersist(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewRegistry() error = %v", err)
 	}
-	if err := services.BootstrapSystemPrincipalAndRBAC(ctx, repos, reg, cfg, nil); !errors.Is(err, updateErr) {
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, reg, cfg, nil); !errors.Is(err, updateErr) {
 		t.Fatalf("bootstrap error = %v, want activation update error", err)
 	}
 }
@@ -258,13 +281,15 @@ func TestBootstrapFailsWhenConfiguredUserLookupFails(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewRegistry() error = %v", err)
 	}
-	cfg := config.SystemBootstrapConfig{
-		UserUID:  "99999999-9999-4999-8999-999999999999",
-		Email:    "bootstrap-lookup@example.com",
-		Username: "bootstrap.lookup",
-		Password: "ValidPass!2026Strong",
+	cfg := config.BootstrapConfig{
+		Superadmin: config.SuperadminBootstrapConfig{
+			UserUID:  "99999999-9999-4999-8999-999999999999",
+			Email:    "bootstrap-lookup@example.com",
+			Username: "bootstrap.lookup",
+			Password: "ValidPass!2026Strong",
+		},
 	}
-	if err := services.BootstrapSystemPrincipalAndRBAC(context.Background(), repos, reg, cfg, nil); !errors.Is(err, lookupErr) {
+	if err := services.BootstrapPrincipalsAndRBAC(context.Background(), repos, reg, cfg, nil); !errors.Is(err, lookupErr) {
 		t.Fatalf("bootstrap error = %v, want user lookup error", err)
 	}
 }
@@ -404,5 +429,260 @@ func TestHandlerEnforceSelfCallerAndSessionGuards(t *testing.T) {
 	}
 	if upd.GetUser().GetDisplayName() != "Alice Updated" {
 		t.Fatalf("DisplayName = %q, want Alice Updated", upd.GetUser().GetDisplayName())
+	}
+}
+
+func TestBootstrapMigratesLegacySystemIAMAndEnforcesKindRBACIsolation(t *testing.T) {
+	t.Parallel()
+
+	env := startBufconnServer(t)
+	ctx := context.Background()
+	repos := buildMemRepoRegistry(env.store)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	now := domainservice.SystemClock{}.Now()
+
+	// 1. Seed akun historis systemiam (user_kind=system + email + password + superadmin role + sesi aktif).
+	legacyID := "853aac77-32e7-4a88-b2d6-7d68db8d13d7"
+	legacyUser, err := entity.NewUser(legacyID, entity.UserKindSystem, entity.UserStatusActive, "SystemIAM", now)
+	if err != nil {
+		t.Fatalf("NewUser(legacy) error = %v", err)
+	}
+	emailIdent, _ := entity.NewUserIdentity("aaaaaaaa-1111-4111-8111-111111111111", legacyID, entity.IdentityKindEmail, "systemiam@integrione.local", true, now)
+	emailIdent.MarkVerified(now)
+	unameIdent, _ := entity.NewUserIdentity("bbbbbbbb-1111-4111-8111-111111111111", legacyID, entity.IdentityKindUsername, "systemiam", false, now)
+	unameIdent.MarkVerified(now)
+	legacyHash, _ := crypto.NewDefaultArgon2idHasher().Hash("OldLegacy#2026!A")
+	legacyCred, _ := entity.NewUserCredential(legacyID, legacyHash, false, now)
+	if err := repos.Users.InsertWithIdentities(ctx, legacyUser, []*entity.UserIdentity{emailIdent, unameIdent}); err != nil {
+		t.Fatalf("InsertWithIdentities(legacy) error = %v", err)
+	}
+	if err := repos.UserCredentials.Insert(ctx, legacyCred); err != nil {
+		t.Fatalf("UserCredentials.Insert(legacy) error = %v", err)
+	}
+	superRole, err := env.registry.Roles.Create(ctx, role.CreateInput{
+		Code:                "superadmin",
+		Name:                "Super Administrator",
+		ManagementDomain:    "iam",
+		DefaultRedirectPath: "/identity",
+		RedirectPriority:    1,
+		IsSystem:            true,
+	})
+	if err != nil {
+		t.Fatalf("Roles.Create(superadmin) error = %v", err)
+	}
+	// Sisipkan peran historis langsung via repositori untuk mensimulasikan kondisi DB lama sebelum pembatasan kind aktif.
+	legacyUR, err := entity.NewUserRole("cccccccc-1111-4111-8111-111111111111", legacyID, superRole.ID, entity.Scope{Type: entity.ScopeTypeGlobal}, nil, nil, now)
+	if err != nil {
+		t.Fatalf("NewUserRole(legacy superadmin) error = %v", err)
+	}
+	if err := repos.UserRoles.Insert(ctx, legacyUR); err != nil {
+		t.Fatalf("UserRoles.Insert(legacy superadmin) error = %v", err)
+	}
+
+	// 2. Jalankan BootstrapPrincipalsAndRBAC dengan human superadmin baru dan auto_system_iam + auto_system_ef.
+	bootCfg := config.BootstrapConfig{
+		Superadmin: config.SuperadminBootstrapConfig{
+			UserUID:     "f300be11-ef17-4b88-8a4c-9c938f1bacd0",
+			Username:    "superadmin",
+			Email:       "superadmin@integrione.local",
+			Password:    "SupAdmHuman#2026!Z",
+			DisplayName: "Super Administrator",
+			UserKind:    "employee",
+			RoleCode:    "superadmin",
+		},
+		AutomationPrincipals: []config.AutomationBootstrapConfig{
+			{
+				ManagementDomain: "iam",
+				UserUID:          legacyID,
+				Username:         "auto_system_iam",
+				DisplayName:      "Auto System IAM",
+				RoleCode:         "iam_automation",
+				LegacyAliases:    []string{"systemiam", "systemiam@integrione.local"},
+			},
+			{
+				ManagementDomain: "enterprise_foundation",
+				UserUID:          "89125999-2faa-4ffe-b12b-82793f0910c1",
+				Username:         "auto_system_ef",
+				DisplayName:      "Auto System Enterprise Foundation",
+				RoleCode:         "ef_automation",
+			},
+		},
+	}
+	if err := services.BootstrapPrincipalsAndRBAC(ctx, repos, env.registry, bootCfg, logger); err != nil {
+		t.Fatalf("BootstrapPrincipalsAndRBAC() error = %v", err)
+	}
+
+	// 3. Verifikasi legacy systemiam telah beralih ke auto_system_iam tanpa email/password/superadmin.
+	reconciledAuto, err := repos.Users.SelectByID(ctx, legacyID)
+	if err != nil || reconciledAuto.Kind != entity.UserKindSystem {
+		t.Fatalf("reconciled auto_system_iam = (%+v, %v), want system kind", reconciledAuto, err)
+	}
+	if _, err := repos.UserCredentials.SelectByUserID(ctx, legacyID); !errors.Is(err, iamerrors.ErrCredentialNotFound) {
+		t.Fatalf("expected legacy password credential removed for auto_system_iam, got err=%v", err)
+	}
+	autoIdents, err := repos.UserIdentities.SelectByUserID(ctx, legacyID)
+	if err != nil || len(autoIdents) != 1 || autoIdents[0].Kind != entity.IdentityKindUsername || autoIdents[0].Value != "auto_system_iam" {
+		t.Fatalf("unexpected auto_system_iam identities: (%+v, %v)", autoIdents, err)
+	}
+	autoSnap, err := repos.Users.SelectAccessSnapshotByUserID(ctx, legacyID, time.Now())
+	if err != nil {
+		t.Fatalf("SelectAccessSnapshotByUserID(auto_system_iam) error = %v", err)
+	}
+	if len(autoSnap.Roles) != 1 || autoSnap.Roles[0].Code != "iam_automation" {
+		t.Fatalf("auto_system_iam roles = %+v, want only iam_automation", autoSnap.Roles)
+	}
+
+	// 3b. Verifikasi kontrak gRPC AuthService & SessionService langsung:
+	// auto_system_iam / auto_system_ef dengan kata sandi kosong maupun terisi WAJIB ditolak PermissionDenied ("system cannot login").
+	authHandler, err := handler.NewAuthHandler(env.registry.Users, nil)
+	if err != nil {
+		t.Fatalf("NewAuthHandler() error = %v", err)
+	}
+	sessHandler, err := handler.NewSessionHandler(env.registry.Sessions, nil)
+	if err != nil {
+		t.Fatalf("NewSessionHandler() error = %v", err)
+	}
+	for _, tc := range []struct {
+		ident string
+		pass  string
+	}{
+		{ident: "auto_system_iam", pass: ""},
+		{ident: "  AUTO_SYSTEM_IAM  ", pass: ""},
+		{ident: "auto_system_iam", pass: "AttemptedPass#2026!"},
+		{ident: "auto_system_ef", pass: ""},
+	} {
+		_, rpcErr := authHandler.AuthenticatePassword(ctx, &iamv1.AuthenticatePasswordRequest{
+			Identifier: tc.ident,
+			Password:   tc.pass,
+			IpAddress:  "127.0.0.1",
+		})
+		st, ok := status.FromError(rpcErr)
+		if !ok || st.Code() != codes.PermissionDenied || st.Message() != "system cannot login" {
+			t.Fatalf("gRPC AuthenticatePassword(%q, passLen=%d) = (%v, ok=%v), want PermissionDenied(\"system cannot login\")", tc.ident, len(tc.pass), rpcErr, ok)
+		}
+		var reason string
+		for _, d := range st.Details() {
+			if info, ok := d.(*errdetails.ErrorInfo); ok {
+				reason = info.GetReason()
+			}
+		}
+		if reason != "iam.user.system_cannot_login" {
+			t.Fatalf("gRPC AuthenticatePassword(%q) reason = %q, want iam.user.system_cannot_login", tc.ident, reason)
+		}
+	}
+	// Pengguna manusia (superadmin) dengan kata sandi kosong tetap menghasilkan InvalidArgument.
+	if _, rpcErr := authHandler.AuthenticatePassword(ctx, &iamv1.AuthenticatePasswordRequest{
+		Identifier: "superadmin",
+		Password:   "",
+		IpAddress:  "127.0.0.1",
+	}); status.Code(rpcErr) != codes.InvalidArgument {
+		t.Fatalf("gRPC AuthenticatePassword(superadmin, empty) = %v, want InvalidArgument", rpcErr)
+	}
+	// IssueSession atas nama akun system juga wajib ditolak PermissionDenied ("system cannot login").
+	ctxAutoSys := authcontext.WithCaller(ctx, authcontext.CallerContext{
+		Authenticated: true,
+		PrincipalID:   legacyID,
+		UserKind:      string(entity.UserKindSystem),
+	})
+	_, sessErr := sessHandler.IssueSession(ctxAutoSys, &iamv1.IssueSessionRequest{
+		UserId:    legacyID,
+		IpAddress: "127.0.0.1",
+	})
+	if st, ok := status.FromError(sessErr); !ok || st.Code() != codes.PermissionDenied || st.Message() != "system cannot login" {
+		t.Fatalf("gRPC IssueSession(system) = %v, want PermissionDenied(\"system cannot login\")", sessErr)
+	}
+
+	// 4. Verifikasi human superadmin berkind employee dapat login dan memiliki izin IAM + Enterprise Foundation parties.
+	humanAuth, err := env.registry.Users.AuthenticatePassword(ctx, user.AuthenticatePasswordInput{
+		Identifier: "superadmin",
+		Password:   bootCfg.Superadmin.Password,
+		IPAddress:  "127.0.0.1",
+	})
+	if err != nil || humanAuth.User == nil || humanAuth.User.Kind != entity.UserKindEmployee || humanAuth.RedirectPath != "/identity" {
+		t.Fatalf("AuthenticatePassword(superadmin) = (%+v, %v), want active employee -> /identity", humanAuth, err)
+	}
+	humanSnap, err := repos.Users.SelectAccessSnapshotByUserID(ctx, humanAuth.User.ID, time.Now())
+	if err != nil {
+		t.Fatalf("SelectAccessSnapshotByUserID(superadmin) error = %v", err)
+	}
+	globalScope := entity.Scope{Type: entity.ScopeTypeGlobal}
+	_, hasEFRead := humanSnap.HasPermission("enterprise_foundation.parties.read", globalScope)
+	_, hasEFWrite := humanSnap.HasPermission("enterprise_foundation.parties.write", globalScope)
+	_, hasIAMWrite := humanSnap.HasPermission("iam.users.write", globalScope)
+	if !hasEFRead || !hasEFWrite || !hasIAMWrite {
+		t.Fatalf("superadmin snapshot missing expected permissions: %+v", humanSnap.Permissions)
+	}
+
+	// 5. Uji isolasi peran langsung dan grup lintas UserKind.
+	custUser, err := env.registry.Users.CreateUser(ctx, user.CreateUserInput{
+		Kind:                   entity.UserKindCustomer,
+		Status:                 entity.UserStatusActive,
+		DisplayName:            "Pelanggan Uji",
+		Email:                  "buyer-iso@integrione.local",
+		Username:               "buyer.iso",
+		Password:               "VaultStrong#2026!Q",
+		MarkIdentitiesVerified: true,
+	})
+	if err != nil {
+		t.Fatalf("CreateUser(customer) error = %v", err)
+	}
+	iamAutoRole, err := env.registry.Roles.GetByCode(ctx, "iam_automation")
+	if err != nil {
+		t.Fatalf("GetByCode(iam_automation) error = %v", err)
+	}
+
+	if _, err := env.registry.Roles.AssignToUser(ctx, role.AssignUserRoleInput{
+		UserID:    custUser.ID,
+		RoleID:    superRole.ID,
+		ScopeType: entity.ScopeTypeGlobal,
+	}); !errors.Is(err, iamerrors.ErrRoleUserKindMismatch) {
+		t.Fatalf("AssignToUser(superadmin -> customer) error = %v, want ErrRoleUserKindMismatch", err)
+	}
+	if _, err := env.registry.Roles.AssignToUser(ctx, role.AssignUserRoleInput{
+		UserID:    legacyID,
+		RoleID:    superRole.ID,
+		ScopeType: entity.ScopeTypeGlobal,
+	}); !errors.Is(err, iamerrors.ErrRoleUserKindMismatch) {
+		t.Fatalf("AssignToUser(superadmin -> system) error = %v, want ErrRoleUserKindMismatch", err)
+	}
+	if _, err := env.registry.Roles.AssignToUser(ctx, role.AssignUserRoleInput{
+		UserID:    humanAuth.User.ID,
+		RoleID:    iamAutoRole.ID,
+		ScopeType: entity.ScopeTypeGlobal,
+	}); !errors.Is(err, iamerrors.ErrRoleUserKindMismatch) {
+		t.Fatalf("AssignToUser(iam_automation -> employee) error = %v, want ErrRoleUserKindMismatch", err)
+	}
+
+	adminGrp, err := env.registry.Groups.Create(ctx, group.CreateInput{Code: "grp.admins", Name: "Admins"})
+	if err != nil {
+		t.Fatalf("Groups.Create(admins) error = %v", err)
+	}
+	if _, err := env.registry.Groups.AssignRole(ctx, group.AssignGroupRoleInput{
+		GroupID:   adminGrp.ID,
+		RoleID:    superRole.ID,
+		ScopeType: entity.ScopeTypeGlobal,
+	}); err != nil {
+		t.Fatalf("Groups.AssignRole(superadmin) error = %v", err)
+	}
+	if _, err := env.registry.Groups.AddMember(ctx, adminGrp.ID, custUser.ID); !errors.Is(err, iamerrors.ErrRoleUserKindMismatch) {
+		t.Fatalf("Groups.AddMember(customer -> superadmin group) error = %v, want ErrRoleUserKindMismatch", err)
+	}
+	if _, err := env.registry.Groups.AddMember(ctx, adminGrp.ID, legacyID); !errors.Is(err, iamerrors.ErrRoleUserKindMismatch) {
+		t.Fatalf("Groups.AddMember(system -> superadmin group) error = %v, want ErrRoleUserKindMismatch", err)
+	}
+
+	sysGrp, err := env.registry.Groups.Create(ctx, group.CreateInput{Code: "grp.autosys", Name: "Auto System"})
+	if err != nil {
+		t.Fatalf("Groups.Create(autosys) error = %v", err)
+	}
+	if _, err := env.registry.Groups.AddMember(ctx, sysGrp.ID, legacyID); err != nil {
+		t.Fatalf("Groups.AddMember(system) error = %v", err)
+	}
+	if _, err := env.registry.Groups.AssignRole(ctx, group.AssignGroupRoleInput{
+		GroupID:   sysGrp.ID,
+		RoleID:    superRole.ID,
+		ScopeType: entity.ScopeTypeGlobal,
+	}); !errors.Is(err, iamerrors.ErrRoleUserKindMismatch) {
+		t.Fatalf("Groups.AssignRole(superadmin -> system group) error = %v, want ErrRoleUserKindMismatch", err)
 	}
 }

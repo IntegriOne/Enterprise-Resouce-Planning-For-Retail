@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -439,5 +440,13 @@ func TestSessionService_AuthorizeFailClosedAndStaleSnapshot(t *testing.T) {
 		RequireSensitiveReauth: true,
 	}); !errors.Is(err, iamerrors.ErrSensitiveReauthRequired) {
 		t.Fatalf("expected ErrSensitiveReauthRequired past 10m, got %v", err)
+	}
+
+	// IP invalid pada Issue harus menghasilkan ErrInvalidIPAddress tanpa membocorkan masukan mentah ParseAddr.
+	if _, err := svc.Issue(context.Background(), session.IssueInput{
+		UserID:    userID,
+		IPAddress: "not-an-ip-secret-probe",
+	}); !errors.Is(err, iamerrors.ErrInvalidIPAddress) || strings.Contains(err.Error(), "ParseAddr") || strings.Contains(err.Error(), "not-an-ip-secret-probe") {
+		t.Fatalf("expected sanitized ErrInvalidIPAddress, got %v", err)
 	}
 }

@@ -71,6 +71,10 @@ func (r RedirectResolver) ResolvePostLoginPath(userKind entity.UserKind, roles [
 	if !userKind.IsValid() {
 		return "", iamerrors.ErrInvalidUserKind
 	}
+	if userKind == entity.UserKindSystem {
+		// Akun otomasi system non-interaktif tidak pernah memperoleh rute navigasi dashboard interaktif.
+		roles = nil
+	}
 
 	var best *entity.Role
 	for i := range roles {

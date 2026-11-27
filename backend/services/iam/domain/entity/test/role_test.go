@@ -43,7 +43,9 @@ func TestRoleCreationAndSystemProtection(t *testing.T) {
 	if customRole.DefaultRedirectPath != "/warehouse/bins" || customRole.RedirectPriority != 25 {
 		t.Fatalf("UpdateDetails() did not apply expected changes: %+v", customRole)
 	}
-	customRole.Deactivate(now.Add(time.Minute))
+	if err := customRole.Deactivate(now.Add(time.Minute)); err != nil {
+		t.Fatalf("Deactivate() unexpected error: %v", err)
+	}
 	if customRole.IsActive {
 		t.Fatal("customRole should be inactive after Deactivate")
 	}
@@ -57,6 +59,9 @@ func TestRoleCreationAndSystemProtection(t *testing.T) {
 	}
 	if _, err := entity.NewRole(testRoleID, "role_a", "Name", "", "iam", "/identity", -1, false, now); !errors.Is(err, iamerrors.ErrInvalidRedirectPriority) {
 		t.Fatalf("negative redirect priority error = %v, want ErrInvalidRedirectPriority", err)
+	}
+	if _, err := entity.NewRole(testRoleID, "role_over", "Name", "", "iam", "/identity", entity.MaxRedirectPriority+1, false, now); !errors.Is(err, iamerrors.ErrInvalidRedirectPriority) {
+		t.Fatalf("overflow redirect priority error = %v, want ErrInvalidRedirectPriority", err)
 	}
 	if _, err := entity.NewRole(testRoleID, "role_b", "Name", "", "iam", "https://evil.com", 10, false, now); !errors.Is(err, iamerrors.ErrRedirectPathInvalid) {
 		t.Fatalf("external redirect path error = %v, want ErrRedirectPathInvalid", err)

@@ -22,6 +22,7 @@ type Dependencies struct {
 	IDGen           domainservice.IDGenerator
 	OutboxCoord     *redisstore.Coordinator
 	Projector       domainservice.RuntimeSecurityProjector
+	ScopeVerifier   domainservice.ScopeOwnerVerifier
 }
 
 // CreateInput membawa data pembentukan grup pengguna baru.

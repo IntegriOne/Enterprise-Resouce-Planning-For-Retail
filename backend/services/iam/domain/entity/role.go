@@ -8,6 +8,9 @@ import (
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 )
 
+// MaxRedirectPriority membatasi prioritas redirect pada rentang smallint PostgreSQL (0..32767).
+const MaxRedirectPriority = 32767
+
 // Role merepresentasikan entitas peran RBAC dan metadata rute dashboard bawaan pada tabel roles.
 type Role struct {
 	ID                  string
@@ -84,6 +87,69 @@ func (r *Role) UpdateDetails(
 	return nil
 }
 
+// ApplyBootstrapSystemMetadata menyinkronkan metadata peran sistem dari manifest katalog resmi saat proses bootstrap internal.
+func (r *Role) ApplyBootstrapSystemMetadata(
+	name, description, managementDomain, defaultRedirectPath string,
+	redirectPriority int,
+	now time.Time,
+) (bool, error) {
+	if r == nil {
+		return false, iamerrors.ErrRoleNotFound
+	}
+	if !r.IsSystem {
+		return false, iamerrors.New(iamerrors.KindConflict, iamerrors.Code("iam.bootstrap.system_role_expected"), "bootstrap system metadata update requires a system role")
+	}
+	trimmedName, trimmedDomain, trimmedRedirect, err := validateRoleMetadata(name, managementDomain, defaultRedirectPath, redirectPriority)
+	if err != nil {
+		return false, err
+	}
+	trimmedDesc := strings.TrimSpace(description)
+	changed := r.Name != trimmedName ||
+		r.Description != trimmedDesc ||
+		r.ManagementDomain != trimmedDomain ||
+		r.DefaultRedirectPath != trimmedRedirect ||
+		r.RedirectPriority != redirectPriority ||
+		!r.IsActive
+	if !changed {
+		return false, nil
+	}
+
+	r.Name = trimmedName
+	r.Description = trimmedDesc
+	r.ManagementDomain = trimmedDomain
+	r.DefaultRedirectPath = trimmedRedirect
+	r.RedirectPriority = redirectPriority
+	r.IsActive = true
+	r.UpdatedAt = normalizeLocalTime(now)
+	return true, nil
+}
+
+// IsSuperAdminRoleCode memeriksa apakah kode peran merupakan peran administrator super manusia.
+func IsSuperAdminRoleCode(code string) bool {
+	normalized := NormalizeCode(code)
+	return normalized == "superadmin" || normalized == "super_admin"
+}
+
+// IsAutomationRoleCode memeriksa apakah kode peran dikhususkan bagi akun layanan otomasi non-interaktif (`*_automation`).
+func IsAutomationRoleCode(code string) bool {
+	normalized := NormalizeCode(code)
+	return strings.HasSuffix(normalized, "_automation")
+}
+
+// IsRoleCompatibleWithUserKind memastikan peran superadmin hanya untuk pegawai manusia (employee) dan peran otomasi hanya untuk akun system.
+func IsRoleCompatibleWithUserKind(roleCode string, kind UserKind) bool {
+	if kind == UserKindSystem {
+		return IsAutomationRoleCode(roleCode)
+	}
+	if IsAutomationRoleCode(roleCode) {
+		return false
+	}
+	if IsSuperAdminRoleCode(roleCode) {
+		return kind == UserKindEmployee
+	}
+	return kind.IsValid()
+}
+
 func validateRoleMetadata(name, managementDomain, defaultRedirectPath string, redirectPriority int) (string, string, string, error) {
 	trimmedName := strings.TrimSpace(name)
 	if trimmedName == "" || utf8.RuneCountInString(trimmedName) > MaxRoleNameLength {
@@ -99,7 +165,7 @@ func validateRoleMetadata(name, managementDomain, defaultRedirectPath string, re
 			return "", "", "", err
 		}
 	}
-	if redirectPriority < 0 {
+	if redirectPriority < 0 || redirectPriority > MaxRedirectPriority {
 		return "", "", "", iamerrors.ErrInvalidRedirectPriority
 	}
 	return trimmedName, trimmedDomain, trimmedRedirect, nil

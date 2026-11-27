@@ -5,10 +5,12 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/shared/authsession"
 	"github.com/integrione/erp-retail/backend/shared/authz"
@@ -43,7 +45,11 @@ func (p *Projector) SyncGate(ctx context.Context, open bool, recoveryEpoch int64
 	if !p.IsEnabled() {
 		return recoveryEpoch, nil
 	}
-	return p.store.SetGate(ctx, open, recoveryEpoch, p.clock.Now(), source)
+	epoch, err := p.store.SetGate(ctx, open, recoveryEpoch, p.effectiveClock().Now(), source)
+	if err != nil {
+		return 0, mapRedisError("sync gate", err)
+	}
+	return epoch, nil
 }
 
 // GetGate membaca status gerbang keamanan terkini dari Redis.
@@ -51,7 +57,11 @@ func (p *Projector) GetGate(ctx context.Context) (*authsession.SecurityGateRecor
 	if !p.IsEnabled() {
 		return nil, nil
 	}
-	return p.store.GetGate(ctx)
+	gate, err := p.store.GetGate(ctx)
+	if err != nil {
+		return nil, mapRedisError("read gate", err)
+	}
+	return gate, nil
 }
 
 // ProjectSessionIssued menulis pasangan token sesi, jendela aktivitas, dan user:sec ke Redis secara atomik.
@@ -72,11 +82,11 @@ func (p *Projector) projectSession(ctx context.Context, user *entity.User, sess 
 		return p.ProjectSessionRevoked(ctx, user, sess.TokenDigest(), recoveryEpoch)
 	}
 
-	now := p.clock.Now()
+	now := p.effectiveClock().Now()
 	tokDigestHex := hex.EncodeToString(sess.TokenDigest())
 	csrfDigestHex := hex.EncodeToString(sess.CSRFTokenDigest())
 	if tokDigestHex == "" || csrfDigestHex == "" {
-		return errors.New("session digests are required for redis projection")
+		return iamerrors.NewValidation("session_digests", iamerrors.Code("iam.session.missing_digests"), "session digests are required for redis projection")
 	}
 
 	gen := sess.Generation
@@ -136,7 +146,7 @@ func (p *Projector) projectSession(ctx context.Context, user *entity.User, sess 
 		UpdatedAtUnix: now.Unix(),
 	}
 
-	return p.store.WriteSession(ctx, tokRec, actRec, secRec, now)
+	return mapRedisError("write session", p.store.WriteSession(ctx, tokRec, actRec, secRec, now))
 }
 
 // ProjectSessionRevoked menghapus satu token sesi dari Redis dan menjaga user:sec tetap sinkron.
@@ -144,16 +154,17 @@ func (p *Projector) ProjectSessionRevoked(ctx context.Context, user *entity.User
 	if !p.IsEnabled() {
 		return nil
 	}
+	now := p.effectiveClock().Now()
 	var hashes []string
 	if len(tokenDigest) > 0 {
 		hashes = []string{hex.EncodeToString(tokenDigest)}
 	}
 	var secPtr *authsession.UserSecurityRecord
 	if user != nil {
-		rec := buildUserSecurityRecord(user, recoveryEpoch, p.clock.Now())
+		rec := buildUserSecurityRecord(user, recoveryEpoch, now)
 		secPtr = &rec
 	}
-	return p.store.RevokeSessionTokens(ctx, hashes, secPtr, false, p.clock.Now())
+	return mapRedisError("revoke session", p.store.RevokeSessionTokens(ctx, hashes, secPtr, false, now))
 }
 
 // ProjectUserSessionsRevoked menghapus seluruh sesi user di Redis sekaligus menaikkan auth_epoch pada user:sec.
@@ -161,6 +172,7 @@ func (p *Projector) ProjectUserSessionsRevoked(ctx context.Context, user *entity
 	if !p.IsEnabled() {
 		return nil
 	}
+	now := p.effectiveClock().Now()
 	hashes := make([]string, 0, len(tokenDigests))
 	for _, d := range tokenDigests {
 		if len(d) > 0 {
@@ -169,10 +181,10 @@ func (p *Projector) ProjectUserSessionsRevoked(ctx context.Context, user *entity
 	}
 	var secPtr *authsession.UserSecurityRecord
 	if user != nil {
-		rec := buildUserSecurityRecord(user, recoveryEpoch, p.clock.Now())
+		rec := buildUserSecurityRecord(user, recoveryEpoch, now)
 		secPtr = &rec
 	}
-	return p.store.RevokeSessionTokens(ctx, hashes, secPtr, true, p.clock.Now())
+	return mapRedisError("revoke user sessions", p.store.RevokeSessionTokens(ctx, hashes, secPtr, true, now))
 }
 
 // ProjectUserSecurityChanged memperbarui status user:sec secara monotonik dan menghapus AccessSnapshot lama bila diminta.
@@ -180,9 +192,10 @@ func (p *Projector) ProjectUserSecurityChanged(ctx context.Context, user *entity
 	if !p.IsEnabled() || user == nil {
 		return nil
 	}
-	sec := buildUserSecurityRecord(user, recoveryEpoch, p.clock.Now())
-	_, err := p.store.BumpUserSecurity(ctx, sec, invalidateAuthz, p.clock.Now())
-	return err
+	now := p.effectiveClock().Now()
+	sec := buildUserSecurityRecord(user, recoveryEpoch, now)
+	_, err := p.store.BumpUserSecurity(ctx, sec, invalidateAuthz, now)
+	return mapRedisError("bump user security", err)
 }
 
 // ProjectAccessSnapshot menulis AccessSnapshot terkini (TTL 35s, freshness 30s) ke Redis untuk dikonsumsi Gateway.
@@ -197,7 +210,7 @@ func (p *Projector) ProjectAccessSnapshot(
 		return nil
 	}
 
-	now := p.clock.Now()
+	now := p.effectiveClock().Now()
 	roles := make([]authz.RoleGrant, 0, len(snapshot.Roles))
 	for _, r := range snapshot.Roles {
 		roles = append(roles, authz.RoleGrant{
@@ -253,7 +266,24 @@ func (p *Projector) ProjectAccessSnapshot(
 		SyncedAtUnix:         now.Unix(),
 		FreshUntilUnix:       now.Add(authz.DefaultSnapshotMaxAge).Unix(),
 	}
-	return p.store.ProjectAccessSnapshot(ctx, out, authz.DefaultSnapshotMaxAge+5*time.Second, now)
+	return mapRedisError("project access snapshot", p.store.ProjectAccessSnapshot(ctx, out, authz.DefaultSnapshotMaxAge+5*time.Second, now))
+}
+
+func (p *Projector) effectiveClock() domainservice.Clock {
+	if p != nil && p.clock != nil {
+		return p.clock
+	}
+	return domainservice.SystemClock{}
+}
+
+func mapRedisError(op string, err error) error {
+	if err == nil {
+		return nil
+	}
+	if _, ok := errors.AsType[*iamerrors.DomainError](err); ok {
+		return err
+	}
+	return iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.ErrUnavailable.Code, fmt.Sprintf("iam redis %s failed", op))
 }
 
 func buildUserSecurityRecord(user *entity.User, recoveryEpoch int64, now time.Time) authsession.UserSecurityRecord {

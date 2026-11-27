@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -28,6 +29,9 @@ type Server struct {
 
 // NewServer menginisialisasi gRPC server baru dengan interceptor standar, health check, dan reflection.
 func NewServer(cfg *config.Config, logger *slog.Logger, extraOpts ...grpc.ServerOption) *Server {
+	if logger == nil {
+		logger = slog.Default()
+	}
 	var hmacSecret []byte
 	requireProof := true
 	if cfg != nil {
@@ -40,6 +44,9 @@ func NewServer(cfg *config.Config, logger *slog.Logger, extraOpts ...grpc.Server
 			interceptor.RecoveryUnaryInterceptor(logger),
 			interceptor.InternalContextUnaryInterceptor(hmacSecret, requireProof),
 			interceptor.LoggingUnaryInterceptor(logger),
+		),
+		grpc.ChainStreamInterceptor(
+			interceptor.RecoveryStreamInterceptor(logger),
 		),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
 			MaxConnectionIdle:     5 * time.Minute,
@@ -79,18 +86,29 @@ func NewServer(cfg *config.Config, logger *slog.Logger, extraOpts ...grpc.Server
 
 // GRPCServer mengembalikan instance *grpc.Server internal untuk registrasi handler domain.
 func (s *Server) GRPCServer() *grpc.Server {
+	if s == nil {
+		return nil
+	}
 	return s.grpcServer
 }
 
 // Start membuka TCP listener dan menjalankan gRPC server hingga berhenti.
 func (s *Server) Start() error {
+	if s == nil || s.cfg == nil || s.grpcServer == nil {
+		return fmt.Errorf("grpc server is not initialized")
+	}
+	log := s.logger
+	if log == nil {
+		log = slog.Default()
+	}
+
 	addr := s.cfg.GRPCAddress()
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("failed to listen on %s: %w", addr, err)
 	}
 
-	s.logger.Info("starting IAM gRPC server",
+	log.Info("starting IAM gRPC server",
 		slog.String("service", s.cfg.ServiceName),
 		slog.String("address", addr),
 		slog.String("env", s.cfg.AppEnv),
@@ -104,23 +122,46 @@ func (s *Server) Start() error {
 
 // Stop menghentikan gRPC server secara graceful dengan batas waktu dari context.
 func (s *Server) Stop(ctx context.Context) {
-	s.logger.Info("shutting down IAM gRPC server")
+	if s == nil || s.grpcServer == nil {
+		return
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	log := s.logger
+	if log == nil {
+		log = slog.Default()
+	}
+
+	log.Info("shutting down IAM gRPC server")
 
 	// Tandai status layanan menjadi NOT_SERVING agar caller tidak mengirim request baru.
-	s.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
-	s.healthServer.SetServingStatus(s.cfg.ServiceName, healthpb.HealthCheckResponse_NOT_SERVING)
+	if s.healthServer != nil {
+		s.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
+		if s.cfg != nil && s.cfg.ServiceName != "" {
+			s.healthServer.SetServingStatus(s.cfg.ServiceName, healthpb.HealthCheckResponse_NOT_SERVING)
+		}
+	}
 
 	done := make(chan struct{})
 	go func() {
+		defer close(done)
+		defer func() {
+			if rec := recover(); rec != nil {
+				log.Error("panic recovered during IAM gRPC graceful stop",
+					slog.Any("panic", rec),
+					slog.String("stack", string(debug.Stack())),
+				)
+			}
+		}()
 		s.grpcServer.GracefulStop()
-		close(done)
 	}()
 
 	select {
 	case <-done:
-		s.logger.Info("IAM gRPC server stopped gracefully")
+		log.Info("IAM gRPC server stopped gracefully")
 	case <-ctx.Done():
-		s.logger.Warn("graceful shutdown timed out, forcing gRPC server stop")
+		log.Warn("graceful shutdown timed out, forcing gRPC server stop")
 		s.grpcServer.Stop()
 	}
 }

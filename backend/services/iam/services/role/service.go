@@ -27,6 +27,7 @@ type Service struct {
 	redirect        domainservice.RedirectResolver
 	outboxCoord     *redisstore.Coordinator
 	projector       domainservice.RuntimeSecurityProjector
+	scopeVerifier   domainservice.ScopeOwnerVerifier
 }
 
 // NewService membentuk Service peran dengan validasi fail-closed seluruh port ketergantungan.
@@ -75,6 +76,7 @@ func NewService(deps Dependencies) (*Service, error) {
 		redirect:        deps.Redirect,
 		outboxCoord:     deps.OutboxCoord,
 		projector:       deps.Projector,
+		scopeVerifier:   deps.ScopeVerifier,
 	}, nil
 }
 
@@ -345,6 +347,15 @@ func (s *Service) assignPermission(ctx context.Context, roleID, permissionID str
 
 // RevokePermission melepaskan izin atomik dari peran non-sistem.
 func (s *Service) RevokePermission(ctx context.Context, roleID, permissionID string) error {
+	return s.revokePermission(ctx, roleID, permissionID, false)
+}
+
+// BootstrapRevokePermission melepaskan izin usang dari peran bawaan saat sinkronisasi katalog RBAC termasuk pada peran sistem.
+func (s *Service) BootstrapRevokePermission(ctx context.Context, roleID, permissionID string) error {
+	return s.revokePermission(ctx, roleID, permissionID, true)
+}
+
+func (s *Service) revokePermission(ctx context.Context, roleID, permissionID string, allowSystem bool) error {
 	if err := s.ensureReady(); err != nil {
 		return err
 	}
@@ -359,7 +370,7 @@ func (s *Service) RevokePermission(ctx context.Context, roleID, permissionID str
 		if err != nil {
 			return err
 		}
-		if r.IsSystem {
+		if r.IsSystem && !allowSystem {
 			return iamerrors.ErrSystemRoleImmutable
 		}
 		if err := s.rolePermissions.Delete(txCtx, roleID, permissionID); err != nil {
@@ -367,6 +378,101 @@ func (s *Service) RevokePermission(ctx context.Context, roleID, permissionID str
 		}
 		return s.bumpAndRecordRoleSecurityInTx(txCtx, roleID)
 	})
+}
+
+// BootstrapSyncSystemRoleDetails menyinkronkan metadata peran sistem terhadap manifest resmi dan memicu invalidasi cache bila berubah.
+func (s *Service) BootstrapSyncSystemRoleDetails(ctx context.Context, roleID string, in UpdateInput) (*entity.Role, bool, error) {
+	if err := s.ensureReady(); err != nil {
+		return nil, false, err
+	}
+	if err := entity.ValidateUUID("role_id", roleID); err != nil {
+		return nil, false, err
+	}
+	if err := s.validateRedirectPath(in.DefaultRedirectPath); err != nil {
+		return nil, false, err
+	}
+
+	var (
+		updated *entity.Role
+		changed bool
+	)
+	err := s.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		r, err := s.roles.SelectByID(txCtx, roleID)
+		if err != nil {
+			return err
+		}
+		didChange, err := r.ApplyBootstrapSystemMetadata(
+			in.Name,
+			in.Description,
+			in.ManagementDomain,
+			strings.TrimSpace(in.DefaultRedirectPath),
+			in.RedirectPriority,
+			s.clock.Now(),
+		)
+		if err != nil {
+			return err
+		}
+		if !didChange {
+			updated = r
+			changed = false
+			return nil
+		}
+		if err := s.roles.Update(txCtx, r); err != nil {
+			return err
+		}
+		if err := s.bumpAndRecordRoleSecurityInTx(txCtx, r.ID); err != nil {
+			return err
+		}
+		updated = r
+		changed = true
+		return nil
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	return updated, changed, nil
+}
+
+// BootstrapBumpRolesSecurity menaikkan revisi keamanan bagi seluruh pemegang peran yang sensitivitas izinnya diperketat saat bootstrap.
+func (s *Service) BootstrapBumpRolesSecurity(ctx context.Context, roleIDs []string) error {
+	if err := s.ensureReady(); err != nil {
+		return err
+	}
+	if len(roleIDs) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(roleIDs))
+	unique := make([]string, 0, len(roleIDs))
+	for _, rawID := range roleIDs {
+		id := strings.TrimSpace(rawID)
+		if err := entity.ValidateUUID("role_id", id); err != nil {
+			return err
+		}
+		if _, dup := seen[id]; dup {
+			continue
+		}
+		seen[id] = struct{}{}
+		unique = append(unique, id)
+	}
+	if len(unique) == 0 {
+		return nil
+	}
+	return s.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		for _, rid := range unique {
+			if err := s.bumpAndRecordRoleSecurityInTx(txCtx, rid); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// ValidateBootstrapRedirectPath memvalidasi path redirect bawaan peran terhadap allowlist rute aktif IAM.
+func (s *Service) ValidateBootstrapRedirectPath(raw string) error {
+	if err := s.ensureReady(); err != nil {
+		return err
+	}
+	return s.validateRedirectPath(raw)
 }
 
 // ListPermissions mengembalikan seluruh izin yang terikat ke suatu peran.
@@ -399,7 +505,7 @@ func (s *Service) AssignToUser(ctx context.Context, in AssignUserRoleInput) (*en
 	if err != nil {
 		return nil, err
 	}
-	if err := domainservice.RequireScopeOwnerVerification(scope); err != nil {
+	if err := domainservice.VerifyScope(ctx, s.scopeVerifier, scope); err != nil {
 		return nil, err
 	}
 	now := s.clock.Now()
@@ -427,6 +533,9 @@ func (s *Service) AssignToUser(ctx context.Context, in AssignUserRoleInput) (*en
 		}
 		if !r.IsActive {
 			return iamerrors.ErrRoleInactive
+		}
+		if !entity.IsRoleCompatibleWithUserKind(r.Code, u.Kind) {
+			return iamerrors.WithField(iamerrors.ErrRoleUserKindMismatch, "role_id", "")
 		}
 
 		exists, err := s.userRoles.CheckExists(txCtx, in.UserID, in.RoleID, scope)

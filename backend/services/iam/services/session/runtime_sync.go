@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
@@ -53,25 +54,30 @@ func (s *Service) recordSessionIssuedInTx(txCtx context.Context, sess *entity.Se
 	u, uErr := s.users.SelectByID(txCtx, sess.UserID)
 	sessCopy := *sess
 	pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
-		if uErr != nil {
-			loaded, err := s.users.SelectByID(postCtx, sessCopy.UserID)
-			if err != nil {
-				return
+		projectFn := func(recEpoch int64) error {
+			if s.projector == nil || !s.projector.IsEnabled() {
+				return nil
 			}
-			u = loaded
+			targetUser := u
+			if uErr != nil {
+				if !errors.Is(uErr, iamerrors.ErrUserNotFound) || targetUser == nil {
+					loaded, err := s.users.SelectByID(postCtx, sessCopy.UserID)
+					if err != nil {
+						if errors.Is(err, iamerrors.ErrUserNotFound) {
+							return nil
+						}
+						return err
+					}
+					targetUser = loaded
+				}
+			}
+			return s.projector.ProjectSessionIssued(postCtx, targetUser, &sessCopy, recEpoch)
 		}
 		if s.outboxCoord != nil {
-			s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
-				if s.projector == nil {
-					return nil
-				}
-				return s.projector.ProjectSessionIssued(postCtx, u, &sessCopy, recEpoch)
-			})
+			s.outboxCoord.CompleteAfterCommit(postCtx, evID, projectFn)
 			return
 		}
-		if s.projector != nil && s.projector.IsEnabled() {
-			_ = s.projector.ProjectSessionIssued(postCtx, u, &sessCopy, 1)
-		}
+		_ = projectFn(1)
 	})
 	return nil
 }
@@ -95,25 +101,28 @@ func (s *Service) recordSessionUpdatedInTx(txCtx context.Context, sess *entity.S
 	u, uErr := s.users.SelectByID(txCtx, sess.UserID)
 	sessCopy := *sess
 	pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
-		if uErr != nil {
-			loaded, err := s.users.SelectByID(postCtx, sessCopy.UserID)
-			if err != nil {
-				return
+		projectFn := func(recEpoch int64) error {
+			if s.projector == nil || !s.projector.IsEnabled() {
+				return nil
 			}
-			u = loaded
+			targetUser := u
+			if uErr != nil {
+				loaded, err := s.users.SelectByID(postCtx, sessCopy.UserID)
+				if err != nil {
+					if errors.Is(err, iamerrors.ErrUserNotFound) {
+						return nil
+					}
+					return err
+				}
+				targetUser = loaded
+			}
+			return s.projector.ProjectSessionUpdated(postCtx, targetUser, &sessCopy, recEpoch)
 		}
 		if s.outboxCoord != nil {
-			s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
-				if s.projector == nil {
-					return nil
-				}
-				return s.projector.ProjectSessionUpdated(postCtx, u, &sessCopy, recEpoch)
-			})
+			s.outboxCoord.CompleteAfterCommit(postCtx, evID, projectFn)
 			return
 		}
-		if s.projector != nil && s.projector.IsEnabled() {
-			_ = s.projector.ProjectSessionUpdated(postCtx, u, &sessCopy, 1)
-		}
+		_ = projectFn(1)
 	})
 	return nil
 }
@@ -140,22 +149,31 @@ func (s *Service) recordSessionRevokedInTx(txCtx context.Context, sess *entity.S
 	u, uErr := s.users.SelectByID(txCtx, sess.UserID)
 	uid := sess.UserID
 	pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
-		if uErr != nil {
-			loaded, _ := s.users.SelectByID(postCtx, uid)
-			u = loaded
+		projectFn := func(recEpoch int64) error {
+			if s.projector == nil || !s.projector.IsEnabled() {
+				return nil
+			}
+			targetUser := u
+			var userLoadErr error
+			if uErr != nil && s.users != nil {
+				loaded, err := s.users.SelectByID(postCtx, uid)
+				if err != nil && !errors.Is(err, iamerrors.ErrUserNotFound) {
+					userLoadErr = err
+				} else {
+					targetUser = loaded
+				}
+			}
+			if err := s.projector.ProjectSessionRevoked(postCtx, targetUser, digestCopy, recEpoch); err != nil {
+				return err
+			}
+			// Bila token sesi sudah dicabut di Redis tetapi pembacaan user untuk sync user:sec gagal sementara, kembalikan error agar outbox dijadwalkan ulang.
+			return userLoadErr
 		}
 		if s.outboxCoord != nil {
-			s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
-				if s.projector == nil {
-					return nil
-				}
-				return s.projector.ProjectSessionRevoked(postCtx, u, digestCopy, recEpoch)
-			})
+			s.outboxCoord.CompleteAfterCommit(postCtx, evID, projectFn)
 			return
 		}
-		if s.projector != nil && s.projector.IsEnabled() {
-			_ = s.projector.ProjectSessionRevoked(postCtx, u, digestCopy, 1)
-		}
+		_ = projectFn(1)
 	})
 	return nil
 }
@@ -198,28 +216,36 @@ func (s *Service) revokeAllSessionsWithOutbox(txCtx context.Context, userID stri
 			txSnapshot, _ = s.users.SelectByID(txCtx, userID)
 		}
 		pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
-			var u *entity.User
-			if s.users != nil {
-				u, _ = s.users.SelectByID(postCtx, userID)
-			}
-			// Bila pengguna dihapus lunak sebelum commit, pertahankan snapshot in-tx berstatus disabled untuk proyeksi keamanan Redis.
-			if u == nil && txSnapshot != nil {
-				cp := *txSnapshot
-				cp.Status = entity.UserStatusDisabled
-				u = &cp
+			projectFn := func(recEpoch int64) error {
+				if s.projector == nil || !s.projector.IsEnabled() {
+					return nil
+				}
+				var u *entity.User
+				var userLoadErr error
+				if s.users != nil {
+					loaded, err := s.users.SelectByID(postCtx, userID)
+					if err != nil && !errors.Is(err, iamerrors.ErrUserNotFound) {
+						userLoadErr = err
+					} else {
+						u = loaded
+					}
+				}
+				// Bila pengguna dihapus lunak sebelum commit, pertahankan snapshot in-tx berstatus disabled untuk proyeksi keamanan Redis.
+				if u == nil && txSnapshot != nil && userLoadErr == nil {
+					cp := *txSnapshot
+					cp.Status = entity.UserStatusDisabled
+					u = &cp
+				}
+				if err := s.projector.ProjectUserSessionsRevoked(postCtx, u, digests, recEpoch); err != nil {
+					return err
+				}
+				return userLoadErr
 			}
 			if s.outboxCoord != nil {
-				s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
-					if s.projector == nil {
-						return nil
-					}
-					return s.projector.ProjectUserSessionsRevoked(postCtx, u, digests, recEpoch)
-				})
+				s.outboxCoord.CompleteAfterCommit(postCtx, evID, projectFn)
 				return
 			}
-			if s.projector != nil && s.projector.IsEnabled() {
-				_ = s.projector.ProjectUserSessionsRevoked(postCtx, u, digests, 1)
-			}
+			_ = projectFn(1)
 		})
 	}
 	return revoked, nil
@@ -308,6 +334,9 @@ func (s *Service) RefreshAccessSnapshot(ctx context.Context, userID string) (*Re
 
 	canAccessIdentity := evaluateIdentityDashboardAccess(u, snapshot, defaultRedirect)
 	allowedRoutes := s.redirect.AllowedPaths()
+	if u.Kind == entity.UserKindSystem {
+		allowedRoutes = []string{"/"}
+	}
 
 	if s.projector != nil && s.projector.IsEnabled() {
 		if err := s.projector.ProjectAccessSnapshot(ctx, snapshot, canAccessIdentity, defaultRedirect, allowedRoutes); err != nil {
@@ -331,7 +360,7 @@ func evaluateIdentityDashboardAccess(u *entity.User, snapshot *entity.AccessSnap
 	if u.Status != entity.UserStatusActive || u.IsDeleted() {
 		return false
 	}
-	if u.Kind == entity.UserKindCustomer {
+	if u.Kind == entity.UserKindCustomer || u.Kind == entity.UserKindSystem || !u.Kind.IsValid() {
 		return false
 	}
 	if strings.TrimSpace(defaultRedirect) == "/identity" {

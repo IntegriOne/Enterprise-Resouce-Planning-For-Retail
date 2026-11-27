@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"sync"
 	"syscall"
 	"time"
@@ -21,11 +23,18 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
+	if err := run(logger); err != nil {
+		logger.Error("iam service terminated with error", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+}
+
+// run mengeksekusi siklus hidup penuh daemon IAM sehingga seluruh defer pembersihan koneksi dan antrean tetap berjalan saat gagal.
+func run(logger *slog.Logger) error {
 	// Muat konfigurasi runtime IAM.
 	cfg, err := config.Load()
 	if err != nil {
-		logger.Error("failed to load configuration", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("load iam configuration: %w", err)
 	}
 
 	// Inisialisasi database IAM (membuat database & menerapkan migrasi baseline 000001 secara otomatis).
@@ -33,12 +42,14 @@ func main() {
 	gormDB, err := db.Init(dbInitCtx, cfg.DatabaseDSN, false)
 	dbCancel()
 	if err != nil {
-		logger.Error("failed to initialize IAM database", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("initialize iam database: %w", err)
 	}
 
 	// Pastikan koneksi database ditutup dengan bersih saat proses berhenti.
-	if sqlDB, dbErr := gormDB.DB(); dbErr == nil {
+	sqlDB, dbErr := gormDB.DB()
+	if dbErr != nil {
+		logger.Warn("failed to acquire sql.DB handle for cleanup", slog.String("error", dbErr.Error()))
+	} else {
 		defer func() {
 			if closeErr := sqlDB.Close(); closeErr != nil {
 				logger.Warn("failed to close database connection", slog.String("error", closeErr.Error()))
@@ -51,8 +62,7 @@ func main() {
 	svcRegistry, repos, redisClient, efScopeCloser, err := wireRuntimeStack(initCtx, gormDB, cfg, logger)
 	initCancel()
 	if err != nil {
-		logger.Error("failed to wire IAM runtime stack", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("wire iam runtime stack: %w", err)
 	}
 	if efScopeCloser != nil {
 		defer func() {
@@ -68,14 +78,26 @@ func main() {
 			}
 		}()
 	}
+	if svcRegistry.EmailDispatcher != nil {
+		defer func() {
+			drainTimeout := cfg.ShutdownTimeout
+			if drainTimeout <= 0 {
+				drainTimeout = 10 * time.Second
+			}
+			closeCtx, closeCancel := context.WithTimeout(context.Background(), drainTimeout)
+			defer closeCancel()
+			if closeErr := svcRegistry.EmailDispatcher.Close(closeCtx); closeErr != nil {
+				logger.Warn("failed to drain email delivery queue on shutdown", slog.String("error", closeErr.Error()))
+			}
+		}()
+	}
 
-	// Jalankan bootstrap idempoten katalog RBAC & akun systemiam bila dikonfigurasi.
+	// Jalankan bootstrap idempoten katalog RBAC, akun layanan otomasi per management, serta akun human superadmin perdana.
 	bootCtx, bootCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	err = services.BootstrapSystemPrincipalAndRBAC(bootCtx, repos, svcRegistry, cfg.SystemBootstrap, logger)
+	err = services.BootstrapPrincipalsAndRBAC(bootCtx, repos, svcRegistry, cfg.Bootstrap, logger)
 	bootCancel()
 	if err != nil {
-		logger.Error("failed to bootstrap system RBAC and principal", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("bootstrap rbac and initial principals: %w", err)
 	}
 
 	// Pulihkan antrean outbox pending & sesi aktif sebelum membuka security gate Redis.
@@ -84,23 +106,20 @@ func main() {
 		recErr := svcRegistry.Reconciler.BootstrapGateAndDrain(recCtx)
 		recCancel()
 		if recErr != nil {
-			logger.Error("failed to reconcile Redis security gate on startup", slog.String("error", recErr.Error()))
-			os.Exit(1)
+			return fmt.Errorf("reconcile redis security gate on startup: %w", recErr)
 		}
 	}
 
 	// Buat instance gRPC server dan daftarkan seluruh layanan kontrak iam.v1 secara fail-closed.
 	srv, err := wireGRPCServer(cfg, svcRegistry, logger)
 	if err != nil {
-		logger.Error("failed to wire IAM gRPC server", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("wire iam grpc server: %w", err)
 	}
 
 	errCh := make(chan error, 2)
 	stopWorkloads, err := startHRMWorkloads(cfg, svcRegistry.Users, svcRegistry.EmployeeProvisioning, logger, errCh)
 	if err != nil {
-		logger.Error("failed to start IAM workload listener", slog.String("error", err.Error()))
-		os.Exit(1)
+		return err
 	}
 	defer stopWorkloads()
 
@@ -113,6 +132,14 @@ func main() {
 		recWG.Add(1)
 		go func() {
 			defer recWG.Done()
+			defer func() {
+				if rec := recover(); rec != nil {
+					logger.Error("iam reconciler goroutine panic recovered",
+						slog.Any("panic", rec),
+						slog.String("stack", string(debug.Stack())),
+					)
+				}
+			}()
 			svcRegistry.Reconciler.Run(sigCtx)
 		}()
 	}
@@ -121,18 +148,24 @@ func main() {
 	}
 
 	go func() {
-		if err := srv.Start(); err != nil {
-			errCh <- err
+		defer func() {
+			if rec := recover(); rec != nil {
+				logger.Error("iam gRPC server goroutine panic recovered",
+					slog.Any("panic", rec),
+					slog.String("stack", string(debug.Stack())),
+				)
+				errCh <- fmt.Errorf("grpc server panicked: %v", rec)
+			}
+		}()
+		if serveErr := srv.Start(); serveErr != nil {
+			errCh <- serveErr
 		}
 	}()
 
+	var serveErr error
 	select {
-	case err := <-errCh:
-		logger.Error("gRPC server exited with error", slog.String("error", err.Error()))
+	case serveErr = <-errCh:
 		stop()
-		recWG.Wait()
-		stopWorkloads()
-		os.Exit(1)
 	case <-sigCtx.Done():
 		logger.Info("shutdown signal received")
 	}
@@ -142,9 +175,8 @@ func main() {
 
 	srv.Stop(shutdownCtx)
 	recWG.Wait()
-	if svcRegistry.EmailDispatcher != nil {
-		if closeErr := svcRegistry.EmailDispatcher.Close(shutdownCtx); closeErr != nil {
-			logger.Warn("failed to drain email delivery queue on shutdown", slog.String("error", closeErr.Error()))
-		}
+	if serveErr != nil {
+		return fmt.Errorf("grpc server exited with error: %w", serveErr)
 	}
+	return nil
 }

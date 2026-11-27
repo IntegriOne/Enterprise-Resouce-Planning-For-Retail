@@ -35,7 +35,11 @@ func RunMigrationsUp(ctx context.Context, db *sql.DB) (resultErr error) {
 	if err != nil {
 		return fmt.Errorf("failed to acquire migration connection: %w", err)
 	}
-	defer func() { _ = conn.Close() }()
+	defer func() {
+		if closeErr := conn.Close(); closeErr != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("failed to close migration connection: %w", closeErr))
+		}
+	}()
 
 	// Ambil PostgreSQL advisory lock agar eksekusi migrasi paralel tetap aman dan bebas race condition.
 	if _, err := conn.ExecContext(ctx, "SELECT pg_advisory_lock($1);", iamMigrationLockID); err != nil {
@@ -98,18 +102,27 @@ func RunMigrationsUp(ctx context.Context, db *sql.DB) (resultErr error) {
 		}
 
 		if _, err := tx.ExecContext(ctx, string(content)); err != nil {
-			_ = tx.Rollback()
-			_, _ = conn.ExecContext(ctx,
+			var joinErrs []error
+			joinErrs = append(joinErrs, fmt.Errorf("failed to execute migration %s: %w", item.filename, err))
+			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+				joinErrs = append(joinErrs, fmt.Errorf("failed to rollback migration %s: %w", item.filename, rbErr))
+			}
+			if _, dirtyErr := conn.ExecContext(ctx,
 				`INSERT INTO schema_migrations (version, dirty, applied_at) VALUES ($1, true, NOW()) ON CONFLICT (version) DO UPDATE SET dirty = true;`,
 				item.version,
-			)
-			return fmt.Errorf("failed to execute migration %s: %w", item.filename, err)
+			); dirtyErr != nil {
+				joinErrs = append(joinErrs, fmt.Errorf("failed to mark migration version %d dirty: %w", item.version, dirtyErr))
+			}
+			return errors.Join(joinErrs...)
 		}
 
 		const recordQuery = `INSERT INTO schema_migrations (version, dirty, applied_at) VALUES ($1, false, NOW()) ON CONFLICT (version) DO UPDATE SET dirty = false, applied_at = NOW();`
 		if _, err := tx.ExecContext(ctx, recordQuery, item.version); err != nil {
-			_ = tx.Rollback()
-			return fmt.Errorf("failed to record migration version %d: %w", item.version, err)
+			var rbWrap error
+			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+				rbWrap = fmt.Errorf("failed to rollback migration record %d: %w", item.version, rbErr)
+			}
+			return errors.Join(fmt.Errorf("failed to record migration version %d: %w", item.version, err), rbWrap)
 		}
 
 		if err := tx.Commit(); err != nil {
@@ -165,7 +178,11 @@ func RunMigrationsDown(ctx context.Context, db *sql.DB) (resultErr error) {
 	if err != nil {
 		return fmt.Errorf("failed to acquire migration connection: %w", err)
 	}
-	defer func() { _ = conn.Close() }()
+	defer func() {
+		if closeErr := conn.Close(); closeErr != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("failed to close migration connection: %w", closeErr))
+		}
+	}()
 
 	if _, err := conn.ExecContext(ctx, "SELECT pg_advisory_lock($1);", iamMigrationLockID); err != nil {
 		return fmt.Errorf("failed to acquire migration advisory lock: %w", err)
@@ -220,13 +237,19 @@ func RunMigrationsDown(ctx context.Context, db *sql.DB) (resultErr error) {
 		}
 
 		if _, err := tx.ExecContext(ctx, string(content)); err != nil {
-			_ = tx.Rollback()
-			return fmt.Errorf("failed to execute down migration %s: %w", item.filename, err)
+			var rbWrap error
+			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+				rbWrap = fmt.Errorf("failed to rollback down migration %s: %w", item.filename, rbErr)
+			}
+			return errors.Join(fmt.Errorf("failed to execute down migration %s: %w", item.filename, err), rbWrap)
 		}
 
 		if _, err := tx.ExecContext(ctx, `DELETE FROM schema_migrations WHERE version = $1;`, item.version); err != nil {
-			_ = tx.Rollback()
-			return fmt.Errorf("failed to remove migration record %d: %w", item.version, err)
+			var rbWrap error
+			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+				rbWrap = fmt.Errorf("failed to rollback migration record removal %d: %w", item.version, rbErr)
+			}
+			return errors.Join(fmt.Errorf("failed to remove migration record %d: %w", item.version, err), rbWrap)
 		}
 
 		if err := tx.Commit(); err != nil {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -178,15 +179,29 @@ func (d *Dispatcher) workerLoop() {
 }
 
 func (d *Dispatcher) processJob(job emailJob) {
+	log := d.logger
+	if log == nil {
+		log = slog.Default()
+	}
 	defer func() {
-		if rec := recover(); rec != nil && d.logger != nil {
-			d.logger.Error("email worker panic recovered", slog.Any("panic", rec))
+		if rec := recover(); rec != nil {
+			log.Error("email worker panic recovered",
+				slog.Any("panic", rec),
+				slog.String("stack", string(debug.Stack())),
+			)
 		}
 	}()
 	// Konteks terisolasi per pengiriman agar pembatalan request RPC klien tidak membatalkan pengiriman email yang sudah masuk antrean.
 	jobCtx, cancel := context.WithTimeout(context.Background(), d.totalAttemptBudget())
 	defer cancel()
-	_, _ = d.sendWithRetry(jobCtx, job.msg)
+	if _, err := d.sendWithRetry(jobCtx, job.msg); err != nil {
+		log.Error("transactional email delivery failed",
+			slog.String("provider", d.ProviderName()),
+			slog.String("purpose", string(job.msg.Purpose)),
+			slog.String("recipient", domainservice.MaskEmailForLog(job.msg.To)),
+			slog.String("error", err.Error()),
+		)
+	}
 }
 
 func (d *Dispatcher) totalAttemptBudget() time.Duration {
@@ -241,13 +256,5 @@ func (d *Dispatcher) sendWithRetry(ctx context.Context, msg domainservice.EmailM
 		backoff *= 2
 	}
 
-	if d.logger != nil {
-		d.logger.Error("transactional email delivery failed",
-			slog.String("provider", d.inner.ProviderName()),
-			slog.String("purpose", string(msg.Purpose)),
-			slog.String("recipient", domainservice.MaskEmailForLog(msg.To)),
-			slog.String("error", lastErr.Error()),
-		)
-	}
 	return nil, lastErr
 }

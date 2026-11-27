@@ -45,7 +45,7 @@ func (h *SessionHandler) IssueSession(ctx context.Context, req *iamv1.IssueSessi
 		return nil, h.errMapper.ToStatus(iamerrors.ErrPermissionDenied)
 	}
 	if req.GetMfaVerified() {
-		return nil, h.errMapper.ToStatus(iamerrors.NewValidation("mfa_verified", iamerrors.Code("iam.session.mfa_verification_required"), "mfa verification must use the authentication flow"))
+		return nil, h.errMapper.ToStatus(iamerrors.NewValidation("mfa_verified", iamerrors.Code("iam.session.mfa_flag_requires_auth_flow"), "mfa verification must use the authentication flow"))
 	}
 	issued, err := h.svc.Issue(ctx, session.IssueInput{
 		UserID:      req.GetUserId(),
@@ -55,6 +55,9 @@ func (h *SessionHandler) IssueSession(ctx context.Context, req *iamv1.IssueSessi
 	})
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if issued == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.session.empty_result"), "session issuance returned empty result"))
 	}
 	return &iamv1.IssueSessionResponse{IssuedSession: toProtoIssuedSession(issued)}, nil
 }
@@ -180,6 +183,9 @@ func (h *SessionHandler) AuthorizeSession(ctx context.Context, req *iamv1.Author
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
 	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.session.empty_result"), "session authorization returned empty result"))
+	}
 	return &iamv1.AuthorizeSessionResponse{
 		User:     toProtoUser(res.User),
 		Session:  toProtoSession(res.Session),
@@ -215,6 +221,9 @@ func (h *SessionHandler) GetSessionCsrf(ctx context.Context, req *iamv1.GetSessi
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
 	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.session.empty_result"), "session csrf lookup returned empty result"))
+	}
 	return &iamv1.GetSessionCsrfResponse{
 		Session:   toProtoSession(res.Session),
 		CsrfToken: res.CSRFToken,
@@ -229,6 +238,9 @@ func (h *SessionHandler) RefreshUserAccessSnapshot(ctx context.Context, req *iam
 	res, err := h.svc.RefreshAccessSnapshot(ctx, req.GetUserId())
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.session.empty_result"), "access snapshot refresh returned empty result"))
 	}
 	return &iamv1.RefreshUserAccessSnapshotResponse{
 		User:                 toProtoUser(res.User),

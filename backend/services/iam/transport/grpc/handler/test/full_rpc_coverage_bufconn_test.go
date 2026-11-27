@@ -381,6 +381,7 @@ func TestUserSessionAuthRemainingRPCs_Bufconn(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("VerifyCsrf error = %v", err)
 	}
+	//nolint:staticcheck // SA1019: Menguji kontrak penolakan RPC deprecated sesuai requirement backward compatibility.
 	if _, err := sessClient.MarkSessionMfaVerified(ctx, &iamv1.MarkSessionMfaVerifiedRequest{SessionId: sid1}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("MarkSessionMfaVerified() error = %v, want FailedPrecondition", err)
 	}
@@ -613,6 +614,7 @@ func enrollAndConfirmTOTPAt(
 	}
 	return secretBytes
 }
+
 func TestCheckUsernameAvailability_Bufconn(t *testing.T) {
 	t.Parallel()
 

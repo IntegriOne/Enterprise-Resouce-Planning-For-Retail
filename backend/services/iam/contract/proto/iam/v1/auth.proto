@@ -21,6 +21,10 @@ message UserTotpFactor {
   google.protobuf.Timestamp updated_at = 8;
 }
 
+// AuthenticatePasswordRequest membawa kredensial login interaktif pengguna non-system.
+// Kontrak keamanan IAM: principal USER_KIND_SYSTEM (mis. auto_system_iam, auto_system_ef)
+// wajib ditolak dengan PermissionDenied (ErrorInfo.reason = "iam.user.system_cannot_login",
+// message = "system cannot login") baik kata sandi kosong maupun terisi.
 message AuthenticatePasswordRequest {
   string identifier = 1;
   string password = 2;

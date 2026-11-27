@@ -110,3 +110,35 @@ func TestValidateRuntimeStrict_DevelopmentRequiresInternalProofSecret(t *testing
 		t.Fatalf("development runtime rejected configured internal HMAC secret: %v", err)
 	}
 }
+
+func TestLoad_SuperadminAndAutomationBootstrapConfig(t *testing.T) {
+	t.Setenv("IAM_SUPERADMIN_USER_UID", "f300be11-ef17-4b88-8a4c-9c938f1bacd0")
+	t.Setenv("IAM_SUPERADMIN_USERNAME", "superadmin")
+	t.Setenv("IAM_SUPERADMIN_EMAIL", "superadmin@integrione.local")
+	t.Setenv("IAM_SUPERADMIN_PASSWORD", "SupAdm#LiveTest2026!Q")
+	t.Setenv("IAM_SUPERADMIN_USER_KIND", "employee")
+	t.Setenv("IAM_SUPERADMIN_ROLE_CODE", "superadmin")
+	t.Setenv("IAM_AUTO_SYSTEM_IAM_USER_UID", "853aac77-32e7-4a88-b2d6-7d68db8d13d7")
+	t.Setenv("IAM_AUTO_SYSTEM_IAM_USERNAME", "auto_system_iam")
+	t.Setenv("IAM_AUTO_SYSTEM_EF_USER_UID", "89125999-2faa-4ffe-b12b-82793f0910c1")
+	t.Setenv("IAM_AUTO_SYSTEM_EF_USERNAME", "auto_system_ef")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+	if cfg.Bootstrap.Superadmin.Username != "superadmin" || cfg.Bootstrap.Superadmin.UserKind != "employee" {
+		t.Fatalf("unexpected superadmin bootstrap config: %+v", cfg.Bootstrap.Superadmin)
+	}
+	if len(cfg.Bootstrap.AutomationPrincipals) != 2 {
+		t.Fatalf("expected 2 automation principals (iam, ef), got %d", len(cfg.Bootstrap.AutomationPrincipals))
+	}
+	iamAuto := cfg.Bootstrap.AutomationPrincipals[0]
+	efAuto := cfg.Bootstrap.AutomationPrincipals[1]
+	if iamAuto.Username != "auto_system_iam" || iamAuto.RoleCode != "iam_automation" {
+		t.Fatalf("unexpected iam automation config: %+v", iamAuto)
+	}
+	if efAuto.Username != "auto_system_ef" || efAuto.RoleCode != "ef_automation" {
+		t.Fatalf("unexpected ef automation config: %+v", efAuto)
+	}
+}

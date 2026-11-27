@@ -147,7 +147,7 @@ func (r *Repository) Insert(ctx context.Context, permission *entity.Permission) 
 	return pgstore.MapError(db.Create(&model).Error, nil)
 }
 
-// Update memperbaiki metadata katalog izin berdasarkan UUID tanpa mengubah kode dan sensitivitasnya.
+// Update memperbarui metadata katalog izin (resource, action, description, dan is_sensitive) berdasarkan UUID serta kode izin.
 func (r *Repository) Update(ctx context.Context, permission *entity.Permission) error {
 	if r == nil {
 		return pgstore.CheckDB(nil)
@@ -161,7 +161,12 @@ func (r *Repository) Update(ctx context.Context, permission *entity.Permission) 
 		return err
 	}
 	res := db.Model(&permissionModel{}).Where("id = ? AND code = ?", model.ID, model.Code).
-		Updates(map[string]any{"resource": model.Resource, "action": model.Action})
+		Updates(map[string]any{
+			"resource":     model.Resource,
+			"action":       model.Action,
+			"description":  model.Description,
+			"is_sensitive": model.IsSensitive,
+		})
 	if res.Error != nil {
 		return pgstore.MapError(res.Error, iamerrors.ErrPermissionNotFound)
 	}

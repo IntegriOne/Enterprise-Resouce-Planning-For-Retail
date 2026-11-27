@@ -30,7 +30,8 @@ const (
 	UserKind_USER_KIND_EMPLOYEE    UserKind = 2
 	UserKind_USER_KIND_VENDOR      UserKind = 3
 	UserKind_USER_KIND_SUPPLIER    UserKind = 4
-	UserKind_USER_KIND_SYSTEM      UserKind = 5
+	// USER_KIND_SYSTEM adalah akun layanan otomasi non-interaktif per-management (tanpa email/kata sandi) yang dilarang login interaktif (iam.user.system_cannot_login).
+	UserKind_USER_KIND_SYSTEM UserKind = 5
 )
 
 // Enum value maps for UserKind.

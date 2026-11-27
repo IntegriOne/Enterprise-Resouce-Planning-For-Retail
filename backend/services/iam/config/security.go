@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -120,4 +121,29 @@ func LoadSecurity(appEnv string) (SecurityConfig, error) {
 		LockDuration:              time.Duration(lockSec) * time.Second,
 		AllowedRedirectPaths:      allowedPaths,
 	}, nil
+}
+
+// String menyamarkan keyring TOTP, keyring CSRF, dan HMAC secret internal dari keluaran log.
+func (s SecurityConfig) String() string {
+	return fmt.Sprintf("config.SecurityConfig{TOTPIssuer:%s, TOTPActiveKeyVersion:%d, TOTPKeysCount:%d, CSRFActiveKeyVersion:%d, CSRFKeysCount:%d, InternalHMACLen:%d, MaxFailedAttempts:%d}",
+		s.TOTPIssuer, s.TOTPActiveKeyVersion, len(s.TOTPKeyring),
+		s.CSRFActiveKeyVersion, len(s.CSRFKeyring), len(s.InternalGatewayHMACSecret), s.MaxFailedAttempts)
+}
+
+// GoString menyamarkan kunci kriptografi pada format %#v.
+func (s SecurityConfig) GoString() string {
+	return s.String()
+}
+
+// LogValue memancarkan metadata konfigurasi keamanan aman untuk slog tanpa byte kunci mentah.
+func (s SecurityConfig) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("totp_issuer", s.TOTPIssuer),
+		slog.Int("totp_active_key_version", int(s.TOTPActiveKeyVersion)),
+		slog.Int("totp_keys_count", len(s.TOTPKeyring)),
+		slog.Int("csrf_active_key_version", s.CSRFActiveKeyVersion),
+		slog.Int("csrf_keys_count", len(s.CSRFKeyring)),
+		slog.Bool("internal_hmac_configured", len(s.InternalGatewayHMACSecret) > 0),
+		slog.Int("max_failed_attempts", s.MaxFailedAttempts),
+	)
 }

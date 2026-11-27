@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -15,14 +16,14 @@ import (
 // Init menginisialisasi basis data target, memastikan database fisik tersedia,
 // menerapkan seluruh migrasi up, dan mengembalikan instance *gorm.DB terkonfigurasi.
 // Jika isTesting bernilai true, nama database pada DSN wajib berakhiran '_test'.
-func Init(ctx context.Context, dsn string, isTesting bool) (*gorm.DB, error) {
+func Init(ctx context.Context, dsn string, isTesting bool) (_ *gorm.DB, retErr error) {
 	if strings.TrimSpace(dsn) == "" {
 		return nil, fmt.Errorf("database DSN cannot be empty")
 	}
 
 	cfg, err := pgx.ParseConfig(dsn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse database DSN: %w", err)
+		return nil, sanitizeDSNParseError("failed to parse database DSN", err)
 	}
 
 	if isTesting && !strings.HasSuffix(cfg.Database, "_test") {
@@ -56,7 +57,9 @@ func Init(ctx context.Context, dsn string, isTesting bool) (*gorm.DB, error) {
 	initialized := false
 	defer func() {
 		if !initialized {
-			_ = sqlDB.Close()
+			if closeErr := sqlDB.Close(); closeErr != nil {
+				retErr = errors.Join(retErr, fmt.Errorf("failed to close database handle after init failure: %w", closeErr))
+			}
 		}
 	}()
 
@@ -77,23 +80,28 @@ func InitDevAndTest(ctx context.Context, devDSN, testDSN string) (*gorm.DB, *gor
 		return nil, nil, fmt.Errorf("failed to initialize development database: %w", err)
 	}
 
+	closeDev := func() error {
+		sqlDB, dbErr := devDB.DB()
+		if dbErr != nil {
+			return fmt.Errorf("failed to acquire development sql.DB handle for cleanup: %w", dbErr)
+		}
+		if closeErr := sqlDB.Close(); closeErr != nil {
+			return fmt.Errorf("failed to close development database after test init failure: %w", closeErr)
+		}
+		return nil
+	}
+
 	resolvedTestDSN := strings.TrimSpace(testDSN)
 	if resolvedTestDSN == "" {
 		resolvedTestDSN, err = DeriveTestDatabaseDSN(devDSN)
 		if err != nil {
-			if sqlDB, dbErr := devDB.DB(); dbErr == nil {
-				_ = sqlDB.Close()
-			}
-			return nil, nil, fmt.Errorf("failed to derive test database DSN: %w", err)
+			return nil, nil, errors.Join(fmt.Errorf("failed to derive test database DSN: %w", err), closeDev())
 		}
 	}
 
 	testDB, err := Init(ctx, resolvedTestDSN, true)
 	if err != nil {
-		if sqlDB, dbErr := devDB.DB(); dbErr == nil {
-			_ = sqlDB.Close()
-		}
-		return nil, nil, fmt.Errorf("failed to initialize test database: %w", err)
+		return nil, nil, errors.Join(fmt.Errorf("failed to initialize test database: %w", err), closeDev())
 	}
 
 	return devDB, testDB, nil

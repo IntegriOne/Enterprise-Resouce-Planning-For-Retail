@@ -498,4 +498,11 @@ func TestHTTPProviderClassifies4xxPermanentVs5xxTransient(t *testing.T) {
 	if _, err := sender.Send(context.Background(), msg); err == nil || IsPermanent(err) {
 		t.Fatalf("expected HTTP 429 to be retryable error, got: %v", err)
 	}
+
+	// Pastikan ringkasan error HTTP menyamarkan PII alamat email penerima dari badan respons penyedia.
+	statusCode.Store(http.StatusBadRequest)
+	summary := sanitizeProviderErrorSummary([]byte("rejected recipient alice.secret@integrione.id due to suppression"))
+	if strings.Contains(summary, "alice.secret@integrione.id") || !strings.Contains(summary, "[REDACTED_EMAIL]") {
+		t.Fatalf("expected provider error summary to redact email PII, got %q", summary)
+	}
 }

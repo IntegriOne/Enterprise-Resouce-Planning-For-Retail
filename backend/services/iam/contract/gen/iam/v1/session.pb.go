@@ -241,6 +241,8 @@ func (x *IssuedSession) GetCsrfToken() string {
 	return ""
 }
 
+// IssueSessionRequest meminta penerbitan sesi stateful bagi pengguna manusia aktif (non-system).
+// Kontrak IAM: target USER_KIND_SYSTEM wajib ditolak dengan PermissionDenied ("system cannot login").
 type IssueSessionRequest struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	UserId string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`

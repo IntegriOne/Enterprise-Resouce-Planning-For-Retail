@@ -2,8 +2,10 @@ package group
 
 import (
 	"context"
+	"errors"
 
 	"github.com/integrione/erp-retail/backend/services/iam/domain/entity"
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	"github.com/integrione/erp-retail/backend/services/iam/infrastructure/redisstore"
 	"github.com/integrione/erp-retail/backend/services/iam/repository/pgstore"
 )
@@ -30,7 +32,10 @@ func (s *Service) bumpAndRecordGroupSecurityInTx(txCtx context.Context, groupID 
 			for _, uid := range affected {
 				u, err := s.users.SelectByID(postCtx, uid)
 				if err != nil {
-					continue
+					if errors.Is(err, iamerrors.ErrUserNotFound) {
+						continue
+					}
+					return err
 				}
 				if err := s.projector.ProjectUserSecurityChanged(postCtx, u, recEpoch, true); err != nil {
 					return err
@@ -57,13 +62,16 @@ func (s *Service) bumpAndRecordUserPermissionsInTx(txCtx context.Context, userID
 	}
 
 	pgstore.RegisterAfterCommit(txCtx, func(postCtx context.Context) {
-		u, err := s.users.SelectByID(postCtx, userID)
-		if err != nil {
-			return
-		}
 		s.outboxCoord.CompleteAfterCommit(postCtx, evID, func(recEpoch int64) error {
-			if s.projector == nil {
+			if s.projector == nil || !s.projector.IsEnabled() {
 				return nil
+			}
+			u, err := s.users.SelectByID(postCtx, userID)
+			if err != nil {
+				if errors.Is(err, iamerrors.ErrUserNotFound) {
+					return nil
+				}
+				return err
 			}
 			return s.projector.ProjectUserSecurityChanged(postCtx, u, recEpoch, true)
 		})

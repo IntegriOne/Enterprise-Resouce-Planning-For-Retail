@@ -3,6 +3,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -18,14 +19,14 @@ var validDBName = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 // EnsureDatabase memeriksa keberadaan basis data target pada PostgreSQL.
 // Jika belum ada, fungsi membuka koneksi sementara ke basis data maintenance 'postgres'
 // dan membuat basis data baru dengan encoding UTF8 secara aman.
-func EnsureDatabase(ctx context.Context, dsn string) error {
+func EnsureDatabase(ctx context.Context, dsn string) (retErr error) {
 	if strings.TrimSpace(dsn) == "" {
 		return fmt.Errorf("database DSN cannot be empty")
 	}
 
 	cfg, err := pgx.ParseConfig(dsn)
 	if err != nil {
-		return fmt.Errorf("failed to parse database DSN: %w", err)
+		return sanitizeDSNParseError("failed to parse database DSN", err)
 	}
 
 	targetDB := cfg.Database
@@ -46,7 +47,11 @@ func EnsureDatabase(ctx context.Context, dsn string) error {
 	maintCfg.Database = "postgres"
 
 	maintDB := stdlib.OpenDB(*maintCfg)
-	defer func() { _ = maintDB.Close() }()
+	defer func() {
+		if closeErr := maintDB.Close(); closeErr != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("failed to close maintenance database handle: %w", closeErr))
+		}
+	}()
 
 	if err := maintDB.PingContext(ctx); err != nil {
 		return fmt.Errorf("failed to connect to maintenance database 'postgres': %w", err)
@@ -79,7 +84,7 @@ func DeriveTestDatabaseDSN(devDSN string) (string, error) {
 
 	cfg, err := pgx.ParseConfig(devDSN)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse development DSN: %w", err)
+		return "", sanitizeDSNParseError("failed to parse development DSN", err)
 	}
 
 	baseDB := cfg.Database
@@ -100,7 +105,7 @@ func DeriveTestDatabaseDSN(devDSN string) (string, error) {
 	if strings.HasPrefix(devDSN, "postgres://") || strings.HasPrefix(devDSN, "postgresql://") {
 		parsedURL, parseErr := url.Parse(devDSN)
 		if parseErr != nil {
-			return "", fmt.Errorf("failed to parse DSN URL: %w", parseErr)
+			return "", sanitizeDSNParseError("failed to parse DSN URL", parseErr)
 		}
 		parsedURL.Path = "/" + testDB
 		return parsedURL.String(), nil
@@ -113,4 +118,12 @@ func DeriveTestDatabaseDSN(devDSN string) (string, error) {
 	}
 
 	return devDSN + " dbname=" + testDB, nil
+}
+
+// sanitizeDSNParseError menghapus detail *url.Error atau string DSN mentah agar kata sandi database tidak bocor ke log.
+func sanitizeDSNParseError(prefix string, err error) error {
+	if urlErr, ok := errors.AsType[*url.Error](err); ok && urlErr.Err != nil {
+		return fmt.Errorf("%s: %w", prefix, urlErr.Err)
+	}
+	return fmt.Errorf("%s: invalid connection string format", prefix)
 }

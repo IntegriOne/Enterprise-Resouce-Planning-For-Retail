@@ -2,6 +2,7 @@ package entity_test
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -73,6 +74,14 @@ func TestNewUserAndLifecycle(t *testing.T) {
 	}
 	if err := user.Activate(now.Add(6 * time.Minute)); !errors.Is(err, iamerrors.ErrUserDeleted) {
 		t.Fatalf("Activate() after SoftDelete() = %v, want ErrUserDeleted", err)
+	}
+
+	sysUser, err := entity.NewUser(testUserID, entity.UserKindSystem, entity.UserStatusActive, "Auto System IAM", now)
+	if err != nil {
+		t.Fatalf("NewUser(system) unexpected error: %v", err)
+	}
+	if err := sysUser.CanAuthenticate(); !errors.Is(err, iamerrors.ErrSystemCannotLogin) || err.Error() != "system cannot login" {
+		t.Fatalf("system user CanAuthenticate() = %v, want ErrSystemCannotLogin (system cannot login)", err)
 	}
 }
 
@@ -153,5 +162,13 @@ func TestUserIdentity(t *testing.T) {
 	}
 	if _, err := entity.NewUserIdentity(testIdentityID, testUserID, entity.IdentityKind("phone"), "08123", true, now); !errors.Is(err, iamerrors.ErrInvalidIdentityKind) {
 		t.Fatalf("invalid kind error = %v, want ErrInvalidIdentityKind", err)
+	}
+
+	formatted := fmt.Sprintf("%v %#v", emailID, emailID)
+	if strings.Contains(formatted, "budi.santoso@integrione.id") {
+		t.Fatalf("UserIdentity string/GoString leaked raw email PII: %s", formatted)
+	}
+	if !strings.Contains(formatted, "b***@integrione.id") {
+		t.Fatalf("UserIdentity string/GoString missing masked email: %s", formatted)
 	}
 }

@@ -27,6 +27,10 @@ var uniqueConstraintMap = map[string]error{
 	"uq_group_members_group_user":                    iamerrors.ErrGroupMemberExists,
 	"uq_user_roles_assignment":                       iamerrors.ErrUserRoleExists,
 	"uq_group_roles_assignment":                      iamerrors.ErrGroupRoleExists,
+	"user_recovery_codes_code_hash_key":              iamerrors.ErrAlreadyExists,
+	"user_tokens_token_digest_key":                   iamerrors.ErrAlreadyExists,
+	"uq_user_tokens_one_active_per_purpose":          iamerrors.ErrAlreadyExists,
+	"sessions_token_digest_key":                      iamerrors.ErrAlreadyExists,
 }
 
 // Pemetaan nama constraint check ke sentinel error domain IAM.
@@ -94,7 +98,7 @@ func mapSQLState(pgErr *pgconn.PgError, inUseErr error, isDelete bool) error {
 			return mapped
 		}
 		return iamerrors.ErrInvalidInput
-	case "22P02", "23502", "22001": // invalid_text_representation, not_null_violation, string_data_right_truncation
+	case "22P02", "23502", "22001", "22003": // invalid_text_representation, not_null_violation, string_data_right_truncation, numeric_value_out_of_range
 		return iamerrors.ErrInvalidInput
 	case "40001", "40P01": // serialization_failure, deadlock_detected
 		return iamerrors.Wrap(pgErr, iamerrors.KindConflict, iamerrors.ErrConflict.Code, "concurrent database transaction conflict")
@@ -116,6 +120,8 @@ func mapForeignKeyConstraint(constraint string) error {
 		return iamerrors.ErrPermissionNotFound
 	case strings.Contains(constraint, "group_id_fkey"):
 		return iamerrors.ErrGroupNotFound
+	case strings.Contains(constraint, "identity_id_fkey"):
+		return iamerrors.ErrIdentityNotFound
 	case strings.Contains(constraint, "user_id_fkey"),
 		strings.Contains(constraint, "assigned_by_fkey"),
 		strings.Contains(constraint, "added_by_fkey"):

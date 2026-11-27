@@ -3,7 +3,6 @@ package crypto
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"io"
 
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
@@ -49,5 +48,5 @@ func (g *UUIDGenerator) NewUUID() (string, error) {
 	out[23] = '-'
 	hex.Encode(out[24:36], buf[10:16])
 
-	return fmt.Sprintf("%s", out[:]), nil
+	return string(out[:]), nil
 }

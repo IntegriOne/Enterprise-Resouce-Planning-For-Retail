@@ -70,7 +70,7 @@ func (c *Coordinator) RecordInTx(
 	if err != nil {
 		return "", err
 	}
-	ev, err := entity.NewOutboxEvent(evID, eventType, aggregateType, aggregateID, payload, c.clock.Now())
+	ev, err := entity.NewOutboxEvent(evID, eventType, aggregateType, aggregateID, payload, c.effectiveClock().Now())
 	if err != nil {
 		return "", err
 	}
@@ -85,41 +85,88 @@ func (c *Coordinator) CompleteAfterCommit(ctx context.Context, eventID string, p
 	if c == nil {
 		return
 	}
+	log := c.effectiveLogger()
+	now := c.effectiveClock().Now()
 	if c.projector == nil || !c.projector.IsEnabled() {
 		if eventID != "" && c.runtimeRepo != nil {
-			_ = c.runtimeRepo.MarkEffective(ctx, eventID, c.clock.Now())
+			if err := c.runtimeRepo.MarkEffective(ctx, eventID, now); err != nil {
+				log.Warn("failed to mark outbox event effective with disabled redis projector",
+					slog.String("event_id", eventID),
+					slog.String("error", err.Error()),
+				)
+			}
 		}
 		return
 	}
 
 	var recEpoch int64 = 1
 	if c.runtimeRepo != nil {
-		if loaded, err := c.runtimeRepo.GetRecoveryEpoch(ctx); err == nil && loaded >= 1 {
-			recEpoch = loaded
+		loaded, err := c.runtimeRepo.GetRecoveryEpoch(ctx)
+		if err != nil || loaded < 1 {
+			if err == nil {
+				err = iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.outbox.invalid_recovery_epoch"), "invalid recovery epoch")
+			}
+			// Fail-closed: jangan pernah memproyeksikan ke Redis dengan epoch fallback basi ketika pembacaan epoch PG gagal.
+			log.Warn("failed to read recovery_epoch after PG commit; retaining pending outbox for reconciler",
+				slog.String("event_id", eventID),
+				slog.String("error", err.Error()),
+			)
+			if eventID != "" {
+				if retryErr := c.runtimeRepo.MarkRetry(ctx, eventID, 1, now.Add(time.Second), err.Error()); retryErr != nil {
+					log.Warn("failed to schedule outbox retry after recovery_epoch read failure",
+						slog.String("event_id", eventID),
+						slog.String("error", retryErr.Error()),
+					)
+				}
+			}
+			c.triggerReconcile()
+			return
 		}
+		recEpoch = loaded
 	}
 
+	if projectFn == nil {
+		return
+	}
 	if err := projectFn(recEpoch); err != nil {
-		c.logger.Warn("redis security projection failed after PG commit; retaining pending outbox",
+		log.Warn("redis security projection failed after PG commit; retaining pending outbox",
 			slog.String("event_id", eventID),
 			slog.String("error", err.Error()),
 		)
 		if eventID != "" && c.runtimeRepo != nil {
-			now := c.clock.Now()
-			_ = c.runtimeRepo.MarkRetry(ctx, eventID, 1, now.Add(time.Second), err.Error())
+			if retryErr := c.runtimeRepo.MarkRetry(ctx, eventID, 1, now.Add(time.Second), err.Error()); retryErr != nil {
+				log.Warn("failed to schedule outbox retry after redis projection failure",
+					slog.String("event_id", eventID),
+					slog.String("error", retryErr.Error()),
+				)
+			}
 		}
 		c.triggerReconcile()
 		return
 	}
 
 	if eventID != "" && c.runtimeRepo != nil {
-		if err := c.runtimeRepo.MarkEffective(ctx, eventID, c.clock.Now()); err != nil {
-			c.logger.Warn("failed to mark outbox event effective",
+		if err := c.runtimeRepo.MarkEffective(ctx, eventID, c.effectiveClock().Now()); err != nil {
+			log.Warn("failed to mark outbox event effective",
 				slog.String("event_id", eventID),
 				slog.String("error", err.Error()),
 			)
 		}
 	}
+}
+
+func (c *Coordinator) effectiveLogger() *slog.Logger {
+	if c != nil && c.logger != nil {
+		return c.logger
+	}
+	return slog.Default()
+}
+
+func (c *Coordinator) effectiveClock() domainservice.Clock {
+	if c != nil && c.clock != nil {
+		return c.clock
+	}
+	return domainservice.SystemClock{}
 }
 
 // NotifyChannel mengembalikan channel bangun bagi background reconciler.

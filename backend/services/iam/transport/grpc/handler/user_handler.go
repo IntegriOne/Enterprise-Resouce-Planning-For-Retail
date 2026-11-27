@@ -162,6 +162,9 @@ func (h *UserHandler) UpdateUserEmail(ctx context.Context, req *iamv1.UpdateUser
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
 	}
+	if res == nil || res.PendingIdentity == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.user.empty_update_email_result"), "email update returned empty identity"))
+	}
 	return &iamv1.UpdateUserEmailResponse{
 		PendingEmail:      res.PendingIdentity.Value,
 		IsPending:         true,
@@ -184,6 +187,9 @@ func (h *UserHandler) UpdateUserUsername(ctx context.Context, req *iamv1.UpdateU
 	})
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if ident == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.ErrIdentityNotFound)
 	}
 	return &iamv1.UpdateUserUsernameResponse{
 		Username: ident.Value,
@@ -222,6 +228,9 @@ func (h *UserHandler) ResendValidationEmailToken(ctx context.Context, req *iamv1
 	})
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.identity.empty_resend_result"), "verification token resend returned empty result"))
 	}
 	return &iamv1.ResendValidationEmailTokenResponse{
 		IsResend:          res.IsResend,
@@ -381,6 +390,9 @@ func (h *UserHandler) ConfirmEmailVerificationByToken(ctx context.Context, req *
 	res, err := h.svc.ConfirmEmailVerificationByToken(ctx, req.GetRawToken())
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)
+	}
+	if res == nil {
+		return nil, h.errMapper.ToStatus(iamerrors.New(iamerrors.KindUnavailable, iamerrors.Code("iam.identity.empty_verify_result"), "email verification returned empty result"))
 	}
 	return &iamv1.ConfirmEmailVerificationByTokenResponse{
 		Verified: res.Status == user.VerifyEmailStatusVerified,

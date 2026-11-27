@@ -208,8 +208,7 @@ func (r *RoleRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	inUseErr := iamerrors.New(iamerrors.KindConflict, "iam.role.in_use", "role is currently assigned to users or groups")
-	return db.Transaction(func(tx *gorm.DB) error {
+	return pgstore.MapError(db.Transaction(func(tx *gorm.DB) error {
 		var existing roleModel
 		if err := tx.Select("id, is_system").Where("id = ?", rid).Take(&existing).Error; err != nil {
 			return pgstore.MapError(err, iamerrors.ErrRoleNotFound)
@@ -219,11 +218,11 @@ func (r *RoleRepository) Delete(ctx context.Context, id string) error {
 		}
 		res := tx.Where("id = ? AND is_system = ?", rid, false).Delete(&roleModel{})
 		if res.Error != nil {
-			return pgstore.MapDeleteError(res.Error, iamerrors.ErrRoleNotFound, inUseErr)
+			return pgstore.MapDeleteError(res.Error, iamerrors.ErrRoleNotFound, iamerrors.ErrRoleInUse)
 		}
 		if res.RowsAffected == 0 {
 			return iamerrors.ErrRoleNotFound
 		}
 		return nil
-	})
+	}), iamerrors.ErrRoleNotFound)
 }

@@ -120,6 +120,15 @@ func TestErrorMapper_ToStatus(t *testing.T) {
 			wantReason:   "iam.internal_error",
 			forbidSubstr: "topsecret",
 		},
+		{
+			name:            "withfield empty message inherits sentinel message",
+			err:             iamerrors.WithField(iamerrors.ErrInvalidUserKind, "kind", ""),
+			wantCode:        codes.InvalidArgument,
+			wantReason:      string(iamerrors.ErrInvalidUserKind.Code),
+			wantField:       "kind",
+			wantMsgContains: "invalid user kind",
+			forbidSubstr:    "iam.user.invalid_kind",
+		},
 	}
 
 	for _, tc := range tests {

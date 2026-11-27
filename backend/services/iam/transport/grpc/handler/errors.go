@@ -100,9 +100,15 @@ func sanitizedDomainMessage(domErr *iamerrors.DomainError, grpcCode codes.Code) 
 	if grpcCode == codes.Internal {
 		return "internal error"
 	}
-	msg := strings.TrimSpace(domErr.Message)
-	if msg != "" {
-		return msg
+	for cur := domErr; cur != nil; {
+		if msg := strings.TrimSpace(cur.Message); msg != "" {
+			return msg
+		}
+		next, ok := errors.AsType[*iamerrors.DomainError](cur.Err)
+		if !ok {
+			break
+		}
+		cur = next
 	}
 	if grpcCode == codes.Unavailable {
 		return "service temporarily unavailable"

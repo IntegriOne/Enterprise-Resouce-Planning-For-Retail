@@ -1,9 +1,11 @@
 package crypto_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
+	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	domainservice "github.com/integrione/erp-retail/backend/services/iam/domain/service"
 	"github.com/integrione/erp-retail/backend/services/iam/pkg/crypto"
 )
@@ -75,7 +77,7 @@ func TestArgon2idHasher_RejectsWeakConfigAndMalformedInput(t *testing.T) {
 	if ok, err := def.Verify("", "$argon2id$v=19$m=8192,t=1,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"); err == nil || ok {
 		t.Fatalf("Verify(empty) = (%v, %v), want (false, error)", ok, err)
 	}
-	if ok, err := def.Verify("SomeValidPass!123", "$bcrypt$invalid"); err == nil || ok {
-		t.Fatalf("Verify(malformed) = (%v, %v), want (false, error)", ok, err)
+	if ok, err := def.Verify("SomeValidPass!123", "$bcrypt$invalid"); !errors.Is(err, iamerrors.ErrUnavailable) || ok {
+		t.Fatalf("Verify(malformed) = (%v, %v), want (false, ErrUnavailable)", ok, err)
 	}
 }

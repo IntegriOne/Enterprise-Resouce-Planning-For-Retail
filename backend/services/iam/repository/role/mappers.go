@@ -56,7 +56,7 @@ func roleToModel(r *entity.Role) (roleModel, error) {
 			return roleModel{}, err
 		}
 	}
-	if r.RedirectPriority < 0 {
+	if r.RedirectPriority < 0 || r.RedirectPriority > entity.MaxRedirectPriority {
 		return roleModel{}, iamerrors.ErrInvalidRedirectPriority
 	}
 

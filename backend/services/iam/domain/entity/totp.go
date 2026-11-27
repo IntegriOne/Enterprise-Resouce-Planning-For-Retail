@@ -137,6 +137,11 @@ func (f UserTOTPFactor) String() string {
 		f.ID, f.UserID, f.KeyVersion, f.IsEnabled, redactedSecret)
 }
 
+// GoString menyembunyikan secret TOTP pada format %#v.
+func (f UserTOTPFactor) GoString() string {
+	return f.String()
+}
+
 // LogValue memancarkan atribut faktor TOTP aman untuk slog.
 func (f UserTOTPFactor) LogValue() slog.Value {
 	return slog.GroupValue(
