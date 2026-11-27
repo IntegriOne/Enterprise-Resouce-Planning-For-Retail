@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+message ApplyEmployeeTerminationRequest {
+  string worker_id = 1;
+  string offboarding_plan_id = 2;
+  string effective_date = 3;
+}
+
+enum EmployeeTerminationOutcome {
+  EMPLOYEE_TERMINATION_OUTCOME_UNSPECIFIED = 0;
+  EMPLOYEE_TERMINATION_OUTCOME_ACCOUNT_DISABLED = 1;
+  EMPLOYEE_TERMINATION_OUTCOME_ACCOUNT_RETAINED = 2;
+  EMPLOYEE_TERMINATION_OUTCOME_NO_LINKED_ACCOUNT = 3;
+}
+
+message ApplyEmployeeTerminationResponse {
+  string worker_id = 1;
+  string offboarding_plan_id = 2;
+  string effective_date = 3;
+  EmployeeTerminationOutcome outcome = 4;
+}
+
+message VerifyEmployeeTerminationClearanceRequest {
+  string worker_id = 1;
+  string offboarding_plan_id = 2;
+  string effective_date = 3;
+  string worker_principal_id = 4;
+}
+
+message VerifyEmployeeTerminationClearanceResponse {
+  string worker_id = 1;
+  string offboarding_plan_id = 2;
+  string effective_date = 3;
+  string worker_principal_id = 4;
+}
+
+// EmployeeTerminationService menerima event offboarding pada listener workload privat IAM.
+service EmployeeTerminationService {
+  rpc ApplyEmployeeTermination(ApplyEmployeeTerminationRequest) returns (ApplyEmployeeTerminationResponse);
+  rpc VerifyEmployeeTerminationClearance(VerifyEmployeeTerminationClearanceRequest) returns (VerifyEmployeeTerminationClearanceResponse);
+}
