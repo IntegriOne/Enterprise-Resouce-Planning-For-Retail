@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 )
@@ -80,9 +81,13 @@ func RunMigrationsUp(ctx context.Context, pool *sql.DB) (resultErr error) {
 	if err := rows.Close(); err != nil {
 		return migrationError(ctx, "close migration tracker", err)
 	}
-	if len(installed) == len(legacyMigrationChecksums) && matchesLegacyBaseline(installed) {
+	upgraded, err := reconcileAssignmentCancellation(ctx, tx, installed)
+	if err != nil {
+		return err
+	}
+	if upgraded {
 		if err := tx.Commit(); err != nil {
-			return migrationError(ctx, "commit HRM legacy baseline verification", err)
+			return migrationError(ctx, "commit HRM baseline reconciliation", err)
 		}
 		return nil
 	}
@@ -157,8 +162,7 @@ var legacyMigrationChecksums = [...]string{
 }
 
 func matchesLegacyBaseline(installed map[int64]string) bool {
-	digest := sha256.Sum256([]byte(baselineSQL))
-	if hex.EncodeToString(digest[:]) != consolidatedBaselineChecksum {
+	if len(installed) != len(legacyMigrationChecksums) {
 		return false
 	}
 	for index, checksum := range legacyMigrationChecksums {
@@ -167,4 +171,27 @@ func matchesLegacyBaseline(installed map[int64]string) bool {
 		}
 	}
 	return true
+}
+
+// reconcileAssignmentCancellation menambahkan bukti pembatalan pada baseline lama yang terverifikasi.
+func reconcileAssignmentCancellation(ctx context.Context, tx *sql.Tx, installed map[int64]string) (bool, error) {
+	previous, delta, ok := strings.Cut(baselineSQL, "-- HRM assignment cancellation\n")
+	if !ok || (len(installed) != 1 || installed[1] != consolidatedBaselineChecksum) && !matchesLegacyBaseline(installed) {
+		return false, nil
+	}
+	previousDigest := sha256.Sum256([]byte(previous))
+	if hex.EncodeToString(previousDigest[:]) != consolidatedBaselineChecksum {
+		return false, nil
+	}
+	if _, err := tx.ExecContext(ctx, delta); err != nil {
+		return false, migrationError(ctx, "apply HRM assignment cancellation baseline changes", err)
+	}
+	digest := sha256.Sum256([]byte(baselineSQL))
+	if _, err := tx.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = $1 WHERE version = 1", hex.EncodeToString(digest[:])); err != nil {
+		return false, migrationError(ctx, "record HRM assignment cancellation baseline checksum", err)
+	}
+	if _, err := tx.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version BETWEEN 2 AND 7"); err != nil {
+		return false, migrationError(ctx, "consolidate HRM migration history", err)
+	}
+	return true, nil
 }

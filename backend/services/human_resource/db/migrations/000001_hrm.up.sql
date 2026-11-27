@@ -2603,3 +2603,18 @@ ALTER TABLE hr_worker_assignments
 
 CREATE INDEX ix_hr_assignment_requester
   ON hr_worker_assignments (requested_by_principal_id, requested_at);
+-- HRM assignment cancellation
+ALTER TABLE hr_worker_assignments
+  ADD COLUMN cancelled_at timestamptz,
+  ADD CONSTRAINT ck_hr_assignment_cancellation
+    CHECK (cancelled_at IS NULL OR (approved_at IS NOT NULL AND cancelled_at >= approved_at));
+
+DROP INDEX uq_hr_worker_assignment_period;
+CREATE UNIQUE INDEX uq_hr_worker_assignment_period
+  ON hr_worker_assignments (worker_id, position_id, assignment_type, valid_from)
+  WHERE cancelled_at IS NULL;
+
+ALTER TABLE hr_worker_assignments DROP CONSTRAINT ex_hr_primary_assignment_period;
+ALTER TABLE hr_worker_assignments ADD CONSTRAINT ex_hr_primary_assignment_period
+  EXCLUDE USING gist (worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
+  WHERE (assignment_type = 'primary' AND cancelled_at IS NULL);

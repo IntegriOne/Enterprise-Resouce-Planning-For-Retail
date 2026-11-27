@@ -215,8 +215,8 @@ Table hr_worker_assignments {
   requested_at timestamptz
   approved_by_principal_id uuid
   approved_at timestamptz
+  cancelled_at timestamptz
   indexes {
-    (worker_id, position_id, assignment_type, valid_from) [unique, name: 'uq_hr_worker_assignment_period']
     (id, worker_id) [unique, name: 'uq_hr_assignment_worker_pair']
     (id, worker_id, position_id) [unique]
     (position_id, valid_from, valid_to) [name: 'ix_hr_assignment_position_period']
@@ -224,6 +224,7 @@ Table hr_worker_assignments {
     (requested_by_principal_id, requested_at) [name: 'ix_hr_assignment_requester']
   }
   checks {
+    `cancelled_at IS NULL OR (approved_at IS NOT NULL AND cancelled_at >= approved_at)` [name: 'ck_hr_assignment_cancellation']
     `manager_worker_id IS NULL OR manager_worker_id <> worker_id` [name: 'ck_hr_assignment_not_self_manager']
     `fte_percent > 0 AND fte_percent <= 100 AND (valid_to IS NULL OR valid_to >= valid_from)` [name: 'ck_hr_assignment_values']
     `(requested_by_principal_id IS NULL AND requested_at IS NULL) OR (requested_by_principal_id IS NOT NULL AND requested_at IS NOT NULL)` [name: 'ck_hr_assignment_request_pair']

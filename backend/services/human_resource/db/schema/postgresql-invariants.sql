@@ -2,9 +2,13 @@
 -- Tanggal efektif inklusif; periode berikutnya dimulai sehari setelah akhir.
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
+CREATE UNIQUE INDEX uq_hr_worker_assignment_period
+  ON hr_worker_assignments (worker_id, position_id, assignment_type, valid_from)
+  WHERE cancelled_at IS NULL;
+
 ALTER TABLE hr_worker_assignments ADD CONSTRAINT ex_hr_primary_assignment_period
   EXCLUDE USING gist (worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
-  WHERE (assignment_type = 'primary');
+  WHERE (assignment_type = 'primary' AND cancelled_at IS NULL);
 ALTER TABLE hr_compensation_records ADD CONSTRAINT ex_hr_compensation_period
   EXCLUDE USING gist (worker_id WITH =, assignment_id WITH =,
     component_code_snapshot WITH =, daterange(effective_from, effective_to, '[]') WITH &&)

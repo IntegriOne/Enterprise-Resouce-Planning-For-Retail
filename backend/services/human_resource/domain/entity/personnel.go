@@ -67,6 +67,7 @@ type WorkerAssignment struct {
 	RequestedAt              *time.Time `gorm:"column:requested_at;type:timestamptz" json:"requested_at"`
 	ApprovedByPrincipalID    *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
 	ApprovedAt               *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
+	CancelledAt              *time.Time `gorm:"column:cancelled_at;type:timestamptz" json:"cancelled_at"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.

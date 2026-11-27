@@ -244,6 +244,9 @@ func (x *WorkerAssignment) Validate() error {
 			return hrerrors.Invalid("approved_at", "has invalid value")
 		}
 	}
+	if x.CancelledAt != nil && (x.CancelledAt.IsZero() || x.ApprovedAt == nil || x.CancelledAt.Before(*x.ApprovedAt)) {
+		return hrerrors.Invalid("hr_worker_assignments", "ck_hr_assignment_cancellation")
+	}
 	if ruleOr(ruleKnown(x.ManagerWorkerID == nil), rulePresent(x.ManagerWorkerID != nil, func() bool { return !strings.EqualFold((*x.ManagerWorkerID), x.WorkerID) })) == ruleFalse {
 		return hrerrors.Invalid("hr_worker_assignments", "ck_hr_assignment_not_self_manager")
 	}
