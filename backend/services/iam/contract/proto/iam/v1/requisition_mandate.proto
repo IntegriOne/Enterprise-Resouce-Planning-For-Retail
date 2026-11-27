@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+message VerifyRequisitionMandateRequest {
+  string principal_id = 1;
+  string organization_unit_id = 2;
+}
+
+message VerifyRequisitionMandateResponse {
+  string principal_id = 1;
+  string organization_unit_id = 2;
+  bool allowed = 3;
+}
+
+// RequisitionMandateService memeriksa mandat peninjau untuk workload HRM.
+service RequisitionMandateService {
+  rpc VerifyRequisitionMandate(VerifyRequisitionMandateRequest) returns (VerifyRequisitionMandateResponse);
+}

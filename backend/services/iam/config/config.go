@@ -23,8 +23,23 @@ type SystemBootstrapConfig struct {
 	RoleCode    string
 }
 
+type HRMTerminationAccessConfig struct {
+	Target     string
+	ServerName string
+	CertFile   string
+	KeyFile    string
+	CAFile     string
+}
+
+// RequisitionMandateConfig mengatur listener privat untuk verifier mandat.
+type RequisitionMandateConfig struct {
+	Address, CertFile, KeyFile, ClientCAFile string
+}
+
 // Config menyimpan seluruh konfigurasi runtime untuk layanan IAM.
 type Config struct {
+	RequisitionMandate        RequisitionMandateConfig
+	HRMTerminationAccess      HRMTerminationAccessConfig
 	AppEnv                    string
 	ServiceName               string
 	GRPCHost                  string
@@ -100,6 +115,19 @@ func Load() (*Config, error) {
 	}
 
 	return &Config{
+		HRMTerminationAccess: HRMTerminationAccessConfig{
+			Target:     strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_TARGET", "")),
+			ServerName: strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_SERVER_NAME", "")),
+			CertFile:   strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_CERT_FILE", "")),
+			KeyFile:    strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_KEY_FILE", "")),
+			CAFile:     strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_CA_FILE", "")),
+		},
+		RequisitionMandate: RequisitionMandateConfig{
+			Address:      strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_ADDR", "")),
+			CertFile:     strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_CERT_FILE", "")),
+			KeyFile:      strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_KEY_FILE", "")),
+			ClientCAFile: strings.TrimSpace(getEnv("IAM_REQUISITION_MANDATE_CLIENT_CA_FILE", "")),
+		},
 		AppEnv:          appEnv,
 		ServiceName:     getEnv("IAM_SERVICE_NAME", "integrione-iam"),
 		GRPCHost:        getEnv("IAM_GRPC_HOST", "0.0.0.0"),

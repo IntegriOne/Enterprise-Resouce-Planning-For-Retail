@@ -89,6 +89,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	errCh := make(chan error, 2)
+	stopWorkloads, err := startHRMWorkloads(cfg, svcRegistry.Users, logger, errCh)
+	if err != nil {
+		logger.Error("failed to start IAM workload listener", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+	defer stopWorkloads()
+
 	// Tangkap sinyal OS (SIGINT, SIGTERM) untuk graceful shutdown.
 	sigCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -105,7 +113,6 @@ func main() {
 		svcRegistry.EmailDispatcher.Start(sigCtx)
 	}
 
-	errCh := make(chan error, 1)
 	go func() {
 		if err := srv.Start(); err != nil {
 			errCh <- err
@@ -117,6 +124,7 @@ func main() {
 		logger.Error("gRPC server exited with error", slog.String("error", err.Error()))
 		stop()
 		recWG.Wait()
+		stopWorkloads()
 		os.Exit(1)
 	case <-sigCtx.Done():
 		logger.Info("shutdown signal received")

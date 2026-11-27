@@ -41,6 +41,7 @@ func (noopTx) WithinTransaction(ctx context.Context, fn func(context.Context) er
 }
 
 type mockStore struct {
+	permissions map[string][]entity.ScopedPermission
 	mu          sync.Mutex
 	users       map[string]*entity.User
 	identities  map[string]*entity.UserIdentity
@@ -56,6 +57,7 @@ type mockStore struct {
 
 func newMockStore() *mockStore {
 	return &mockStore{
+		permissions: make(map[string][]entity.ScopedPermission),
 		users:       make(map[string]*entity.User),
 		identities:  make(map[string]*entity.UserIdentity),
 		credentials: make(map[string]*entity.UserCredential),
@@ -214,12 +216,13 @@ func (r *mockUserRepo) SelectAccessSnapshotByUserID(_ context.Context, userID st
 		mfa = true
 	}
 	return &entity.AccessSnapshot{
-		UserID:     u.ID,
-		UserKind:   u.Kind,
-		UserStatus: u.Status,
-		MFAEnabled: mfa,
-		Roles:      r.s.roles[userID],
-		CheckedAt:  now,
+		UserID:      u.ID,
+		UserKind:    u.Kind,
+		UserStatus:  u.Status,
+		MFAEnabled:  mfa,
+		Roles:       r.s.roles[userID],
+		Permissions: r.s.permissions[userID],
+		CheckedAt:   now,
 	}, nil
 }
 func (r *mockUserRepo) Insert(_ context.Context, u *entity.User) error {
