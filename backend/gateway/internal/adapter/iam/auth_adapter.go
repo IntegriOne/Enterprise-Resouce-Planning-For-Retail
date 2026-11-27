@@ -14,15 +14,18 @@ import (
 
 // BrowserSession menginisialisasi atau menyelaraskan sesi browser dan header X-CSRF-Token untuk halaman /login, /register, maupun dashboard.
 func (a *Adapter) BrowserSession(ctx context.Context) (*model.BrowserSessionPayload, error) {
+	if err := a.ensureAuthDeps(); err != nil {
+		return nil, err
+	}
 	sess, err := a.authManager.AuthenticateOptional(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if sess != nil && sess.Token != nil {
-		rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-		defer cancel()
-		resp, csrfErr := a.clients.Sessions.GetSessionCsrf(rpcCtx, &iamv1.GetSessionCsrfRequest{
-			SessionId: sess.Token.SessionID,
+		resp, csrfErr := callIAMSessions(ctx, a, &sess.Caller, func(rpcCtx context.Context, sessions iamv1.SessionServiceClient) (*iamv1.GetSessionCsrfResponse, error) {
+			return sessions.GetSessionCsrf(rpcCtx, &iamv1.GetSessionCsrfRequest{
+				SessionId: sess.Token.SessionID,
+			})
 		})
 		if csrfErr == nil && resp != nil && resp.GetCsrfToken() != "" {
 			csrf := resp.GetCsrfToken()
@@ -35,7 +38,12 @@ func (a *Adapter) BrowserSession(ctx context.Context) (*model.BrowserSessionPayl
 				CsrfToken:     ptrStr(csrf),
 			}, nil
 		}
-		mappedErr := mapRPCError(csrfErr)
+		var mappedErr error
+		if csrfErr == nil {
+			mappedErr = middleware.ErrUnavailable("session csrf lookup returned empty token", nil)
+		} else {
+			mappedErr = mapRPCError(csrfErr)
+		}
 		if gwErr, ok := middleware.AsGatewayError(mappedErr); ok && (gwErr.Code == middleware.CodeUnauthenticated || gwErr.Code == middleware.CodeNotFound) {
 			a.authManager.ClearSessionCookie(ctx)
 		} else {
@@ -59,6 +67,9 @@ func (a *Adapter) BrowserSession(ctx context.Context) (*model.BrowserSessionPayl
 
 // MyWorkspaceAccess memeriksa kelayakan akses dashboard /identity dan menentukan rute redirect default secara fail-closed.
 func (a *Adapter) MyWorkspaceAccess(ctx context.Context) (*model.WorkspaceAccessPayload, error) {
+	if err := a.ensureAuthFlowDeps(); err != nil {
+		return nil, err
+	}
 	sess, err := a.authManager.RequireAuthenticated(ctx)
 	if err != nil {
 		return nil, err
@@ -89,20 +100,22 @@ func (a *Adapter) UserLogin(ctx context.Context, input model.UserLoginInput) (*m
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthFlowDeps(); err != nil {
+		return fail(err)
+	}
 	if err := a.checkAuthRateLimit(ctx, input.Identifier); err != nil {
 		return fail(err)
 	}
 	meta, _ := middleware.RequestMetadataFromContext(ctx)
 	caller := a.authManager.BuildCallerContext(ctx)
 
-	rpcCtx, cancel := a.rpcCtx(ctx, caller)
-	defer cancel()
-
-	resp, err := a.clients.Auth.AuthenticatePassword(rpcCtx, &iamv1.AuthenticatePasswordRequest{
-		Identifier: strings.TrimSpace(input.Identifier),
-		Password:   input.Password,
-		IpAddress:  meta.ClientIP,
-		UserAgent:  meta.UserAgent,
+	resp, err := callIAMAuth(ctx, a, &caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.AuthenticatePasswordResponse, error) {
+		return auth.AuthenticatePassword(rpcCtx, &iamv1.AuthenticatePasswordRequest{
+			Identifier: strings.TrimSpace(input.Identifier),
+			Password:   input.Password,
+			IpAddress:  meta.ClientIP,
+			UserAgent:  meta.UserAgent,
+		})
 	})
 	if err != nil {
 		return fail(normalizeAuthError(err, "invalid login credentials"))
@@ -149,6 +162,9 @@ func (a *Adapter) ValidateUserMfa(ctx context.Context, input model.ValidateUserM
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthFlowDeps(); err != nil {
+		return fail(err)
+	}
 	if err := a.checkAuthRateLimit(ctx, ""); err != nil {
 		return fail(err)
 	}
@@ -164,19 +180,19 @@ func (a *Adapter) ValidateUserMfa(ctx context.Context, input model.ValidateUserM
 
 	meta, _ := middleware.RequestMetadataFromContext(ctx)
 	caller := a.authManager.BuildCallerContext(ctx)
-	rpcCtx, cancel := a.rpcCtx(ctx, caller)
-	defer cancel()
 
 	var (
 		issued      *iamv1.IssuedSession
 		rawRedirect string
 	)
 	if totpCode != "" {
-		resp, err := a.clients.Auth.VerifyMfaChallenge(rpcCtx, &iamv1.VerifyMfaChallengeRequest{
-			ChallengeToken: challenge,
-			Code:           totpCode,
-			IpAddress:      meta.ClientIP,
-			UserAgent:      meta.UserAgent,
+		resp, err := callIAMAuth(ctx, a, &caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.VerifyMfaChallengeResponse, error) {
+			return auth.VerifyMfaChallenge(rpcCtx, &iamv1.VerifyMfaChallengeRequest{
+				ChallengeToken: challenge,
+				Code:           totpCode,
+				IpAddress:      meta.ClientIP,
+				UserAgent:      meta.UserAgent,
+			})
 		})
 		if err != nil {
 			return fail(normalizeAuthError(err, "invalid mfa verification"))
@@ -184,11 +200,13 @@ func (a *Adapter) ValidateUserMfa(ctx context.Context, input model.ValidateUserM
 		issued = resp.GetIssuedSession()
 		rawRedirect = resp.GetRedirectPath()
 	} else {
-		resp, err := a.clients.Auth.VerifyRecoveryCodeChallenge(rpcCtx, &iamv1.VerifyRecoveryCodeChallengeRequest{
-			ChallengeToken: challenge,
-			RecoveryCode:   recoveryCode,
-			IpAddress:      meta.ClientIP,
-			UserAgent:      meta.UserAgent,
+		resp, err := callIAMAuth(ctx, a, &caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.VerifyRecoveryCodeChallengeResponse, error) {
+			return auth.VerifyRecoveryCodeChallenge(rpcCtx, &iamv1.VerifyRecoveryCodeChallengeRequest{
+				ChallengeToken: challenge,
+				RecoveryCode:   recoveryCode,
+				IpAddress:      meta.ClientIP,
+				UserAgent:      meta.UserAgent,
+			})
 		})
 		if err != nil {
 			return fail(normalizeAuthError(err, "invalid mfa verification"))
@@ -220,18 +238,20 @@ func (a *Adapter) VerifyEmail(ctx context.Context, input model.VerifyEmailInput)
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthDeps(); err != nil {
+		return fail(err)
+	}
 	if err := a.checkAuthRateLimit(ctx, ""); err != nil {
 		return fail(err)
 	}
 	caller := a.authManager.BuildCallerContext(ctx)
-	rpcCtx, cancel := a.rpcCtx(ctx, caller)
-	defer cancel()
-
-	resp, err := a.clients.Users.ConfirmEmailVerificationByToken(rpcCtx, &iamv1.ConfirmEmailVerificationByTokenRequest{
-		RawToken: strings.TrimSpace(input.Token),
+	resp, err := callIAMUsers(ctx, a, &caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.ConfirmEmailVerificationByTokenResponse, error) {
+		return users.ConfirmEmailVerificationByToken(rpcCtx, &iamv1.ConfirmEmailVerificationByTokenRequest{
+			RawToken: strings.TrimSpace(input.Token),
+		})
 	})
 	if err != nil {
-		return fail(mapRPCError(err))
+		return fail(err)
 	}
 	return &model.VerifyEmailPayload{
 		Status:        ptrVerifyEmailStatus(fromProtoVerifyEmailStatus(resp.GetStatus())),
@@ -248,6 +268,9 @@ func (a *Adapter) ResendValidationEmailToken(ctx context.Context, input *model.R
 			Errors:        ToMutationErrors(err),
 			WasSuccessful: false,
 		}, nil
+	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
 	}
 	sess, err := a.authManager.AuthenticateOptional(ctx)
 	if err != nil {
@@ -267,15 +290,14 @@ func (a *Adapter) ResendValidationEmailToken(ctx context.Context, input *model.R
 		if rateErr := a.checkAuthRateLimit(ctx, sess.Token.UserID); rateErr != nil {
 			return fail(rateErr)
 		}
-		rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-		defer cancel()
-
-		resp, rpcErr := a.clients.Users.ResendValidationEmailToken(rpcCtx, &iamv1.ResendValidationEmailTokenRequest{
-			UserId: sess.Token.UserID,
-			Email:  email,
+		resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.ResendValidationEmailTokenResponse, error) {
+			return users.ResendValidationEmailToken(rpcCtx, &iamv1.ResendValidationEmailTokenRequest{
+				UserId: sess.Token.UserID,
+				Email:  email,
+			})
 		})
 		if rpcErr != nil {
-			return fail(mapRPCError(rpcErr))
+			return fail(rpcErr)
 		}
 		return &model.ResendValidationEmailPayload{
 			IsResend:      ptrBool(resp.GetIsResend()),
@@ -292,11 +314,10 @@ func (a *Adapter) ResendValidationEmailToken(ctx context.Context, input *model.R
 		return fail(rateErr)
 	}
 	caller := a.authManager.BuildCallerContext(ctx)
-	rpcCtx, cancel := a.rpcCtx(ctx, caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.ResendValidationEmailToken(rpcCtx, &iamv1.ResendValidationEmailTokenRequest{
-		Email: email,
+	resp, rpcErr := callIAMUsers(ctx, a, &caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.ResendValidationEmailTokenResponse, error) {
+		return users.ResendValidationEmailToken(rpcCtx, &iamv1.ResendValidationEmailTokenRequest{
+			Email: email,
+		})
 	})
 	if rpcErr == nil {
 		return &model.ResendValidationEmailPayload{
@@ -331,6 +352,9 @@ func (a *Adapter) UserResetPassword(ctx context.Context, input model.UserResetPa
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthDeps(); err != nil {
+		return fail(err)
+	}
 	email := strings.TrimSpace(input.Email)
 	if email == "" {
 		return fail(middleware.ErrInvalidArgument("email is required", nil))
@@ -340,11 +364,10 @@ func (a *Adapter) UserResetPassword(ctx context.Context, input model.UserResetPa
 	}
 
 	caller := a.authManager.BuildCallerContext(ctx)
-	rpcCtx, cancel := a.rpcCtx(ctx, caller)
-	defer cancel()
-
-	_, err := a.clients.Auth.RequestPasswordReset(rpcCtx, &iamv1.RequestPasswordResetRequest{
-		Email: email,
+	_, err := callIAMAuth(ctx, a, &caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.RequestPasswordResetResponse, error) {
+		return auth.RequestPasswordReset(rpcCtx, &iamv1.RequestPasswordResetRequest{
+			Email: email,
+		})
 	})
 	if err == nil {
 		return &model.UserResetPasswordPayload{
@@ -379,19 +402,21 @@ func (a *Adapter) ResetPassword(ctx context.Context, input model.IAMResetPasswor
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthDeps(); err != nil {
+		return fail(err)
+	}
 	if err := a.checkAuthRateLimit(ctx, ""); err != nil {
 		return fail(err)
 	}
 	caller := a.authManager.BuildCallerContext(ctx)
-	rpcCtx, cancel := a.rpcCtx(ctx, caller)
-	defer cancel()
-
-	_, err := a.clients.Auth.ConfirmPasswordReset(rpcCtx, &iamv1.ConfirmPasswordResetRequest{
-		RawToken:    strings.TrimSpace(input.Token),
-		NewPassword: input.NewPassword,
+	_, err := callIAMAuth(ctx, a, &caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.ConfirmPasswordResetResponse, error) {
+		return auth.ConfirmPasswordReset(rpcCtx, &iamv1.ConfirmPasswordResetRequest{
+			RawToken:    strings.TrimSpace(input.Token),
+			NewPassword: input.NewPassword,
+		})
 	})
 	if err != nil {
-		return fail(mapRPCError(err))
+		return fail(err)
 	}
 	return &model.ResetPasswordPayload{
 		Reset:         ptrBool(true),
@@ -408,15 +433,17 @@ func (a *Adapter) UserLogout(ctx context.Context) (*model.UserLogoutPayload, err
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authManager.RequireAuthenticated(ctx)
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	_, rpcErr := a.clients.Sessions.LogoutSession(rpcCtx, &iamv1.LogoutSessionRequest{
-		SessionToken: sess.RawToken,
+	_, rpcErr := callIAMSessions(ctx, a, &sess.Caller, func(rpcCtx context.Context, sessions iamv1.SessionServiceClient) (*iamv1.LogoutSessionResponse, error) {
+		return sessions.LogoutSession(rpcCtx, &iamv1.LogoutSessionRequest{
+			SessionToken: sess.RawToken,
+		})
 	})
 	if rpcErr != nil {
 		mapped := mapRPCError(rpcErr)

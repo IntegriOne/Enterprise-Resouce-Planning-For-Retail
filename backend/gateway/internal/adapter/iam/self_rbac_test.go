@@ -38,12 +38,6 @@ func (m *selfMockAuthClient) record() {
 	m.mu.Unlock()
 }
 
-func (m *selfMockAuthClient) callCount() int {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.calls
-}
-
 func (m *selfMockAuthClient) ChangePassword(ctx context.Context, in *iamv1.ChangePasswordRequest, _ ...grpc.CallOption) (*iamv1.ChangePasswordResponse, error) {
 	m.record()
 	if m.changePwdFn != nil {
@@ -109,12 +103,6 @@ func (m *selfMockUserClient) record() {
 	m.mu.Lock()
 	m.calls++
 	m.mu.Unlock()
-}
-
-func (m *selfMockUserClient) callCount() int {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.calls
 }
 
 func (m *selfMockUserClient) GetUserById(_ context.Context, in *iamv1.GetUserByIdRequest, _ ...grpc.CallOption) (*iamv1.GetUserByIdResponse, error) {

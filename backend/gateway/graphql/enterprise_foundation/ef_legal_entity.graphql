@@ -1,0 +1,164 @@
+# Zona 2 — Skema GraphQL domain badan hukum (LegalEntity) pada Enterprise Foundation.
+
+enum LegalEntityStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  DISSOLVED
+}
+
+# LegalEntity merepresentasikan badan hukum internal perusahaan (`gid://integrione/legal-entity/<uuid>`).
+type LegalEntity implements Node {
+  id: ID!
+  _id: ID!
+  parent_legal_entity_id: ID
+  entity_code: String!
+  legal_name: String!
+  trading_name: String
+  legal_form: String
+  is_primary_operating_entity: Boolean!
+  status: LegalEntityStatus!
+  jurisdiction_country_code: String!
+  nib: String
+  tax_id_number: String
+  is_pkp: Boolean!
+  registered_address_id: ID
+  fiscal_year_start_month: Int!
+  incorporation_date: Time
+  dissolution_date: Time
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik LegalEntity.
+  parent_legal_entity: LegalEntity
+  registered_address: Address
+  children(after: String, before: String, first: Int, last: Int): LegalEntityConnection!
+}
+
+type LegalEntityEdge {
+  node: LegalEntity!
+  cursor: String!
+}
+
+type LegalEntityConnection {
+  edges: [LegalEntityEdge!]!
+  nodes: [LegalEntity!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateLegalEntityInput {
+  parent_legal_entity_id: ID
+  entity_code: String!
+  legal_name: String!
+  trading_name: String
+  legal_form: String
+  is_primary_operating_entity: Boolean = false
+  status: LegalEntityStatus = PENDING
+  jurisdiction_country_code: String!
+  nib: String
+  tax_id_number: String
+  is_pkp: Boolean = false
+  registered_address_id: ID
+  fiscal_year_start_month: Int = 1
+  incorporation_date: Time
+  dissolution_date: Time
+}
+
+input UpdateLegalEntityInput {
+  id: ID!
+  parent_legal_entity_id: ID
+  legal_name: String!
+  trading_name: String
+  legal_form: String
+  jurisdiction_country_code: String!
+  nib: String
+  tax_id_number: String
+  is_pkp: Boolean = false
+  registered_address_id: ID
+  fiscal_year_start_month: Int = 1
+  incorporation_date: Time
+  dissolution_date: Time
+}
+
+type CreateLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SetPrimaryOperatingLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SuspendLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DissolveLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteLegalEntityPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  legalEntity(id: ID!): LegalEntity
+  legalEntitiesByIds(ids: [ID!]!): [LegalEntity!]!
+  legalEntityByCode(entity_code: String!): LegalEntity
+  legalEntityByTaxIdNumber(tax_id_number: String!): LegalEntity
+  legalEntitiesByNib(nib: String!, after: String, before: String, first: Int, last: Int): LegalEntityConnection!
+  primaryOperatingLegalEntity: LegalEntity
+  legalEntities(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    parent_legal_entity_id: ID
+    status: LegalEntityStatus
+    primary_only: Boolean
+    include_deleted: Boolean = false
+  ): LegalEntityConnection!
+  allLegalEntities(after: String, before: String, first: Int, last: Int): LegalEntityConnection!
+  legalEntityChildren(
+    parent_legal_entity_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LegalEntityConnection!
+  validateLegalEntityScopeTarget(id: ID!): ScopeTargetDecision!
+}
+
+extend type Mutation {
+  createLegalEntity(input: CreateLegalEntityInput!): CreateLegalEntityPayload!
+  updateLegalEntity(input: UpdateLegalEntityInput!): UpdateLegalEntityPayload!
+  setPrimaryOperatingLegalEntity(id: ID!): SetPrimaryOperatingLegalEntityPayload!
+  activateLegalEntity(id: ID!): ActivateLegalEntityPayload!
+  suspendLegalEntity(id: ID!): SuspendLegalEntityPayload!
+  dissolveLegalEntity(id: ID!, dissolution_date: Time): DissolveLegalEntityPayload!
+  deleteLegalEntity(id: ID!): DeleteLegalEntityPayload!
+}

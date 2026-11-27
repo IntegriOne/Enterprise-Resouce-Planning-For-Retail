@@ -62,11 +62,7 @@ func AsGatewayError(err error) (*GatewayError, bool) {
 	if err == nil {
 		return nil, false
 	}
-	var gwErr *GatewayError
-	if errors.As(err, &gwErr) {
-		return gwErr, true
-	}
-	return nil, false
+	return errors.AsType[*GatewayError](err)
 }
 
 // ErrUnauthenticated membentuk error UNAUTHENTICATED terstandar.

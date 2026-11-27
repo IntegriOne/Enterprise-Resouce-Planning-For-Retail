@@ -379,3 +379,24 @@ func TestAuthorizerRBACAndSensitiveReauth(t *testing.T) {
 		t.Fatal("expected missing permission to fail with FORBIDDEN")
 	}
 }
+
+type panicRefresher struct{}
+
+func (panicRefresher) RefreshUserAccessSnapshot(context.Context, string, authcontext.CallerContext) (*authz.AccessSnapshot, error) {
+	panic("unexpected snapshot refresher panic")
+}
+
+func TestSnapshotLoaderRecoversPanic(t *testing.T) {
+	now := time.Now()
+	loader := NewSnapshotLoader(panicRefresher{}, time.Second, 30*time.Second)
+	staleSess := &authsession.SessionValidationContext{
+		Token:    &authsession.SessionTokenRecord{SessionID: "s1", UserID: "u1", AuthEpoch: 1},
+		Security: &authsession.UserSecurityRecord{UserID: "u1", Status: authz.StatusActive, AuthEpoch: 1, PermRevision: 1},
+		Snapshot: buildActiveSnapshot("u1", now.Add(-45*time.Second), 1, 1),
+	}
+	_, err := loader.EnsureFresh(context.Background(), staleSess, authcontext.CallerContext{})
+	gwErr, ok := AsGatewayError(err)
+	if !ok || gwErr.Code != CodeUnavailable {
+		t.Fatalf("expected CodeUnavailable when snapshot refresher panics, got %v", err)
+	}
+}

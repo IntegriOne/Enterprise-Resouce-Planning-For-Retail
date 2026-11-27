@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -153,6 +154,9 @@ func (m *AuthManager) BuildCallerContext(ctx context.Context) authcontext.Caller
 // AuthenticateOptional memeriksa cookie sesi saat ini tanpa mewajibkan login (misal pada Query.browserSession).
 // Mengembalikan (nil, nil) apabila cookie tidak ada atau sesi tidak ditemukan/berakhir; mengembalikan error bila Redis down atau gate tertutup.
 func (m *AuthManager) AuthenticateOptional(ctx context.Context) (*ResolvedSession, error) {
+	if m == nil || m.store == nil || m.loader == nil {
+		return nil, ErrUnavailable("session manager unavailable", nil)
+	}
 	if sess, ok := ResolvedSessionFromContext(ctx); ok {
 		return sess, nil
 	}
@@ -167,6 +171,9 @@ func (m *AuthManager) AuthenticateOptional(ctx context.Context) (*ResolvedSessio
 		if isUnavailableErr(err) {
 			return nil, ErrUnavailable("security session store unavailable", err)
 		}
+		return nil, nil
+	}
+	if sessCtx == nil || sessCtx.Token == nil {
 		return nil, nil
 	}
 	if err := m.store.TouchActivity(ctx, meta.CookieHash, *sessCtx.Token, m.cfg.SessionIdleTimeout, now); err != nil {
@@ -184,6 +191,9 @@ func (m *AuthManager) AuthenticateOptional(ctx context.Context) (*ResolvedSessio
 		}
 		return nil, nil
 	}
+	if snap == nil {
+		return nil, ErrUnavailable("authorization snapshot unavailable", nil)
+	}
 
 	caller.PermRevision = snap.PermRevision
 	caller.AuthEpoch = snap.AuthEpoch
@@ -200,6 +210,9 @@ func (m *AuthManager) AuthenticateOptional(ctx context.Context) (*ResolvedSessio
 
 // RequireAuthenticated memvalidasi sesi opaque, gate Redis, idle/abs expiry, TouchActivity Lua XX, dan kesegaran snapshot <= 30s.
 func (m *AuthManager) RequireAuthenticated(ctx context.Context) (*ResolvedSession, error) {
+	if m == nil || m.store == nil || m.loader == nil {
+		return nil, ErrUnavailable("session manager unavailable", nil)
+	}
 	if sess, ok := ResolvedSessionFromContext(ctx); ok {
 		return sess, nil
 	}
@@ -231,6 +244,10 @@ func (m *AuthManager) RequireAuthenticated(ctx context.Context) (*ResolvedSessio
 		m.clearSessionCookie(ctx)
 		return nil, ErrUnauthenticated("session is missing, expired, or revoked", err)
 	}
+	if sessCtx == nil || sessCtx.Token == nil {
+		m.clearSessionCookie(ctx)
+		return nil, ErrUnauthenticated("session is missing, expired, or revoked", nil)
+	}
 
 	if err := m.store.TouchActivity(ctx, meta.CookieHash, *sessCtx.Token, m.cfg.SessionIdleTimeout, now); err != nil {
 		if isUnavailableErr(err) {
@@ -244,6 +261,9 @@ func (m *AuthManager) RequireAuthenticated(ctx context.Context) (*ResolvedSessio
 	snap, err := m.loader.EnsureFresh(ctx, sessCtx, caller)
 	if err != nil {
 		return nil, err
+	}
+	if snap == nil {
+		return nil, ErrUnavailable("authorization snapshot unavailable", nil)
 	}
 	caller.PermRevision = snap.PermRevision
 	caller.AuthEpoch = snap.AuthEpoch
@@ -261,6 +281,9 @@ func (m *AuthManager) RequireAuthenticated(ctx context.Context) (*ResolvedSessio
 
 // RequireMutationCSRF menegakkan token X-CSRF-Token untuk seluruh GraphQL Mutation (baik sesi aktif maupun handle pra-autentikasi).
 func (m *AuthManager) RequireMutationCSRF(ctx context.Context) (*ResolvedSession, error) {
+	if m == nil || m.store == nil || m.loader == nil {
+		return nil, ErrUnavailable("session manager unavailable", nil)
+	}
 	meta, _ := RequestMetadataFromContext(ctx)
 	if strings.TrimSpace(meta.CSRFToken) == "" {
 		return nil, ErrForbidden("missing X-CSRF-Token header", nil)
@@ -286,6 +309,9 @@ func (m *AuthManager) RequireMutationCSRF(ctx context.Context) (*ResolvedSession
 		if snapErr != nil {
 			return nil, snapErr
 		}
+		if snap == nil {
+			return nil, ErrUnavailable("authorization snapshot unavailable", nil)
+		}
 		caller.PermRevision = snap.PermRevision
 		caller.AuthEpoch = snap.AuthEpoch
 		return &ResolvedSession{
@@ -306,7 +332,7 @@ func (m *AuthManager) RequireMutationCSRF(ctx context.Context) (*ResolvedSession
 	// Bila tidak cocok sesi aktif, periksa apakah cookie merupakan handle pra-autentikasi valid milik Gateway.
 	if errors.Is(err, authsession.ErrSessionNotFound) {
 		preAuth, preErr := m.store.GetPreAuth(ctx, meta.CookieHash, now)
-		if preErr != nil {
+		if preErr != nil || preAuth == nil {
 			if isUnavailableErr(preErr) {
 				return nil, ErrUnavailable("security session store unavailable", preErr)
 			}
@@ -327,6 +353,9 @@ func (m *AuthManager) RequireMutationCSRF(ctx context.Context) (*ResolvedSession
 
 // IssuePreAuthSession menghasilkan pasangan cookie __Host- pra-login dan CSRF token lalu menyimpannya ke Redis Gateway secara fail-closed.
 func (m *AuthManager) IssuePreAuthSession(ctx context.Context) (string, error) {
+	if m == nil || m.store == nil {
+		return "", ErrUnavailable("session manager unavailable", nil)
+	}
 	gate, gErr := m.store.GetGate(ctx)
 	if gErr != nil {
 		return "", ErrUnavailable("security gate verification failed", gErr)
@@ -364,12 +393,17 @@ func (m *AuthManager) IssuePreAuthSession(ctx context.Context) (string, error) {
 
 // PromoteAuthenticatedCookie menetapkan cookie sesi buram hasil login/MFA, header CSRF/Location, serta menghapus handle pre-auth lama.
 func (m *AuthManager) PromoteAuthenticatedCookie(ctx context.Context, rawSessionToken, csrfToken, redirectLocation string, maxAge time.Duration) {
+	if m == nil {
+		return
+	}
 	if maxAge <= 0 {
 		maxAge = m.cfg.SessionMaxAge
 	}
 	meta, _ := RequestMetadataFromContext(ctx)
-	if meta.CookieHash != "" && meta.RawCookie != rawSessionToken {
-		_ = m.store.DeletePreAuth(ctx, meta.CookieHash)
+	if m.store != nil && meta.CookieHash != "" && meta.RawCookie != rawSessionToken {
+		if delErr := m.store.DeletePreAuth(ctx, meta.CookieHash); delErr != nil && !errors.Is(delErr, authsession.ErrPreAuthNotFound) {
+			slog.Warn("failed deleting consumed pre-auth handle", slog.String("request_id", meta.RequestID), slog.Any("error", delErr))
+		}
 	}
 	if eff := browserauth.EffectsFromContext(ctx); eff != nil {
 		eff.AddCookie(browserauth.BuildSessionCookie(m.cfg.CookieName, rawSessionToken, maxAge, m.cfg.CookieSecure))
@@ -388,6 +422,9 @@ func (m *AuthManager) ClearSessionCookie(ctx context.Context) {
 }
 
 func (m *AuthManager) clearSessionCookie(ctx context.Context) {
+	if m == nil {
+		return
+	}
 	if eff := browserauth.EffectsFromContext(ctx); eff != nil {
 		eff.AddCookie(browserauth.BuildClearSessionCookie(m.cfg.CookieName, m.cfg.CookieSecure))
 	}
@@ -395,6 +432,9 @@ func (m *AuthManager) clearSessionCookie(ctx context.Context) {
 
 // CheckRateLimit menegakkan pembatas laju Redis atomik per scope dan subjek dengan perilaku fail-closed.
 func (m *AuthManager) CheckRateLimit(ctx context.Context, scope, subject string, limit int64, window time.Duration) error {
+	if m == nil || m.store == nil {
+		return ErrUnavailable("rate limiter unavailable", nil)
+	}
 	if strings.TrimSpace(subject) == "" {
 		subject = "unknown"
 	}
@@ -414,6 +454,14 @@ func buildAuthenticatedCaller(
 	snap *authz.AccessSnapshot,
 	sec *authsession.UserSecurityRecord,
 ) authcontext.CallerContext {
+	if tok == nil {
+		return authcontext.CallerContext{
+			RequestID:     meta.RequestID,
+			ClientIP:      meta.ClientIP,
+			UserAgent:     meta.UserAgent,
+			Authenticated: false,
+		}
+	}
 	var permRev int64
 	if snap != nil && snap.PermRevision > permRev {
 		permRev = snap.PermRevision

@@ -184,6 +184,15 @@ func (r *queryResolver) UserSessions(ctx context.Context, userID string, activeO
 	return adp.UserSessions(ctx, userID, activeOnly, after, before, first, last)
 }
 
+// CheckUsername memeriksa ketersediaan username tanpa mengekspos PII atau jenis akun pengguna.
+func (r *queryResolver) CheckUsername(ctx context.Context, username string) (*model.UsernameAvailabilityPayload, error) {
+	adp, err := r.iam()
+	if err != nil {
+		return nil, err
+	}
+	return adp.CheckUsername(ctx, username)
+}
+
 // User meresolusi objek pengguna pemilik sesi secara bersarang.
 func (r *sessionResolver) User(ctx context.Context, obj *model.Session) (*model.User, error) {
 	if obj == nil {

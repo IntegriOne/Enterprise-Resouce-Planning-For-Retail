@@ -1,0 +1,27 @@
+type EmployeeProvisioningRequest {
+  id: ID!
+  worker_id: ID!
+  worker_number: String!
+  legal_entity_id: ID!
+  requested_by_principal_id: ID!
+  requested_at: Time!
+  received_at: Time!
+  status: String!
+}
+
+type EmployeeProvisioningRequestEdge {
+  cursor: String!
+  node: EmployeeProvisioningRequest!
+}
+
+type EmployeeProvisioningRequestConnection {
+  edges: [EmployeeProvisioningRequestEdge!]!
+  nodes: [EmployeeProvisioningRequest!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+extend type Query {
+  employeeProvisioningRequests(after: String, before: String, first: Int, last: Int): EmployeeProvisioningRequestConnection!
+  employeeProvisioningRequest(id: ID!): EmployeeProvisioningRequest
+}

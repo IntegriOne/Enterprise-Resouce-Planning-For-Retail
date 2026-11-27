@@ -1,0 +1,192 @@
+type LeavePolicy implements Node {
+  id: ID!
+  _id: ID!
+  policy_code: String!
+  policy_version: Int!
+  policy_name: String!
+  leave_type_code: String!
+  jurisdiction_code: String!
+  accrual_method: String!
+  annual_entitlement: String
+  carryover_limit: String
+  max_balance: String
+  minimum_service_days: Int
+  effective_from: String!
+  effective_to: String
+  is_paid: Boolean!
+  is_active: Boolean!
+}
+
+type LeavePolicyEdge {
+  cursor: String!
+  node: LeavePolicy!
+}
+
+type LeavePolicyConnection {
+  edges: [LeavePolicyEdge!]!
+  nodes: [LeavePolicy!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leavePolicy(id: ID!): LeavePolicy
+  leavePolicies(after: String, before: String, first: Int, last: Int): LeavePolicyConnection!
+}
+
+type LeaveEntitlement implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  leave_policy_id: ID!
+  leave_type_code: String!
+  period_start: String!
+  period_end: String!
+  opening_balance: String!
+  accrued_quantity: String!
+  used_quantity: String!
+  adjusted_quantity: String!
+  closing_balance: String!
+  uom_code: String!
+  closed_at: Time
+}
+
+type LeaveEntitlementEdge {
+  cursor: String!
+  node: LeaveEntitlement!
+}
+
+type LeaveEntitlementConnection {
+  edges: [LeaveEntitlementEdge!]!
+  nodes: [LeaveEntitlement!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leaveEntitlement(id: ID!): LeaveEntitlement
+  leaveEntitlements(worker_id: ID!, after: String, before: String, first: Int, last: Int): LeaveEntitlementConnection!
+}
+
+type LeaveLedgerEntry implements Node {
+  id: ID!
+  _id: ID!
+  entitlement_id: ID!
+  entry_sequence: String!
+  entry_type: String!
+  quantity_delta: String!
+  effective_date: String!
+  adjustment_id: ID
+  reverses_entry_id: ID
+  reason_code: String!
+}
+
+type LeaveLedgerEntryEdge {
+  cursor: String!
+  node: LeaveLedgerEntry!
+}
+
+type LeaveLedgerEntryConnection {
+  edges: [LeaveLedgerEntryEdge!]!
+  nodes: [LeaveLedgerEntry!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leaveLedgerEntry(id: ID!): LeaveLedgerEntry
+  # Sediakan tepat satu filter.
+  leaveLedgerEntries(entitlement_id: ID, adjustment_id: ID, after: String, before: String, first: Int, last: Int): LeaveLedgerEntryConnection!
+}
+
+type LeaveAdjustment implements Node {
+  id: ID!
+  _id: ID!
+  entitlement_id: ID!
+  quantity_delta: String!
+  reason_code: String!
+  approved_at: Time
+  rejected_at: Time
+  rejection_reason_code: String
+}
+
+type LeaveAdjustmentEdge {
+  cursor: String!
+  node: LeaveAdjustment!
+}
+
+type LeaveAdjustmentConnection {
+  edges: [LeaveAdjustmentEdge!]!
+  nodes: [LeaveAdjustment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leaveAdjustment(id: ID!): LeaveAdjustment
+  # Sediakan tepat satu filter.
+  leaveAdjustments(entitlement_id: ID, idempotency_key: String, after: String, before: String, first: Int, last: Int): LeaveAdjustmentConnection!
+}
+
+type ApproveLeaveAdjustmentPayload implements MutationResult {
+  leave_adjustment: LeaveAdjustment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectLeaveAdjustmentPayload implements MutationResult {
+  leave_adjustment: LeaveAdjustment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  approveLeaveAdjustment(id: ID!): ApproveLeaveAdjustmentPayload!
+  rejectLeaveAdjustment(id: ID!, reason_code: String!): RejectLeaveAdjustmentPayload!
+}
+
+input CreateLeaveAdjustmentInput {
+  entitlement_id: ID!
+  quantity_delta: String!
+  reason_code: String!
+  reason: String!
+  idempotency_key: String!
+}
+
+type CreateLeaveAdjustmentPayload implements MutationResult {
+  leave_adjustment: LeaveAdjustment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createLeaveAdjustment(input: CreateLeaveAdjustmentInput!): CreateLeaveAdjustmentPayload!
+}
+
+type CloseLeaveEntitlementPayload implements MutationResult {
+  leave_entitlement: LeaveEntitlement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  closeLeaveEntitlement(id: ID!): CloseLeaveEntitlementPayload!
+}
+
+input PostLeaveAdjustmentInput {
+  entitlement_id: ID!
+  adjustment_id: ID!
+  quantity_delta: String!
+  effective_date: String!
+  reason_code: String!
+}
+
+type PostLeaveAdjustmentPayload implements MutationResult {
+  leave_entitlement: LeaveEntitlement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  postLeaveAdjustment(input: PostLeaveAdjustmentInput!): PostLeaveAdjustmentPayload!
+}

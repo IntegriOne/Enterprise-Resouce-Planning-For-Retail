@@ -157,27 +157,41 @@ input CreateUserInput {
   password: String!
 }
 
-# CreateEmployeeUserInput digunakan untuk membuat akun pengguna internal karyawan (EMPLOYEE) secara ringkas dengan status awal PENDING
-# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+# CreateEmployeeUserInput digunakan untuk membuat akun pengguna internal karyawan (EMPLOYEE) dengan status awal PENDING
+# sampai tautan verifikasi email dikonfirmasi. Worker HRM wajib ditautkan saat provisioning.
 input CreateEmployeeUserInput {
+  worker_id: ID!
+  provisioning_request_id: ID!
   full_name: String!
   email: String!
   username: String!
   password: String!
 }
 
-# CreateVendorUserInput digunakan untuk membuat akun mitra vendor (VENDOR) secara ringkas dengan status awal PENDING
-# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+# CreateVendorUserInput digunakan untuk membuat akun mitra vendor (VENDOR) yang langsung tertaut pada PIC mitra
+# Enterprise Foundation (`party_contacts.iam_user_id`) melalui `contact_id` yang ada atau pembuatan kontak baru pada `party_id`.
 input CreateVendorUserInput {
+  party_id: ID!
+  contact_id: ID
+  contact_role: String
+  job_title: String
+  phone: String
+  is_primary_contact: Boolean
   full_name: String!
   email: String!
   username: String!
   password: String!
 }
 
-# CreateSupplierUserInput digunakan untuk membuat akun mitra pemasok (SUPPLIER) secara ringkas dengan status awal PENDING
-# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+# CreateSupplierUserInput digunakan untuk membuat akun mitra pemasok (SUPPLIER) yang langsung tertaut pada PIC mitra
+# Enterprise Foundation (`party_contacts.iam_user_id`) melalui `contact_id` yang ada atau pembuatan kontak baru pada `party_id`.
 input CreateSupplierUserInput {
+  party_id: ID!
+  contact_id: ID
+  contact_role: String
+  job_title: String
+  phone: String
+  is_primary_contact: Boolean
   full_name: String!
   email: String!
   username: String!
@@ -235,7 +249,16 @@ extend type Query {
     first: Int
     last: Int
   ): SessionConnection!
+  checkUsername(username: String!): UsernameAvailabilityPayload!
 }
+
+# Payload hasil pemeriksaan ketersediaan username tanpa mengekspos data pribadi atau jenis akun.
+type UsernameAvailabilityPayload {
+  available: Boolean!
+  normalized_username: String!
+  message: String!
+}
+
 # Payload hasil mutasi domain manajemen pengguna dan sesi IAM (implementasi MutationResult).
 # CreateUserPayload mengembalikan objek User hanya untuk pemanggil yang telah login; pendaftaran publik mengembalikan user null serta redirectLocation/header Location ke /login apabila email sudah terdaftar.
 type CreateUserPayload implements MutationResult {
@@ -253,12 +276,14 @@ type CreateEmployeeUserPayload implements MutationResult {
 
 type CreateVendorUserPayload implements MutationResult {
   user: User
+  party_contact: PartyContact
   errors: [MutationError!]!
   was_successful: Boolean!
 }
 
 type CreateSupplierUserPayload implements MutationResult {
   user: User
+  party_contact: PartyContact
   errors: [MutationError!]!
   was_successful: Boolean!
 }

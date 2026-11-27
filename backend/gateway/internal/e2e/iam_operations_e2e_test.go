@@ -173,12 +173,12 @@ func newAnonBrowser(t *testing.T, cfg e2eRuntimeConfig) *browserClient {
 	return client
 }
 
-// newSuperAdminBrowser melakukan reset rate limit dan login sebagai SystemIAM SuperAdmin serta logout otomatis saat cleanup.
+// newSuperAdminBrowser melakukan reset rate limit dan login sebagai human superadmin serta logout otomatis saat cleanup.
 func newSuperAdminBrowser(t *testing.T, cfg e2eRuntimeConfig) *browserClient {
 	t.Helper()
 	resetGatewayRateLimits(t, cfg)
 	client := newAnonBrowser(t, cfg)
-	status, _, redirectLoc := client.login(cfg.systemUsername, cfg.systemPassword)
+	status, _, redirectLoc := client.login(cfg.superadminUsername, cfg.superadminPassword)
 	if status != "AUTHENTICATED" {
 		t.Fatalf("superadmin login status = %q, want AUTHENTICATED", status)
 	}
@@ -869,6 +869,104 @@ func cleanupGroupByID(t *testing.T, cfg e2eRuntimeConfig, groupID string) {
 	psqlExec(t, cfg, fmt.Sprintf(`DELETE FROM groups WHERE id = %s::uuid;`, sqlQuote(groupID)))
 }
 
+// psqlEFScalar menjalankan SQL query tunggal pada database `enterprise_foundation` dan mengembalikan keluaran scalar.
+func psqlEFScalar(t *testing.T, cfg e2eRuntimeConfig, sqlStmt string) string {
+	t.Helper()
+	cmd := exec.Command(
+		"docker", "exec", cfg.postgresService,
+		"psql", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", "enterprise_foundation", "-tAc", sqlStmt,
+	)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("ef psql failed: %v\nSQL: %s\nOutput: %s", err, sqlStmt, strings.TrimSpace(string(out)))
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// createFixturePartyForRole membuat mitra aktif pada Enterprise Foundation beserta peran VENDOR/SUPPLIER untuk provisioning user E2E.
+func createFixturePartyForRole(t *testing.T, admin *browserClient, cfg e2eRuntimeConfig, roleKind string) string {
+	t.Helper()
+	tag := uniqueTag("efp_" + strings.ToLower(roleKind))
+	party := requireMutationChildOK(t, doGQLOK(t, admin, fmt.Sprintf(`mutation ($in: CreatePartyInput!) {
+		createParty(input: $in) { party { id _id status } %s }
+	}`, gqlMutationResultFields), map[string]any{
+		"in": map[string]any{
+			"partner_code":       strings.ToUpper(roleKind[:3]) + "-" + strings.ToUpper(tag),
+			"kind":               "ORGANIZATION",
+			"display_name":       "PT Mitra " + tag,
+			"email":              tag + "@partner.integrione.test",
+			"preferred_language": "id",
+		},
+	}), "createParty", "party")
+	partyGID := requireNonEmptyString(t, party, "id")
+	partyRawID := requireNonEmptyString(t, party, "_id")
+	t.Cleanup(func() {
+		cmd := exec.Command(
+			"docker", "exec", cfg.postgresService,
+			"psql", "-U", "postgres", "-d", "enterprise_foundation", "-tAc",
+			fmt.Sprintf("DELETE FROM parties WHERE id = %s::uuid;", sqlQuote(partyRawID)),
+		)
+		_, _ = cmd.CombinedOutput()
+	})
+
+	_ = requireMutationChildOK(t, doGQLOK(t, admin, fmt.Sprintf(`mutation ($id: ID!) {
+		verifyAndActivateParty(id: $id) { party { id status } %s }
+	}`, gqlMutationResultFields), map[string]any{"id": partyGID}), "verifyAndActivateParty", "party")
+
+	_ = requireMutationChildOK(t, doGQLOK(t, admin, fmt.Sprintf(`mutation ($in: AssignPartyRoleInput!) {
+		assignPartyRole(input: $in) { role { id role is_active } %s }
+	}`, gqlMutationResultFields), map[string]any{
+		"in": map[string]any{
+			"party_id": partyGID,
+			"role":     roleKind,
+		},
+	}), "assignPartyRole", "role")
+
+	return partyGID
+}
+
+// createFixtureEFFacility membuat badan hukum dan lokasi aktif di Enterprise Foundation sebagai target scope FACILITY yang valid.
+func createFixtureEFFacility(t *testing.T, admin *browserClient, cfg e2eRuntimeConfig) string {
+	t.Helper()
+	tag := uniqueTag("effac")
+	normCode := strings.ToUpper(strings.ReplaceAll(tag, "_", "-"))
+
+	le := requireMutationChildOK(t, doGQLOK(t, admin, fmt.Sprintf(`mutation ($in: CreateLegalEntityInput!) {
+		createLegalEntity(input: $in) { legal_entity { id _id status } %s }
+	}`, gqlMutationResultFields), map[string]any{
+		"in": map[string]any{
+			"entity_code":               "LE-" + normCode,
+			"legal_name":                "PT Scope Facility " + tag,
+			"jurisdiction_country_code": "ID",
+		},
+	}), "createLegalEntity", "legal_entity")
+	leID := requireNonEmptyString(t, le, "id")
+	leRawID := requireNonEmptyString(t, le, "_id")
+
+	_ = requireMutationChildOK(t, doGQLOK(t, admin, fmt.Sprintf(`mutation ($id: ID!) {
+		activateLegalEntity(id: $id) { legal_entity { id status } %s }
+	}`, gqlMutationResultFields), map[string]any{"id": leID}), "activateLegalEntity", "legal_entity")
+
+	loc := requireMutationChildOK(t, doGQLOK(t, admin, fmt.Sprintf(`mutation ($in: CreateLocationInput!) {
+		createLocation(input: $in) { location { id _id is_active } %s }
+	}`, gqlMutationResultFields), map[string]any{
+		"in": map[string]any{
+			"legal_entity_id": leID,
+			"location_code":   "LOC-" + normCode,
+			"name":            "Gudang Fixture " + tag,
+			"kind":            "WAREHOUSE",
+			"timezone":        "Asia/Jakarta",
+		},
+	}), "createLocation", "location")
+	locRawID := requireNonEmptyString(t, loc, "_id")
+
+	t.Cleanup(func() {
+		cleanupEFEntityRows(t, cfg, "locations", locRawID)
+		cleanupEFEntityRows(t, cfg, "legal_entities", leRawID)
+	})
+	return locRawID
+}
+
 // createFixtureUser membuat akun uji melalui operasi createUser* (status awal PENDING) lalu mengaktifkannya untuk kebutuhan fixture login.
 func createFixtureUser(t *testing.T, admin *browserClient, cfg e2eRuntimeConfig, kind string, withUsername bool) fixtureUserAccount {
 	t.Helper()
@@ -879,6 +977,13 @@ func createFixtureUser(t *testing.T, admin *browserClient, cfg e2eRuntimeConfig,
 	password := "StrongPass#2026!"
 
 	var opName, inputType string
+	var payloadFields = gqlUserPayloadFields
+	input := map[string]any{
+		"full_name": "Fixture " + tag,
+		"email":     email,
+		"username":  username,
+		"password":  password,
+	}
 	switch kind {
 	case "CUSTOMER":
 		opName, inputType = "createUser", "CreateUserInput"
@@ -886,20 +991,17 @@ func createFixtureUser(t *testing.T, admin *browserClient, cfg e2eRuntimeConfig,
 		opName, inputType = "createEmployeeUser", "CreateEmployeeUserInput"
 	case "VENDOR":
 		opName, inputType = "createVendorUser", "CreateVendorUserInput"
+		input["party_id"] = createFixturePartyForRole(t, admin, cfg, "VENDOR")
+		payloadFields = `user { ` + gqlUserFields + ` } party_contact { id _id party_id iam_user_id portal_access_status } ` + gqlMutationResultFields
 	case "SUPPLIER":
 		opName, inputType = "createSupplierUser", "CreateSupplierUserInput"
+		input["party_id"] = createFixturePartyForRole(t, admin, cfg, "SUPPLIER")
+		payloadFields = `user { ` + gqlUserFields + ` } party_contact { id _id party_id iam_user_id portal_access_status } ` + gqlMutationResultFields
 	default:
 		t.Fatalf("unsupported fixture user kind %q", kind)
 	}
 
-	input := map[string]any{
-		"full_name": "Fixture " + tag,
-		"email":     email,
-		"username":  username,
-		"password":  password,
-	}
-
-	query := fmt.Sprintf(`mutation ($input: %s!) { %s(input: $input) { %s } }`, inputType, opName, gqlUserPayloadFields)
+	query := fmt.Sprintf(`mutation ($input: %s!) { %s(input: $input) { %s } }`, inputType, opName, payloadFields)
 	data := doGQLOK(t, admin, query, map[string]any{"input": input})
 	u := requireMutationChildOK(t, data, opName, "user")
 	assertUserObject(t, u)
@@ -908,6 +1010,15 @@ func createFixtureUser(t *testing.T, admin *browserClient, cfg e2eRuntimeConfig,
 	}
 	id := requireNonEmptyString(t, u, "id")
 	rawID := requireNonEmptyString(t, u, "_id")
+	if kind == "VENDOR" || kind == "SUPPLIER" {
+		pc := requireMutationChildOK(t, data, opName, "party_contact")
+		if pc["iam_user_id"] != id || pc["portal_access_status"] != "PENDING_LINK" {
+			t.Fatalf("%s party_contact FK mismatch: %+v", opName, pc)
+		}
+		if fkCnt := psqlEFScalar(t, cfg, fmt.Sprintf(`SELECT count(*) FROM party_contacts WHERE iam_user_id = %s::uuid AND portal_access_status = 'pending_link' AND deleted_at IS NULL;`, sqlQuote(rawID))); fkCnt != "1" {
+			t.Fatalf("%s did not persist EF party_contacts.iam_user_id FK: count=%s", opName, fkCnt)
+		}
+	}
 	t.Cleanup(func() {
 		cleanupUserByID(t, cfg, rawID)
 	})
@@ -1547,7 +1658,7 @@ func TestQueryUserRoles(t *testing.T) {
 		emp := createFixtureUser(t, admin, cfg, "EMPLOYEE", false)
 		roleID, _ := createFixtureRole(t, admin, cfg, "ur")
 
-		scopeID := "11111111-1111-4111-8111-111111111111"
+		scopeID := createFixtureEFFacility(t, admin, cfg)
 		futureExp := time.Now().Add(2 * time.Hour).UTC().Format(time.RFC3339)
 		assignData := doGQLOK(t, admin, fmt.Sprintf(`mutation ($input: AssignUserRoleInput!) {
 			assignUserRole(input: $input) { %s }
@@ -1950,7 +2061,7 @@ func TestQueryPermissions(t *testing.T) {
 		admin := newSuperAdminBrowser(t, cfg)
 		data := doGQLOK(t, admin, q, map[string]any{
 			"query":        "iam.",
-			"resource":     "users",
+			"resource":     "iam.users",
 			"is_sensitive": true,
 			"first":        10,
 		})
@@ -2146,7 +2257,7 @@ func TestQueryGroupRoles(t *testing.T) {
 		admin := newSuperAdminBrowser(t, cfg)
 		groupID, _ := createFixtureGroup(t, admin, cfg, "gr")
 		roleID, _ := createFixtureRole(t, admin, cfg, "gr")
-		scopeID := "22222222-2222-4222-8222-222222222222"
+		scopeID := createFixtureEFFacility(t, admin, cfg)
 		futureExp := time.Now().Add(2 * time.Hour).UTC().Format(time.RFC3339)
 
 		assignData := doGQLOK(t, admin, fmt.Sprintf(`mutation ($input: AssignGroupRoleInput!) {
@@ -2914,6 +3025,18 @@ func TestMutationCreateEmployeeUser(t *testing.T) {
 	cfg := loadE2ERuntimeConfig(t)
 	m := fmt.Sprintf(`mutation ($input: CreateEmployeeUserInput!) { createEmployeeUser(input: $input) { %s } }`, gqlUserPayloadFields)
 
+	t.Run("ProvisioningRequestRequired", func(t *testing.T) {
+		admin := newSuperAdminBrowser(t, cfg)
+		tag := uniqueTag("e2eemp")
+		doGQLError(t, admin, m, map[string]any{"input": map[string]any{
+			"worker_id": "55555555-5555-4555-8555-555555555555",
+			"full_name": "Employee Request Fixture",
+			"email":     tag + "@integrione.test",
+			"username":  tag,
+			"password":  "StrongPass#2026!",
+		}}, "GRAPHQL_VALIDATION_FAILED")
+	})
+
 	t.Run("CreateEmployeeNonNullAndLoginWorks", func(t *testing.T) {
 		admin := newSuperAdminBrowser(t, cfg)
 		emp := createFixtureUser(t, admin, cfg, "EMPLOYEE", true)
@@ -2927,6 +3050,7 @@ func TestMutationCreateEmployeeUser(t *testing.T) {
 		tag := uniqueTag("denied_e")
 		requireCustomerMutationForbidden(t, custClient, m, map[string]any{"input": map[string]any{
 			"full_name": "Denied", "email": tag + "@integrione.test", "username": tag, "password": "StrongPass#2026!",
+			"worker_id": "55555555-5555-4555-8555-555555555555", "provisioning_request_id": "66666666-6666-4666-8666-666666666666",
 		}}, "createEmployeeUser")
 	})
 }
@@ -2948,7 +3072,7 @@ func TestMutationCreateVendorUser(t *testing.T) {
 		_, custClient := createFixtureCustomerAndLogin(t, admin, cfg)
 		tag := uniqueTag("denied_v")
 		requireCustomerMutationForbidden(t, custClient, m, map[string]any{"input": map[string]any{
-			"full_name": "Denied", "email": tag + "@integrione.test", "username": tag, "password": "StrongPass#2026!",
+			"party_id": "11111111-1111-4111-8111-111111111111", "full_name": "Denied", "email": tag + "@integrione.test", "username": tag, "password": "StrongPass#2026!",
 		}}, "createVendorUser")
 	})
 }
@@ -2970,7 +3094,7 @@ func TestMutationCreateSupplierUser(t *testing.T) {
 		_, custClient := createFixtureCustomerAndLogin(t, admin, cfg)
 		tag := uniqueTag("denied_s")
 		requireCustomerMutationForbidden(t, custClient, m, map[string]any{"input": map[string]any{
-			"full_name": "Denied", "email": tag + "@integrione.test", "username": tag, "password": "StrongPass#2026!",
+			"party_id": "11111111-1111-4111-8111-111111111111", "full_name": "Denied", "email": tag + "@integrione.test", "username": tag, "password": "StrongPass#2026!",
 		}}, "createSupplierUser")
 	})
 }
@@ -3678,7 +3802,7 @@ func TestMutationAssignUserRole(t *testing.T) {
 		assertUserRoleObject(t, urGlobal)
 		_ = requireNonEmptyString(t, urGlobal, "granted_by")
 
-		scopeID := "33333333-3333-4333-8333-333333333333"
+		scopeID := createFixtureEFFacility(t, admin, cfg)
 		urScoped := requireMutationChildOK(t, doGQLOK(t, admin, m, map[string]any{
 			"input": map[string]any{
 				"user_id":    emp.ID,
@@ -3936,7 +4060,7 @@ func TestMutationAssignGroupRole(t *testing.T) {
 		})
 		assertGroupMemberObject(t, requireMutationChildOK(t, gmData, "addGroupMember", "group_member_edge"))
 
-		scopeID := "44444444-4444-4444-8444-444444444444"
+		scopeID := createFixtureEFFacility(t, admin, cfg)
 		gr := requireMutationChildOK(t, doGQLOK(t, admin, m, map[string]any{
 			"input": map[string]any{
 				"group_id":   groupID,
@@ -4186,14 +4310,20 @@ func assertBusinessUserCreationDeniedAndZeroDBInsert(
 	if expectZeroAfter {
 		targetEmail = tag + "@integrione.test"
 	}
-	vars := map[string]any{
-		"input": map[string]any{
-			"full_name": "Denied " + tag,
-			"email":     targetEmail,
-			"username":  tag,
-			"password":  "StrongPass#2026!",
-		},
+	inVars := map[string]any{
+		"full_name": "Denied " + tag,
+		"email":     targetEmail,
+		"username":  tag,
+		"password":  "StrongPass#2026!",
 	}
+	if spec.wantKind == "VENDOR" || spec.wantKind == "SUPPLIER" {
+		inVars["party_id"] = "11111111-1111-4111-8111-111111111111"
+	}
+	if spec.wantKind == "EMPLOYEE" {
+		inVars["worker_id"] = "55555555-5555-4555-8555-555555555555"
+		inVars["provisioning_request_id"] = "66666666-6666-4666-8666-666666666666"
+	}
+	vars := map[string]any{"input": inVars}
 
 	_, _ = doMutationFail(t, client, spec.query, vars, spec.opName, wantErrType)
 	if expectZeroAfter {
@@ -4207,19 +4337,22 @@ func assertBusinessUserCreationDeniedAndZeroDBInsert(
 func assertBusinessUserCreationAllowedWithCleanup(
 	t *testing.T,
 	cfg e2eRuntimeConfig,
+	admin *browserClient,
 	client *browserClient,
 	spec businessUserMutationSpec,
 ) {
 	t.Helper()
 	tag := uniqueTag("allow_" + strings.ToLower(spec.wantKind))
-	data := doGQLOK(t, client, spec.query, map[string]any{
-		"input": map[string]any{
-			"full_name": "Allowed " + tag,
-			"email":     tag + "@integrione.test",
-			"username":  tag,
-			"password":  "StrongPass#2026!",
-		},
-	})
+	inVars := map[string]any{
+		"full_name": "Allowed " + tag,
+		"email":     tag + "@integrione.test",
+		"username":  tag,
+		"password":  "StrongPass#2026!",
+	}
+	if spec.wantKind == "VENDOR" || spec.wantKind == "SUPPLIER" {
+		inVars["party_id"] = createFixturePartyForRole(t, admin, cfg, spec.wantKind)
+	}
+	data := doGQLOK(t, client, spec.query, map[string]any{"input": inVars})
 	u := requireMutationChildOK(t, data, spec.opName, "user")
 	assertUserObject(t, u)
 	if u["kind"] != spec.wantKind || u["status"] != "PENDING" {
@@ -4286,13 +4419,14 @@ func TestRBACCreateBusinessUsersStrictEnforcement(t *testing.T) {
 			"role_id": scopedRoleID, "permission_id": permWriteID,
 		}), "assignRolePermission", "role_permission_edge")
 
+		facilityID := createFixtureEFFacility(t, admin, cfg)
 		scopedEmp := createFixtureUser(t, admin, cfg, "EMPLOYEE", true)
 		_ = requireMutationChildOK(t, doGQLOK(t, admin, mAssignUserRole, map[string]any{
 			"input": map[string]any{
 				"user_id":    scopedEmp.ID,
 				"role_id":    scopedRoleID,
 				"scope_type": "FACILITY",
-				"scope_id":   "33333333-3333-4333-8333-333333333333",
+				"scope_id":   facilityID,
 			},
 		}), "assignUserRole", "user_role_edge")
 
@@ -4305,6 +4439,7 @@ func TestRBACCreateBusinessUsersStrictEnforcement(t *testing.T) {
 	t.Run("DirectCustomRoleGlobalAllowedThenRevokedAndStaleBlocked", func(t *testing.T) {
 		admin := newSuperAdminBrowser(t, cfg)
 		permWriteID := findPermissionIDByCode(t, admin, "iam.users.write")
+		efPartyWriteID := findPermissionIDByCode(t, admin, "enterprise_foundation.parties.write")
 		customRoleID, _ := createFixtureRole(t, admin, cfg, "global_user_w")
 		_ = requireMutationChildOK(t, doGQLOK(t, admin, mAssignRolePerm, map[string]any{
 			"role_id": customRoleID, "permission_id": permWriteID,
@@ -4318,8 +4453,17 @@ func TestRBACCreateBusinessUsersStrictEnforcement(t *testing.T) {
 		empClient, loginRes := loginFixtureUser(t, cfg, emp.Email, emp.Password)
 		assertUserLoginPayload(t, loginRes, "AUTHENTICATED")
 
+		// Pemegang iam.users.write tanpa enterprise_foundation.parties.write ditolak AUTHORIZATION untuk createVendorUser & createSupplierUser.
+		for _, sp := range specs[1:] {
+			assertBusinessUserCreationDeniedAndZeroDBInsert(t, cfg, empClient, sp, "AUTHORIZATION", "")
+		}
+
+		_ = requireMutationChildOK(t, doGQLOK(t, admin, mAssignRolePerm, map[string]any{
+			"role_id": customRoleID, "permission_id": efPartyWriteID,
+		}), "assignRolePermission", "role_permission_edge")
+
 		for _, sp := range specs {
-			assertBusinessUserCreationAllowedWithCleanup(t, cfg, empClient, sp)
+			assertBusinessUserCreationAllowedWithCleanup(t, cfg, admin, empClient, sp)
 		}
 
 		// Bila izin dicabut dari role tanpa logout, permintaan berikutnya wajib langsung ditolak AUTHORIZATION.
@@ -4343,9 +4487,13 @@ func TestRBACCreateBusinessUsersStrictEnforcement(t *testing.T) {
 	t.Run("GroupInheritedGlobalPermissionAllowedThenMemberRemovedBlocks", func(t *testing.T) {
 		admin := newSuperAdminBrowser(t, cfg)
 		permWriteID := findPermissionIDByCode(t, admin, "iam.users.write")
+		efPartyWriteID := findPermissionIDByCode(t, admin, "enterprise_foundation.parties.write")
 		grpRoleID, _ := createFixtureRole(t, admin, cfg, "grp_user_w")
 		_ = requireMutationChildOK(t, doGQLOK(t, admin, mAssignRolePerm, map[string]any{
 			"role_id": grpRoleID, "permission_id": permWriteID,
+		}), "assignRolePermission", "role_permission_edge")
+		_ = requireMutationChildOK(t, doGQLOK(t, admin, mAssignRolePerm, map[string]any{
+			"role_id": grpRoleID, "permission_id": efPartyWriteID,
 		}), "assignRolePermission", "role_permission_edge")
 
 		groupID, _ := createFixtureGroup(t, admin, cfg, "grp_user_w")
@@ -4361,7 +4509,7 @@ func TestRBACCreateBusinessUsersStrictEnforcement(t *testing.T) {
 		empClient, loginRes := loginFixtureUser(t, cfg, emp.Email, emp.Password)
 		assertUserLoginPayload(t, loginRes, "AUTHENTICATED")
 		for _, sp := range specs {
-			assertBusinessUserCreationAllowedWithCleanup(t, cfg, empClient, sp)
+			assertBusinessUserCreationAllowedWithCleanup(t, cfg, admin, empClient, sp)
 		}
 
 		// Setelah dikeluarkan dari grup tanpa logout, snapshot langsung tersinkron dan akses ditolak AUTHORIZATION.
@@ -4535,7 +4683,6 @@ func TestUserIDAcceptsGIDAndRawUUID(t *testing.T) {
 	_ = doGQLError(t, admin, `query ($u: ID!) { userIdentities(user_id: $u, first: 1) { total_count } }`, map[string]any{"u": wrongGID}, "INVALID_ARGUMENT")
 	_, _ = doMutationFail(t, admin, mActivate, map[string]any{"u": wrongGID}, "activateUser", "ARGUMENT")
 }
-
 
 // TestSelfServiceModuleRBACAndAntiEscalation memverifikasi modul izin *self (readself/updateself/deleteself),
 // peran baseline ScopeSelf per jenis akun, isolasi IDOR horizontal, serta pencegahan eskalasi vertikal secara E2E HTTPS.
@@ -4765,7 +4912,7 @@ func TestSelfServiceModuleRBACAndAntiEscalation(t *testing.T) {
 	for _, client := range []*browserClient{custClient, empClient} {
 		requireCustomerForbidden(t, client, `query { users(first: 5) { total_count } }`, nil)
 		requireCustomerMutationForbidden(t, client, createEmpM, map[string]any{
-			"in": map[string]any{"full_name": "Escalate", "email": uniqueTag("esc") + "@integrione.test", "username": uniqueTag("esc_u"), "password": "StrongPass#2026!"},
+			"in": map[string]any{"worker_id": "55555555-5555-4555-8555-555555555555", "provisioning_request_id": "66666666-6666-4666-8666-666666666666", "full_name": "Escalate", "email": uniqueTag("esc") + "@integrione.test", "username": uniqueTag("esc_u"), "password": "StrongPass#2026!"},
 		}, "createEmployeeUser")
 		requireCustomerMutationForbidden(t, client, assignUserRoleM, map[string]any{
 			"in": map[string]any{"user_id": custA.ID, "role_id": superadminRoleID, "scope_type": "GLOBAL"},
@@ -4973,13 +5120,18 @@ func TestCreateUserVariantsAutoAssignSelfRoleAndPermissions(t *testing.T) {
 			}
 		}`, tc.inputType, tc.opName, gqlUserFields, gqlUserRoleEdgeFields, gqlRoleFields)
 
+		inVars := map[string]any{
+			"full_name": "Auto " + tag,
+			"email":     email,
+			"username":  tag,
+			"password":  pass,
+		}
+		if tc.wantKind == "VENDOR" || tc.wantKind == "SUPPLIER" {
+			inVars["party_id"] = createFixturePartyForRole(t, admin, cfg, tc.wantKind)
+		}
+
 		mData := doGQLOK(t, admin, mQ, map[string]any{
-			"in": map[string]any{
-				"full_name": "Auto " + tag,
-				"email":     email,
-				"username":  tag,
-				"password":  pass,
-			},
+			"in": inVars,
 		})
 		uObj := requireMutationChildOK(t, mData, tc.opName, "user")
 		assertUserObject(t, uObj)

@@ -1,0 +1,151 @@
+# Zona 2 — Skema GraphQL domain lokasi fisik operasional (Location) pada Enterprise Foundation.
+
+enum LocationKind {
+  HEADQUARTERS
+  WAREHOUSE
+  RETAIL_STORE
+  BRANCH_OFFICE
+}
+
+# Location merepresentasikan lokasi fisik operasional internal (`gid://integrione/location/<uuid>`).
+type Location implements Node {
+  id: ID!
+  _id: ID!
+  legal_entity_id: ID!
+  parent_location_id: ID
+  address_id: ID
+  location_code: String!
+  name: String!
+  kind: LocationKind!
+  phone: String
+  timezone: String!
+  operational_attributes_json: String!
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik Location.
+  legal_entity: LegalEntity
+  parent_location: Location
+  address: Address
+  children(after: String, before: String, first: Int, last: Int): LocationConnection!
+}
+
+type LocationEdge {
+  node: Location!
+  cursor: String!
+}
+
+type LocationConnection {
+  edges: [LocationEdge!]!
+  nodes: [Location!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateLocationInput {
+  legal_entity_id: ID!
+  parent_location_id: ID
+  address_id: ID
+  location_code: String!
+  name: String!
+  kind: LocationKind!
+  phone: String
+  timezone: String!
+  operational_attributes_json: String
+}
+
+input UpdateLocationInput {
+  id: ID!
+  parent_location_id: ID
+  address_id: ID
+  name: String!
+  kind: LocationKind!
+  phone: String
+  timezone: String!
+  operational_attributes_json: String
+}
+
+type CreateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteLocationPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  location(id: ID!): Location
+  locationsByIds(ids: [ID!]!): [Location!]!
+  locationByCode(location_code: String!): Location
+  locationsByLegalEntityAndKind(
+    legal_entity_id: ID!
+    kind: LocationKind!
+    active_only: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LocationConnection!
+  locationsByAddressId(
+    address_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LocationConnection!
+  locationChildren(
+    parent_location_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LocationConnection!
+  locations(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    legal_entity_id: ID
+    parent_location_id: ID
+    address_id: ID
+    kind: LocationKind
+    active_only: Boolean = false
+    include_deleted: Boolean = false
+  ): LocationConnection!
+  allLocations(after: String, before: String, first: Int, last: Int): LocationConnection!
+  validateFacilityScope(id: ID!): ScopeTargetDecision!
+  validateWarehouseScope(id: ID!): ScopeTargetDecision!
+}
+
+extend type Mutation {
+  createLocation(input: CreateLocationInput!): CreateLocationPayload!
+  updateLocation(input: UpdateLocationInput!): UpdateLocationPayload!
+  activateLocation(id: ID!): ActivateLocationPayload!
+  deactivateLocation(id: ID!): DeactivateLocationPayload!
+  deleteLocation(id: ID!): DeleteLocationPayload!
+}

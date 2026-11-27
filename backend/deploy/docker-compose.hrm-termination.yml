@@ -1,0 +1,22 @@
+services:
+  iam:
+    environment:
+      IAM_HRM_TERMINATION_ACCESS_TARGET: human-resource:9012
+      IAM_HRM_TERMINATION_ACCESS_SERVER_NAME: human-resource
+      IAM_HRM_TERMINATION_ACCESS_CERT_FILE: /etc/integrione/termination/iam-client.crt
+      IAM_HRM_TERMINATION_ACCESS_KEY_FILE: /etc/integrione/termination/iam-client.key
+      IAM_HRM_TERMINATION_ACCESS_CA_FILE: /etc/integrione/termination/ca.crt
+    volumes:
+      - ${HRM_TERMINATION_CERT_DIR:?HRM_TERMINATION_CERT_DIR}/iam-client.crt:/etc/integrione/termination/iam-client.crt:ro
+      - ${HRM_TERMINATION_CERT_DIR:?HRM_TERMINATION_CERT_DIR}/iam-client.key:/etc/integrione/termination/iam-client.key:ro
+      - ${HRM_TERMINATION_CERT_DIR:?HRM_TERMINATION_CERT_DIR}/ca.crt:/etc/integrione/termination/ca.crt:ro
+  human-resource:
+    environment:
+      HRM_TERMINATION_ACCESS_ADDR: "0.0.0.0:9012"
+      HRM_TERMINATION_ACCESS_CERT_FILE: /etc/integrione/termination/hrm-server.crt
+      HRM_TERMINATION_ACCESS_KEY_FILE: /etc/integrione/termination/hrm-server.key
+      HRM_TERMINATION_ACCESS_CLIENT_CA_FILE: /etc/integrione/termination/ca.crt
+    volumes:
+      - ${HRM_TERMINATION_CERT_DIR:?HRM_TERMINATION_CERT_DIR}/hrm-server.crt:/etc/integrione/termination/hrm-server.crt:ro
+      - ${HRM_TERMINATION_CERT_DIR:?HRM_TERMINATION_CERT_DIR}/hrm-server.key:/etc/integrione/termination/hrm-server.key:ro
+      - ${HRM_TERMINATION_CERT_DIR:?HRM_TERMINATION_CERT_DIR}/ca.crt:/etc/integrione/termination/ca.crt:ro

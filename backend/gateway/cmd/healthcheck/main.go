@@ -38,14 +38,11 @@ func main() {
 	if err != nil {
 		os.Exit(1)
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		os.Exit(1)
-	}
 
 	var decoded healthGraphQLResponse
-	if err := json.NewDecoder(resp.Body).Decode(&decoded); err != nil {
+	decodeErr := json.NewDecoder(resp.Body).Decode(&decoded)
+	closeErr := resp.Body.Close()
+	if resp.StatusCode != http.StatusOK || decodeErr != nil || closeErr != nil {
 		os.Exit(1)
 	}
 	if len(decoded.Errors) > 0 || decoded.Data.Health != "ok" {

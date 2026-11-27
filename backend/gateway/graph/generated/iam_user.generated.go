@@ -450,6 +450,38 @@ func (ec *executionContext) fieldContext_CreateSupplierUserPayload_user(_ contex
 	return fc, nil
 }
 
+func (ec *executionContext) _CreateSupplierUserPayload_party_contact(ctx context.Context, field graphql.CollectedField, obj *model.CreateSupplierUserPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreateSupplierUserPayload_party_contact(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PartyContact, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.PartyContact) graphql.Marshaler {
+			return ec.marshalOPartyContact2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐPartyContact(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_CreateSupplierUserPayload_party_contact(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateSupplierUserPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PartyContact(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CreateSupplierUserPayload_errors(ctx context.Context, field graphql.CollectedField, obj *model.CreateSupplierUserPayload) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -642,6 +674,38 @@ func (ec *executionContext) fieldContext_CreateVendorUserPayload_user(_ context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_User(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateVendorUserPayload_party_contact(ctx context.Context, field graphql.CollectedField, obj *model.CreateVendorUserPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreateVendorUserPayload_party_contact(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PartyContact, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.PartyContact) graphql.Marshaler {
+			return ec.marshalOPartyContact2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐPartyContact(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_CreateVendorUserPayload_party_contact(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateVendorUserPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PartyContact(ctx, field)
 		},
 	}
 	return fc, nil
@@ -2978,6 +3042,75 @@ func (ec *executionContext) fieldContext_UserIdentityEdge_node(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _UsernameAvailabilityPayload_available(ctx context.Context, field graphql.CollectedField, obj *model.UsernameAvailabilityPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UsernameAvailabilityPayload_available(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Available, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UsernameAvailabilityPayload_available(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UsernameAvailabilityPayload", field, false, false, "Boolean")
+}
+
+func (ec *executionContext) _UsernameAvailabilityPayload_normalized_username(ctx context.Context, field graphql.CollectedField, obj *model.UsernameAvailabilityPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UsernameAvailabilityPayload_normalized_username(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.NormalizedUsername, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UsernameAvailabilityPayload_normalized_username(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UsernameAvailabilityPayload", field, false, false, "String")
+}
+
+func (ec *executionContext) _UsernameAvailabilityPayload_message(ctx context.Context, field graphql.CollectedField, obj *model.UsernameAvailabilityPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_UsernameAvailabilityPayload_message(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_UsernameAvailabilityPayload_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("UsernameAvailabilityPayload", field, false, false, "String")
+}
+
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
@@ -2993,13 +3126,27 @@ func (ec *executionContext) unmarshalInputCreateEmployeeUserInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"full_name", "email", "username", "password"}
+	fieldsInOrder := [...]string{"worker_id", "provisioning_request_id", "full_name", "email", "username", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "worker_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("worker_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WorkerID = data
+		case "provisioning_request_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provisioning_request_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProvisioningRequestID = data
 		case "full_name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("full_name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -3056,13 +3203,55 @@ func (ec *executionContext) unmarshalInputCreateSupplierUserInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"full_name", "email", "username", "password"}
+	fieldsInOrder := [...]string{"party_id", "contact_id", "contact_role", "job_title", "phone", "is_primary_contact", "full_name", "email", "username", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "party_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("party_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartyID = data
+		case "contact_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contact_id"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContactID = data
+		case "contact_role":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contact_role"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContactRole = data
+		case "job_title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("job_title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.JobTitle = data
+		case "phone":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phone"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phone = data
+		case "is_primary_contact":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_primary_contact"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsPrimaryContact = data
 		case "full_name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("full_name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -3182,13 +3371,55 @@ func (ec *executionContext) unmarshalInputCreateVendorUserInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"full_name", "email", "username", "password"}
+	fieldsInOrder := [...]string{"party_id", "contact_id", "contact_role", "job_title", "phone", "is_primary_contact", "full_name", "email", "username", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "party_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("party_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartyID = data
+		case "contact_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contact_id"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContactID = data
+		case "contact_role":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contact_role"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContactRole = data
+		case "job_title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("job_title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.JobTitle = data
+		case "phone":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phone"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Phone = data
+		case "is_primary_contact":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_primary_contact"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsPrimaryContact = data
 		case "full_name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("full_name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -3344,6 +3575,11 @@ func (ec *executionContext) _CreateSupplierUserPayload(ctx context.Context, sel 
 			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
+		case "party_contact":
+			out.Values[i] = ec._CreateSupplierUserPayload_party_contact(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
 		case "errors":
 			out.Values[i] = ec._CreateSupplierUserPayload_errors(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3432,6 +3668,11 @@ func (ec *executionContext) _CreateVendorUserPayload(ctx context.Context, sel as
 			out.Values[i] = graphql.MarshalString("CreateVendorUserPayload")
 		case "user":
 			out.Values[i] = ec._CreateVendorUserPayload_user(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "party_contact":
+			out.Values[i] = ec._CreateVendorUserPayload_party_contact(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
@@ -4342,6 +4583,49 @@ func (ec *executionContext) _UserIdentityEdge(ctx context.Context, sel ast.Selec
 	return out
 }
 
+var usernameAvailabilityPayloadImplementors = []string{"UsernameAvailabilityPayload"}
+
+func (ec *executionContext) _UsernameAvailabilityPayload(ctx context.Context, sel ast.SelectionSet, obj *model.UsernameAvailabilityPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, usernameAvailabilityPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UsernameAvailabilityPayload")
+		case "available":
+			out.Values[i] = ec._UsernameAvailabilityPayload_available(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "normalized_username":
+			out.Values[i] = ec._UsernameAvailabilityPayload_normalized_username(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "message":
+			out.Values[i] = ec._UsernameAvailabilityPayload_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
@@ -4658,6 +4942,14 @@ func (ec *executionContext) unmarshalNUserStatus2githubᚗcomᚋintegrioneᚋerp
 
 func (ec *executionContext) marshalNUserStatus2githubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐUserStatus(ctx context.Context, sel ast.SelectionSet, v model.UserStatus) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNUsernameAvailabilityPayload2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐUsernameAvailabilityPayload(ctx context.Context, sel ast.SelectionSet, v *model.UsernameAvailabilityPayload) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "UsernameAvailabilityPayload!")
+		return graphql.Null
+	}
+	return ec._UsernameAvailabilityPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOSessionEndReason2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐSessionEndReason(ctx context.Context, v any) (*model.SessionEndReason, error) {

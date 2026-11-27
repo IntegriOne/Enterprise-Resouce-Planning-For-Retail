@@ -41,6 +41,7 @@ func businessUserVariants() []businessUserVariant {
 			wantKind: model.UserKindEmployee,
 			invoke: func(a *Adapter, ctx context.Context, tag string) (bool, *model.User, []*model.MutationError, error) {
 				res, err := a.CreateEmployeeUser(ctx, model.CreateEmployeeUserInput{
+					ProvisioningRequestID: fixtureEmployeeProvisioningID, WorkerID: "55555555-5555-4555-8555-555555555555",
 					FullName: "Employee " + tag,
 					Email:    tag + "@integrione.test",
 					Username: tag,
@@ -57,6 +58,7 @@ func businessUserVariants() []businessUserVariant {
 			wantKind: model.UserKindVendor,
 			invoke: func(a *Adapter, ctx context.Context, tag string) (bool, *model.User, []*model.MutationError, error) {
 				res, err := a.CreateVendorUser(ctx, model.CreateVendorUserInput{
+					PartyID:  "11111111-1111-4111-8111-111111111111",
 					FullName: "Vendor " + tag,
 					Email:    tag + "@integrione.test",
 					Username: tag,
@@ -73,6 +75,7 @@ func businessUserVariants() []businessUserVariant {
 			wantKind: model.UserKindSupplier,
 			invoke: func(a *Adapter, ctx context.Context, tag string) (bool, *model.User, []*model.MutationError, error) {
 				res, err := a.CreateSupplierUser(ctx, model.CreateSupplierUserInput{
+					PartyID:  "11111111-1111-4111-8111-111111111111",
 					FullName: "Supplier " + tag,
 					Email:    tag + "@integrione.test",
 					Username: tag,
@@ -172,10 +175,11 @@ func TestCreateBusinessUser_RBACAndSensitiveReauth(t *testing.T) {
 	rv := browserauth.NewRedirectValidator([]string{"/", "/identity"})
 
 	adp, err := NewAdapter(source_connections.IAMClientSet{
-		Auth:     &mockAuthClient{},
-		Users:    usersMock,
-		Sessions: &mockSessionClient{},
-	}, authMgr, authzSvc, rv, Config{LoginRateMax: 5, LoginRateWindow: time.Minute})
+		Auth:                 &mockAuthClient{},
+		Users:                usersMock,
+		EmployeeProvisioning: mockEmployeeProvisioningClient{},
+		Sessions:             &mockSessionClient{},
+	}, authMgr, authzSvc, rv, Config{LoginRateMax: 5, LoginRateWindow: time.Minute}, WithPartyPortalProvisioner(&mockPartyPortalProvisioner{}), WithWorkerPrincipalProvisioner(&mockWorkerPrincipalProvisioner{}))
 	if err != nil {
 		t.Fatalf("NewAdapter failed: %v", err)
 	}
@@ -241,7 +245,7 @@ func TestCreateBusinessUser_RBACAndSensitiveReauth(t *testing.T) {
 		[]authz.PermissionGrant{
 			{Code: "iam.users.write", IsSensitive: true, Scope: authz.ScopeGrant{Type: authz.ScopeGlobal}},
 		}, 1, now)
-	customRoleCtx := seedAdapterSession(store, "custom-tok", "emp-custom", "employee", authz.StatusActive, now.Unix(), false, false,
+	customRoleCtx := seedAdapterSession(store, "custom-tok", "emp-custom", "employee", authz.StatusActive, now.Unix(), true, true,
 		[]authz.RoleGrant{{Code: "hr_provisioner"}},
 		[]authz.PermissionGrant{
 			{Code: "iam.users.write", IsSensitive: true, Scope: authz.ScopeGrant{Type: authz.ScopeGlobal}},

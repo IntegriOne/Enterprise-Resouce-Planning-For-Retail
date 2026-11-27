@@ -30,10 +30,12 @@ func (this ActivateUserPayload) GetErrors() []*MutationError {
 func (this ActivateUserPayload) GetWasSuccessful() bool { return this.WasSuccessful }
 
 type CreateEmployeeUserInput struct {
-	FullName string `json:"full_name"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	WorkerID              string `json:"worker_id"`
+	ProvisioningRequestID string `json:"provisioning_request_id"`
+	FullName              string `json:"full_name"`
+	Email                 string `json:"email"`
+	Username              string `json:"username"`
+	Password              string `json:"password"`
 }
 
 type CreateEmployeeUserPayload struct {
@@ -56,14 +58,21 @@ func (this CreateEmployeeUserPayload) GetErrors() []*MutationError {
 func (this CreateEmployeeUserPayload) GetWasSuccessful() bool { return this.WasSuccessful }
 
 type CreateSupplierUserInput struct {
-	FullName string `json:"full_name"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	PartyID          string  `json:"party_id"`
+	ContactID        *string `json:"contact_id,omitempty"`
+	ContactRole      *string `json:"contact_role,omitempty"`
+	JobTitle         *string `json:"job_title,omitempty"`
+	Phone            *string `json:"phone,omitempty"`
+	IsPrimaryContact *bool   `json:"is_primary_contact,omitempty"`
+	FullName         string  `json:"full_name"`
+	Email            string  `json:"email"`
+	Username         string  `json:"username"`
+	Password         string  `json:"password"`
 }
 
 type CreateSupplierUserPayload struct {
 	User          *User            `json:"user,omitempty"`
+	PartyContact  *PartyContact    `json:"party_contact,omitempty"`
 	Errors        []*MutationError `json:"errors"`
 	WasSuccessful bool             `json:"was_successful"`
 }
@@ -109,14 +118,21 @@ func (this CreateUserPayload) GetErrors() []*MutationError {
 func (this CreateUserPayload) GetWasSuccessful() bool { return this.WasSuccessful }
 
 type CreateVendorUserInput struct {
-	FullName string `json:"full_name"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	PartyID          string  `json:"party_id"`
+	ContactID        *string `json:"contact_id,omitempty"`
+	ContactRole      *string `json:"contact_role,omitempty"`
+	JobTitle         *string `json:"job_title,omitempty"`
+	Phone            *string `json:"phone,omitempty"`
+	IsPrimaryContact *bool   `json:"is_primary_contact,omitempty"`
+	FullName         string  `json:"full_name"`
+	Email            string  `json:"email"`
+	Username         string  `json:"username"`
+	Password         string  `json:"password"`
 }
 
 type CreateVendorUserPayload struct {
 	User          *User            `json:"user,omitempty"`
+	PartyContact  *PartyContact    `json:"party_contact,omitempty"`
 	Errors        []*MutationError `json:"errors"`
 	WasSuccessful bool             `json:"was_successful"`
 }
@@ -365,6 +381,12 @@ type UserIdentityConnection struct {
 type UserIdentityEdge struct {
 	Cursor string        `json:"cursor"`
 	Node   *UserIdentity `json:"node"`
+}
+
+type UsernameAvailabilityPayload struct {
+	Available          bool   `json:"available"`
+	NormalizedUsername string `json:"normalized_username"`
+	Message            string `json:"message"`
 }
 
 type IdentityKind string

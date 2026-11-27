@@ -1,0 +1,84 @@
+type Position implements Node {
+  id: ID!
+  _id: ID!
+  position_code: String!
+  position_title: String!
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  legal_entity_reference_id: ID!
+  reports_to_position_id: ID
+  position_status: String!
+  headcount_authorized: String!
+  work_location_reference_id: ID
+  valid_from: String!
+  valid_to: String
+}
+
+type PositionEdge {
+  cursor: String!
+  node: Position!
+}
+
+type PositionConnection {
+  edges: [PositionEdge!]!
+  nodes: [Position!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  position(id: ID!): Position
+  positions(legal_entity_id: ID, after: String, before: String, first: Int, last: Int): PositionConnection!
+}
+
+type ActivatePositionPayload implements MutationResult {
+  position: Position
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CreatePositionPayload implements MutationResult {
+  position: Position
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePositionPayload implements MutationResult {
+  position: Position
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePositionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  activatePosition(id: ID!): ActivatePositionPayload!
+  createPosition(input: CreatePositionInput!): CreatePositionPayload!
+  updatePosition(id: ID!, input: UpdatePositionInput!): UpdatePositionPayload!
+  deletePosition(id: ID!): DeletePositionPayload!
+}
+
+input CreatePositionInput {
+  position_code: String!
+  position_title: String!
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  legal_entity_reference_id: ID!
+  reports_to_position_id: ID
+  headcount_authorized: String
+  work_location_reference_id: ID
+  valid_from: String!
+  valid_to: String
+}
+
+input UpdatePositionInput {
+  position_title: String @goField(omittable: true)
+  headcount_authorized: String @goField(omittable: true)
+  work_location_reference_id: ID @goField(omittable: true)
+  valid_from: String @goField(omittable: true)
+  valid_to: String @goField(omittable: true)
+}

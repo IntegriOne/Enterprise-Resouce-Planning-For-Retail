@@ -130,6 +130,17 @@ services:
     environment:
       TZ: Asia/Jakarta
       IAM_GRPC_TARGET: iam:9001
+      EF_GRPC_ENABLED: "true"
+      EF_GRPC_TARGET: enterprise-foundation:9002
+      EF_GRPC_TIMEOUT_SECONDS: "5"
+      HRM_GRPC_ENABLED: "${HRM_GATEWAY_ENABLED:-false}"
+      HRM_GRPC_TARGET: human-resource:9003
+      HRM_GRPC_SERVER_NAME: human-resource
+      HRM_GRPC_CA_FILE: /etc/integrione/hrm-client/ca.crt
+      HRM_GRPC_CLIENT_CERT_FILE: /etc/integrione/hrm-client/client.crt
+      HRM_GRPC_CLIENT_KEY_FILE: /etc/integrione/hrm-client/client.key
+      HRM_GRPC_HMAC_SECRET_FILE: /etc/integrione/hrm-client/hmac.key
+      HRM_GRPC_TIMEOUT_SECONDS: "5"
       GATEWAY_REDIS_ENABLED: "true"
       GATEWAY_REDIS_ADDR: redis:6379
       GATEWAY_REDIS_CA_CERT_PATH: /etc/integrione/certs/ca.crt
@@ -139,6 +150,7 @@ services:
       - "127.0.0.1:5000:8080"
     volumes:
       - ./deploy/certs/ca.crt:/etc/integrione/certs/ca.crt:ro
+      - ./gateway/.local/hrm-client:/etc/integrione/hrm-client:ro
     depends_on:
       iam:
         condition: service_healthy
@@ -160,6 +172,17 @@ services:
     environment:
       TZ: Asia/Jakarta
       IAM_GRPC_TARGET: iam:9001
+      EF_GRPC_ENABLED: "true"
+      EF_GRPC_TARGET: enterprise-foundation:9002
+      EF_GRPC_TIMEOUT_SECONDS: "5"
+      HRM_GRPC_ENABLED: "${HRM_GATEWAY_ENABLED:-false}"
+      HRM_GRPC_TARGET: human-resource:9003
+      HRM_GRPC_SERVER_NAME: human-resource
+      HRM_GRPC_CA_FILE: /etc/integrione/hrm-client/ca.crt
+      HRM_GRPC_CLIENT_CERT_FILE: /etc/integrione/hrm-client/client.crt
+      HRM_GRPC_CLIENT_KEY_FILE: /etc/integrione/hrm-client/client.key
+      HRM_GRPC_HMAC_SECRET_FILE: /etc/integrione/hrm-client/hmac.key
+      HRM_GRPC_TIMEOUT_SECONDS: "5"
       GATEWAY_REDIS_ENABLED: "true"
       GATEWAY_REDIS_ADDR: redis:6379
       GATEWAY_REDIS_CA_CERT_PATH: /etc/integrione/certs/ca.crt
@@ -169,6 +192,7 @@ services:
       - "127.0.0.1:5001:8080"
     volumes:
       - ./deploy/certs/ca.crt:/etc/integrione/certs/ca.crt:ro
+      - ./gateway/.local/hrm-client:/etc/integrione/hrm-client:ro
     depends_on:
       gateway-1:
         condition: service_healthy

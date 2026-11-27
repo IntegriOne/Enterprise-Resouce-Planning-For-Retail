@@ -1,0 +1,556 @@
+# Zona 2 — Skema GraphQL domain mitra eksternal (Party), peran bisnis, PIC portal IAM, dan tautan alamat.
+
+enum PartyKind {
+  ORGANIZATION
+  INDIVIDUAL
+  FINANCIAL_ENTITY
+  GOVERNMENT_BODY
+}
+
+enum PartyStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum PartyRoleKind {
+  SUPPLIER
+  VENDOR
+  CUSTOMER_B2B
+  CARRIER
+  FINANCIAL_INSTITUTION
+  OTHER
+}
+
+enum PortalAccessStatus {
+  NONE
+  PENDING_LINK
+  ACTIVE
+  REVOKED
+}
+
+enum AddressUsageKind {
+  REGISTERED_OFFICE
+  HEADQUARTERS
+  BILLING
+  SHIPPING
+  OTHER
+}
+
+# Party merepresentasikan entitas master mitra bisnis eksternal (`gid://integrione/party/<uuid>`).
+type Party implements Node {
+  id: ID!
+  _id: ID!
+  partner_code: String!
+  kind: PartyKind!
+  display_name: String!
+  legal_name: String
+  email: String
+  phone: String
+  website_url: String
+  tax_id_number: String
+  tax_registered_name: String
+  is_pkp: Boolean!
+  is_tax_exempt: Boolean!
+  tax_exemption_reason: String
+  tax_verified_at: Time
+  preferred_language: String!
+  status: PartyStatus!
+  notes: String
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik Party.
+  roles(after: String, before: String, first: Int, last: Int): PartyRoleConnection!
+  contacts(after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  addresses(after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+}
+
+type PartyEdge {
+  node: Party!
+  cursor: String!
+}
+
+type PartyConnection {
+  edges: [PartyEdge!]!
+  nodes: [Party!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# PartyRole merepresentasikan peran bisnis resmi milik satu mitra (`gid://integrione/party-role/<uuid>`).
+type PartyRole implements Node {
+  id: ID!
+  _id: ID!
+  party_id: ID!
+  role: PartyRoleKind!
+  is_active: Boolean!
+  reference_note: String
+  created_at: Time!
+  updated_at: Time!
+}
+
+type PartyRoleEdge {
+  node: PartyRole!
+  cursor: String!
+}
+
+type PartyRoleConnection {
+  edges: [PartyRoleEdge!]!
+  nodes: [PartyRole!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# PartyContact merepresentasikan PIC mitra serta tautan portal IAM opsional (`gid://integrione/party-contact/<uuid>`).
+type PartyContact implements Node {
+  id: ID!
+  _id: ID!
+  party_id: ID!
+  iam_user_id: ID
+  full_name: String!
+  job_title: String
+  contact_role: String!
+  email: String
+  phone: String
+  portal_access_status: PortalAccessStatus!
+  is_primary: Boolean!
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+}
+
+type PartyContactEdge {
+  node: PartyContact!
+  cursor: String!
+}
+
+type PartyContactConnection {
+  edges: [PartyContactEdge!]!
+  nodes: [PartyContact!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# PartyAddress merepresentasikan relasi antara mitra dan master alamat (`gid://integrione/party-address/<uuid>`).
+type PartyAddress implements Node {
+  id: ID!
+  _id: ID!
+  party_id: ID!
+  address_id: ID!
+  usage: AddressUsageKind!
+  is_primary: Boolean!
+  created_at: Time!
+  updated_at: Time!
+
+  # Relasi detail master alamat.
+  address: Address
+}
+
+type PartyAddressEdge {
+  node: PartyAddress!
+  cursor: String!
+}
+
+type PartyAddressConnection {
+  edges: [PartyAddressEdge!]!
+  nodes: [PartyAddress!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+type PortalAccessEvaluation {
+  allowed: Boolean!
+  party_id: ID!
+  contact_id: ID!
+  iam_user_id: ID!
+  active_roles: [PartyRoleKind!]!
+}
+
+input CreatePartyInput {
+  partner_code: String!
+  kind: PartyKind!
+  display_name: String!
+  legal_name: String
+  email: String
+  phone: String
+  website_url: String
+  tax_id_number: String
+  tax_registered_name: String
+  is_pkp: Boolean = false
+  is_tax_exempt: Boolean = false
+  tax_exemption_reason: String
+  tax_verified_at: Time
+  preferred_language: String = "id"
+  status: PartyStatus = PENDING_VERIFICATION
+  notes: String
+}
+
+input UpdatePartyProfileInput {
+  id: ID!
+  kind: PartyKind!
+  display_name: String!
+  legal_name: String
+  email: String
+  phone: String
+  website_url: String
+  preferred_language: String!
+  notes: String
+}
+
+input UpdatePartyTaxProfileInput {
+  id: ID!
+  tax_id_number: String
+  tax_registered_name: String
+  is_pkp: Boolean = false
+  is_tax_exempt: Boolean = false
+  tax_exemption_reason: String
+  tax_verified_at: Time
+}
+
+input AssignPartyRoleInput {
+  party_id: ID!
+  role: PartyRoleKind!
+  reference_note: String
+}
+
+input UpdatePartyRoleNoteInput {
+  id: ID!
+  reference_note: String
+}
+
+input AddPartyContactInput {
+  party_id: ID!
+  iam_user_id: ID
+  full_name: String!
+  job_title: String
+  contact_role: String!
+  email: String
+  phone: String
+  portal_access_status: PortalAccessStatus = NONE
+  is_primary: Boolean = false
+}
+
+input UpdatePartyContactInput {
+  id: ID!
+  full_name: String!
+  job_title: String
+  contact_role: String!
+  email: String
+  phone: String
+  is_primary: Boolean = false
+}
+
+input LinkPartyAddressInput {
+  party_id: ID!
+  address_id: ID!
+  usage: AddressUsageKind!
+  is_primary: Boolean = false
+  replace_primary: Boolean = false
+}
+
+input UpdatePartyAddressLinkInput {
+  id: ID!
+  usage: AddressUsageKind!
+  is_primary: Boolean = false
+  replace_primary: Boolean = false
+}
+
+type CreatePartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyProfilePayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyTaxProfilePayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type VerifyAndActivatePartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SuspendPartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivatePartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeletePartyPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AssignPartyRolePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyRoleNotePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivatePartyRolePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivatePartyRolePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RemovePartyRolePayload implements MutationResult {
+  removed: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AddPartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SetPrimaryPartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RequestPartyPortalLinkPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivatePartyPortalAccessPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RevokePartyPortalAccessPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UnlinkPartyPortalUserPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivatePartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivatePartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeletePartyContactPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type LinkPartyAddressPayload implements MutationResult {
+  link: PartyAddress
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyAddressLinkPayload implements MutationResult {
+  link: PartyAddress
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SetPrimaryPartyAddressLinkPayload implements MutationResult {
+  link: PartyAddress
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UnlinkPartyAddressPayload implements MutationResult {
+  unlinked: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  # Party core.
+  party(id: ID!): Party
+  partiesByIds(ids: [ID!]!): [Party!]!
+  partyByCode(partner_code: String!): Party
+  partyByTaxIdNumber(tax_id_number: String!): Party
+  partiesByEmail(email: String!, after: String, before: String, first: Int, last: Int): PartyConnection!
+  parties(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    kind: PartyKind
+    status: PartyStatus
+    role: PartyRoleKind
+    include_deleted: Boolean = false
+  ): PartyConnection!
+  allParties(after: String, before: String, first: Int, last: Int): PartyConnection!
+
+  # Party roles.
+  partyRole(id: ID!): PartyRole
+  partyRolesByParty(party_id: ID!, after: String, before: String, first: Int, last: Int): PartyRoleConnection!
+  partyRoleByPartyAndKind(party_id: ID!, kind: PartyRoleKind!): PartyRole
+  partyRoles(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    party_id: ID
+    role: PartyRoleKind
+    active_only: Boolean = false
+    query: String
+  ): PartyRoleConnection!
+  allPartyRoles(after: String, before: String, first: Int, last: Int): PartyRoleConnection!
+  partyRolesByKind(
+    kind: PartyRoleKind!
+    active_only: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): PartyRoleConnection!
+  allPartyRolesByKind(
+    kind: PartyRoleKind!
+    active_only: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): PartyRoleConnection!
+  validatePartyRoleScope(party_id: ID!, required_role: PartyRoleKind!): ScopeTargetDecision!
+
+  # Party contacts dan portal IAM.
+  partyContact(id: ID!): PartyContact
+  partyContactsByParty(party_id: ID!, after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  primaryPartyContact(party_id: ID!): PartyContact
+  partyContactsByIamUserId(iam_user_id: ID!, after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  partyContactsByEmail(email: String!, after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  partyContacts(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    party_id: ID
+    query: String
+    contact_role: String
+    portal_access_status: PortalAccessStatus
+    active_only: Boolean = false
+    include_deleted: Boolean = false
+  ): PartyContactConnection!
+  allPartyContacts(after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  evaluateRepresentativePortalAccess(
+    party_id: ID!
+    iam_user_id: ID!
+    required_role: PartyRoleKind!
+  ): PortalAccessEvaluation!
+
+  # Relasi alamat mitra.
+  partyAddressLink(id: ID!): PartyAddress
+  partyAddressLinksByParty(party_id: ID!, after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+  partyAddressLinksByPartyAndUsage(
+    party_id: ID!
+    usage: AddressUsageKind!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): PartyAddressConnection!
+  primaryPartyAddressLink(party_id: ID!, usage: AddressUsageKind!): PartyAddress
+  partyAddressLinksByAddressId(address_id: ID!, after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+  partyAddressLinks(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    party_id: ID
+    address_id: ID
+    usage: AddressUsageKind
+    primary_only: Boolean
+  ): PartyAddressConnection!
+  allPartyAddressLinks(after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+}
+
+extend type Mutation {
+  # Party core.
+  createParty(input: CreatePartyInput!): CreatePartyPayload!
+  updatePartyProfile(input: UpdatePartyProfileInput!): UpdatePartyProfilePayload!
+  updatePartyTaxProfile(input: UpdatePartyTaxProfileInput!): UpdatePartyTaxProfilePayload!
+  verifyAndActivateParty(id: ID!): VerifyAndActivatePartyPayload!
+  suspendParty(id: ID!): SuspendPartyPayload!
+  deactivateParty(id: ID!): DeactivatePartyPayload!
+  deleteParty(id: ID!): DeletePartyPayload!
+
+  # Party roles.
+  assignPartyRole(input: AssignPartyRoleInput!): AssignPartyRolePayload!
+  updatePartyRoleNote(input: UpdatePartyRoleNoteInput!): UpdatePartyRoleNotePayload!
+  activatePartyRole(role_id: ID!): ActivatePartyRolePayload!
+  deactivatePartyRole(role_id: ID!): DeactivatePartyRolePayload!
+  removePartyRole(role_id: ID!): RemovePartyRolePayload!
+
+  # Party contacts dan portal IAM.
+  addPartyContact(input: AddPartyContactInput!): AddPartyContactPayload!
+  updatePartyContact(input: UpdatePartyContactInput!): UpdatePartyContactPayload!
+  setPrimaryPartyContact(party_id: ID!, contact_id: ID!): SetPrimaryPartyContactPayload!
+  requestPartyPortalLink(contact_id: ID!, iam_user_id: ID!): RequestPartyPortalLinkPayload!
+  activatePartyPortalAccess(contact_id: ID!, iam_user_id: ID!): ActivatePartyPortalAccessPayload!
+  revokePartyPortalAccess(contact_id: ID!): RevokePartyPortalAccessPayload!
+  unlinkPartyPortalUser(contact_id: ID!): UnlinkPartyPortalUserPayload!
+  activatePartyContact(contact_id: ID!): ActivatePartyContactPayload!
+  deactivatePartyContact(contact_id: ID!): DeactivatePartyContactPayload!
+  deletePartyContact(contact_id: ID!): DeletePartyContactPayload!
+
+  # Relasi alamat mitra.
+  linkPartyAddress(input: LinkPartyAddressInput!): LinkPartyAddressPayload!
+  updatePartyAddressLink(input: UpdatePartyAddressLinkInput!): UpdatePartyAddressLinkPayload!
+  setPrimaryPartyAddressLink(link_id: ID!): SetPrimaryPartyAddressLinkPayload!
+  unlinkPartyAddress(link_id: ID!): UnlinkPartyAddressPayload!
+}

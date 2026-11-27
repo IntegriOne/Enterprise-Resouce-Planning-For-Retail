@@ -1,0 +1,28 @@
+type EmployeeAccountRequest implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  legal_entity_id: ID!
+  status: String!
+  requested_at: Time!
+  iam_request_id: ID
+}
+
+input RequestEmployeeAccountInput {
+  worker_id: ID!
+}
+
+type RequestEmployeeAccountPayload implements MutationResult {
+  request: EmployeeAccountRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  requestEmployeeAccount(input: RequestEmployeeAccountInput!): RequestEmployeeAccountPayload!
+}
+
+extend type Query {
+  employeeAccountRequest(id: ID!): EmployeeAccountRequest
+  workerEmployeeAccountRequest(worker_id: ID!): EmployeeAccountRequest
+}

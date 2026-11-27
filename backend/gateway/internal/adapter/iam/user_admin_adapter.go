@@ -2,21 +2,26 @@ package iam
 
 import (
 	"context"
+	"errors"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/integrione/erp-retail/backend/gateway/graph/model"
 	"github.com/integrione/erp-retail/backend/gateway/internal/browserauth"
 	"github.com/integrione/erp-retail/backend/gateway/internal/middleware"
 	"github.com/integrione/erp-retail/backend/gateway/internal/source_connections"
 	iamv1 "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1"
+	"github.com/integrione/erp-retail/backend/shared/authcontext"
 	"github.com/integrione/erp-retail/backend/shared/authz"
 )
 
 type createUserParams struct {
-	fullName string
-	email    string
-	username string
-	password string
+	provisioningRequestID string
+	workerID              string
+	fullName              string
+	email                 string
+	username              string
+	password              string
 }
 
 // User mengambil detail satu akun pengguna berdasarkan GID atau UUID mentah (wajib izin iam.users.read).
@@ -29,14 +34,13 @@ func (a *Adapter) User(ctx context.Context, id string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
-		UserId: cleanID,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.GetUserByIdResponse, error) {
+		return users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
+			UserId: cleanID,
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	return toModelUser(resp.GetUser()), nil
 }
@@ -65,14 +69,13 @@ func (a *Adapter) UserForNested(ctx context.Context, userRefID string) (*model.U
 	if err != nil {
 		return nil, err
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
-		UserId: cleanID,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.GetUserByIdResponse, error) {
+		return users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
+			UserId: cleanID,
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	return toModelUser(resp.GetUser()), nil
 }
@@ -110,17 +113,17 @@ func (a *Adapter) Users(
 	}
 
 	items, startOffset, pageInfo, total, err := FetchRelayPage(win, func(limit, offset int32) ([]*iamv1.User, *iamv1.PageInfo, error) {
-		rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-		defer cancel()
-		resp, rpcErr := a.clients.Users.ListUsers(rpcCtx, &iamv1.ListUsersRequest{
-			Query:          derefStr(query),
-			Kind:           protoKind,
-			Status:         protoStatus,
-			IncludeDeleted: derefBool(includeDeleted, false),
-			Page:           &iamv1.PageRequest{Limit: limit, Offset: offset},
+		resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.ListUsersResponse, error) {
+			return users.ListUsers(rpcCtx, &iamv1.ListUsersRequest{
+				Query:          derefStr(query),
+				Kind:           protoKind,
+				Status:         protoStatus,
+				IncludeDeleted: derefBool(includeDeleted, false),
+				Page:           &iamv1.PageRequest{Limit: limit, Offset: offset},
+			})
 		})
 		if rpcErr != nil {
-			return nil, nil, mapRPCError(rpcErr)
+			return nil, nil, rpcErr
 		}
 		return resp.GetItems(), resp.GetPage(), nil
 	})
@@ -175,14 +178,13 @@ func (a *Adapter) fetchUserIdentitiesConnection(
 	first *int,
 	last *int,
 ) (*model.UserIdentityConnection, error) {
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.ListUserIdentities(rpcCtx, &iamv1.ListUserIdentitiesRequest{
-		UserId: cleanUserID,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.ListUserIdentitiesResponse, error) {
+		return users.ListUserIdentities(rpcCtx, &iamv1.ListUserIdentitiesRequest{
+			UserId: cleanUserID,
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	sliced, startOffset, pageInfo, total, err := SliceRelayWindow(resp.GetIdentities(), after, before, first, last)
 	if err != nil {
@@ -239,15 +241,14 @@ func (a *Adapter) fetchUserRolesConnection(
 	first *int,
 	last *int,
 ) (*model.UserRoleConnection, error) {
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Roles.ListUserRoles(rpcCtx, &iamv1.ListUserRolesRequest{
-		UserId:         cleanUserID,
-		IncludeExpired: derefBool(includeExpired, false),
+	resp, rpcErr := callIAMRoles(ctx, a, &sess.Caller, func(rpcCtx context.Context, client iamv1.RoleServiceClient) (*iamv1.ListUserRolesResponse, error) {
+		return client.ListUserRoles(rpcCtx, &iamv1.ListUserRolesRequest{
+			UserId:         cleanUserID,
+			IncludeExpired: derefBool(includeExpired, false),
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	sliced, startOffset, pageInfo, total, err := SliceRelayWindow(resp.GetUserRoles(), after, before, first, last)
 	if err != nil {
@@ -258,7 +259,7 @@ func (a *Adapter) fetchUserRolesConnection(
 	for _, ur := range sliced {
 		roleIDs = append(roleIDs, ur.GetRoleId())
 	}
-	roleMap, err := a.fetchRoleMap(rpcCtx, roleIDs)
+	roleMap, err := a.fetchRoleMap(authcontext.WithCaller(ctx, sess.Caller), roleIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -325,14 +326,13 @@ func (a *Adapter) fetchUserEffectiveRolesConnection(
 	first *int,
 	last *int,
 ) (*model.RoleConnection, error) {
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Roles.ListEffectiveUserRoles(rpcCtx, &iamv1.ListEffectiveUserRolesRequest{
-		UserId: cleanUserID,
+	resp, rpcErr := callIAMRoles(ctx, a, &sess.Caller, func(rpcCtx context.Context, client iamv1.RoleServiceClient) (*iamv1.ListEffectiveUserRolesResponse, error) {
+		return client.ListEffectiveUserRoles(rpcCtx, &iamv1.ListEffectiveUserRolesRequest{
+			UserId: cleanUserID,
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	sliced, startOffset, pageInfo, total, err := SliceRelayWindow(resp.GetRoles(), after, before, first, last)
 	if err != nil {
@@ -386,14 +386,13 @@ func (a *Adapter) fetchUserGroupsConnection(
 	first *int,
 	last *int,
 ) (*model.GroupConnection, error) {
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Groups.ListUserGroups(rpcCtx, &iamv1.ListUserGroupsRequest{
-		UserId: cleanUserID,
+	resp, rpcErr := callIAMGroups(ctx, a, &sess.Caller, func(rpcCtx context.Context, client iamv1.GroupServiceClient) (*iamv1.ListUserGroupsResponse, error) {
+		return client.ListUserGroups(rpcCtx, &iamv1.ListUserGroupsRequest{
+			UserId: cleanUserID,
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	sliced, startOffset, pageInfo, total, err := SliceRelayWindow(resp.GetGroups(), after, before, first, last)
 	if err != nil {
@@ -455,15 +454,15 @@ func (a *Adapter) fetchUserSessionsConnection(
 		return nil, err
 	}
 	items, startOffset, pageInfo, total, err := FetchRelayPage(win, func(limit, offset int32) ([]*iamv1.Session, *iamv1.PageInfo, error) {
-		rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-		defer cancel()
-		resp, rpcErr := a.clients.Sessions.ListUserSessions(rpcCtx, &iamv1.ListUserSessionsRequest{
-			UserId:     cleanUserID,
-			ActiveOnly: derefBool(activeOnly, true),
-			Page:       &iamv1.PageRequest{Limit: limit, Offset: offset},
+		resp, rpcErr := callIAMSessions(ctx, a, &sess.Caller, func(rpcCtx context.Context, client iamv1.SessionServiceClient) (*iamv1.ListUserSessionsResponse, error) {
+			return client.ListUserSessions(rpcCtx, &iamv1.ListUserSessionsRequest{
+				UserId:     cleanUserID,
+				ActiveOnly: derefBool(activeOnly, true),
+				Page:       &iamv1.PageRequest{Limit: limit, Offset: offset},
+			})
 		})
 		if rpcErr != nil {
-			return nil, nil, mapRPCError(rpcErr)
+			return nil, nil, rpcErr
 		}
 		return resp.GetItems(), resp.GetPage(), nil
 	})
@@ -481,6 +480,9 @@ func (a *Adapter) CreateUser(ctx context.Context, input model.CreateUserInput) (
 			Errors:        ToMutationErrors(err),
 			WasSuccessful: false,
 		}, nil
+	}
+	if err := a.ensureAuthDeps(); err != nil {
+		return fail(err)
 	}
 
 	sess, err := a.authManager.AuthenticateOptional(ctx)
@@ -512,18 +514,18 @@ func (a *Adapter) CreateUser(ctx context.Context, input model.CreateUserInput) (
 	if isAuthenticated {
 		caller = sess.Caller
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, caller)
-	defer cancel()
 
-	resp, rpcErr := a.clients.Users.CreateUser(rpcCtx, &iamv1.CreateUserRequest{
-		Kind:                   iamv1.UserKind_USER_KIND_CUSTOMER,
-		Status:                 iamv1.UserStatus_USER_STATUS_PENDING,
-		DisplayName:            displayName,
-		Email:                  email,
-		Username:               username,
-		Password:               input.Password,
-		RequirePasswordChange:  false,
-		MarkIdentitiesVerified: false,
+	resp, rpcErr := callIAMUsers(ctx, a, &caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.CreateUserResponse, error) {
+		return users.CreateUser(rpcCtx, &iamv1.CreateUserRequest{
+			Kind:                   iamv1.UserKind_USER_KIND_CUSTOMER,
+			Status:                 iamv1.UserStatus_USER_STATUS_PENDING,
+			DisplayName:            displayName,
+			Email:                  email,
+			Username:               username,
+			Password:               input.Password,
+			RequirePasswordChange:  false,
+			MarkIdentitiesVerified: false,
+		})
 	})
 	if rpcErr != nil {
 		reason := source_connections.ExtractIAMErrorReason(rpcErr)
@@ -561,76 +563,267 @@ func (a *Adapter) CreateUser(ctx context.Context, input model.CreateUserInput) (
 }
 
 // CreateEmployeeUser membuat akun internal karyawan (EMPLOYEE) dengan status awal PENDING hingga verifikasi email.
+// Gateway memverifikasi pekerja dan mewajibkan penautan ke layanan Human Resource.
 func (a *Adapter) CreateEmployeeUser(ctx context.Context, input model.CreateEmployeeUserInput) (*model.CreateEmployeeUserPayload, error) {
-	user, err := a.createUserByKind(ctx, model.UserKindEmployee, createUserParams{
-		fullName: input.FullName,
-		email:    input.Email,
-		username: input.Username,
-		password: input.Password,
-	}, true)
+	sess, err := a.requireEmployeeProvisioning(ctx)
 	if err != nil {
 		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(err), WasSuccessful: false}, nil
 	}
+	params := createUserParams{
+		fullName: input.FullName,
+		email:    input.Email,
+		username: input.Username,
+		password: input.Password,
+	}
+	if err := validateCreateUserParams(params); err != nil {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(err), WasSuccessful: false}, nil
+	}
+
+	cleanWorkerID, idErr := parseStrictUUIDOrTypedID(strings.TrimSpace(input.WorkerID), ResourceWorker)
+	if idErr != nil {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(idErr), WasSuccessful: false}, nil
+	}
+	if a.workerProvisioner == nil {
+		return &model.CreateEmployeeUserPayload{
+			Errors:        ToMutationErrors(middleware.ErrUnavailable("human resource service unavailable", nil)),
+			WasSuccessful: false,
+		}, nil
+	}
+	normWorkerID := cleanWorkerID
+	requestID, err := parseStrictUUIDOrTypedID(input.ProvisioningRequestID, ResourceEmployeeProvisioningRequest)
+	if err != nil {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(err)}, nil
+	}
+	receipt, err := a.employeeProvisioningRequest(ctx, sess, requestID)
+	if err != nil {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(err)}, nil
+	}
+	if receipt.WorkerID != EncodeGID(ResourceWorker, cleanWorkerID) {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(middleware.ErrConflict("worker does not match provisioning request", nil))}, nil
+	}
+	params.provisioningRequestID, params.workerID = requestID, cleanWorkerID
+	if receipt.Status == "pending" {
+		normWorkerID, err = a.workerProvisioner.PrepareWorkerPrincipalLink(ctx, cleanWorkerID)
+		if err != nil {
+			return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(err)}, nil
+		}
+	}
+
+	user, createErr := a.createUserByKindWithSession(ctx, sess, model.UserKindEmployee, params, true)
+	if createErr != nil {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(createErr), WasSuccessful: false}, nil
+	}
+	if user == nil || user.RawID == "" {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(middleware.ErrUnavailable("invalid IAM user provisioning response", nil))}, nil
+	}
+	if linkErr := a.workerProvisioner.CompleteWorkerPrincipalLink(ctx, normWorkerID, user.RawID); linkErr != nil {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(linkErr)}, nil
+	}
+
+	_, err = callIAM(ctx, a, &sess.Caller, hasEmployeeProvisioningClient,
+		func(rpcCtx context.Context, clients source_connections.IAMClientSet) (*iamv1.CompleteEmployeeProvisioningRequestResponse, error) {
+			return clients.EmployeeProvisioning.CompleteEmployeeProvisioningRequest(rpcCtx,
+				&iamv1.CompleteEmployeeProvisioningRequestRequest{Id: params.provisioningRequestID, AccountId: user.RawID})
+		})
+	if err != nil {
+		return &model.CreateEmployeeUserPayload{Errors: ToMutationErrors(err)}, nil
+	}
+
 	return &model.CreateEmployeeUserPayload{User: user, Errors: noMutationErrors(), WasSuccessful: true}, nil
 }
 
-// CreateVendorUser membuat akun mitra vendor (VENDOR) dengan status awal PENDING hingga verifikasi email.
+// CreateVendorUser membuat akun mitra vendor (VENDOR) berstatus awal PENDING dan langsung menetapkan FK `party_contacts.iam_user_id` di Enterprise Foundation.
 func (a *Adapter) CreateVendorUser(ctx context.Context, input model.CreateVendorUserInput) (*model.CreateVendorUserPayload, error) {
-	user, err := a.createUserByKind(ctx, model.UserKindVendor, createUserParams{
-		fullName: input.FullName,
-		email:    input.Email,
-		username: input.Username,
-		password: input.Password,
-	}, true)
+	user, contact, err := a.createPartyPortalUser(ctx, model.UserKindVendor, "VENDOR", partyUserProvisioningParams{
+		partyID:          input.PartyID,
+		contactID:        input.ContactID,
+		contactRole:      input.ContactRole,
+		jobTitle:         input.JobTitle,
+		phone:            input.Phone,
+		isPrimaryContact: input.IsPrimaryContact,
+		user: createUserParams{
+			fullName: input.FullName,
+			email:    input.Email,
+			username: input.Username,
+			password: input.Password,
+		},
+	})
 	if err != nil {
 		return &model.CreateVendorUserPayload{Errors: ToMutationErrors(err), WasSuccessful: false}, nil
 	}
-	return &model.CreateVendorUserPayload{User: user, Errors: noMutationErrors(), WasSuccessful: true}, nil
+	return &model.CreateVendorUserPayload{
+		User:          user,
+		PartyContact:  contact,
+		Errors:        noMutationErrors(),
+		WasSuccessful: true,
+	}, nil
 }
 
-// CreateSupplierUser membuat akun mitra pemasok (SUPPLIER) dengan status awal PENDING hingga verifikasi email.
+// CreateSupplierUser membuat akun mitra pemasok (SUPPLIER) berstatus awal PENDING dan langsung menetapkan FK `party_contacts.iam_user_id` di Enterprise Foundation.
 func (a *Adapter) CreateSupplierUser(ctx context.Context, input model.CreateSupplierUserInput) (*model.CreateSupplierUserPayload, error) {
-	user, err := a.createUserByKind(ctx, model.UserKindSupplier, createUserParams{
-		fullName: input.FullName,
-		email:    input.Email,
-		username: input.Username,
-		password: input.Password,
-	}, true)
+	user, contact, err := a.createPartyPortalUser(ctx, model.UserKindSupplier, "SUPPLIER", partyUserProvisioningParams{
+		partyID:          input.PartyID,
+		contactID:        input.ContactID,
+		contactRole:      input.ContactRole,
+		jobTitle:         input.JobTitle,
+		phone:            input.Phone,
+		isPrimaryContact: input.IsPrimaryContact,
+		user: createUserParams{
+			fullName: input.FullName,
+			email:    input.Email,
+			username: input.Username,
+			password: input.Password,
+		},
+	})
 	if err != nil {
 		return &model.CreateSupplierUserPayload{Errors: ToMutationErrors(err), WasSuccessful: false}, nil
 	}
-	return &model.CreateSupplierUserPayload{User: user, Errors: noMutationErrors(), WasSuccessful: true}, nil
+	return &model.CreateSupplierUserPayload{
+		User:          user,
+		PartyContact:  contact,
+		Errors:        noMutationErrors(),
+		WasSuccessful: true,
+	}, nil
 }
 
-func (a *Adapter) createUserByKind(ctx context.Context, kind model.UserKind, p createUserParams, defaultReqPwdChange bool) (*model.User, error) {
+type partyUserProvisioningParams struct {
+	partyID          string
+	contactID        *string
+	contactRole      *string
+	jobTitle         *string
+	phone            *string
+	isPrimaryContact *bool
+	user             createUserParams
+}
+
+func (a *Adapter) createPartyPortalUser(
+	ctx context.Context,
+	kind model.UserKind,
+	requiredRole string,
+	in partyUserProvisioningParams,
+) (*model.User, *model.PartyContact, error) {
 	sess, err := a.requirePerm(ctx, "iam.users.write", true)
 	if err != nil {
+		return nil, nil, err
+	}
+	if err := validateCreateUserParams(in.user); err != nil {
+		return nil, nil, err
+	}
+	if a.partyProvisioner == nil {
+		return nil, nil, middleware.ErrUnavailable("enterprise foundation service unavailable", nil)
+	}
+
+	normPartyID, normContactID, prepErr := a.partyProvisioner.PreparePortalUserProvisioning(ctx, in.partyID, in.contactID, requiredRole)
+	if prepErr != nil {
+		return nil, nil, prepErr
+	}
+
+	user, createErr := a.createUserByKindWithSession(ctx, sess, kind, in.user, true)
+	if createErr != nil {
+		return nil, nil, createErr
+	}
+	if user == nil || strings.TrimSpace(user.RawID) == "" {
+		return nil, nil, middleware.NewGatewayError(middleware.CodeInternalError, "internal server error", errors.New("created IAM user missing identifier"))
+	}
+
+	linkReq := PartyUserLinkRequest{
+		PartyID:          normPartyID,
+		ContactID:        normContactID,
+		RequiredRole:     requiredRole,
+		FullName:         strings.TrimSpace(in.user.fullName),
+		Email:            strings.TrimSpace(in.user.email),
+		ContactRole:      in.contactRole,
+		JobTitle:         in.jobTitle,
+		Phone:            in.phone,
+		IsPrimaryContact: in.isPrimaryContact,
+	}
+	contact, linkErr := a.partyProvisioner.LinkPortalUser(ctx, linkReq, user.RawID)
+	if linkErr != nil {
+		return nil, nil, a.rollbackUnlinkedUser(ctx, sess, user.RawID, linkErr)
+	}
+	return user, contact, nil
+}
+
+func validateCreateUserParams(p createUserParams) error {
+	displayName := strings.TrimSpace(p.fullName)
+	email := strings.TrimSpace(p.email)
+	username := strings.TrimSpace(p.username)
+	if displayName == "" || email == "" || username == "" || p.password == "" {
+		return middleware.ErrInvalidArgument("full_name, email, username, and password are required", nil)
+	}
+	return nil
+}
+
+func (a *Adapter) createUserByKindWithSession(
+	ctx context.Context,
+	sess *middleware.ResolvedSession,
+	kind model.UserKind,
+	p createUserParams,
+	defaultReqPwdChange bool,
+) (*model.User, error) {
+	if err := validateCreateUserParams(p); err != nil {
 		return nil, err
 	}
 	displayName := strings.TrimSpace(p.fullName)
 	email := strings.TrimSpace(p.email)
 	username := strings.TrimSpace(p.username)
-	if displayName == "" || email == "" || username == "" || p.password == "" {
-		return nil, middleware.ErrInvalidArgument("full_name, email, username, and password are required", nil)
-	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.CreateUser(rpcCtx, &iamv1.CreateUserRequest{
-		Kind:                   toProtoUserKind(kind),
-		Status:                 iamv1.UserStatus_USER_STATUS_PENDING,
-		DisplayName:            displayName,
-		Email:                  email,
-		Username:               username,
-		Password:               p.password,
-		RequirePasswordChange:  defaultReqPwdChange,
-		MarkIdentitiesVerified: false,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.CreateUserResponse, error) {
+		return users.CreateUser(rpcCtx, &iamv1.CreateUserRequest{
+			Kind:                   toProtoUserKind(kind),
+			Status:                 iamv1.UserStatus_USER_STATUS_PENDING,
+			DisplayName:            displayName,
+			Email:                  email,
+			Username:               username,
+			Password:               p.password,
+			RequirePasswordChange:  defaultReqPwdChange,
+			MarkIdentitiesVerified: false,
+			ProvisioningRequestId:  p.provisioningRequestID,
+			WorkerId:               p.workerID,
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	return toModelUser(resp.GetUser()), nil
+}
+
+func (a *Adapter) rollbackUnlinkedUser(
+	ctx context.Context,
+	sess *middleware.ResolvedSession,
+	userID string,
+	linkErr error,
+) error {
+	if a == nil || sess == nil || strings.TrimSpace(userID) == "" {
+		return linkErr
+	}
+	compCtx := context.Background()
+	if ctx != nil {
+		compCtx = context.WithoutCancel(ctx)
+	}
+	_, compErr := callIAMUsers(compCtx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.SoftDeleteUserResponse, error) {
+		return users.SoftDeleteUser(rpcCtx, &iamv1.SoftDeleteUserRequest{UserId: userID})
+	})
+	if compErr == nil {
+		return linkErr
+	}
+	joined := errors.Join(linkErr, compErr)
+	if gwErr, ok := middleware.AsGatewayError(linkErr); ok {
+		return middleware.NewGatewayError(gwErr.Code, gwErr.Message, joined)
+	}
+	return middleware.ErrUnavailable("failed to link partner user cleanly", joined)
+}
+
+func parseStrictUUIDOrTypedID(raw string, expected GIDResource) (string, error) {
+	cleanID, err := ParseTypedID(raw, expected)
+	if err != nil {
+		return "", err
+	}
+	parsed, parseErr := uuid.Parse(cleanID)
+	if parseErr != nil || parsed == uuid.Nil {
+		return "", middleware.ErrInvalidArgument("identifier must be a valid UUID or Global ID", parseErr)
+	}
+	return parsed.String(), nil
 }
 
 func (a *Adapter) mutateUserStatusByID(ctx context.Context, userID string, allowSelf bool, call func(context.Context, string) (*iamv1.User, error)) (*model.User, error) {
@@ -642,23 +835,24 @@ func (a *Adapter) mutateUserStatusByID(ctx context.Context, userID string, allow
 	if err != nil {
 		return nil, err
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
+	callCtx := authcontext.WithCaller(ctx, sess.Caller)
 
-	if err := a.ensureCanTouchTargetUser(rpcCtx, sess, cleanUserID, allowSelf); err != nil {
+	if err := a.ensureCanTouchTargetUser(callCtx, sess, cleanUserID, allowSelf); err != nil {
 		return nil, err
 	}
-	user, rpcErr := call(rpcCtx, cleanUserID)
+	user, rpcErr := call(callCtx, cleanUserID)
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	return toModelUser(user), nil
 }
 
 // ActivateUser mengaktifkan status akun pengguna tertentu (wajib iam.users.write + reauth sensitif).
 func (a *Adapter) ActivateUser(ctx context.Context, userID string) (*model.ActivateUserPayload, error) {
-	user, err := a.mutateUserStatusByID(ctx, userID, true, func(rpcCtx context.Context, id string) (*iamv1.User, error) {
-		resp, rpcErr := a.clients.Users.ActivateUser(rpcCtx, &iamv1.ActivateUserRequest{UserId: id})
+	user, err := a.mutateUserStatusByID(ctx, userID, true, func(callCtx context.Context, id string) (*iamv1.User, error) {
+		resp, rpcErr := callIAMUsers(callCtx, a, nil, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.ActivateUserResponse, error) {
+			return users.ActivateUser(rpcCtx, &iamv1.ActivateUserRequest{UserId: id})
+		})
 		if rpcErr != nil {
 			return nil, rpcErr
 		}
@@ -672,8 +866,10 @@ func (a *Adapter) ActivateUser(ctx context.Context, userID string) (*model.Activ
 
 // SuspendUser membekukan sementara akun pengguna (wajib iam.users.write + reauth sensitif).
 func (a *Adapter) SuspendUser(ctx context.Context, userID string) (*model.SuspendUserPayload, error) {
-	user, err := a.mutateUserStatusByID(ctx, userID, false, func(rpcCtx context.Context, id string) (*iamv1.User, error) {
-		resp, rpcErr := a.clients.Users.SuspendUser(rpcCtx, &iamv1.SuspendUserRequest{UserId: id})
+	user, err := a.mutateUserStatusByID(ctx, userID, false, func(callCtx context.Context, id string) (*iamv1.User, error) {
+		resp, rpcErr := callIAMUsers(callCtx, a, nil, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.SuspendUserResponse, error) {
+			return users.SuspendUser(rpcCtx, &iamv1.SuspendUserRequest{UserId: id})
+		})
 		if rpcErr != nil {
 			return nil, rpcErr
 		}
@@ -687,8 +883,10 @@ func (a *Adapter) SuspendUser(ctx context.Context, userID string) (*model.Suspen
 
 // DisableUser menonaktifkan permanen akun pengguna dan mencabut sesi aktifnya (wajib iam.users.write + reauth sensitif).
 func (a *Adapter) DisableUser(ctx context.Context, userID string) (*model.DisableUserPayload, error) {
-	user, err := a.mutateUserStatusByID(ctx, userID, false, func(rpcCtx context.Context, id string) (*iamv1.User, error) {
-		resp, rpcErr := a.clients.Users.DisableUser(rpcCtx, &iamv1.DisableUserRequest{UserId: id})
+	user, err := a.mutateUserStatusByID(ctx, userID, false, func(callCtx context.Context, id string) (*iamv1.User, error) {
+		resp, rpcErr := callIAMUsers(callCtx, a, nil, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.DisableUserResponse, error) {
+			return users.DisableUser(rpcCtx, &iamv1.DisableUserRequest{UserId: id})
+		})
 		if rpcErr != nil {
 			return nil, rpcErr
 		}
@@ -713,15 +911,16 @@ func (a *Adapter) SoftDeleteUser(ctx context.Context, userID string) (*model.Sof
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
+	callCtx := authcontext.WithCaller(ctx, sess.Caller)
 
-	if err := a.ensureCanTouchTargetUser(rpcCtx, sess, cleanUserID, false); err != nil {
+	if err := a.ensureCanTouchTargetUser(callCtx, sess, cleanUserID, false); err != nil {
 		return fail(err)
 	}
-	_, rpcErr := a.clients.Users.SoftDeleteUser(rpcCtx, &iamv1.SoftDeleteUserRequest{UserId: cleanUserID})
+	_, rpcErr := callIAMUsers(callCtx, a, nil, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.SoftDeleteUserResponse, error) {
+		return users.SoftDeleteUser(rpcCtx, &iamv1.SoftDeleteUserRequest{UserId: cleanUserID})
+	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.SoftDeleteUserPayload{Deleted: ptrBool(true), Errors: noMutationErrors(), WasSuccessful: true}, nil
 }
@@ -743,18 +942,19 @@ func (a *Adapter) SetPrimaryUserIdentity(ctx context.Context, userID, identityID
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
+	callCtx := authcontext.WithCaller(ctx, sess.Caller)
 
-	if err := a.ensureCanTouchTargetUser(rpcCtx, sess, cleanUserID, true); err != nil {
+	if err := a.ensureCanTouchTargetUser(callCtx, sess, cleanUserID, true); err != nil {
 		return fail(err)
 	}
-	resp, rpcErr := a.clients.Users.SetPrimaryUserIdentity(rpcCtx, &iamv1.SetPrimaryUserIdentityRequest{
-		UserId:     cleanUserID,
-		IdentityId: cleanIdentityID,
+	resp, rpcErr := callIAMUsers(callCtx, a, nil, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.SetPrimaryUserIdentityResponse, error) {
+		return users.SetPrimaryUserIdentity(rpcCtx, &iamv1.SetPrimaryUserIdentityRequest{
+			UserId:     cleanUserID,
+			IdentityId: cleanIdentityID,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.SetPrimaryUserIdentityPayload{
 		UserIdentity:  toModelUserIdentity(resp.GetIdentity()),
@@ -780,18 +980,43 @@ func (a *Adapter) RemoveUserIdentity(ctx context.Context, userID, identityID str
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
+	callCtx := authcontext.WithCaller(ctx, sess.Caller)
 
-	if err := a.ensureCanTouchTargetUser(rpcCtx, sess, cleanUserID, true); err != nil {
+	if err := a.ensureCanTouchTargetUser(callCtx, sess, cleanUserID, true); err != nil {
 		return fail(err)
 	}
-	_, rpcErr := a.clients.Users.RemoveUserIdentity(rpcCtx, &iamv1.RemoveUserIdentityRequest{
-		UserId:     cleanUserID,
-		IdentityId: cleanIdentityID,
+	_, rpcErr := callIAMUsers(callCtx, a, nil, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.RemoveUserIdentityResponse, error) {
+		return users.RemoveUserIdentity(rpcCtx, &iamv1.RemoveUserIdentityRequest{
+			UserId:     cleanUserID,
+			IdentityId: cleanIdentityID,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.RemoveUserIdentityPayload{Removed: ptrBool(true), Errors: noMutationErrors(), WasSuccessful: true}, nil
+}
+
+// CheckUsername memeriksa ketersediaan username dengan pembatasan laju per IP dan tanpa mengekspos PII atau jenis akun.
+func (a *Adapter) CheckUsername(ctx context.Context, username string) (*model.UsernameAvailabilityPayload, error) {
+	if err := a.ensureAuthDeps(); err != nil {
+		return nil, err
+	}
+	if err := a.checkUsernameRateLimit(ctx); err != nil {
+		return nil, err
+	}
+	caller := a.authManager.BuildCallerContext(ctx)
+	resp, rpcErr := callIAMUsers(ctx, a, &caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.CheckUsernameAvailabilityResponse, error) {
+		return users.CheckUsernameAvailability(rpcCtx, &iamv1.CheckUsernameAvailabilityRequest{
+			Username: username,
+		})
+	})
+	if rpcErr != nil {
+		return nil, rpcErr
+	}
+	return &model.UsernameAvailabilityPayload{
+		Available:          resp.GetAvailable(),
+		NormalizedUsername: resp.GetNormalizedUsername(),
+		Message:            resp.GetReason(),
+	}, nil
 }

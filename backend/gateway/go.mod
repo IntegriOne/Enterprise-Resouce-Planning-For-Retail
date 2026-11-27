@@ -6,10 +6,13 @@ require (
 	github.com/99designs/gqlgen v0.17.97
 	github.com/gofiber/fiber/v3 v3.7.0
 	github.com/google/uuid v1.6.0
-	github.com/integrione/erp-retail/backend/services/iam v0.0.0-00010101000000-000000000000
-	github.com/integrione/erp-retail/backend/shared/authcontext v0.0.0-00010101000000-000000000000
+	github.com/integrione/erp-retail/backend/services/enterprise_foundation v0.0.0
+	github.com/integrione/erp-retail/backend/services/human_resource v0.0.0
+	github.com/integrione/erp-retail/backend/services/iam v0.0.0
+	github.com/integrione/erp-retail/backend/shared/authcontext v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authsession v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authz v0.0.0
+	github.com/integrione/erp-retail/backend/shared/rbac v0.0.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/vektah/gqlparser/v2 v2.5.63
 	golang.org/x/sync v0.25.0
@@ -27,6 +30,8 @@ require (
 	github.com/gofiber/schema v1.9.3 // indirect
 	github.com/gofiber/utils/v2 v2.6.4 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
@@ -43,11 +48,16 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/tools v0.52.0 // indirect
+	gorm.io/gorm v1.31.2 // indirect
 )
 
 replace (
+	github.com/integrione/erp-retail/backend/services/enterprise_foundation => ../services/enterprise_foundation
+	github.com/integrione/erp-retail/backend/services/human_resource => ../services/human_resource
 	github.com/integrione/erp-retail/backend/services/iam => ../services/iam
 	github.com/integrione/erp-retail/backend/shared/authcontext => ../shared/authcontext
 	github.com/integrione/erp-retail/backend/shared/authsession => ../shared/authsession
 	github.com/integrione/erp-retail/backend/shared/authz => ../shared/authz
 )
+
+replace github.com/integrione/erp-retail/backend/shared/rbac => ../shared/rbac

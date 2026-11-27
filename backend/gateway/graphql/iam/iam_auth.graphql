@@ -25,6 +25,8 @@ type WorkspaceAccessPayload {
   defaultLocation: String!
 }
 
+# Input login terpadu untuk akun non-system. Akun USER_KIND_SYSTEM (mis. auto_system_iam) selalu ditolak
+# dengan MutationError AUTHORIZATION ("system cannot login"), termasuk ketika password bernilai kosong.
 input UserLoginInput {
   identifier: String!
   password: String!

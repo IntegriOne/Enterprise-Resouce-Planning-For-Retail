@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -70,7 +71,13 @@ func (l *SnapshotLoader) EnsureFresh(
 	userID := sessCtx.Token.UserID
 	// Lepaskan pembatalan konteks pemanggil pertama agar waiter singleflight lain tidak ikut gagal bila satu klien memutus koneksi.
 	detachedParent := context.WithoutCancel(ctx)
-	resAny, err, _ := l.sfGroup.Do("refresh:"+userID, func() (any, error) {
+	resAny, err, _ := l.sfGroup.Do("refresh:"+userID, func() (res any, callErr error) {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				res = nil
+				callErr = ErrUnavailable("identity service unavailable", fmt.Errorf("recovered snapshot refresh panic: %v", recovered))
+			}
+		}()
 		rpcCtx, cancel := context.WithTimeout(detachedParent, l.iamTimeout)
 		defer cancel()
 		return l.refresher.RefreshUserAccessSnapshot(rpcCtx, userID, caller)

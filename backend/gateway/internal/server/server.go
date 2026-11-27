@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -105,6 +106,7 @@ func New(deps Dependencies) (*Server, error) {
 		},
 	})
 
+	app.Use(requestPanicRecoverMiddleware(deps.Logger))
 	app.Use(requestSecurityAndLoggingMiddleware(deps.Logger))
 
 	httpGQLHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -203,6 +205,38 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	return s.app.ShutdownWithContext(ctx)
+}
+
+func requestPanicRecoverMiddleware(logger *slog.Logger) fiber.Handler {
+	return func(c fiber.Ctx) (err error) {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				if logger != nil {
+					logger.Error("gateway http panic recovered",
+						slog.String("method", c.Method()),
+						slog.String("path", c.Path()),
+						slog.String("request_id", c.GetRespHeader("X-Request-ID")),
+						slog.Any("panic", recovered),
+						slog.String("stack", string(debug.Stack())),
+					)
+				}
+				c.Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
+				c.Set("X-Content-Type-Options", "nosniff")
+				err = c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"errors": []fiber.Map{
+						{
+							"message": "internal server error",
+							"extensions": fiber.Map{
+								"code": string(middleware.CodeInternalError),
+								"type": "INTERNAL_ERROR",
+							},
+						},
+					},
+				})
+			}
+		}()
+		return c.Next()
+	}
 }
 
 func requestSecurityAndLoggingMiddleware(logger *slog.Logger) fiber.Handler {

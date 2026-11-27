@@ -1,0 +1,93 @@
+type Job implements Node {
+  id: ID!
+  _id: ID!
+  job_family_id: ID!
+  job_code: String!
+  job_title: String!
+  job_level_code: String
+  job_description: String
+  valid_from: String!
+  valid_to: String
+  is_active: Boolean!
+}
+
+type JobEdge {
+  cursor: String!
+  node: Job!
+}
+
+type JobConnection {
+  edges: [JobEdge!]!
+  nodes: [Job!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  job(id: ID!): Job
+  jobsByIds(ids: [ID!]!): [Job!]!
+  jobs(job_family_id: ID, after: String, before: String, first: Int, last: Int): JobConnection!
+}
+
+type JobFamily implements Node {
+  id: ID!
+  _id: ID!
+  family_code: String!
+  family_name: String!
+  description: String
+  job_domain: String!
+  is_active: Boolean!
+}
+
+type JobFamilyEdge {
+  cursor: String!
+  node: JobFamily!
+}
+
+type JobFamilyConnection {
+  edges: [JobFamilyEdge!]!
+  nodes: [JobFamily!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  jobFamily(id: ID!): JobFamily
+  jobFamilies(after: String, before: String, first: Int, last: Int): JobFamilyConnection!
+}
+
+input CreateJobFamilyInput {
+  family_code: String!
+  family_name: String!
+  description: String
+  job_domain: String!
+  is_active: Boolean = true
+}
+
+type CreateJobFamilyPayload implements MutationResult {
+  job_family: JobFamily
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input CreateJobInput {
+  job_family_id: ID!
+  job_code: String!
+  job_title: String!
+  job_level_code: String
+  job_description: String
+  valid_from: String!
+  valid_to: String
+  is_active: Boolean = true
+}
+
+type CreateJobPayload implements MutationResult {
+  job: Job
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createJobFamily(input: CreateJobFamilyInput!): CreateJobFamilyPayload!
+  createJob(input: CreateJobInput!): CreateJobPayload!
+}

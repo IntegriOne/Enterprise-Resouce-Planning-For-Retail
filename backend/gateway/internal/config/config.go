@@ -61,6 +61,18 @@ type Config struct {
 	RateLimitMutationWindow   time.Duration
 	IAMGRPCTarget             string
 	IAMGRPCTimeout            time.Duration
+	EFGRPCEnabled             bool
+	EFGRPCTarget              string
+	EFGRPCTimeout             time.Duration
+	HRMGRPCEnabled            bool
+	HRMGRPCTarget             string
+	HRMGRPCServerName         string
+	HRMGRPCCAFile             string
+	HRMGRPCCertFile           string
+	HRMGRPCKeyFile            string
+	HRMGRPCHMACSecretFile     string
+	HRMGRPCTimeout            time.Duration
+	HRMGRPCConfigError        error
 	InternalGatewayHMACSecret string
 	AvatarBaseURL             string
 	RedisEnabled              bool
@@ -162,6 +174,24 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid IAM_GRPC_TIMEOUT_SECONDS")
 	}
 
+	efEnabled, err := parseBoolEnv("EF_GRPC_ENABLED", true)
+	if err != nil {
+		return nil, fmt.Errorf("invalid EF_GRPC_ENABLED: %w", err)
+	}
+	efTimeoutSec, err := getEnvInt("EF_GRPC_TIMEOUT_SECONDS", 5)
+	if err != nil || efTimeoutSec <= 0 {
+		return nil, fmt.Errorf("invalid EF_GRPC_TIMEOUT_SECONDS")
+	}
+
+	hrmEnabled, hrmConfigErr := parseBoolEnv("HRM_GRPC_ENABLED", false)
+	hrmTimeoutSec := 5
+	if hrmEnabled {
+		hrmTimeoutSec, err = getEnvInt("HRM_GRPC_TIMEOUT_SECONDS", 5)
+		if err != nil || hrmTimeoutSec <= 0 {
+			hrmConfigErr = errors.New("invalid HRM_GRPC_TIMEOUT_SECONDS")
+		}
+	}
+
 	redisAddr := strings.TrimSpace(getEnv("GATEWAY_REDIS_ADDR", ""))
 	redisEnabled, err := parseBoolEnv("GATEWAY_REDIS_ENABLED", redisAddr != "")
 	if err != nil {
@@ -239,6 +269,18 @@ func Load() (*Config, error) {
 		RateLimitMutationWindow:   time.Duration(rlMutWin) * time.Second,
 		IAMGRPCTarget:             strings.TrimSpace(getEnv("IAM_GRPC_TARGET", "127.0.0.1:9001")),
 		IAMGRPCTimeout:            time.Duration(iamTimeoutSec) * time.Second,
+		EFGRPCEnabled:             efEnabled,
+		EFGRPCTarget:              strings.TrimSpace(getEnv("EF_GRPC_TARGET", "127.0.0.1:9002")),
+		EFGRPCTimeout:             time.Duration(efTimeoutSec) * time.Second,
+		HRMGRPCEnabled:            hrmEnabled,
+		HRMGRPCTarget:             strings.TrimSpace(getEnv("HRM_GRPC_TARGET", "127.0.0.1:9003")),
+		HRMGRPCServerName:         strings.TrimSpace(getEnv("HRM_GRPC_SERVER_NAME", "")),
+		HRMGRPCCAFile:             strings.TrimSpace(getEnv("HRM_GRPC_CA_FILE", "")),
+		HRMGRPCCertFile:           strings.TrimSpace(getEnv("HRM_GRPC_CLIENT_CERT_FILE", "")),
+		HRMGRPCHMACSecretFile:     strings.TrimSpace(getEnv("HRM_GRPC_HMAC_SECRET_FILE", "")),
+		HRMGRPCKeyFile:            strings.TrimSpace(getEnv("HRM_GRPC_CLIENT_KEY_FILE", "")),
+		HRMGRPCTimeout:            time.Duration(hrmTimeoutSec) * time.Second,
+		HRMGRPCConfigError:        hrmConfigErr,
 		InternalGatewayHMACSecret: hmacSecret,
 		AvatarBaseURL:             avatarBaseURL,
 		RedisEnabled:              redisEnabled,

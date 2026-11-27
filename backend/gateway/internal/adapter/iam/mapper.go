@@ -1,6 +1,7 @@
 package iam
 
 import (
+	"math"
 	"strings"
 	"time"
 
@@ -59,7 +60,9 @@ func toModelUser(u *iamv1.User) *model.User {
 func toModelUsers(items []*iamv1.User) []*model.User {
 	out := make([]*model.User, 0, len(items))
 	for _, u := range items {
-		out = append(out, toModelUser(u))
+		if m := toModelUser(u); m != nil {
+			out = append(out, m)
+		}
 	}
 	return out
 }
@@ -144,7 +147,9 @@ func toModelSession(s *iamv1.Session) *model.Session {
 func toModelSessions(items []*iamv1.Session) []*model.Session {
 	out := make([]*model.Session, 0, len(items))
 	for _, s := range items {
-		out = append(out, toModelSession(s))
+		if m := toModelSession(s); m != nil {
+			out = append(out, m)
+		}
 	}
 	return out
 }
@@ -191,6 +196,9 @@ func buildRoleConnection(items []*iamv1.Role, startOffset int, pageInfo *model.P
 	edges := make([]*model.RoleEdge, 0, len(items))
 	for i, r := range items {
 		m := toModelRole(r)
+		if m == nil {
+			continue
+		}
 		nodes = append(nodes, m)
 		edges = append(edges, &model.RoleEdge{
 			Cursor: EncodeCursor(startOffset + i),
@@ -226,6 +234,9 @@ func buildPermissionConnection(items []*iamv1.Permission, startOffset int, pageI
 	edges := make([]*model.PermissionEdge, 0, len(items))
 	for i, p := range items {
 		m := toModelPermission(p)
+		if m == nil {
+			continue
+		}
 		nodes = append(nodes, m)
 		edges = append(edges, &model.PermissionEdge{
 			Cursor: EncodeCursor(startOffset + i),
@@ -261,6 +272,9 @@ func buildGroupConnection(items []*iamv1.Group, startOffset int, pageInfo *model
 	edges := make([]*model.GroupEdge, 0, len(items))
 	for i, g := range items {
 		m := toModelGroup(g)
+		if m == nil {
+			continue
+		}
 		nodes = append(nodes, m)
 		edges = append(edges, &model.GroupEdge{
 			Cursor: EncodeCursor(startOffset + i),
@@ -281,6 +295,9 @@ func buildRolePermissionConnection(roleID string, items []*iamv1.Permission, sta
 	edges := make([]*model.RolePermissionEdge, 0, len(items))
 	for i, p := range items {
 		m := toModelPermission(p)
+		if m == nil {
+			continue
+		}
 		nodes = append(nodes, m)
 		edges = append(edges, &model.RolePermissionEdge{
 			Cursor:    EncodeCursor(startOffset + i),
@@ -302,6 +319,9 @@ func buildGroupMemberConnection(groupID string, items []*iamv1.User, startOffset
 	nodes := toModelUsers(items)
 	edges := make([]*model.GroupMemberEdge, 0, len(nodes))
 	for i, u := range nodes {
+		if u == nil {
+			continue
+		}
 		edges = append(edges, &model.GroupMemberEdge{
 			Cursor:    EncodeCursor(startOffset + i),
 			Node:      u,
@@ -553,17 +573,6 @@ func fromProtoIdentityKind(k iamv1.IdentityKind) model.IdentityKind {
 	}
 }
 
-func toProtoIdentityKind(k model.IdentityKind) iamv1.IdentityKind {
-	switch k {
-	case model.IdentityKindEmail:
-		return iamv1.IdentityKind_IDENTITY_KIND_EMAIL
-	case model.IdentityKindUsername:
-		return iamv1.IdentityKind_IDENTITY_KIND_USERNAME
-	default:
-		return iamv1.IdentityKind_IDENTITY_KIND_UNSPECIFIED
-	}
-}
-
 func fromProtoSessionEndReasonPtr(r iamv1.SessionEndReason) *model.SessionEndReason {
 	var v model.SessionEndReason
 	switch r {
@@ -637,6 +646,12 @@ func derefBool(v *bool, fallback bool) bool {
 func derefInt32(v *int, fallback int32) int32 {
 	if v == nil {
 		return fallback
+	}
+	if *v > math.MaxInt32 {
+		return math.MaxInt32
+	}
+	if *v < math.MinInt32 {
+		return math.MinInt32
 	}
 	return int32(*v)
 }

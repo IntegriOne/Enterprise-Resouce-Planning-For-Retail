@@ -1,0 +1,154 @@
+# Zona 2 — Skema GraphQL domain unit kerja internal (OrganizationUnit) pada Enterprise Foundation.
+
+enum OrgUnitKind {
+  DIVISION
+  DEPARTMENT
+  TEAM
+  BRANCH
+  OTHER
+}
+
+# OrganizationUnit merepresentasikan unit organisasi internal (`gid://integrione/organization-unit/<uuid>`).
+type OrganizationUnit implements Node {
+  id: ID!
+  _id: ID!
+  legal_entity_id: ID!
+  parent_unit_id: ID
+  primary_location_id: ID
+  unit_code: String!
+  name: String!
+  kind: OrgUnitKind!
+  cost_center_code: String
+  head_person_id: ID
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik OrganizationUnit.
+  legal_entity: LegalEntity
+  parent_unit: OrganizationUnit
+  primary_location: Location
+  children(after: String, before: String, first: Int, last: Int): OrganizationUnitConnection!
+}
+
+type OrganizationUnitEdge {
+  node: OrganizationUnit!
+  cursor: String!
+}
+
+type OrganizationUnitConnection {
+  edges: [OrganizationUnitEdge!]!
+  nodes: [OrganizationUnit!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateOrganizationUnitInput {
+  legal_entity_id: ID!
+  parent_unit_id: ID
+  primary_location_id: ID
+  unit_code: String!
+  name: String!
+  kind: OrgUnitKind!
+  cost_center_code: String
+  head_person_id: ID
+}
+
+input UpdateOrganizationUnitInput {
+  id: ID!
+  parent_unit_id: ID
+  primary_location_id: ID
+  name: String!
+  kind: OrgUnitKind!
+  cost_center_code: String
+  head_person_id: ID
+  preserve_head_person: Boolean! = false
+}
+
+type CreateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AssignOrganizationUnitHeadPersonPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteOrganizationUnitPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  organizationUnit(id: ID!): OrganizationUnit
+  organizationUnitsByIds(ids: [ID!]!): [OrganizationUnit!]!
+  organizationUnitByEntityAndCode(legal_entity_id: ID!, unit_code: String!): OrganizationUnit
+  organizationUnitsByHeadPersonId(
+    head_person_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationUnitConnection!
+  organizationUnitsByPrimaryLocationId(
+    primary_location_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationUnitConnection!
+  organizationUnitChildren(
+    parent_unit_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationUnitConnection!
+  organizationUnits(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    legal_entity_id: ID
+    parent_unit_id: ID
+    primary_location_id: ID
+    kind: OrgUnitKind
+    active_only: Boolean = false
+    include_deleted: Boolean = false
+  ): OrganizationUnitConnection!
+  allOrganizationUnits(after: String, before: String, first: Int, last: Int): OrganizationUnitConnection!
+  validateOrganizationUnitScopeTarget(id: ID!): ScopeTargetDecision!
+}
+
+extend type Mutation {
+  createOrganizationUnit(input: CreateOrganizationUnitInput!): CreateOrganizationUnitPayload!
+  updateOrganizationUnit(input: UpdateOrganizationUnitInput!): UpdateOrganizationUnitPayload!
+  assignOrganizationUnitHeadPerson(id: ID!, head_person_id: ID): AssignOrganizationUnitHeadPersonPayload!
+  activateOrganizationUnit(id: ID!): ActivateOrganizationUnitPayload!
+  deactivateOrganizationUnit(id: ID!): DeactivateOrganizationUnitPayload!
+  deleteOrganizationUnit(id: ID!): DeleteOrganizationUnitPayload!
+}

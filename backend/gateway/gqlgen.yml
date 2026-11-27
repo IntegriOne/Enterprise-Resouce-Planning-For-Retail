@@ -63,3 +63,43 @@ models:
         resolver: true
       roles:
         resolver: true
+  LegalEntity:
+    fields:
+      parent_legal_entity:
+        resolver: true
+      registered_address:
+        resolver: true
+      children:
+        resolver: true
+  Location:
+    fields:
+      legal_entity:
+        resolver: true
+      parent_location:
+        resolver: true
+      address:
+        resolver: true
+      children:
+        resolver: true
+  OrganizationUnit:
+    fields:
+      legal_entity:
+        resolver: true
+      parent_unit:
+        resolver: true
+      primary_location:
+        resolver: true
+      children:
+        resolver: true
+  Party:
+    fields:
+      roles:
+        resolver: true
+      contacts:
+        resolver: true
+      addresses:
+        resolver: true
+  PartyAddress:
+    fields:
+      address:
+        resolver: true

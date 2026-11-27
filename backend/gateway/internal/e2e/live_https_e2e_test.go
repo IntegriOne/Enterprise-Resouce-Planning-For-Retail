@@ -35,15 +35,16 @@ import (
 )
 
 type e2eRuntimeConfig struct {
-	repoRoot        string
-	caCertPath      string
-	baseURL         string
-	systemUsername  string
-	systemPassword  string
-	redisAddr       string
-	gwRedisPass     string
-	iamRedisPass    string
-	postgresService string
+	repoRoot              string
+	caCertPath            string
+	baseURL               string
+	superadminUsername    string
+	superadminPassword    string
+	autoSystemIAMUsername string
+	redisAddr             string
+	gwRedisPass           string
+	iamRedisPass          string
+	postgresService       string
 }
 
 type graphQLError struct {
@@ -74,25 +75,27 @@ func loadE2ERuntimeConfig(t *testing.T) e2eRuntimeConfig {
 	iamEnv := parseEnvFile(t, filepath.Join(repoRoot, "backend", "services", "iam", ".env"))
 	redisSecrets := parseEnvFile(t, filepath.Join(repoRoot, "backend", "deploy", "redis", ".dev-redis-secrets"))
 
-	sysUser := envOr(iamEnv, "E2E_SYSTEM_USERNAME", "IAM_SYSTEM_USERNAME", "systemiam")
-	sysPass := envOr(iamEnv, "E2E_SYSTEM_PASSWORD", "IAM_SYSTEM_PASSWORD", "")
+	superUser := envOr(iamEnv, "E2E_SUPERADMIN_USERNAME", "IAM_SUPERADMIN_USERNAME", "superadmin")
+	superPass := envOr(iamEnv, "E2E_SUPERADMIN_PASSWORD", "IAM_SUPERADMIN_PASSWORD", "")
+	autoIAMUser := envOr(iamEnv, "E2E_AUTO_SYSTEM_IAM_USERNAME", "IAM_AUTO_SYSTEM_IAM_USERNAME", "auto_system_iam")
 	gwRedisPass := envOr(redisSecrets, "E2E_GW_REDIS_PASSWORD", "GW_REDIS_PW", "")
 	iamRedisPass := envOr(redisSecrets, "E2E_IAM_REDIS_PASSWORD", "IAM_REDIS_PW", "")
 
-	if sysPass == "" || gwRedisPass == "" || iamRedisPass == "" {
+	if superPass == "" || gwRedisPass == "" || iamRedisPass == "" {
 		t.Fatal("missing runtime credentials from local untracked .env / .dev-redis-secrets")
 	}
 
 	return e2eRuntimeConfig{
-		repoRoot:        repoRoot,
-		caCertPath:      filepath.Join(repoRoot, "backend", "deploy", "certs", "ca.crt"),
-		baseURL:         "https://erp.localhost:8443",
-		systemUsername:  sysUser,
-		systemPassword:  sysPass,
-		redisAddr:       "127.0.0.1:6379",
-		gwRedisPass:     gwRedisPass,
-		iamRedisPass:    iamRedisPass,
-		postgresService: "integrione-retail-postgres-1",
+		repoRoot:              repoRoot,
+		caCertPath:            filepath.Join(repoRoot, "backend", "deploy", "certs", "ca.crt"),
+		baseURL:               "https://erp.localhost:8443",
+		superadminUsername:    superUser,
+		superadminPassword:    superPass,
+		autoSystemIAMUsername: autoIAMUser,
+		redisAddr:             "127.0.0.1:6379",
+		gwRedisPass:           gwRedisPass,
+		iamRedisPass:          iamRedisPass,
+		postgresService:       "integrione-retail-postgres-1",
 	}
 }
 
@@ -521,8 +524,8 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 		_, compErr := anon.doGraphQL(`query { users(first: 500) { edges { node { id } } pageInfo { hasNextPage } total_count } }`, nil, nil)
 		requireErrorCode(t, compErr, "COMPLEXITY_LIMIT_EXCEEDED")
 
-		// Pastikan halaman Next.js /login, /register, /verify-email render 200 dan /identity redirect 307 ke /login saat anonim.
-		for _, page := range []string{"/login", "/register", "/verify-email"} {
+		// Pastikan halaman Next.js /login & /verify-email render 200, /register mengembalikan 404 (registrasi ditangani via view di /login), dan /identity redirect 307 ke /login saat anonim.
+		for _, page := range []string{"/login", "/verify-email"} {
 			r, err := anon.httpClient.Get(cfg.baseURL + page)
 			if err != nil {
 				t.Fatalf("GET %s: %v", page, err)
@@ -531,6 +534,14 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 			if r.StatusCode != http.StatusOK {
 				t.Fatalf("expected 200 on %s, got %d", page, r.StatusCode)
 			}
+		}
+		regResp, err := anon.httpClient.Get(cfg.baseURL + "/register")
+		if err != nil {
+			t.Fatalf("GET /register: %v", err)
+		}
+		_ = regResp.Body.Close()
+		if regResp.StatusCode != http.StatusNotFound {
+			t.Fatalf("expected 404 on removed /register route, got %d", regResp.StatusCode)
 		}
 		idResp, err := anon.httpClient.Get(cfg.baseURL + "/identity")
 		if err != nil {
@@ -572,11 +583,47 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 			t.Fatalf("expected CSRF message for mismatched token, got %q", badCSRF.Errors[0].Message)
 		}
 
+		// Akun otomasi non-interaktif (auto_system_iam / auto_system_ef), baik dengan kata sandi kosong maupun terisi,
+		// wajib ditolak pada endpoint login interaktif dengan pesan kontrak eksplisit "system cannot login".
+		for _, autoCase := range []struct {
+			identifier string
+			password   string
+		}{
+			{identifier: cfg.autoSystemIAMUsername, password: ""},
+			{identifier: strings.ToUpper(cfg.autoSystemIAMUsername), password: ""},
+			{identifier: cfg.autoSystemIAMUsername, password: cfg.superadminPassword},
+			{identifier: "auto_system_ef", password: ""},
+		} {
+			autoResp, autoGql := admin.doGraphQL(`mutation($input: UserLoginInput!) {
+				userLogin(input: $input) { status errors { type message } was_successful }
+			}`, map[string]any{
+				"input": map[string]any{"identifier": autoCase.identifier, "password": autoCase.password},
+			}, nil)
+			if autoResp.StatusCode != http.StatusOK || len(autoGql.Errors) > 0 {
+				t.Fatalf("expected GraphQL mutation error when %s attempts login: status=%d errs=%+v", autoCase.identifier, autoResp.StatusCode, autoGql.Errors)
+			}
+			var autoOut struct {
+				UserLogin struct {
+					WasSuccessful bool `json:"was_successful"`
+					Errors        []struct {
+						Type    string `json:"type"`
+						Message string `json:"message"`
+					} `json:"errors"`
+				} `json:"userLogin"`
+			}
+			_ = json.Unmarshal(autoGql.Data, &autoOut)
+			if autoOut.UserLogin.WasSuccessful || len(autoOut.UserLogin.Errors) != 1 ||
+				autoOut.UserLogin.Errors[0].Type != "AUTHORIZATION" ||
+				autoOut.UserLogin.Errors[0].Message != "system cannot login" {
+				t.Fatalf("expected AUTHORIZATION 'system cannot login' for (%q, passLen=%d), got %+v", autoCase.identifier, len(autoCase.password), autoOut.UserLogin)
+			}
+		}
+
 		preLoginCookie := ck.Value
 		preLoginCSRF := admin.csrfToken
-		status, _, redirectLoc := admin.login(cfg.systemUsername, cfg.systemPassword)
+		status, _, redirectLoc := admin.login(cfg.superadminUsername, cfg.superadminPassword)
 		if status != "AUTHENTICATED" {
-			t.Fatalf("expected AUTHENTICATED for systemiam, got %s", status)
+			t.Fatalf("expected AUTHENTICATED for human superadmin, got %s", status)
 		}
 		if redirectLoc == "" || !strings.HasPrefix(redirectLoc, "/") || strings.HasPrefix(redirectLoc, "//") {
 			t.Fatalf("unexpected redirectLocation %q", redirectLoc)
@@ -683,7 +730,11 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 			"password":  commonPass,
 		}, "EMPLOYEE")
 
+		vendorPartyID := createFixturePartyForRole(t, admin, cfg, "VENDOR")
+		supplierPartyID := createFixturePartyForRole(t, admin, cfg, "SUPPLIER")
+
 		vendorID = createCase("createVendorUser", "CreateVendorUserInput", map[string]any{
+			"party_id":  vendorPartyID,
 			"full_name": "E2E Vendor",
 			"email":     vendEmail,
 			"username":  "e2e_vend_" + suffix,
@@ -691,6 +742,7 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 		}, "VENDOR")
 
 		supplierID = createCase("createSupplierUser", "CreateSupplierUserInput", map[string]any{
+			"party_id":  supplierPartyID,
 			"full_name": "E2E Supplier",
 			"email":     supEmail,
 			"username":  "e2e_sup_" + suffix,
@@ -750,7 +802,7 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 		customRoleID = roleOut.CreateRole.Role.ID
 		createdRoleIDs = append(createdRoleIDs, customRoleID)
 
-		_, permsGql := admin.doGraphQL(`query { permissions(first: 20) { nodes { id code is_sensitive } pageInfo { endCursor hasNextPage } total_count } }`, nil, nil)
+		_, permsGql := admin.doGraphQL(`query { permissions(first: 50) { nodes { id code is_sensitive } pageInfo { endCursor hasNextPage } total_count } }`, nil, nil)
 		if len(permsGql.Errors) > 0 {
 			t.Fatalf("permissions query failed: %+v", permsGql.Errors)
 		}
@@ -851,7 +903,7 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 			vars  map[string]any
 		}{
 			{"createEmployeeUser", `mutation($input: CreateEmployeeUserInput!) { createEmployeeUser(input: $input) { user { id } errors { type message } was_successful } }`, map[string]any{
-				"input": map[string]any{"full_name": "Evil Emp", "email": "evil-emp@integrione.local", "username": "evil_emp_" + suffix, "password": commonPass},
+				"input": map[string]any{"worker_id": "55555555-5555-4555-8555-555555555555", "provisioning_request_id": "66666666-6666-4666-8666-666666666666", "full_name": "Evil Emp", "email": "evil-emp@integrione.local", "username": "evil_emp_" + suffix, "password": commonPass},
 			}},
 			{"createRole", `mutation($input: CreateRoleInput!) { createRole(input: $input) { role { id } errors { type message } was_successful } }`, map[string]any{
 				"input": map[string]any{"code": "evil_role", "name": "Evil", "management_domain": "iam", "default_redirect_path": "/identity"},
@@ -876,6 +928,7 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 	})
 
 	t.Run("EmployeeSelfServiceTOTPMFAAndStaleSensitiveDenial", func(t *testing.T) {
+		resetGatewayRateLimits(t, cfg)
 		empClient := newHTTPSBrowserClient(t, cfg)
 		empClient.bootstrapSession()
 		st, _, _ := empClient.login(empUsername, commonPass)
@@ -1110,7 +1163,7 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 		}, nil)
 		requireMutationPayloadError(t, badReset, "resetPassword")
 
-		// Rate limit probe terhadap email dummy non-sistem agar tidak mengunci systemiam.
+		// Rate limit probe terhadap email dummy non-sistem agar tidak mengunci human superadmin.
 		gwRLRedis := newE2ERedisClient(t, cfg, "gw_runtime", cfg.gwRedisPass)
 		defer func() {
 			ctxClean, cancelClean := context.WithTimeout(context.Background(), 5*time.Second)
@@ -1192,14 +1245,14 @@ func TestLiveHTTPSIAMGatewayE2E(t *testing.T) {
 	})
 }
 
-// waitForGraphQLRecovery memastikan beberapa permintaan berurutan berhasil (melintasi seluruh replika Gateway di belakang Caddy) pasca-pemulihan upstream.
-func waitForGraphQLRecovery(t *testing.T, client *browserClient, label string) {
+// waitForGraphQLQueryRecovery memastikan kueri target berhasil beruntun melintasi seluruh replika Gateway pasca-pemulihan upstream.
+func waitForGraphQLQueryRecovery(t *testing.T, client *browserClient, query, label string) {
 	t.Helper()
 	const requiredConsecutiveSuccess = 4
 	consecutive := 0
 	var lastErrs []graphQLError
-	for i := 0; i < 16; i++ {
-		_, gql := client.doGraphQL(`query { users(first: 5) { edges { node { id } } pageInfo { hasNextPage } total_count } }`, nil, nil)
+	for i := 0; i < 24; i++ {
+		_, gql := client.doGraphQL(query, nil, nil)
 		if len(gql.Errors) == 0 {
 			consecutive++
 			if consecutive >= requiredConsecutiveSuccess {
@@ -1209,7 +1262,13 @@ func waitForGraphQLRecovery(t *testing.T, client *browserClient, label string) {
 		}
 		consecutive = 0
 		lastErrs = gql.Errors
-		time.Sleep(250 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 	}
-	t.Fatalf("expected automatic Gateway+IAM recovery after %s (%d consecutive successes), got errs=%+v", label, requiredConsecutiveSuccess, lastErrs)
+	t.Fatalf("expected automatic recovery after %s (%d consecutive successes), got errs=%+v", label, requiredConsecutiveSuccess, lastErrs)
+}
+
+// waitForGraphQLRecovery memastikan beberapa permintaan berurutan berhasil (melintasi seluruh replika Gateway di belakang Caddy) pasca-pemulihan upstream.
+func waitForGraphQLRecovery(t *testing.T, client *browserClient, label string) {
+	t.Helper()
+	waitForGraphQLQueryRecovery(t, client, `query { users(first: 5) { edges { node { id } } pageInfo { hasNextPage } total_count } }`, "Gateway+IAM "+label)
 }

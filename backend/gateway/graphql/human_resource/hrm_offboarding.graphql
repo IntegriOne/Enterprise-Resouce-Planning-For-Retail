@@ -1,0 +1,130 @@
+type OffboardingPlan implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  plan_number: String!
+  status: String!
+  last_working_date: Time!
+  termination_effective_date: Time!
+}
+
+type OffboardingPlanEdge {
+  cursor: String!
+  node: OffboardingPlan!
+}
+
+type OffboardingPlanConnection {
+  edges: [OffboardingPlanEdge!]!
+  nodes: [OffboardingPlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  offboardingPlan(id: ID!): OffboardingPlan
+  offboardingPlans(worker_id: ID!, after: String, before: String, first: Int, last: Int): OffboardingPlanConnection!
+  offboardingTask(id: ID!): OffboardingTask
+  offboardingTasks(offboarding_plan_id: ID!, after: String, before: String, first: Int, last: Int): OffboardingTaskConnection!
+}
+
+type CreateOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CreateOffboardingTaskPayload implements MutationResult {
+  offboarding_task: OffboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteOffboardingTaskPayload implements MutationResult {
+  offboarding_task: OffboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type WaiveOffboardingTaskPayload implements MutationResult {
+  offboarding_task: OffboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type StartOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createOffboardingPlan(input: CreateOffboardingPlanInput!): CreateOffboardingPlanPayload!
+  createOffboardingTask(input: CreateOffboardingTaskInput!): CreateOffboardingTaskPayload!
+  completeOffboardingTask(id: ID!, owner_confirmation_reference_id: ID!): CompleteOffboardingTaskPayload!
+  waiveOffboardingTask(id: ID!, reason: String!): WaiveOffboardingTaskPayload!
+  approveOffboardingPlan(id: ID!): ApproveOffboardingPlanPayload!
+  startOffboardingPlan(id: ID!): StartOffboardingPlanPayload!
+  cancelOffboardingPlan(id: ID!, reason: String!): CancelOffboardingPlanPayload!
+  completeOffboardingPlan(id: ID!, final_payroll_run_id: ID!, finance_clearance_reference_id: ID!): CompleteOffboardingPlanPayload!
+}
+
+input CreateOffboardingPlanInput {
+  worker_id: ID!
+  plan_number: String!
+  reason_code: String!
+  notice_date: Time!
+  last_working_date: Time!
+  termination_effective_date: Time!
+}
+
+type OffboardingTask implements Node {
+  id: ID!
+  _id: ID!
+  offboarding_plan_id: ID!
+  task_code: String!
+  task_name: String!
+  owner_management: String!
+  status: String!
+  is_mandatory: Boolean!
+  due_at: Time
+}
+
+input CreateOffboardingTaskInput {
+  offboarding_plan_id: ID!
+  task_code: String!
+  task_name: String!
+  owner_management: String!
+  assigned_principal_id: ID
+  is_mandatory: Boolean
+  due_at: Time
+}
+
+type OffboardingTaskEdge {
+  cursor: String!
+  node: OffboardingTask!
+}
+
+type OffboardingTaskConnection {
+  edges: [OffboardingTaskEdge!]!
+  nodes: [OffboardingTask!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}

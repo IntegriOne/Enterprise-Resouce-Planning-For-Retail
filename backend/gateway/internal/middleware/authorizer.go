@@ -50,6 +50,9 @@ func (a *Authorizer) RequirePermission(
 	if err != nil {
 		return nil, err
 	}
+	if sess == nil || sess.Token == nil || sess.Snapshot == nil {
+		return nil, ErrUnauthenticated("authentication required", nil)
+	}
 
 	if scope.Type == "" {
 		scope.Type = authz.ScopeGlobal
@@ -105,12 +108,7 @@ func (a *Authorizer) enforceSensitiveReauth(
 		return ErrUnauthenticated("authentication required", nil)
 	}
 	if sess.Snapshot.MFAEnabled && !sess.Token.MFAAuthenticated {
-		if a.sensitiveChecker != nil {
-			if err := a.sensitiveChecker.VerifySensitiveSession(ctx, sess.RawToken, permCode, scope, sess.Caller); err == nil {
-				return nil
-			}
-		}
-		return ErrForbidden("mfa step-up authentication required for sensitive action", nil)
+		return a.verifySensitiveWithChecker(ctx, sess, permCode, scope, "mfa step-up authentication required for sensitive action")
 	}
 
 	now := time.Now()
@@ -118,12 +116,28 @@ func (a *Authorizer) enforceSensitiveReauth(
 		now = a.nowF()
 	}
 	if sess.Token.IssuedAtUnix <= 0 || now.Sub(time.Unix(sess.Token.IssuedAtUnix, 0)) > a.sensitiveReauthAge {
-		if a.sensitiveChecker != nil {
-			if err := a.sensitiveChecker.VerifySensitiveSession(ctx, sess.RawToken, permCode, scope, sess.Caller); err == nil {
-				return nil
-			}
-		}
-		return ErrForbidden("recent authentication within 10 minutes is required for sensitive action", nil)
+		return a.verifySensitiveWithChecker(ctx, sess, permCode, scope, "recent authentication within 10 minutes is required for sensitive action")
 	}
 	return nil
+}
+
+func (a *Authorizer) verifySensitiveWithChecker(
+	ctx context.Context,
+	sess *ResolvedSession,
+	permCode string,
+	scope authz.ScopeGrant,
+	forbiddenMsg string,
+) error {
+	if a.sensitiveChecker == nil {
+		return ErrForbidden(forbiddenMsg, nil)
+	}
+	err := a.sensitiveChecker.VerifySensitiveSession(ctx, sess.RawToken, permCode, scope, sess.Caller)
+	if err == nil {
+		return nil
+	}
+	// Kegagalan konektivitas atau galat internal IAM tidak boleh dimask menjadi penolakan otorisasi FORBIDDEN.
+	if gwErr, ok := AsGatewayError(err); ok && (gwErr.Code == CodeUnavailable || gwErr.Code == CodeInternalError) {
+		return err
+	}
+	return ErrForbidden(forbiddenMsg, err)
 }

@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"encoding/base64"
+	"math"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -106,16 +107,25 @@ func (m *mockAuthClient) ChangePassword(ctx context.Context, in *iamv1.ChangePas
 
 type mockUserClient struct {
 	iamv1.UserServiceClient
-	lastCreateKind iamv1.UserKind
-	createFn       func(context.Context, *iamv1.CreateUserRequest) (*iamv1.CreateUserResponse, error)
-	listFn         func(context.Context, *iamv1.ListUsersRequest) (*iamv1.ListUsersResponse, error)
-	getByIDFn      func(context.Context, *iamv1.GetUserByIdRequest) (*iamv1.GetUserByIdResponse, error)
-	updProfileFn   func(context.Context, *iamv1.UpdateUserProfileRequest) (*iamv1.UpdateUserProfileResponse, error)
-	updEmailFn     func(context.Context, *iamv1.UpdateUserEmailRequest) (*iamv1.UpdateUserEmailResponse, error)
-	updUsernameFn  func(context.Context, *iamv1.UpdateUserUsernameRequest) (*iamv1.UpdateUserUsernameResponse, error)
-	delPendingFn   func(context.Context, *iamv1.DeletePendingUserEmailRequest) (*iamv1.DeletePendingUserEmailResponse, error)
-	confirmEmailFn func(context.Context, *iamv1.ConfirmEmailVerificationByTokenRequest) (*iamv1.ConfirmEmailVerificationByTokenResponse, error)
-	resendEmailFn  func(context.Context, *iamv1.ResendValidationEmailTokenRequest) (*iamv1.ResendValidationEmailTokenResponse, error)
+	lastCreateKind  iamv1.UserKind
+	createFn        func(context.Context, *iamv1.CreateUserRequest) (*iamv1.CreateUserResponse, error)
+	listFn          func(context.Context, *iamv1.ListUsersRequest) (*iamv1.ListUsersResponse, error)
+	getByIDFn       func(context.Context, *iamv1.GetUserByIdRequest) (*iamv1.GetUserByIdResponse, error)
+	updProfileFn    func(context.Context, *iamv1.UpdateUserProfileRequest) (*iamv1.UpdateUserProfileResponse, error)
+	updEmailFn      func(context.Context, *iamv1.UpdateUserEmailRequest) (*iamv1.UpdateUserEmailResponse, error)
+	updUsernameFn   func(context.Context, *iamv1.UpdateUserUsernameRequest) (*iamv1.UpdateUserUsernameResponse, error)
+	delPendingFn    func(context.Context, *iamv1.DeletePendingUserEmailRequest) (*iamv1.DeletePendingUserEmailResponse, error)
+	confirmEmailFn  func(context.Context, *iamv1.ConfirmEmailVerificationByTokenRequest) (*iamv1.ConfirmEmailVerificationByTokenResponse, error)
+	resendEmailFn   func(context.Context, *iamv1.ResendValidationEmailTokenRequest) (*iamv1.ResendValidationEmailTokenResponse, error)
+	checkUsernameFn func(context.Context, *iamv1.CheckUsernameAvailabilityRequest) (*iamv1.CheckUsernameAvailabilityResponse, error)
+	softDeleteFn    func(context.Context, *iamv1.SoftDeleteUserRequest) (*iamv1.SoftDeleteUserResponse, error)
+}
+
+func (m *mockUserClient) SoftDeleteUser(ctx context.Context, in *iamv1.SoftDeleteUserRequest, _ ...grpc.CallOption) (*iamv1.SoftDeleteUserResponse, error) {
+	if m.softDeleteFn != nil {
+		return m.softDeleteFn(ctx, in)
+	}
+	return &iamv1.SoftDeleteUserResponse{}, nil
 }
 
 func (m *mockUserClient) CreateUser(ctx context.Context, in *iamv1.CreateUserRequest, _ ...grpc.CallOption) (*iamv1.CreateUserResponse, error) {
@@ -155,6 +165,10 @@ func (m *mockUserClient) ResendValidationEmailToken(ctx context.Context, in *iam
 	return m.resendEmailFn(ctx, in)
 }
 
+func (m *mockUserClient) CheckUsernameAvailability(ctx context.Context, in *iamv1.CheckUsernameAvailabilityRequest, _ ...grpc.CallOption) (*iamv1.CheckUsernameAvailabilityResponse, error) {
+	return m.checkUsernameFn(ctx, in)
+}
+
 type mockSessionClient struct {
 	iamv1.SessionServiceClient
 	getCSRFFn func(context.Context, *iamv1.GetSessionCsrfRequest) (*iamv1.GetSessionCsrfResponse, error)
@@ -178,12 +192,13 @@ func TestUserCreationVariantsAndRBACIsolation(t *testing.T) {
 	tokHash := authsession.HashOpaqueToken(rawTok)
 	store.sessions[tokHash] = &authsession.SessionValidationContext{
 		Token: &authsession.SessionTokenRecord{
-			SessionID:    "sess-admin",
-			UserID:       "admin-1",
-			TokenHashHex: tokHash,
-			UserKind:     "employee",
-			AuthEpoch:    1,
-			IssuedAtUnix: now.Unix(),
+			SessionID:        "sess-admin",
+			UserID:           "admin-1",
+			TokenHashHex:     tokHash,
+			UserKind:         "employee",
+			AuthEpoch:        1,
+			IssuedAtUnix:     now.Unix(),
+			MFAAuthenticated: true,
 		},
 		Security: &authsession.UserSecurityRecord{UserID: "admin-1", Status: authz.StatusActive, AuthEpoch: 1, PermRevision: 1, RecoveryEpoch: 1},
 		Snapshot: &authz.AccessSnapshot{
@@ -229,10 +244,11 @@ func TestUserCreationVariantsAndRBACIsolation(t *testing.T) {
 	rv := browserauth.NewRedirectValidator([]string{"/", "/identity"})
 
 	adp, err := NewAdapter(source_connections.IAMClientSet{
-		Auth:     &mockAuthClient{},
-		Users:    usersMock,
-		Sessions: &mockSessionClient{},
-	}, authMgr, authzSvc, rv, Config{LoginRateMax: 5, LoginRateWindow: time.Minute})
+		Auth:                 &mockAuthClient{},
+		Users:                usersMock,
+		EmployeeProvisioning: mockEmployeeProvisioningClient{},
+		Sessions:             &mockSessionClient{},
+	}, authMgr, authzSvc, rv, Config{LoginRateMax: 5, LoginRateWindow: time.Minute}, WithPartyPortalProvisioner(&mockPartyPortalProvisioner{}), WithWorkerPrincipalProvisioner(&mockWorkerPrincipalProvisioner{}))
 	if err != nil {
 		t.Fatalf("NewAdapter failed: %v", err)
 	}
@@ -251,18 +267,19 @@ func TestUserCreationVariantsAndRBACIsolation(t *testing.T) {
 		t.Fatalf("unexpected GID/RawID on created user: id=%q raw=%q", uCust.User.ID, uCust.User.RawID)
 	}
 
-	uEmp, err := adp.CreateEmployeeUser(ctx, model.CreateEmployeeUserInput{FullName: "Staff", Email: "s@test.id", Username: "staff1", Password: "Password123!"})
+	uEmp, err := adp.CreateEmployeeUser(ctx, model.CreateEmployeeUserInput{ProvisioningRequestID: fixtureEmployeeProvisioningID, WorkerID: "55555555-5555-4555-8555-555555555555", FullName: "Staff", Email: "s@test.id", Username: "staff1", Password: "Password123!"})
 	if err != nil || !uEmp.WasSuccessful || uEmp.User == nil || uEmp.User.Kind != model.UserKindEmployee || usersMock.lastCreateKind != iamv1.UserKind_USER_KIND_EMPLOYEE {
 		t.Fatalf("CreateEmployeeUser failed: payload=%+v err=%v", uEmp, err)
 	}
 
-	uVend, err := adp.CreateVendorUser(ctx, model.CreateVendorUserInput{FullName: "Vendor", Email: "v@test.id", Username: "vendor1", Password: "Password123!"})
-	if err != nil || !uVend.WasSuccessful || uVend.User == nil || uVend.User.Kind != model.UserKindVendor || usersMock.lastCreateKind != iamv1.UserKind_USER_KIND_VENDOR {
+	testPartyUUID := "11111111-1111-4111-8111-111111111111"
+	uVend, err := adp.CreateVendorUser(ctx, model.CreateVendorUserInput{PartyID: testPartyUUID, FullName: "Vendor", Email: "v@test.id", Username: "vendor1", Password: "Password123!"})
+	if err != nil || !uVend.WasSuccessful || uVend.User == nil || uVend.User.Kind != model.UserKindVendor || uVend.PartyContact == nil || usersMock.lastCreateKind != iamv1.UserKind_USER_KIND_VENDOR {
 		t.Fatalf("CreateVendorUser failed: payload=%+v err=%v", uVend, err)
 	}
 
-	uSupp, err := adp.CreateSupplierUser(ctx, model.CreateSupplierUserInput{FullName: "Supplier", Email: "sup@test.id", Username: "supplier1", Password: "Password123!"})
-	if err != nil || !uSupp.WasSuccessful || uSupp.User == nil || uSupp.User.Kind != model.UserKindSupplier || usersMock.lastCreateKind != iamv1.UserKind_USER_KIND_SUPPLIER {
+	uSupp, err := adp.CreateSupplierUser(ctx, model.CreateSupplierUserInput{PartyID: testPartyUUID, FullName: "Supplier", Email: "sup@test.id", Username: "supplier1", Password: "Password123!"})
+	if err != nil || !uSupp.WasSuccessful || uSupp.User == nil || uSupp.User.Kind != model.UserKindSupplier || uSupp.PartyContact == nil || usersMock.lastCreateKind != iamv1.UserKind_USER_KIND_SUPPLIER {
 		t.Fatalf("CreateSupplierUser failed: payload=%+v err=%v", uSupp, err)
 	}
 
@@ -706,5 +723,37 @@ func TestToMutationErrorsReasonMappings(t *testing.T) {
 	sysImmutableErrs := ToMutationErrors(mapRPCError(sysImmutableSt.Err()))
 	if len(sysImmutableErrs) != 1 || sysImmutableErrs[0].Type != model.ErrorTypeEnumUnprocessableEntity || sysImmutableErrs[0].Message == "" {
 		t.Fatalf("unexpected system immutable mutation errors: %+v", sysImmutableErrs)
+	}
+
+	sysInteractiveSt, _ := status.New(codes.PermissionDenied, "system automation account cannot use interactive human authentication").WithDetails(&errdetails.ErrorInfo{Reason: "iam.user.system_interactive_forbidden"})
+	sysInteractiveErrs := ToMutationErrors(mapRPCError(sysInteractiveSt.Err()))
+	if len(sysInteractiveErrs) != 1 || sysInteractiveErrs[0].Type != model.ErrorTypeEnumAuthorization || sysInteractiveErrs[0].Message == "" {
+		t.Fatalf("unexpected system interactive forbidden mutation errors: %+v", sysInteractiveErrs)
+	}
+
+	kindMismatchSt, _ := status.New(codes.PermissionDenied, "role assignment is incompatible with target user kind").WithDetails(&errdetails.ErrorInfo{Reason: "iam.rbac.role_user_kind_mismatch"})
+	kindMismatchErrs := ToMutationErrors(mapRPCError(kindMismatchSt.Err()))
+	if len(kindMismatchErrs) != 1 || kindMismatchErrs[0].Type != model.ErrorTypeEnumAuthorization || kindMismatchErrs[0].Message == "" {
+		t.Fatalf("unexpected role_user_kind_mismatch mutation errors: %+v", kindMismatchErrs)
+	}
+}
+
+func TestGatewayIAMNilAndBoundsGuards(t *testing.T) {
+	t.Parallel()
+
+	// buildGroupMemberConnection harus mengabaikan elemen nil dari upstream tanpa panic.
+	conn := buildGroupMemberConnection("group-1", []*iamv1.User{nil, {Id: "u-1", DisplayName: "A"}}, 0, &model.PageInfo{}, 1)
+	if len(conn.Nodes) != 1 || len(conn.Edges) != 1 {
+		t.Fatalf("expected 1 non-nil member node/edge, got nodes=%d edges=%d", len(conn.Nodes), len(conn.Edges))
+	}
+
+	over := math.MaxInt32 + 100
+	if got := derefInt32(&over, 10); got != math.MaxInt32 {
+		t.Fatalf("derefInt32(overflow) = %d, want MaxInt32", got)
+	}
+
+	var nilAdp *Adapter
+	if _, err := nilAdp.requirePerm(context.Background(), "iam.users.read", false); err == nil {
+		t.Fatal("expected nil Adapter.requirePerm to return error cleanly")
 	}
 }

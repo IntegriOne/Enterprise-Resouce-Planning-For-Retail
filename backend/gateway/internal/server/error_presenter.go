@@ -15,13 +15,29 @@ import (
 
 func buildErrorPresenter(logger *slog.Logger) graphql.ErrorPresenterFunc {
 	return func(ctx context.Context, err error) *gqlerror.Error {
+		meta, _ := middleware.RequestMetadataFromContext(ctx)
+		if err == nil {
+			if logger != nil {
+				logger.Error("nil error presented to graphql client", requestIDAttr(meta.RequestID)...)
+			}
+			return internalServerGQLError()
+		}
+
 		if gwErr, ok := middleware.AsGatewayError(err); ok {
-			if logger != nil && (gwErr.Code == middleware.CodeInternalError || gwErr.Code == middleware.CodeUnavailable) {
-				logger.Warn("gateway request rejected",
+			if logger != nil {
+				attrs := append([]any{
 					slog.String("code", string(gwErr.Code)),
 					slog.String("message", gwErr.Message),
-					slog.Any("cause", gwErr.Err),
-				)
+				}, requestIDAttr(meta.RequestID)...)
+				if gwErr.Err != nil {
+					attrs = append(attrs, slog.Any("cause", gwErr.Err))
+				}
+				switch gwErr.Code {
+				case middleware.CodeInternalError:
+					logger.Error("gateway internal error", attrs...)
+				case middleware.CodeUnavailable:
+					logger.Warn("gateway upstream unavailable", attrs...)
+				}
 			}
 			gqlErr := graphql.DefaultErrorPresenter(ctx, err)
 			gqlErr.Message = gwErr.Message
@@ -34,8 +50,7 @@ func buildErrorPresenter(logger *slog.Logger) graphql.ErrorPresenterFunc {
 		}
 
 		gqlErr := graphql.DefaultErrorPresenter(ctx, err)
-		var parsedErr *gqlerror.Error
-		if errors.As(err, &parsedErr) {
+		if _, ok := errors.AsType[*gqlerror.Error](err); ok {
 			if gqlErr.Extensions == nil {
 				gqlErr.Extensions = make(map[string]any, 2)
 			}
@@ -64,7 +79,8 @@ func buildErrorPresenter(logger *slog.Logger) graphql.ErrorPresenterFunc {
 
 		// Jangan pernah membocorkan pesan error mentah yang tidak terklasifikasi ke klien.
 		if logger != nil {
-			logger.Error("unhandled error presented to graphql client", slog.String("error", err.Error()))
+			attrs := append([]any{slog.String("error", err.Error())}, requestIDAttr(meta.RequestID)...)
+			logger.Error("unhandled error presented to graphql client", attrs...)
 		}
 		gqlErr.Message = "internal server error"
 		gqlErr.Extensions = map[string]any{
@@ -72,6 +88,23 @@ func buildErrorPresenter(logger *slog.Logger) graphql.ErrorPresenterFunc {
 			"type": "INTERNAL_ERROR",
 		}
 		return gqlErr
+	}
+}
+
+func requestIDAttr(requestID string) []any {
+	if strings.TrimSpace(requestID) == "" {
+		return nil
+	}
+	return []any{slog.String("request_id", requestID)}
+}
+
+func internalServerGQLError() *gqlerror.Error {
+	return &gqlerror.Error{
+		Message: "internal server error",
+		Extensions: map[string]any{
+			"code": string(middleware.CodeInternalError),
+			"type": "INTERNAL_ERROR",
+		},
 	}
 }
 

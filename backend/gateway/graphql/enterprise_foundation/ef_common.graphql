@@ -1,0 +1,19 @@
+# Zona 2 — Tipe dan enum bersama domain Enterprise Foundation.
+# Seluruh tipe mengikuti konvensi snake_case serta integrasi scope target lintas manajemen.
+
+enum ScopeTargetKind {
+  LEGAL_ENTITY
+  ORGANIZATION_UNIT
+  FACILITY
+  SUPPLIER_PARTY
+  VENDOR_PARTY
+}
+
+# ScopeTargetDecision merangkum hasil evaluasi kelayakan target scope Enterprise Foundation untuk otorisasi ABAC.
+type ScopeTargetDecision {
+  eligible: Boolean!
+  scope_kind: ScopeTargetKind!
+  target_id: ID!
+  code: String!
+  legal_entity_id: ID!
+}

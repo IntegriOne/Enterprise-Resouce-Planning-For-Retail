@@ -1,0 +1,197 @@
+# Tanda terima pengajuan jurnal ke Finance.
+type PayrollPostingRequest {
+  payroll_run_id: ID!
+  status: String!
+  posting_requested_at: Time!
+}
+
+type RequestPayrollPostingPayload implements MutationResult {
+  payroll_posting_request: PayrollPostingRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  requestPayrollPosting(payroll_run_id: ID!): RequestPayrollPostingPayload!
+}
+
+# Status agregat run untuk operator payroll.
+type PayrollRun implements Node {
+  id: ID!
+  _id: ID!
+  payroll_period_id: ID!
+  run_number: Int!
+  status: String!
+  calculated_at: Time
+  posting_requested_at: Time
+  finance_journal_reference_id: ID
+  finance_settled_at: Time
+  cancelled_at: Time
+}
+
+type PayrollRunEdge {
+  cursor: String!
+  node: PayrollRun!
+}
+
+type PayrollRunConnection {
+  edges: [PayrollRunEdge!]!
+  nodes: [PayrollRun!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollRun(id: ID!): PayrollRun
+  # Gunakan paling banyak satu filter.
+  payrollRuns(idempotency_key: String, payroll_period_id: ID, after: String, before: String, first: Int, last: Int): PayrollRunConnection!
+}
+
+type CalculatePayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SubmitPayrollRunForReviewPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApprovePayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelPayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  calculatePayrollRun(payroll_run_id: ID!): CalculatePayrollRunPayload!
+  submitPayrollRunForReview(payroll_run_id: ID!): SubmitPayrollRunForReviewPayload!
+  approvePayrollRun(payroll_run_id: ID!): ApprovePayrollRunPayload!
+  cancelPayrollRun(payroll_run_id: ID!, reason: String!): CancelPayrollRunPayload!
+}
+
+input CreatePayrollRunInput {
+  payroll_period_id: ID!
+  payroll_group_id: ID!
+  employing_legal_entity_reference_id: ID!
+  currency_code: String!
+  rule_set_id: ID!
+  original_run_id: ID
+  settlement_direction: String
+  run_number: Int!
+  run_type: String!
+  jurisdiction_code: String!
+  rule_engine_name: String!
+  rule_engine_version: String!
+  input_snapshot_reference_id: ID!
+  input_digest_sha256: String!
+  idempotency_key: String!
+}
+
+type CreatePayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPayrollRun(input: CreatePayrollRunInput!): CreatePayrollRunPayload!
+}
+
+type PayrollPeriod implements Node {
+  id: ID!
+  _id: ID!
+  payroll_group_id: ID!
+  employing_legal_entity_reference_id: ID!
+  currency_code: String!
+  jurisdiction_code: String!
+  period_code: String!
+  period_start: String!
+  period_end: String!
+  pay_date: String!
+  period_status: String!
+}
+
+type PayrollPeriodEdge {
+  cursor: String!
+  node: PayrollPeriod!
+}
+
+type PayrollPeriodConnection {
+  edges: [PayrollPeriodEdge!]!
+  nodes: [PayrollPeriod!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollPeriod(id: ID!): PayrollPeriod
+  payrollPeriods(payroll_group_id: ID, after: String, before: String, first: Int, last: Int): PayrollPeriodConnection!
+}
+
+type PayrollGroup implements Node {
+  id: ID!
+  _id: ID!
+  group_code: String!
+  group_name: String!
+  employing_legal_entity_reference_id: ID!
+  jurisdiction_code: String!
+  currency_code: String!
+  currency_scale: Int!
+  pay_frequency: String!
+  timezone: String!
+  is_active: Boolean!
+}
+
+type PayrollGroupEdge {
+  cursor: String!
+  node: PayrollGroup!
+}
+
+type PayrollGroupConnection {
+  edges: [PayrollGroupEdge!]!
+  nodes: [PayrollGroup!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollGroup(id: ID!): PayrollGroup
+  payrollGroups(after: String, before: String, first: Int, last: Int): PayrollGroupConnection!
+}
+
+type PayrollRuleSet implements Node {
+  id: ID!
+  _id: ID!
+  rule_code: String!
+  rule_version: String!
+  jurisdiction_code: String!
+  effective_from: String!
+  effective_to: String
+  approved_at: Time
+}
+
+type PayrollRuleSetEdge {
+  cursor: String!
+  node: PayrollRuleSet!
+}
+
+type PayrollRuleSetConnection {
+  edges: [PayrollRuleSetEdge!]!
+  nodes: [PayrollRuleSet!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollRuleSet(id: ID!): PayrollRuleSet
+  payrollRuleSets(after: String, before: String, first: Int, last: Int): PayrollRuleSetConnection!
+}

@@ -170,14 +170,19 @@ func TestPendingAndUnverifiedAutoAssignedSelfServiceGuardE2E(t *testing.T) {
 					caller = newAnonBrowser(t, cfg)
 				}
 
+				inputVars := map[string]any{
+					"full_name": "Pending Guard " + tag,
+					"email":     email,
+					"username":  username,
+					"password":  password,
+				}
+				if vc.wantKind == "VENDOR" || vc.wantKind == "SUPPLIER" {
+					inputVars["party_id"] = createFixturePartyForRole(t, admin, cfg, vc.wantKind)
+				}
+
 				createMutation := fmt.Sprintf(`mutation ($input: %s!) { %s(input: $input) { %s } }`, vc.inType, vc.opName, payloadFields)
 				data := doGQLOK(t, caller, createMutation, map[string]any{
-					"input": map[string]any{
-						"full_name": "Pending Guard " + tag,
-						"email":     email,
-						"username":  username,
-						"password":  password,
-					},
+					"input": inputVars,
 				})
 				var userGID, rawID string
 				if vc.asPublic {
@@ -207,6 +212,12 @@ func TestPendingAndUnverifiedAutoAssignedSelfServiceGuardE2E(t *testing.T) {
 				t.Cleanup(func() {
 					cleanupUserByID(t, cfg, rawID)
 				})
+
+				if vc.wantKind == "VENDOR" || vc.wantKind == "SUPPLIER" {
+					if fkStatus := psqlEFScalar(t, cfg, fmt.Sprintf(`SELECT portal_access_status::text FROM party_contacts WHERE iam_user_id = %s::uuid AND deleted_at IS NULL LIMIT 1;`, sqlQuote(rawID))); fkStatus != "pending_link" {
+						t.Fatalf("%s expected party_contacts.iam_user_id=%s with portal_access_status=pending_link, got %q", vc.name, rawID, fkStatus)
+					}
+				}
 
 				// Pastikan token verifikasi email aktif sudah terbit sejak pembuatan akun PENDING.
 				if tokCnt := psqlScalar(t, cfg, fmt.Sprintf(`SELECT count(*) FROM user_tokens WHERE user_id = %s::uuid AND purpose = 'email_verification' AND status = 'active';`, sqlQuote(rawID))); tokCnt != "1" {

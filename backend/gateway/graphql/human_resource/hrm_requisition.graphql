@@ -1,0 +1,122 @@
+type Requisition implements Node {
+  id: ID!
+  _id: ID!
+  requisition_number: String!
+  # Tersedia pada detail bila tautan pekerja dapat ditentukan.
+  hiring_manager_worker_id: ID
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  work_location_reference_id: ID
+  position_id: ID
+  workforce_plan_line_id: ID
+  requisition_type: String!
+  status: String!
+  rejection_reason_code: String
+  headcount: Int!
+  target_start_date: String
+  employment_category: String!
+}
+
+type RequisitionEdge {
+  cursor: String!
+  node: Requisition!
+}
+
+type RequisitionConnection {
+  edges: [RequisitionEdge!]!
+  nodes: [Requisition!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  requisition(id: ID!): Requisition
+  requisitions(requisition_number: String, after: String, before: String, first: Int, last: Int): RequisitionConnection!
+}
+
+input CreateRequisitionInput {
+  requisition_number: String!
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  hiring_manager_worker_id: ID!
+  requisition_type: String!
+  employment_category: String!
+  headcount: Int! = 1
+  target_start_date: String
+  position_id: ID
+  workforce_plan_line_id: ID
+  work_location_reference_id: ID
+  idempotency_key: String!
+}
+
+type CreateRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SubmitRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteRequisitionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateRequisitionInput {
+  hiring_manager_worker_id: ID @goField(omittable: true)
+  job_id: ID @goField(omittable: true)
+  organization_unit_reference_id: ID @goField(omittable: true)
+  work_location_reference_id: ID @goField(omittable: true)
+  position_id: ID @goField(omittable: true)
+  workforce_plan_line_id: ID @goField(omittable: true)
+  headcount: Int @goField(omittable: true)
+  target_start_date: String @goField(omittable: true)
+  requisition_type: String @goField(omittable: true)
+  employment_category: String @goField(omittable: true)
+}
+
+type UpdateRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type OpenRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CloseRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  closeRequisition(id: ID!): CloseRequisitionPayload!
+  approveRequisition(id: ID!): ApproveRequisitionPayload!
+  openRequisition(id: ID!): OpenRequisitionPayload!
+  updateRequisition(id: ID!, input: UpdateRequisitionInput!): UpdateRequisitionPayload!
+  deleteRequisition(id: ID!): DeleteRequisitionPayload!
+  rejectRequisition(id: ID!, reason_code: String!): RejectRequisitionPayload!
+  submitRequisition(id: ID!): SubmitRequisitionPayload!
+  createRequisition(input: CreateRequisitionInput!): CreateRequisitionPayload!
+}

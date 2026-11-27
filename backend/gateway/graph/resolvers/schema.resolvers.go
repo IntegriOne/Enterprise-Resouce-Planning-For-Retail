@@ -10,6 +10,8 @@ import (
 
 	"github.com/integrione/erp-retail/backend/gateway/graph/generated"
 	"github.com/integrione/erp-retail/backend/gateway/graph/model"
+	efadapter "github.com/integrione/erp-retail/backend/gateway/internal/adapter/enterprise_foundation"
+	hrmadapter "github.com/integrione/erp-retail/backend/gateway/internal/adapter/human_resource"
 )
 
 // Empty adalah resolver placeholder bawaan agar tipe Mutation GraphQL selalu valid.
@@ -20,6 +22,63 @@ func (r *mutationResolver) Empty(ctx context.Context) (*bool, error) {
 
 // Node adalah resolver query global Relay Node berdasarkan GID.
 func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error) {
+	switch hrmadapter.NodeResource(id) {
+	case "hrm-worker":
+		return r.Worker(ctx, id)
+	case "candidate":
+		return r.Candidate(ctx, id)
+	case "employee-account-request":
+		return r.EmployeeAccountRequest(ctx, id)
+	case "employment-contract":
+		return r.EmploymentContract(ctx, id)
+	case "job":
+		return r.Job(ctx, id)
+	case "job-family":
+		return r.JobFamily(ctx, id)
+	case "leave-adjustment":
+		return r.LeaveAdjustment(ctx, id)
+	case "leave-entitlement":
+		return r.LeaveEntitlement(ctx, id)
+	case "leave-ledger-entry":
+		return r.LeaveLedgerEntry(ctx, id)
+	case "leave-policy":
+		return r.LeavePolicy(ctx, id)
+	case "offboarding-plan":
+		return r.OffboardingPlan(ctx, id)
+	case "offboarding-task":
+		return r.OffboardingTask(ctx, id)
+	case "payroll-group":
+		return r.PayrollGroup(ctx, id)
+	case "payroll-period":
+		return r.PayrollPeriod(ctx, id)
+	case "payroll-result":
+		return r.PayrollResult(ctx, id)
+	case "payroll-result-line":
+		return r.PayrollResultLine(ctx, id)
+	case "payroll-rule-set":
+		return r.PayrollRuleSet(ctx, id)
+	case "payroll-run":
+		return r.PayrollRun(ctx, id)
+	case "position":
+		return r.Position(ctx, id)
+	case "requisition":
+		return r.Requisition(ctx, id)
+	case "worker-assignment-transfer":
+		return r.WorkerAssignmentTransfer(ctx, id)
+	case "worker-assignment":
+		return r.WorkerAssignment(ctx, id)
+	case "workforce-plan":
+		return r.WorkforcePlan(ctx, id)
+	case "workforce-plan-line":
+		return r.WorkforcePlanLine(ctx, id)
+	}
+	if efadapter.IsEFNodeID(id) {
+		adp, err := r.ef()
+		if err != nil {
+			return nil, err
+		}
+		return adp.Node(ctx, id)
+	}
 	adp, err := r.iam()
 	if err != nil {
 		return nil, err

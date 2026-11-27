@@ -13,11 +13,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofiber/fiber/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/integrione/erp-retail/backend/gateway/graph/generated"
 	"github.com/integrione/erp-retail/backend/gateway/graph/resolvers"
+	hrmadapter "github.com/integrione/erp-retail/backend/gateway/internal/adapter/human_resource"
 	iamadapter "github.com/integrione/erp-retail/backend/gateway/internal/adapter/iam"
 	"github.com/integrione/erp-retail/backend/gateway/internal/browserauth"
 	"github.com/integrione/erp-retail/backend/gateway/internal/config"
@@ -149,6 +151,11 @@ func buildTestGatewayServer(t testing.TB, enableIntrospection bool) (*Server, *t
 
 func buildTestGatewayServerWithLogger(t testing.TB, logger *slog.Logger, enableIntrospection bool) (*Server, *testStore, string, string) {
 	t.Helper()
+	return buildTestGatewayServerWithHRM(t, logger, enableIntrospection, nil)
+}
+
+func buildTestGatewayServerWithHRM(t testing.TB, logger *slog.Logger, enableIntrospection bool, hrmConn *grpc.ClientConn) (*Server, *testStore, string, string) {
+	t.Helper()
 	store := newTestStore()
 	now := time.Now()
 
@@ -222,8 +229,11 @@ func buildTestGatewayServerWithLogger(t testing.TB, logger *slog.Logger, enableI
 	}
 
 	execSchema := generated.NewExecutableSchema(generated.Config{
-		Resolvers:  &resolvers.Resolver{IAMAdapter: adp},
-		Complexity: resolvers.NewComplexityRoot(),
+		Resolvers: &resolvers.Resolver{
+			IAMAdapter: adp,
+			HRMAdapter: hrmadapter.NewAdapter(authMgr, authzSvc, hrmConn),
+		},
+		Complexity: resolvers.NewComplexityRoot(cfg.MaxComplexity),
 	})
 
 	srv, err := New(Dependencies{
@@ -259,8 +269,10 @@ func doGraphQLPOST(t *testing.T, srv *Server, body map[string]any, headers map[s
 
 func readBody(t *testing.T, resp *http.Response) string {
 	t.Helper()
-	defer resp.Body.Close()
 	b, _ := io.ReadAll(resp.Body)
+	if err := resp.Body.Close(); err != nil {
+		t.Errorf("close response body: %v", err)
+	}
 	return string(b)
 }
 
@@ -434,5 +446,58 @@ func TestGraphQLDepthAliasLimitsJSONMaskingAndSecurityHeaders(t *testing.T) {
 	}, nil, []*http.Cookie{sessCookie})
 	if b := readBody(t, resDeep); !strings.Contains(b, "graphql query exceeds maximum depth") {
 		t.Fatalf("expected max depth error, got %s", b)
+	}
+}
+
+func TestServerPanicRecoveryAndErrorPresenter(t *testing.T) {
+	var logBuf bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&logBuf, &slog.HandlerOptions{Level: slog.LevelWarn}))
+
+	// 1. Uji middleware recover Fiber langsung di luar gqlgen RecoverFunc agar panic HTTP apa pun tidak menjatuhkan proses Gateway.
+	panicApp := fiber.New()
+	panicApp.Use(requestPanicRecoverMiddleware(logger))
+	panicApp.Get("/panic-probe", func(c fiber.Ctx) error {
+		panic("unexpected route panic secret=topsecret")
+	})
+	reqPanic := httptest.NewRequest(http.MethodGet, "/panic-probe", nil)
+	respPanic, err := panicApp.Test(reqPanic)
+	if err != nil {
+		t.Fatalf("app.Test panic-probe failed: %v", err)
+	}
+	bodyPanic := readBody(t, respPanic)
+	if respPanic.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("expected HTTP 500 after recovered panic, got %d (%s)", respPanic.StatusCode, bodyPanic)
+	}
+	if !strings.Contains(bodyPanic, `"code":"INTERNAL_ERROR"`) || strings.Contains(bodyPanic, "topsecret") {
+		t.Fatalf("expected masked INTERNAL_ERROR JSON response without panic leak, got %s", bodyPanic)
+	}
+
+	// 2. Uji ErrorPresenter menangani error nil tanpa panic serta memisahkan level log ERROR/WARN dengan request_id.
+	presenter := buildErrorPresenter(logger)
+	ctx := middleware.WithRequestMetadata(context.Background(), middleware.RequestMetadata{RequestID: "req-pres-1"})
+	if nilErrOut := presenter(ctx, nil); nilErrOut == nil || nilErrOut.Extensions["code"] != string(middleware.CodeInternalError) {
+		t.Fatalf("expected masked INTERNAL_ERROR for nil presenter input, got %+v", nilErrOut)
+	}
+
+	_ = presenter(ctx, middleware.NewGatewayError(middleware.CodeInternalError, "internal server error", context.DeadlineExceeded))
+	_ = presenter(ctx, middleware.ErrUnavailable("identity service unavailable", context.DeadlineExceeded))
+
+	// 3. Pastikan singleErrorResponse meneruskan ctx ke ErrorPresenter sehingga request_id tetap tercatat di log.
+	ctxGuard := middleware.WithRequestMetadata(context.Background(), middleware.RequestMetadata{RequestID: "req-guard-1"})
+	respHandler := singleErrorResponse(ctxGuard, presenter, middleware.ErrUnavailable("authentication manager unavailable", nil))
+	guardResp := respHandler(ctxGuard)
+	if guardResp == nil || len(guardResp.Errors) != 1 || guardResp.Errors[0].Extensions["code"] != string(middleware.CodeUnavailable) {
+		t.Fatalf("expected singleErrorResponse UNAVAILABLE, got %+v", guardResp)
+	}
+
+	logOut := logBuf.String()
+	if !strings.Contains(logOut, `"level":"ERROR"`) || !strings.Contains(logOut, `"msg":"gateway internal error"`) {
+		t.Fatalf("expected ERROR log for CodeInternalError, got %s", logOut)
+	}
+	if !strings.Contains(logOut, `"level":"WARN"`) || !strings.Contains(logOut, `"msg":"gateway upstream unavailable"`) {
+		t.Fatalf("expected WARN log for CodeUnavailable, got %s", logOut)
+	}
+	if !strings.Contains(logOut, `"request_id":"req-pres-1"`) || !strings.Contains(logOut, `"request_id":"req-guard-1"`) {
+		t.Fatalf("expected request_id correlation in ErrorPresenter log, got %s", logOut)
 	}
 }

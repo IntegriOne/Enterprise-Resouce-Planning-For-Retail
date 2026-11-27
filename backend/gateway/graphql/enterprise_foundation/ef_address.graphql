@@ -1,0 +1,121 @@
+# Zona 2 — Skema GraphQL domain master alamat geografis (Address) pada Enterprise Foundation.
+
+# Address merepresentasikan master alamat geografis bersama (`gid://integrione/address/<uuid>`).
+type Address implements Node {
+  id: ID!
+  _id: ID!
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+  created_at: Time!
+  updated_at: Time!
+}
+
+type AddressEdge {
+  node: Address!
+  cursor: String!
+}
+
+type AddressConnection {
+  edges: [AddressEdge!]!
+  nodes: [Address!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateAddressInput {
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+}
+
+input FindOrCreateAddressInput {
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+}
+
+input UpdateAddressInput {
+  id: ID!
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+}
+
+type CreateAddressPayload implements MutationResult {
+  address: Address
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type FindOrCreateAddressPayload implements MutationResult {
+  address: Address
+  created: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateAddressPayload implements MutationResult {
+  address: Address
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteAddressPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  address(id: ID!): Address
+  addressesByIds(ids: [ID!]!): [Address!]!
+  addresses(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    country_code: String
+    city: String
+    province: String
+    postal_code: String
+  ): AddressConnection!
+  allAddresses(after: String, before: String, first: Int, last: Int): AddressConnection!
+  isAddressReferenced(id: ID!): Boolean!
+}
+
+extend type Mutation {
+  createAddress(input: CreateAddressInput!): CreateAddressPayload!
+  findOrCreateAddress(input: FindOrCreateAddressInput!): FindOrCreateAddressPayload!
+  updateAddress(input: UpdateAddressInput!): UpdateAddressPayload!
+  deleteAddress(id: ID!): DeleteAddressPayload!
+}

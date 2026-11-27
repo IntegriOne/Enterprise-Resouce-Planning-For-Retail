@@ -1,0 +1,195 @@
+# Ringkasan rencana tenaga kerja per badan hukum.
+type WorkforcePlan implements Node {
+  id: ID!
+  _id: ID!
+  plan_code: String!
+  plan_version: Int!
+  legal_entity_reference_id: ID!
+  period_start: String!
+  period_end: String!
+  scenario_code: String!
+  status: String!
+  superseded_by_plan_id: ID
+}
+
+type WorkforcePlanEdge {
+  cursor: String!
+  node: WorkforcePlan!
+}
+
+type WorkforcePlanConnection {
+  edges: [WorkforcePlanEdge!]!
+  nodes: [WorkforcePlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workforcePlan(id: ID!): WorkforcePlan
+  workforcePlans(after: String, before: String, first: Int, last: Int): WorkforcePlanConnection!
+}
+
+type WorkforcePlanLine implements Node {
+  id: ID!
+  _id: ID!
+  workforce_plan_id: ID!
+  line_number: Int!
+  organization_unit_reference_id: ID!
+  job_id: ID!
+  work_location_reference_id: ID
+  worker_category: String!
+  current_fte: String!
+  required_fte: String!
+  needed_from: String!
+  needed_until: String
+  action_code: String!
+}
+
+type WorkforcePlanLineEdge {
+  cursor: String!
+  node: WorkforcePlanLine!
+}
+
+type WorkforcePlanLineConnection {
+  edges: [WorkforcePlanLineEdge!]!
+  nodes: [WorkforcePlanLine!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workforcePlanLine(id: ID!): WorkforcePlanLine
+  workforcePlanLines(workforce_plan_id: ID, after: String, before: String, first: Int, last: Int): WorkforcePlanLineConnection!
+}
+
+type SubmitWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkforcePlanPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SupersedeWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  submitWorkforcePlan(id: ID!): SubmitWorkforcePlanPayload!
+  cancelWorkforcePlan(id: ID!): CancelWorkforcePlanPayload!
+  deleteWorkforcePlan(id: ID!): DeleteWorkforcePlanPayload!
+  approveWorkforcePlan(id: ID!): ApproveWorkforcePlanPayload!
+  supersedeWorkforcePlan(id: ID!, replacement_plan_id: ID!, reason_code: String!): SupersedeWorkforcePlanPayload!
+}
+
+input CreateWorkforcePlanInput {
+  plan_code: String!
+  plan_version: Int!
+  legal_entity_reference_id: ID!
+  period_start: String!
+  period_end: String!
+  scenario_code: String
+}
+
+type CreateWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkforcePlan(input: CreateWorkforcePlanInput!): CreateWorkforcePlanPayload!
+}
+
+input CreateWorkforcePlanLineInput {
+  workforce_plan_id: ID!
+  line_number: Int!
+  organization_unit_reference_id: ID!
+  job_id: ID!
+  work_location_reference_id: ID
+  worker_category: String!
+  current_fte: String!
+  required_fte: String!
+  estimated_cost: String
+  currency_code: String
+  needed_from: String!
+  needed_until: String
+  action_code: String!
+  rationale: String!
+}
+
+directive @goField(omittable: Boolean) on INPUT_FIELD_DEFINITION
+
+input UpdateWorkforcePlanInput {
+  period_start: String @goField(omittable: true)
+  period_end: String @goField(omittable: true)
+  scenario_code: String @goField(omittable: true)
+}
+
+type UpdateWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  updateWorkforcePlan(id: ID!, input: UpdateWorkforcePlanInput!): UpdateWorkforcePlanPayload!
+}
+
+input UpdateWorkforcePlanLineInput {
+  line_number: Int @goField(omittable: true)
+  organization_unit_reference_id: ID @goField(omittable: true)
+  job_id: ID @goField(omittable: true)
+  work_location_reference_id: ID @goField(omittable: true)
+  worker_category: String @goField(omittable: true)
+  current_fte: String @goField(omittable: true)
+  required_fte: String @goField(omittable: true)
+  estimated_cost: String @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  needed_from: String @goField(omittable: true)
+  needed_until: String @goField(omittable: true)
+  action_code: String @goField(omittable: true)
+  rationale: String @goField(omittable: true)
+}
+
+type UpdateWorkforcePlanLinePayload implements MutationResult {
+  workforce_plan_line: WorkforcePlanLine
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CreateWorkforcePlanLinePayload implements MutationResult {
+  workforce_plan_line: WorkforcePlanLine
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkforcePlanLinePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  updateWorkforcePlanLine(id: ID!, input: UpdateWorkforcePlanLineInput!): UpdateWorkforcePlanLinePayload!
+  createWorkforcePlanLine(input: CreateWorkforcePlanLineInput!): CreateWorkforcePlanLinePayload!
+  deleteWorkforcePlanLine(id: ID!): DeleteWorkforcePlanLinePayload!
+}

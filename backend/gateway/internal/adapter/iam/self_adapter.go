@@ -24,24 +24,29 @@ const (
 
 // Me mengambil profil pengguna milik principal yang sedang terautentikasi.
 func (a *Adapter) Me(ctx context.Context) (*model.User, error) {
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return nil, err
+	}
 	sess, err := a.authorizer.RequireSelfPermission(ctx, authz.PermUsersReadSelf, false)
 	if err != nil {
 		return nil, err
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
-		UserId: sess.Token.UserID,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.GetUserByIdResponse, error) {
+		return users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
+			UserId: sess.Token.UserID,
+		})
 	})
 	if rpcErr != nil {
-		return nil, mapRPCError(rpcErr)
+		return nil, rpcErr
 	}
 	return toModelUser(resp.GetUser()), nil
 }
 
 // MyAccessSnapshot mengembalikan snapshot otorisasi efektif terkini milik principal aktif.
 func (a *Adapter) MyAccessSnapshot(ctx context.Context) (*model.AccessSnapshot, error) {
+	if err := a.ensureAuthDeps(); err != nil {
+		return nil, err
+	}
 	sess, err := a.authManager.RequireAuthenticated(ctx)
 	if err != nil {
 		return nil, err
@@ -58,6 +63,9 @@ func (a *Adapter) MySessions(
 	first *int,
 	last *int,
 ) (*model.SessionConnection, error) {
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return nil, err
+	}
 	sess, err := a.authorizer.RequireSelfPermission(ctx, authz.PermSessionsReadSelf, false)
 	if err != nil {
 		return nil, err
@@ -68,15 +76,15 @@ func (a *Adapter) MySessions(
 	}
 
 	items, startOffset, pageInfo, total, err := FetchRelayPage(win, func(limit, offset int32) ([]*iamv1.Session, *iamv1.PageInfo, error) {
-		rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-		defer cancel()
-		resp, rpcErr := a.clients.Sessions.ListUserSessions(rpcCtx, &iamv1.ListUserSessionsRequest{
-			UserId:     sess.Token.UserID,
-			ActiveOnly: derefBool(activeOnly, true),
-			Page:       &iamv1.PageRequest{Limit: limit, Offset: offset},
+		resp, rpcErr := callIAMSessions(ctx, a, &sess.Caller, func(rpcCtx context.Context, sessions iamv1.SessionServiceClient) (*iamv1.ListUserSessionsResponse, error) {
+			return sessions.ListUserSessions(rpcCtx, &iamv1.ListUserSessionsRequest{
+				UserId:     sess.Token.UserID,
+				ActiveOnly: derefBool(activeOnly, true),
+				Page:       &iamv1.PageRequest{Limit: limit, Offset: offset},
+			})
 		})
 		if rpcErr != nil {
-			return nil, nil, mapRPCError(rpcErr)
+			return nil, nil, rpcErr
 		}
 		return resp.GetItems(), resp.GetPage(), nil
 	})
@@ -94,6 +102,9 @@ func (a *Adapter) UpdateMyProfile(ctx context.Context, input model.UpdateMyProfi
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfPermission(ctx, authz.PermUsersUpdateSelf, false)
 	if err != nil {
 		return fail(err)
@@ -103,18 +114,17 @@ func (a *Adapter) UpdateMyProfile(ctx context.Context, input model.UpdateMyProfi
 		return fail(middleware.ErrInvalidArgument("display_name is required", nil))
 	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.UpdateUserProfile(rpcCtx, &iamv1.UpdateUserProfileRequest{
-		UserId:            sess.Token.UserID,
-		DisplayName:       displayName,
-		Locale:            derefStr(input.Locale),
-		Timezone:          derefStr(input.Timezone),
-		PreserveAvatarUrl: true,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.UpdateUserProfileResponse, error) {
+		return users.UpdateUserProfile(rpcCtx, &iamv1.UpdateUserProfileRequest{
+			UserId:            sess.Token.UserID,
+			DisplayName:       displayName,
+			Locale:            derefStr(input.Locale),
+			Timezone:          derefStr(input.Timezone),
+			PreserveAvatarUrl: true,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.UpdateMyProfilePayload{
 		User:          toModelUser(resp.GetUser()),
@@ -131,6 +141,9 @@ func (a *Adapter) UploadAvatarUser(ctx context.Context, input model.UserAvatarUp
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfPermission(ctx, authz.PermUsersUpdateSelf, false)
 	if err != nil {
 		return fail(err)
@@ -140,14 +153,13 @@ func (a *Adapter) UploadAvatarUser(ctx context.Context, input model.UserAvatarUp
 		return fail(err)
 	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	currentResp, getErr := a.clients.Users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
-		UserId: sess.Token.UserID,
+	currentResp, getErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.GetUserByIdResponse, error) {
+		return users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{
+			UserId: sess.Token.UserID,
+		})
 	})
 	if getErr != nil {
-		return fail(mapRPCError(getErr))
+		return fail(getErr)
 	}
 	currentUser := currentResp.GetUser()
 	if currentUser == nil {
@@ -157,16 +169,18 @@ func (a *Adapter) UploadAvatarUser(ctx context.Context, input model.UserAvatarUp
 	digest := sha256.Sum256(rawBytes)
 	avatarURL := fmt.Sprintf("%s/%s/%s.avif", a.cfg.AvatarBaseURL, sess.Token.UserID, hex.EncodeToString(digest[:]))
 
-	updateResp, updErr := a.clients.Users.UpdateUserProfile(rpcCtx, &iamv1.UpdateUserProfileRequest{
-		UserId:            sess.Token.UserID,
-		DisplayName:       currentUser.GetDisplayName(),
-		AvatarUrl:         avatarURL,
-		Locale:            currentUser.GetLocale(),
-		Timezone:          currentUser.GetTimezone(),
-		PreserveAvatarUrl: false,
+	updateResp, updErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.UpdateUserProfileResponse, error) {
+		return users.UpdateUserProfile(rpcCtx, &iamv1.UpdateUserProfileRequest{
+			UserId:            sess.Token.UserID,
+			DisplayName:       currentUser.GetDisplayName(),
+			AvatarUrl:         avatarURL,
+			Locale:            currentUser.GetLocale(),
+			Timezone:          currentUser.GetTimezone(),
+			PreserveAvatarUrl: false,
+		})
 	})
 	if updErr != nil {
-		return fail(mapRPCError(updErr))
+		return fail(updErr)
 	}
 	storedURL := avatarURL
 	if updateResp.GetUser() != nil && strings.TrimSpace(updateResp.GetUser().GetAvatarUrl()) != "" {
@@ -187,6 +201,9 @@ func (a *Adapter) UpdateUserEmail(ctx context.Context, input model.UserEmailInpu
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfSensitive(ctx, authz.PermUsersUpdateSelf)
 	if err != nil {
 		return fail(err)
@@ -196,16 +213,15 @@ func (a *Adapter) UpdateUserEmail(ctx context.Context, input model.UserEmailInpu
 		return fail(middleware.ErrInvalidArgument("email and current_password are required", nil))
 	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.UpdateUserEmail(rpcCtx, &iamv1.UpdateUserEmailRequest{
-		UserId:          sess.Token.UserID,
-		Email:           email,
-		CurrentPassword: input.CurrentPassword,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.UpdateUserEmailResponse, error) {
+		return users.UpdateUserEmail(rpcCtx, &iamv1.UpdateUserEmailRequest{
+			UserId:          sess.Token.UserID,
+			Email:           email,
+			CurrentPassword: input.CurrentPassword,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.UserEmailPayload{
 		PendingEmail:  ptrStr(resp.GetPendingEmail()),
@@ -224,6 +240,9 @@ func (a *Adapter) ChangeUsername(ctx context.Context, input model.UsernameInput)
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfPermission(ctx, authz.PermUsersUpdateSelf, false)
 	if err != nil {
 		return fail(err)
@@ -233,15 +252,14 @@ func (a *Adapter) ChangeUsername(ctx context.Context, input model.UsernameInput)
 		return fail(middleware.ErrInvalidArgument("username is required", nil))
 	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.UpdateUserUsername(rpcCtx, &iamv1.UpdateUserUsernameRequest{
-		UserId:   sess.Token.UserID,
-		Username: username,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.UpdateUserUsernameResponse, error) {
+		return users.UpdateUserUsername(rpcCtx, &iamv1.UpdateUserUsernameRequest{
+			UserId:   sess.Token.UserID,
+			Username: username,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.UserNamePayload{
 		Username:      ptrStr(resp.GetUsername()),
@@ -258,18 +276,20 @@ func (a *Adapter) DeletePendingUserEmail(ctx context.Context) (*model.DeletePend
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfPermission(ctx, authz.PermUsersDeleteSelf, false)
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Users.DeletePendingUserEmail(rpcCtx, &iamv1.DeletePendingUserEmailRequest{
-		UserId: sess.Token.UserID,
+	resp, rpcErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.DeletePendingUserEmailResponse, error) {
+		return users.DeletePendingUserEmail(rpcCtx, &iamv1.DeletePendingUserEmailRequest{
+			UserId: sess.Token.UserID,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.DeletePendingUserEmailPayload{
 		Deleted:       ptrBool(resp.GetDeleted()),
@@ -286,6 +306,9 @@ func (a *Adapter) ChangeUserPassword(ctx context.Context, input model.ChangeUser
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfSensitive(ctx, authz.PermUsersUpdateSelf)
 	if err != nil {
 		return fail(err)
@@ -294,16 +317,15 @@ func (a *Adapter) ChangeUserPassword(ctx context.Context, input model.ChangeUser
 		return fail(middleware.ErrInvalidArgument("current_password and new_password are required", nil))
 	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Auth.ChangePassword(rpcCtx, &iamv1.ChangePasswordRequest{
-		UserId:          sess.Token.UserID,
-		CurrentPassword: input.CurrentPassword,
-		NewPassword:     input.NewPassword,
+	resp, rpcErr := callIAMAuth(ctx, a, &sess.Caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.ChangePasswordResponse, error) {
+		return auth.ChangePassword(rpcCtx, &iamv1.ChangePasswordRequest{
+			UserId:          sess.Token.UserID,
+			CurrentPassword: input.CurrentPassword,
+			NewPassword:     input.NewPassword,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	if resp.GetChanged() {
 		a.authManager.ClearSessionCookie(ctx)
@@ -328,6 +350,9 @@ func (a *Adapter) VerifyMySessionMfa(ctx context.Context, totpCode string) (*mod
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfPermission(ctx, authz.PermUsersUpdateSelf, false)
 	if err != nil {
 		return fail(err)
@@ -337,16 +362,15 @@ func (a *Adapter) VerifyMySessionMfa(ctx context.Context, totpCode string) (*mod
 		return fail(middleware.ErrInvalidArgument("totp_code is required", nil))
 	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Auth.VerifySessionMfa(rpcCtx, &iamv1.VerifySessionMfaRequest{
-		UserId:    sess.Token.UserID,
-		SessionId: sess.Token.SessionID,
-		Code:      cleanCode,
+	resp, rpcErr := callIAMAuth(ctx, a, &sess.Caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.VerifySessionMfaResponse, error) {
+		return auth.VerifySessionMfa(rpcCtx, &iamv1.VerifySessionMfaRequest{
+			UserId:    sess.Token.UserID,
+			SessionId: sess.Token.SessionID,
+			Code:      cleanCode,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	if csrf := strings.TrimSpace(resp.GetCsrfToken()); csrf != "" {
 		if eff := browserauth.EffectsFromContext(ctx); eff != nil {
@@ -368,26 +392,41 @@ func (a *Adapter) EnrollMyTotp(ctx context.Context) (*model.EnrollTotpPayload, e
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfSensitive(ctx, authz.PermUsersUpdateSelf)
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
+	if sess == nil || sess.Token == nil {
+		return fail(middleware.ErrUnauthenticated("authentication required", nil))
+	}
 
 	accountLabel := sess.Token.UserID
-	if userResp, uErr := a.clients.Users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{UserId: sess.Token.UserID}); uErr == nil && userResp.GetUser() != nil {
-		if dn := strings.TrimSpace(userResp.GetUser().GetDisplayName()); dn != "" {
-			accountLabel = dn
+	if a.clients.Managed() || a.clients.Users != nil {
+		userResp, uErr := callIAMUsers(ctx, a, &sess.Caller, func(rpcCtx context.Context, users iamv1.UserServiceClient) (*iamv1.GetUserByIdResponse, error) {
+			return users.GetUserById(rpcCtx, &iamv1.GetUserByIdRequest{UserId: sess.Token.UserID})
+		})
+		if uErr != nil {
+			if gwErr, ok := middleware.AsGatewayError(uErr); !ok || gwErr.Code != middleware.CodeNotFound {
+				return fail(uErr)
+			}
+		} else if userResp.GetUser() != nil {
+			if dn := strings.TrimSpace(userResp.GetUser().GetDisplayName()); dn != "" {
+				accountLabel = dn
+			}
 		}
 	}
 
-	resp, rpcErr := a.clients.Auth.EnrollTotp(rpcCtx, &iamv1.EnrollTotpRequest{
-		UserId:       sess.Token.UserID,
-		AccountLabel: accountLabel,
+	resp, rpcErr := callIAMAuth(ctx, a, &sess.Caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.EnrollTotpResponse, error) {
+		return auth.EnrollTotp(rpcCtx, &iamv1.EnrollTotpRequest{
+			UserId:       sess.Token.UserID,
+			AccountLabel: accountLabel,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.EnrollTotpPayload{
 		FactorID:      ptrStr(resp.GetFactorId()),
@@ -405,6 +444,9 @@ func (a *Adapter) ConfirmMyTotp(ctx context.Context, input model.ConfirmTotpInpu
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfSensitive(ctx, authz.PermUsersUpdateSelf)
 	if err != nil {
 		return fail(err)
@@ -414,15 +456,14 @@ func (a *Adapter) ConfirmMyTotp(ctx context.Context, input model.ConfirmTotpInpu
 		return fail(middleware.ErrInvalidArgument("code is required", nil))
 	}
 
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
-
-	resp, rpcErr := a.clients.Auth.ConfirmTotp(rpcCtx, &iamv1.ConfirmTotpRequest{
-		UserId: sess.Token.UserID,
-		Code:   cleanCode,
+	resp, rpcErr := callIAMAuth(ctx, a, &sess.Caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.ConfirmTotpResponse, error) {
+		return auth.ConfirmTotp(rpcCtx, &iamv1.ConfirmTotpRequest{
+			UserId: sess.Token.UserID,
+			Code:   cleanCode,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	enabled := resp.GetFactor() != nil && resp.GetFactor().GetIsEnabled()
 	return &model.ConfirmTotpPayload{
@@ -441,18 +482,21 @@ func (a *Adapter) DisableMyTotp(ctx context.Context) (*model.DisableMyTotpPayloa
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfSensitive(ctx, authz.PermUsersUpdateSelf)
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
 
-	_, rpcErr := a.clients.Auth.DisableTotp(rpcCtx, &iamv1.DisableTotpRequest{
-		UserId: sess.Token.UserID,
+	_, rpcErr := callIAMAuth(ctx, a, &sess.Caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.DisableTotpResponse, error) {
+		return auth.DisableTotp(rpcCtx, &iamv1.DisableTotpRequest{
+			UserId: sess.Token.UserID,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.DisableMyTotpPayload{
 		Disabled:      ptrBool(true),
@@ -469,18 +513,21 @@ func (a *Adapter) RegenerateMyRecoveryCodes(ctx context.Context) (*model.Regener
 			WasSuccessful: false,
 		}, nil
 	}
+	if err := a.ensureAuthorizerDeps(); err != nil {
+		return fail(err)
+	}
 	sess, err := a.authorizer.RequireSelfSensitive(ctx, authz.PermUsersUpdateSelf)
 	if err != nil {
 		return fail(err)
 	}
-	rpcCtx, cancel := a.rpcCtx(ctx, sess.Caller)
-	defer cancel()
 
-	resp, rpcErr := a.clients.Auth.RegenerateRecoveryCodes(rpcCtx, &iamv1.RegenerateRecoveryCodesRequest{
-		UserId: sess.Token.UserID,
+	resp, rpcErr := callIAMAuth(ctx, a, &sess.Caller, func(rpcCtx context.Context, auth iamv1.AuthServiceClient) (*iamv1.RegenerateRecoveryCodesResponse, error) {
+		return auth.RegenerateRecoveryCodes(rpcCtx, &iamv1.RegenerateRecoveryCodesRequest{
+			UserId: sess.Token.UserID,
+		})
 	})
 	if rpcErr != nil {
-		return fail(mapRPCError(rpcErr))
+		return fail(rpcErr)
 	}
 	return &model.RegenerateMyRecoveryCodesPayload{
 		RecoveryCodes: resp.GetRecoveryCodes(),

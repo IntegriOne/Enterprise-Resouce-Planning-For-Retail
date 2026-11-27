@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -138,6 +139,17 @@ func TestUserLoginAndValidateMFAAmbiguousErrorsAndThrottle(t *testing.T) {
 		} else if res.Errors[0].Message != firstMsg {
 			t.Fatalf("UserLogin(%s) leaked distinct message %q vs %q", code, res.Errors[0].Message, firstMsg)
 		}
+	}
+
+	// Percobaan login memakai akun otomasi system (termasuk password kosong) dengan ErrorInfo eksplisit wajib mengembalikan AUTHORIZATION "system cannot login".
+	sysSt, _ := status.New(codes.PermissionDenied, "system cannot login").WithDetails(&errdetails.ErrorInfo{
+		Domain: "iam",
+		Reason: "iam.user.system_cannot_login",
+	})
+	upstreamErr = sysSt.Err()
+	sysLoginRes, sysLoginErr := adp.UserLogin(ctx, model.UserLoginInput{Identifier: "auto_system_iam", Password: ""})
+	if sysLoginErr != nil || sysLoginRes.WasSuccessful || len(sysLoginRes.Errors) != 1 || sysLoginRes.Errors[0].Type != model.ErrorTypeEnumAuthorization || sysLoginRes.Errors[0].Message != "system cannot login" {
+		t.Fatalf("expected AUTHORIZATION 'system cannot login' for auto_system_iam, got payload=%+v err=%v", sysLoginRes, sysLoginErr)
 	}
 
 	// ValidateUserMfa menutupi CONFLICT replay TOTP menjadi AUTHENTICATION dan memblokir setelah 5 percobaan per challenge.

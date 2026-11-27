@@ -15,14 +15,16 @@ const GIDPrefix = "gid://integrione/"
 type GIDResource string
 
 const (
-	ResourceUser         GIDResource = "user"
-	ResourceUserIdentity GIDResource = "user-identity"
-	ResourceSession      GIDResource = "session"
-	ResourceRole         GIDResource = "role"
-	ResourcePermission   GIDResource = "permission"
-	ResourceGroup        GIDResource = "group"
-	ResourceUserRole     GIDResource = "user-role"
-	ResourceGroupRole    GIDResource = "group-role"
+	ResourceUser                        GIDResource = "user"
+	ResourceUserIdentity                GIDResource = "user-identity"
+	ResourceSession                     GIDResource = "session"
+	ResourceRole                        GIDResource = "role"
+	ResourcePermission                  GIDResource = "permission"
+	ResourceGroup                       GIDResource = "group"
+	ResourceUserRole                    GIDResource = "user-role"
+	ResourceGroupRole                   GIDResource = "group-role"
+	ResourceWorker                      GIDResource = "hrm-worker"
+	ResourceEmployeeProvisioningRequest GIDResource = "employee-provisioning-request"
 )
 
 // EncodeGID membentuk Global Object Identifier bertipe `gid://integrione/<resource>/<uuid>`.

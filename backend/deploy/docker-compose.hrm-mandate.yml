@@ -1,0 +1,22 @@
+services:
+  iam:
+    environment:
+      IAM_REQUISITION_MANDATE_ADDR: "0.0.0.0:9011"
+      IAM_REQUISITION_MANDATE_CERT_FILE: /etc/integrione/mandate/server.crt
+      IAM_REQUISITION_MANDATE_KEY_FILE: /etc/integrione/mandate/server.key
+      IAM_REQUISITION_MANDATE_CLIENT_CA_FILE: /etc/integrione/mandate/ca.crt
+    volumes:
+      - ${HRM_MANDATE_CERT_DIR:?HRM_MANDATE_CERT_DIR}/iam-mandate.crt:/etc/integrione/mandate/server.crt:ro
+      - ${HRM_MANDATE_CERT_DIR:?HRM_MANDATE_CERT_DIR}/iam-mandate.key:/etc/integrione/mandate/server.key:ro
+      - ${HRM_MANDATE_CERT_DIR:?HRM_MANDATE_CERT_DIR}/ca.crt:/etc/integrione/mandate/ca.crt:ro
+  human-resource:
+    environment:
+      HRM_IAM_MANDATE_TARGET: iam:9011
+      HRM_IAM_MANDATE_SERVER_NAME: iam
+      HRM_IAM_MANDATE_CERT_FILE: /etc/integrione/mandate/client.crt
+      HRM_IAM_MANDATE_KEY_FILE: /etc/integrione/mandate/client.key
+      HRM_IAM_MANDATE_CA_FILE: /etc/integrione/mandate/ca.crt
+    volumes:
+      - ${HRM_MANDATE_CERT_DIR:?HRM_MANDATE_CERT_DIR}/hrm-mandate.crt:/etc/integrione/mandate/client.crt:ro
+      - ${HRM_MANDATE_CERT_DIR:?HRM_MANDATE_CERT_DIR}/hrm-mandate.key:/etc/integrione/mandate/client.key:ro
+      - ${HRM_MANDATE_CERT_DIR:?HRM_MANDATE_CERT_DIR}/ca.crt:/etc/integrione/mandate/ca.crt:ro

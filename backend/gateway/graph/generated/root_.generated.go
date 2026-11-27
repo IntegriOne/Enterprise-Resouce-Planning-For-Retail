@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/integrione/erp-retail/backend/gateway/graph/model"
@@ -23,7 +24,12 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	Group() GroupResolver
+	LegalEntity() LegalEntityResolver
+	Location() LocationResolver
 	Mutation() MutationResolver
+	OrganizationUnit() OrganizationUnitResolver
+	Party() PartyResolver
+	PartyAddress() PartyAddressResolver
 	Query() QueryResolver
 	Role() RoleResolver
 	Session() SessionResolver
@@ -58,6 +64,48 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	ActivateLegalEntityPayload struct {
+		Errors        func(childComplexity int) int
+		LegalEntity   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ActivateLocationPayload struct {
+		Errors        func(childComplexity int) int
+		Location      func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ActivateOrganizationUnitPayload struct {
+		Errors           func(childComplexity int) int
+		OrganizationUnit func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+	}
+
+	ActivatePartyContactPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ActivatePartyPortalAccessPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ActivatePartyRolePayload struct {
+		Errors        func(childComplexity int) int
+		Role          func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ActivatePositionPayload struct {
+		Errors        func(childComplexity int) int
+		Position      func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	ActivateRolePayload struct {
 		Errors        func(childComplexity int) int
 		Role          func(childComplexity int) int
@@ -70,15 +118,110 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	ActivateWorkerPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		Worker        func(childComplexity int) int
+	}
+
 	AddGroupMemberPayload struct {
 		Errors          func(childComplexity int) int
 		GroupMemberEdge func(childComplexity int) int
 		WasSuccessful   func(childComplexity int) int
 	}
 
+	AddPartyContactPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	Address struct {
+		AddressLine1     func(childComplexity int) int
+		AddressLine2     func(childComplexity int) int
+		City             func(childComplexity int) int
+		CountryCode      func(childComplexity int) int
+		CreatedAt        func(childComplexity int) int
+		FormattedAddress func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Label            func(childComplexity int) int
+		Latitude         func(childComplexity int) int
+		Longitude        func(childComplexity int) int
+		PostalCode       func(childComplexity int) int
+		Province         func(childComplexity int) int
+		RawID            func(childComplexity int) int
+		UpdatedAt        func(childComplexity int) int
+	}
+
+	AddressConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	AddressEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	ApplyPrimaryAssignmentPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		Worker        func(childComplexity int) int
+	}
+
+	ApproveLeaveAdjustmentPayload struct {
+		Errors          func(childComplexity int) int
+		LeaveAdjustment func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	ApproveOffboardingPlanPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingPlan func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	ApprovePayrollRunPayload struct {
+		Errors        func(childComplexity int) int
+		PayrollRun    func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ApproveRequisitionPayload struct {
+		Errors        func(childComplexity int) int
+		Requisition   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ApproveWorkerAssignmentPayload struct {
+		Errors           func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+		WorkerAssignment func(childComplexity int) int
+	}
+
+	ApproveWorkforcePlanPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		WorkforcePlan func(childComplexity int) int
+	}
+
 	AssignGroupRolePayload struct {
 		Errors        func(childComplexity int) int
 		GroupRoleEdge func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	AssignOrganizationUnitHeadPersonPayload struct {
+		Errors           func(childComplexity int) int
+		OrganizationUnit func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+	}
+
+	AssignPartyRolePayload struct {
+		Errors        func(childComplexity int) int
+		Role          func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
@@ -100,12 +243,80 @@ type ComplexityRoot struct {
 		PrincipalID   func(childComplexity int) int
 	}
 
+	CalculatePayrollRunPayload struct {
+		Errors        func(childComplexity int) int
+		PayrollRun    func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CancelOffboardingPlanPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingPlan func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	CancelPayrollRunPayload struct {
+		Errors        func(childComplexity int) int
+		PayrollRun    func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CancelWorkforcePlanPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		WorkforcePlan func(childComplexity int) int
+	}
+
+	Candidate struct {
+		CandidateNumber func(childComplexity int) int
+		CandidateStatus func(childComplexity int) int
+		ID              func(childComplexity int) int
+		PreferredName   func(childComplexity int) int
+		RawID           func(childComplexity int) int
+	}
+
+	CandidateConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	CandidateEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	ChangeUserPasswordPayload struct {
 		Changed           func(childComplexity int) int
 		Errors            func(childComplexity int) int
 		PasswordChangedAt func(childComplexity int) int
 		SessionsRevoked   func(childComplexity int) int
 		WasSuccessful     func(childComplexity int) int
+	}
+
+	CloseLeaveEntitlementPayload struct {
+		Errors           func(childComplexity int) int
+		LeaveEntitlement func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+	}
+
+	CloseRequisitionPayload struct {
+		Errors        func(childComplexity int) int
+		Requisition   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CompleteOffboardingPlanPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingPlan func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	CompleteOffboardingTaskPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingTask func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
 	}
 
 	ConfirmTotpPayload struct {
@@ -115,15 +326,105 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	CreateAddressPayload struct {
+		Address       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateCandidatePayload struct {
+		Candidate     func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	CreateEmployeeUserPayload struct {
 		Errors        func(childComplexity int) int
 		User          func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
+	CreateEmploymentContractPayload struct {
+		EmploymentContract func(childComplexity int) int
+		Errors             func(childComplexity int) int
+		WasSuccessful      func(childComplexity int) int
+	}
+
 	CreateGroupPayload struct {
 		Errors        func(childComplexity int) int
 		Group         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateJobFamilyPayload struct {
+		Errors        func(childComplexity int) int
+		JobFamily     func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateJobPayload struct {
+		Errors        func(childComplexity int) int
+		Job           func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateLeaveAdjustmentPayload struct {
+		Errors          func(childComplexity int) int
+		LeaveAdjustment func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	CreateLegalEntityPayload struct {
+		Errors        func(childComplexity int) int
+		LegalEntity   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateLocationPayload struct {
+		Errors        func(childComplexity int) int
+		Location      func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateOffboardingPlanPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingPlan func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	CreateOffboardingTaskPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingTask func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	CreateOrganizationUnitPayload struct {
+		Errors           func(childComplexity int) int
+		OrganizationUnit func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+	}
+
+	CreatePartyPayload struct {
+		Errors        func(childComplexity int) int
+		Party         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreatePayrollRunPayload struct {
+		Errors        func(childComplexity int) int
+		PayrollRun    func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreatePositionPayload struct {
+		Errors        func(childComplexity int) int
+		Position      func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateRequisitionPayload struct {
+		Errors        func(childComplexity int) int
+		Requisition   func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
@@ -135,6 +436,7 @@ type ComplexityRoot struct {
 
 	CreateSupplierUserPayload struct {
 		Errors        func(childComplexity int) int
+		PartyContact  func(childComplexity int) int
 		User          func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
@@ -148,13 +450,68 @@ type ComplexityRoot struct {
 
 	CreateVendorUserPayload struct {
 		Errors        func(childComplexity int) int
+		PartyContact  func(childComplexity int) int
 		User          func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
+	}
+
+	CreateWorkerAssignmentPayload struct {
+		Errors           func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+		WorkerAssignment func(childComplexity int) int
+	}
+
+	CreateWorkerPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		Worker        func(childComplexity int) int
+	}
+
+	CreateWorkforcePlanLinePayload struct {
+		Errors            func(childComplexity int) int
+		WasSuccessful     func(childComplexity int) int
+		WorkforcePlanLine func(childComplexity int) int
+	}
+
+	CreateWorkforcePlanPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		WorkforcePlan func(childComplexity int) int
 	}
 
 	DeactivateGroupPayload struct {
 		Errors        func(childComplexity int) int
 		Group         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeactivateLocationPayload struct {
+		Errors        func(childComplexity int) int
+		Location      func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeactivateOrganizationUnitPayload struct {
+		Errors           func(childComplexity int) int
+		OrganizationUnit func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+	}
+
+	DeactivatePartyContactPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeactivatePartyPayload struct {
+		Errors        func(childComplexity int) int
+		Party         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeactivatePartyRolePayload struct {
+		Errors        func(childComplexity int) int
+		Role          func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
@@ -164,7 +521,61 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	DecideWorkerAssignmentTransferPayload struct {
+		Errors                   func(childComplexity int) int
+		WasSuccessful            func(childComplexity int) int
+		WorkerAssignmentTransfer func(childComplexity int) int
+	}
+
+	DeleteAddressPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteCandidatePayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteEmploymentContractPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	DeleteGroupPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteLegalEntityPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteLocationPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteOrganizationUnitPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeletePartyContactPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeletePartyPayload struct {
 		Deleted       func(childComplexity int) int
 		Errors        func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
@@ -176,7 +587,31 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	DeletePositionPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteRequisitionPayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	DeleteRolePayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteWorkforcePlanLinePayload struct {
+		Deleted       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	DeleteWorkforcePlanPayload struct {
 		Deleted       func(childComplexity int) int
 		Errors        func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
@@ -194,10 +629,81 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	DissolveLegalEntityPayload struct {
+		Errors        func(childComplexity int) int
+		LegalEntity   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	EmployeeAccountRequest struct {
+		ID            func(childComplexity int) int
+		IamRequestID  func(childComplexity int) int
+		LegalEntityID func(childComplexity int) int
+		RawID         func(childComplexity int) int
+		RequestedAt   func(childComplexity int) int
+		Status        func(childComplexity int) int
+		WorkerID      func(childComplexity int) int
+	}
+
+	EmployeeProvisioningRequest struct {
+		ID                     func(childComplexity int) int
+		LegalEntityID          func(childComplexity int) int
+		ReceivedAt             func(childComplexity int) int
+		RequestedAt            func(childComplexity int) int
+		RequestedByPrincipalID func(childComplexity int) int
+		Status                 func(childComplexity int) int
+		WorkerID               func(childComplexity int) int
+		WorkerNumber           func(childComplexity int) int
+	}
+
+	EmployeeProvisioningRequestConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	EmployeeProvisioningRequestEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	EmploymentContract struct {
+		ContractNumber                  func(childComplexity int) int
+		ContractStatus                  func(childComplexity int) int
+		ContractType                    func(childComplexity int) int
+		EffectiveFrom                   func(childComplexity int) int
+		EffectiveTo                     func(childComplexity int) int
+		EmployingLegalEntityReferenceID func(childComplexity int) int
+		ID                              func(childComplexity int) int
+		RawID                           func(childComplexity int) int
+		SignedAt                        func(childComplexity int) int
+		WorkerID                        func(childComplexity int) int
+	}
+
+	EmploymentContractConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	EmploymentContractEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	EnrollTotpPayload struct {
 		Errors        func(childComplexity int) int
 		FactorID      func(childComplexity int) int
 		OtpAuthURI    func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	FindOrCreateAddressPayload struct {
+		Address       func(childComplexity int) int
+		Created       func(childComplexity int) int
+		Errors        func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
@@ -258,56 +764,398 @@ type ComplexityRoot struct {
 		Scope        func(childComplexity int) int
 	}
 
+	Job struct {
+		ID             func(childComplexity int) int
+		IsActive       func(childComplexity int) int
+		JobCode        func(childComplexity int) int
+		JobDescription func(childComplexity int) int
+		JobFamilyID    func(childComplexity int) int
+		JobLevelCode   func(childComplexity int) int
+		JobTitle       func(childComplexity int) int
+		RawID          func(childComplexity int) int
+		ValidFrom      func(childComplexity int) int
+		ValidTo        func(childComplexity int) int
+	}
+
+	JobConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	JobEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	JobFamily struct {
+		Description func(childComplexity int) int
+		FamilyCode  func(childComplexity int) int
+		FamilyName  func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsActive    func(childComplexity int) int
+		JobDomain   func(childComplexity int) int
+		RawID       func(childComplexity int) int
+	}
+
+	JobFamilyConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	JobFamilyEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	LeaveAdjustment struct {
+		ApprovedAt          func(childComplexity int) int
+		EntitlementID       func(childComplexity int) int
+		ID                  func(childComplexity int) int
+		QuantityDelta       func(childComplexity int) int
+		RawID               func(childComplexity int) int
+		ReasonCode          func(childComplexity int) int
+		RejectedAt          func(childComplexity int) int
+		RejectionReasonCode func(childComplexity int) int
+	}
+
+	LeaveAdjustmentConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	LeaveAdjustmentEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	LeaveEntitlement struct {
+		AccruedQuantity  func(childComplexity int) int
+		AdjustedQuantity func(childComplexity int) int
+		ClosedAt         func(childComplexity int) int
+		ClosingBalance   func(childComplexity int) int
+		ID               func(childComplexity int) int
+		LeavePolicyID    func(childComplexity int) int
+		LeaveTypeCode    func(childComplexity int) int
+		OpeningBalance   func(childComplexity int) int
+		PeriodEnd        func(childComplexity int) int
+		PeriodStart      func(childComplexity int) int
+		RawID            func(childComplexity int) int
+		UomCode          func(childComplexity int) int
+		UsedQuantity     func(childComplexity int) int
+		WorkerID         func(childComplexity int) int
+	}
+
+	LeaveEntitlementConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	LeaveEntitlementEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	LeaveLedgerEntry struct {
+		AdjustmentID    func(childComplexity int) int
+		EffectiveDate   func(childComplexity int) int
+		EntitlementID   func(childComplexity int) int
+		EntrySequence   func(childComplexity int) int
+		EntryType       func(childComplexity int) int
+		ID              func(childComplexity int) int
+		QuantityDelta   func(childComplexity int) int
+		RawID           func(childComplexity int) int
+		ReasonCode      func(childComplexity int) int
+		ReversesEntryID func(childComplexity int) int
+	}
+
+	LeaveLedgerEntryConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	LeaveLedgerEntryEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	LeavePolicy struct {
+		AccrualMethod      func(childComplexity int) int
+		AnnualEntitlement  func(childComplexity int) int
+		CarryoverLimit     func(childComplexity int) int
+		EffectiveFrom      func(childComplexity int) int
+		EffectiveTo        func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		IsActive           func(childComplexity int) int
+		IsPaid             func(childComplexity int) int
+		JurisdictionCode   func(childComplexity int) int
+		LeaveTypeCode      func(childComplexity int) int
+		MaxBalance         func(childComplexity int) int
+		MinimumServiceDays func(childComplexity int) int
+		PolicyCode         func(childComplexity int) int
+		PolicyName         func(childComplexity int) int
+		PolicyVersion      func(childComplexity int) int
+		RawID              func(childComplexity int) int
+	}
+
+	LeavePolicyConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	LeavePolicyEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	LegalEntity struct {
+		Children                 func(childComplexity int, after *string, before *string, first *int, last *int) int
+		CreatedAt                func(childComplexity int) int
+		DeletedAt                func(childComplexity int) int
+		DissolutionDate          func(childComplexity int) int
+		EntityCode               func(childComplexity int) int
+		FiscalYearStartMonth     func(childComplexity int) int
+		ID                       func(childComplexity int) int
+		IncorporationDate        func(childComplexity int) int
+		IsPkp                    func(childComplexity int) int
+		IsPrimaryOperatingEntity func(childComplexity int) int
+		JurisdictionCountryCode  func(childComplexity int) int
+		LegalForm                func(childComplexity int) int
+		LegalName                func(childComplexity int) int
+		Nib                      func(childComplexity int) int
+		ParentLegalEntity        func(childComplexity int) int
+		ParentLegalEntityID      func(childComplexity int) int
+		RawID                    func(childComplexity int) int
+		RegisteredAddress        func(childComplexity int) int
+		RegisteredAddressID      func(childComplexity int) int
+		Status                   func(childComplexity int) int
+		TaxIDNumber              func(childComplexity int) int
+		TradingName              func(childComplexity int) int
+		UpdatedAt                func(childComplexity int) int
+	}
+
+	LegalEntityConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	LegalEntityEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	LinkPartyAddressPayload struct {
+		Errors        func(childComplexity int) int
+		Link          func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	Location struct {
+		Address                   func(childComplexity int) int
+		AddressID                 func(childComplexity int) int
+		Children                  func(childComplexity int, after *string, before *string, first *int, last *int) int
+		CreatedAt                 func(childComplexity int) int
+		DeletedAt                 func(childComplexity int) int
+		ID                        func(childComplexity int) int
+		IsActive                  func(childComplexity int) int
+		Kind                      func(childComplexity int) int
+		LegalEntity               func(childComplexity int) int
+		LegalEntityID             func(childComplexity int) int
+		LocationCode              func(childComplexity int) int
+		Name                      func(childComplexity int) int
+		OperationalAttributesJSON func(childComplexity int) int
+		ParentLocation            func(childComplexity int) int
+		ParentLocationID          func(childComplexity int) int
+		Phone                     func(childComplexity int) int
+		RawID                     func(childComplexity int) int
+		Timezone                  func(childComplexity int) int
+		UpdatedAt                 func(childComplexity int) int
+	}
+
+	LocationConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	LocationEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Mutation struct {
-		ActivateGroup              func(childComplexity int, id string) int
-		ActivateRole               func(childComplexity int, id string) int
-		ActivateUser               func(childComplexity int, userID string) int
-		AddGroupMember             func(childComplexity int, groupID string, userID string) int
-		AssignGroupRole            func(childComplexity int, input model.AssignGroupRoleInput) int
-		AssignRolePermission       func(childComplexity int, roleID string, permissionID string) int
-		AssignUserRole             func(childComplexity int, input model.AssignUserRoleInput) int
-		ChangeUserPassword         func(childComplexity int, input model.ChangeUserPasswordInput) int
-		ChangeUsername             func(childComplexity int, input model.UsernameInput) int
-		ConfirmMyTotp              func(childComplexity int, input model.ConfirmTotpInput) int
-		CreateEmployeeUser         func(childComplexity int, input model.CreateEmployeeUserInput) int
-		CreateGroup                func(childComplexity int, input model.CreateGroupInput) int
-		CreateRole                 func(childComplexity int, input model.CreateRoleInput) int
-		CreateSupplierUser         func(childComplexity int, input model.CreateSupplierUserInput) int
-		CreateUser                 func(childComplexity int, input model.CreateUserInput) int
-		CreateVendorUser           func(childComplexity int, input model.CreateVendorUserInput) int
-		DeactivateGroup            func(childComplexity int, id string) int
-		DeactivateRole             func(childComplexity int, id string) int
-		DeleteGroup                func(childComplexity int, id string) int
-		DeletePendingUserEmail     func(childComplexity int) int
-		DeleteRole                 func(childComplexity int, id string) int
-		DisableMyTotp              func(childComplexity int) int
-		DisableUser                func(childComplexity int, userID string) int
-		Empty                      func(childComplexity int) int
-		EnrollMyTotp               func(childComplexity int) int
-		RegenerateMyRecoveryCodes  func(childComplexity int) int
-		RemoveGroupMember          func(childComplexity int, groupID string, userID string) int
-		RemoveUserIdentity         func(childComplexity int, userID string, identityID string) int
-		ResendValidationEmailToken func(childComplexity int, input *model.ResendValidationEmailInput) int
-		ResetPassword              func(childComplexity int, input model.IAMResetPasswordInput) int
-		RevokeAllUserSessions      func(childComplexity int, userID string, reason *model.SessionEndReason) int
-		RevokeGroupRole            func(childComplexity int, assignmentID string) int
-		RevokeRolePermission       func(childComplexity int, roleID string, permissionID string) int
-		RevokeSession              func(childComplexity int, sessionID string, reason *model.SessionEndReason) int
-		RevokeUserRole             func(childComplexity int, assignmentID string) int
-		SetPrimaryUserIdentity     func(childComplexity int, userID string, identityID string) int
-		SoftDeleteUser             func(childComplexity int, userID string) int
-		SuspendUser                func(childComplexity int, userID string) int
-		UpdateGroupDetails         func(childComplexity int, input model.UpdateGroupDetailsInput) int
-		UpdateMyProfile            func(childComplexity int, input model.UpdateMyProfileInput) int
-		UpdateRoleDetails          func(childComplexity int, input model.UpdateRoleDetailsInput) int
-		UpdateUserEmail            func(childComplexity int, input model.UserEmailInput) int
-		UploadAvatarUser           func(childComplexity int, input model.UserAvatarUploadInput) int
-		UserLogin                  func(childComplexity int, input model.UserLoginInput) int
-		UserLogout                 func(childComplexity int) int
-		UserResetPassword          func(childComplexity int, input model.UserResetPasswordInput) int
-		ValidateUserMfa            func(childComplexity int, input model.ValidateUserMfaInput) int
-		VerifyEmail                func(childComplexity int, input model.VerifyEmailInput) int
-		VerifyMySessionMfa         func(childComplexity int, totpCode string) int
+		ActivateGroup                    func(childComplexity int, id string) int
+		ActivateLegalEntity              func(childComplexity int, id string) int
+		ActivateLocation                 func(childComplexity int, id string) int
+		ActivateOrganizationUnit         func(childComplexity int, id string) int
+		ActivatePartyContact             func(childComplexity int, contactID string) int
+		ActivatePartyPortalAccess        func(childComplexity int, contactID string, iamUserID string) int
+		ActivatePartyRole                func(childComplexity int, roleID string) int
+		ActivatePosition                 func(childComplexity int, id string) int
+		ActivateRole                     func(childComplexity int, id string) int
+		ActivateUser                     func(childComplexity int, userID string) int
+		ActivateWorker                   func(childComplexity int, id string) int
+		AddGroupMember                   func(childComplexity int, groupID string, userID string) int
+		AddPartyContact                  func(childComplexity int, input model.AddPartyContactInput) int
+		ApplyPrimaryAssignment           func(childComplexity int, id string, assignmentID string) int
+		ApproveLeaveAdjustment           func(childComplexity int, id string) int
+		ApproveOffboardingPlan           func(childComplexity int, id string) int
+		ApprovePayrollRun                func(childComplexity int, payrollRunID string) int
+		ApproveRequisition               func(childComplexity int, id string) int
+		ApproveWorkerAssignment          func(childComplexity int, id string) int
+		ApproveWorkforcePlan             func(childComplexity int, id string) int
+		AssignGroupRole                  func(childComplexity int, input model.AssignGroupRoleInput) int
+		AssignOrganizationUnitHeadPerson func(childComplexity int, id string, headPersonID *string) int
+		AssignPartyRole                  func(childComplexity int, input model.AssignPartyRoleInput) int
+		AssignRolePermission             func(childComplexity int, roleID string, permissionID string) int
+		AssignUserRole                   func(childComplexity int, input model.AssignUserRoleInput) int
+		CalculatePayrollRun              func(childComplexity int, payrollRunID string) int
+		CancelOffboardingPlan            func(childComplexity int, id string, reason string) int
+		CancelPayrollRun                 func(childComplexity int, payrollRunID string, reason string) int
+		CancelWorkforcePlan              func(childComplexity int, id string) int
+		ChangeUserPassword               func(childComplexity int, input model.ChangeUserPasswordInput) int
+		ChangeUsername                   func(childComplexity int, input model.UsernameInput) int
+		CloseLeaveEntitlement            func(childComplexity int, id string) int
+		CloseRequisition                 func(childComplexity int, id string) int
+		CompleteOffboardingPlan          func(childComplexity int, id string, finalPayrollRunID string, financeClearanceReferenceID string) int
+		CompleteOffboardingTask          func(childComplexity int, id string, ownerConfirmationReferenceID string) int
+		ConfirmMyTotp                    func(childComplexity int, input model.ConfirmTotpInput) int
+		CreateAddress                    func(childComplexity int, input model.CreateAddressInput) int
+		CreateCandidate                  func(childComplexity int, input model.CreateCandidateInput) int
+		CreateEmployeeUser               func(childComplexity int, input model.CreateEmployeeUserInput) int
+		CreateEmploymentContract         func(childComplexity int, input model.CreateEmploymentContractInput) int
+		CreateGroup                      func(childComplexity int, input model.CreateGroupInput) int
+		CreateJob                        func(childComplexity int, input model.CreateJobInput) int
+		CreateJobFamily                  func(childComplexity int, input model.CreateJobFamilyInput) int
+		CreateLeaveAdjustment            func(childComplexity int, input model.CreateLeaveAdjustmentInput) int
+		CreateLegalEntity                func(childComplexity int, input model.CreateLegalEntityInput) int
+		CreateLocation                   func(childComplexity int, input model.CreateLocationInput) int
+		CreateOffboardingPlan            func(childComplexity int, input model.CreateOffboardingPlanInput) int
+		CreateOffboardingTask            func(childComplexity int, input model.CreateOffboardingTaskInput) int
+		CreateOrganizationUnit           func(childComplexity int, input model.CreateOrganizationUnitInput) int
+		CreateParty                      func(childComplexity int, input model.CreatePartyInput) int
+		CreatePayrollRun                 func(childComplexity int, input model.CreatePayrollRunInput) int
+		CreatePosition                   func(childComplexity int, input model.CreatePositionInput) int
+		CreateRequisition                func(childComplexity int, input model.CreateRequisitionInput) int
+		CreateRole                       func(childComplexity int, input model.CreateRoleInput) int
+		CreateSupplierUser               func(childComplexity int, input model.CreateSupplierUserInput) int
+		CreateUser                       func(childComplexity int, input model.CreateUserInput) int
+		CreateVendorUser                 func(childComplexity int, input model.CreateVendorUserInput) int
+		CreateWorker                     func(childComplexity int, input model.CreateWorkerInput) int
+		CreateWorkerAssignment           func(childComplexity int, input model.CreateWorkerAssignmentInput) int
+		CreateWorkforcePlan              func(childComplexity int, input model.CreateWorkforcePlanInput) int
+		CreateWorkforcePlanLine          func(childComplexity int, input model.CreateWorkforcePlanLineInput) int
+		DeactivateGroup                  func(childComplexity int, id string) int
+		DeactivateLocation               func(childComplexity int, id string) int
+		DeactivateOrganizationUnit       func(childComplexity int, id string) int
+		DeactivateParty                  func(childComplexity int, id string) int
+		DeactivatePartyContact           func(childComplexity int, contactID string) int
+		DeactivatePartyRole              func(childComplexity int, roleID string) int
+		DeactivateRole                   func(childComplexity int, id string) int
+		DecideWorkerAssignmentTransfer   func(childComplexity int, id string, decision model.WorkerAssignmentTransferDecision) int
+		DeleteAddress                    func(childComplexity int, id string) int
+		DeleteCandidate                  func(childComplexity int, id string) int
+		DeleteEmploymentContract         func(childComplexity int, id string) int
+		DeleteGroup                      func(childComplexity int, id string) int
+		DeleteLegalEntity                func(childComplexity int, id string) int
+		DeleteLocation                   func(childComplexity int, id string) int
+		DeleteOrganizationUnit           func(childComplexity int, id string) int
+		DeleteParty                      func(childComplexity int, id string) int
+		DeletePartyContact               func(childComplexity int, contactID string) int
+		DeletePendingUserEmail           func(childComplexity int) int
+		DeletePosition                   func(childComplexity int, id string) int
+		DeleteRequisition                func(childComplexity int, id string) int
+		DeleteRole                       func(childComplexity int, id string) int
+		DeleteWorkforcePlan              func(childComplexity int, id string) int
+		DeleteWorkforcePlanLine          func(childComplexity int, id string) int
+		DisableMyTotp                    func(childComplexity int) int
+		DisableUser                      func(childComplexity int, userID string) int
+		DissolveLegalEntity              func(childComplexity int, id string, dissolutionDate *time.Time) int
+		Empty                            func(childComplexity int) int
+		EnrollMyTotp                     func(childComplexity int) int
+		FindOrCreateAddress              func(childComplexity int, input model.FindOrCreateAddressInput) int
+		LinkPartyAddress                 func(childComplexity int, input model.LinkPartyAddressInput) int
+		OpenRequisition                  func(childComplexity int, id string) int
+		PostLeaveAdjustment              func(childComplexity int, input model.PostLeaveAdjustmentInput) int
+		RecordSignedEmploymentContract   func(childComplexity int, id string, documentVersionID string) int
+		RegenerateMyRecoveryCodes        func(childComplexity int) int
+		ReissueEmployeePayslip           func(childComplexity int, workerID string, payrollResultID string) int
+		RejectLeaveAdjustment            func(childComplexity int, id string, reasonCode string) int
+		RejectRequisition                func(childComplexity int, id string, reasonCode string) int
+		RemoveGroupMember                func(childComplexity int, groupID string, userID string) int
+		RemovePartyRole                  func(childComplexity int, roleID string) int
+		RemoveUserIdentity               func(childComplexity int, userID string, identityID string) int
+		RequestEmployeeAccount           func(childComplexity int, input model.RequestEmployeeAccountInput) int
+		RequestPartyPortalLink           func(childComplexity int, contactID string, iamUserID string) int
+		RequestPayrollPosting            func(childComplexity int, payrollRunID string) int
+		ResendValidationEmailToken       func(childComplexity int, input *model.ResendValidationEmailInput) int
+		ResetPassword                    func(childComplexity int, input model.IAMResetPasswordInput) int
+		RevokeAllUserSessions            func(childComplexity int, userID string, reason *model.SessionEndReason) int
+		RevokeGroupRole                  func(childComplexity int, assignmentID string) int
+		RevokePartyPortalAccess          func(childComplexity int, contactID string) int
+		RevokeRolePermission             func(childComplexity int, roleID string, permissionID string) int
+		RevokeSession                    func(childComplexity int, sessionID string, reason *model.SessionEndReason) int
+		RevokeUserRole                   func(childComplexity int, assignmentID string) int
+		SetPrimaryOperatingLegalEntity   func(childComplexity int, id string) int
+		SetPrimaryPartyAddressLink       func(childComplexity int, linkID string) int
+		SetPrimaryPartyContact           func(childComplexity int, partyID string, contactID string) int
+		SetPrimaryUserIdentity           func(childComplexity int, userID string, identityID string) int
+		SoftDeleteUser                   func(childComplexity int, userID string) int
+		StartOffboardingPlan             func(childComplexity int, id string) int
+		SubmitPayrollRunForReview        func(childComplexity int, payrollRunID string) int
+		SubmitRequisition                func(childComplexity int, id string) int
+		SubmitWorkerAssignmentTransfer   func(childComplexity int, input model.SubmitWorkerAssignmentTransferInput) int
+		SubmitWorkforcePlan              func(childComplexity int, id string) int
+		SupersedeWorkforcePlan           func(childComplexity int, id string, replacementPlanID string, reasonCode string) int
+		SuspendLegalEntity               func(childComplexity int, id string) int
+		SuspendParty                     func(childComplexity int, id string) int
+		SuspendUser                      func(childComplexity int, userID string) int
+		TerminateWorker                  func(childComplexity int, id string, offboardingPlanID string) int
+		UnlinkPartyAddress               func(childComplexity int, linkID string) int
+		UnlinkPartyPortalUser            func(childComplexity int, contactID string) int
+		UpdateAddress                    func(childComplexity int, input model.UpdateAddressInput) int
+		UpdateCandidate                  func(childComplexity int, id string, input model.UpdateCandidateInput) int
+		UpdateEmploymentContract         func(childComplexity int, id string, input model.UpdateEmploymentContractInput) int
+		UpdateGroupDetails               func(childComplexity int, input model.UpdateGroupDetailsInput) int
+		UpdateLegalEntity                func(childComplexity int, input model.UpdateLegalEntityInput) int
+		UpdateLocation                   func(childComplexity int, input model.UpdateLocationInput) int
+		UpdateMyProfile                  func(childComplexity int, input model.UpdateMyProfileInput) int
+		UpdateOrganizationUnit           func(childComplexity int, input model.UpdateOrganizationUnitInput) int
+		UpdatePartyAddressLink           func(childComplexity int, input model.UpdatePartyAddressLinkInput) int
+		UpdatePartyContact               func(childComplexity int, input model.UpdatePartyContactInput) int
+		UpdatePartyProfile               func(childComplexity int, input model.UpdatePartyProfileInput) int
+		UpdatePartyRoleNote              func(childComplexity int, input model.UpdatePartyRoleNoteInput) int
+		UpdatePartyTaxProfile            func(childComplexity int, input model.UpdatePartyTaxProfileInput) int
+		UpdatePosition                   func(childComplexity int, id string, input model.UpdatePositionInput) int
+		UpdateRequisition                func(childComplexity int, id string, input model.UpdateRequisitionInput) int
+		UpdateRoleDetails                func(childComplexity int, input model.UpdateRoleDetailsInput) int
+		UpdateUserEmail                  func(childComplexity int, input model.UserEmailInput) int
+		UpdateWorker                     func(childComplexity int, id string, input model.UpdateWorkerInput) int
+		UpdateWorkforcePlan              func(childComplexity int, id string, input model.UpdateWorkforcePlanInput) int
+		UpdateWorkforcePlanLine          func(childComplexity int, id string, input model.UpdateWorkforcePlanLineInput) int
+		UploadAvatarUser                 func(childComplexity int, input model.UserAvatarUploadInput) int
+		UserLogin                        func(childComplexity int, input model.UserLoginInput) int
+		UserLogout                       func(childComplexity int) int
+		UserResetPassword                func(childComplexity int, input model.UserResetPasswordInput) int
+		ValidateUserMfa                  func(childComplexity int, input model.ValidateUserMfaInput) int
+		VerifyAndActivateParty           func(childComplexity int, id string) int
+		VerifyEmail                      func(childComplexity int, input model.VerifyEmailInput) int
+		VerifyMySessionMfa               func(childComplexity int, totpCode string) int
+		WaiveOffboardingTask             func(childComplexity int, id string, reason string) int
 	}
 
 	MutationError struct {
@@ -315,11 +1163,398 @@ type ComplexityRoot struct {
 		Type    func(childComplexity int) int
 	}
 
+	MyPayslip struct {
+		DocumentVersionID func(childComplexity int) int
+		PaymentStatus     func(childComplexity int) int
+		PayrollPeriodID   func(childComplexity int) int
+		PayrollResultID   func(childComplexity int) int
+		PeriodCode        func(childComplexity int) int
+		PeriodEnd         func(childComplexity int) int
+		PeriodStart       func(childComplexity int) int
+		PublishedAt       func(childComplexity int) int
+		ScheduledPayDate  func(childComplexity int) int
+	}
+
+	MyPayslipConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	MyPayslipEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	MyPayslipPDF struct {
+		ContentBase64 func(childComplexity int) int
+	}
+
+	OffboardingPlan struct {
+		ID                       func(childComplexity int) int
+		LastWorkingDate          func(childComplexity int) int
+		PlanNumber               func(childComplexity int) int
+		RawID                    func(childComplexity int) int
+		Status                   func(childComplexity int) int
+		TerminationEffectiveDate func(childComplexity int) int
+		WorkerID                 func(childComplexity int) int
+	}
+
+	OffboardingPlanConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	OffboardingPlanEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	OffboardingTask struct {
+		DueAt             func(childComplexity int) int
+		ID                func(childComplexity int) int
+		IsMandatory       func(childComplexity int) int
+		OffboardingPlanID func(childComplexity int) int
+		OwnerManagement   func(childComplexity int) int
+		RawID             func(childComplexity int) int
+		Status            func(childComplexity int) int
+		TaskCode          func(childComplexity int) int
+		TaskName          func(childComplexity int) int
+	}
+
+	OffboardingTaskConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	OffboardingTaskEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	OpenRequisitionPayload struct {
+		Errors        func(childComplexity int) int
+		Requisition   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	OrganizationUnit struct {
+		Children          func(childComplexity int, after *string, before *string, first *int, last *int) int
+		CostCenterCode    func(childComplexity int) int
+		CreatedAt         func(childComplexity int) int
+		DeletedAt         func(childComplexity int) int
+		HeadPersonID      func(childComplexity int) int
+		ID                func(childComplexity int) int
+		IsActive          func(childComplexity int) int
+		Kind              func(childComplexity int) int
+		LegalEntity       func(childComplexity int) int
+		LegalEntityID     func(childComplexity int) int
+		Name              func(childComplexity int) int
+		ParentUnit        func(childComplexity int) int
+		ParentUnitID      func(childComplexity int) int
+		PrimaryLocation   func(childComplexity int) int
+		PrimaryLocationID func(childComplexity int) int
+		RawID             func(childComplexity int) int
+		UnitCode          func(childComplexity int) int
+		UpdatedAt         func(childComplexity int) int
+	}
+
+	OrganizationUnitConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	OrganizationUnitEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	PageInfo struct {
 		EndCursor       func(childComplexity int) int
 		HasNextPage     func(childComplexity int) int
 		HasPreviousPage func(childComplexity int) int
 		StartCursor     func(childComplexity int) int
+	}
+
+	Party struct {
+		Addresses          func(childComplexity int, after *string, before *string, first *int, last *int) int
+		Contacts           func(childComplexity int, after *string, before *string, first *int, last *int) int
+		CreatedAt          func(childComplexity int) int
+		DeletedAt          func(childComplexity int) int
+		DisplayName        func(childComplexity int) int
+		Email              func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		IsPkp              func(childComplexity int) int
+		IsTaxExempt        func(childComplexity int) int
+		Kind               func(childComplexity int) int
+		LegalName          func(childComplexity int) int
+		Notes              func(childComplexity int) int
+		PartnerCode        func(childComplexity int) int
+		Phone              func(childComplexity int) int
+		PreferredLanguage  func(childComplexity int) int
+		RawID              func(childComplexity int) int
+		Roles              func(childComplexity int, after *string, before *string, first *int, last *int) int
+		Status             func(childComplexity int) int
+		TaxExemptionReason func(childComplexity int) int
+		TaxIDNumber        func(childComplexity int) int
+		TaxRegisteredName  func(childComplexity int) int
+		TaxVerifiedAt      func(childComplexity int) int
+		UpdatedAt          func(childComplexity int) int
+		WebsiteURL         func(childComplexity int) int
+	}
+
+	PartyAddress struct {
+		Address   func(childComplexity int) int
+		AddressID func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		IsPrimary func(childComplexity int) int
+		PartyID   func(childComplexity int) int
+		RawID     func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		Usage     func(childComplexity int) int
+	}
+
+	PartyAddressConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PartyAddressEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PartyConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PartyContact struct {
+		ContactRole        func(childComplexity int) int
+		CreatedAt          func(childComplexity int) int
+		DeletedAt          func(childComplexity int) int
+		Email              func(childComplexity int) int
+		FullName           func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		IamUserID          func(childComplexity int) int
+		IsActive           func(childComplexity int) int
+		IsPrimary          func(childComplexity int) int
+		JobTitle           func(childComplexity int) int
+		PartyID            func(childComplexity int) int
+		Phone              func(childComplexity int) int
+		PortalAccessStatus func(childComplexity int) int
+		RawID              func(childComplexity int) int
+		UpdatedAt          func(childComplexity int) int
+	}
+
+	PartyContactConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PartyContactEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PartyEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PartyRole struct {
+		CreatedAt     func(childComplexity int) int
+		ID            func(childComplexity int) int
+		IsActive      func(childComplexity int) int
+		PartyID       func(childComplexity int) int
+		RawID         func(childComplexity int) int
+		ReferenceNote func(childComplexity int) int
+		Role          func(childComplexity int) int
+		UpdatedAt     func(childComplexity int) int
+	}
+
+	PartyRoleConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PartyRoleEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PayrollGroup struct {
+		CurrencyCode                    func(childComplexity int) int
+		CurrencyScale                   func(childComplexity int) int
+		EmployingLegalEntityReferenceID func(childComplexity int) int
+		GroupCode                       func(childComplexity int) int
+		GroupName                       func(childComplexity int) int
+		ID                              func(childComplexity int) int
+		IsActive                        func(childComplexity int) int
+		JurisdictionCode                func(childComplexity int) int
+		PayFrequency                    func(childComplexity int) int
+		RawID                           func(childComplexity int) int
+		Timezone                        func(childComplexity int) int
+	}
+
+	PayrollGroupConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PayrollGroupEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PayrollPeriod struct {
+		CurrencyCode                    func(childComplexity int) int
+		EmployingLegalEntityReferenceID func(childComplexity int) int
+		ID                              func(childComplexity int) int
+		JurisdictionCode                func(childComplexity int) int
+		PayDate                         func(childComplexity int) int
+		PayrollGroupID                  func(childComplexity int) int
+		PeriodCode                      func(childComplexity int) int
+		PeriodEnd                       func(childComplexity int) int
+		PeriodStart                     func(childComplexity int) int
+		PeriodStatus                    func(childComplexity int) int
+		RawID                           func(childComplexity int) int
+	}
+
+	PayrollPeriodConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PayrollPeriodEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PayrollPostingRequest struct {
+		PayrollRunID       func(childComplexity int) int
+		PostingRequestedAt func(childComplexity int) int
+		Status             func(childComplexity int) int
+	}
+
+	PayrollResult struct {
+		CurrencyCode        func(childComplexity int) int
+		EmployerCostAmount  func(childComplexity int) int
+		GrossAmount         func(childComplexity int) int
+		ID                  func(childComplexity int) int
+		NetPayAmount        func(childComplexity int) int
+		PayrollRunID        func(childComplexity int) int
+		RawID               func(childComplexity int) int
+		ReimbursementAmount func(childComplexity int) int
+		ResultStatus        func(childComplexity int) int
+		TotalDeductions     func(childComplexity int) int
+		WorkerID            func(childComplexity int) int
+	}
+
+	PayrollResultConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PayrollResultEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PayrollResultLine struct {
+		Amount          func(childComplexity int) int
+		ComponentCode   func(childComplexity int) int
+		ComponentName   func(childComplexity int) int
+		ComponentType   func(childComplexity int) int
+		ID              func(childComplexity int) int
+		LineSequence    func(childComplexity int) int
+		PayrollResultID func(childComplexity int) int
+		Quantity        func(childComplexity int) int
+		Rate            func(childComplexity int) int
+		RawID           func(childComplexity int) int
+		TaxableBase     func(childComplexity int) int
+	}
+
+	PayrollResultLineConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PayrollResultLineEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PayrollRuleSet struct {
+		ApprovedAt       func(childComplexity int) int
+		EffectiveFrom    func(childComplexity int) int
+		EffectiveTo      func(childComplexity int) int
+		ID               func(childComplexity int) int
+		JurisdictionCode func(childComplexity int) int
+		RawID            func(childComplexity int) int
+		RuleCode         func(childComplexity int) int
+		RuleVersion      func(childComplexity int) int
+	}
+
+	PayrollRuleSetConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PayrollRuleSetEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PayrollRun struct {
+		CalculatedAt              func(childComplexity int) int
+		CancelledAt               func(childComplexity int) int
+		FinanceJournalReferenceID func(childComplexity int) int
+		FinanceSettledAt          func(childComplexity int) int
+		ID                        func(childComplexity int) int
+		PayrollPeriodID           func(childComplexity int) int
+		PostingRequestedAt        func(childComplexity int) int
+		RawID                     func(childComplexity int) int
+		RunNumber                 func(childComplexity int) int
+		Status                    func(childComplexity int) int
+	}
+
+	PayrollRunConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PayrollRunEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	Permission struct {
@@ -345,36 +1580,221 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	PortalAccessEvaluation struct {
+		ActiveRoles func(childComplexity int) int
+		Allowed     func(childComplexity int) int
+		ContactID   func(childComplexity int) int
+		IamUserID   func(childComplexity int) int
+		PartyID     func(childComplexity int) int
+	}
+
+	Position struct {
+		HeadcountAuthorized         func(childComplexity int) int
+		ID                          func(childComplexity int) int
+		JobID                       func(childComplexity int) int
+		LegalEntityReferenceID      func(childComplexity int) int
+		OrganizationUnitReferenceID func(childComplexity int) int
+		PositionCode                func(childComplexity int) int
+		PositionStatus              func(childComplexity int) int
+		PositionTitle               func(childComplexity int) int
+		RawID                       func(childComplexity int) int
+		ReportsToPositionID         func(childComplexity int) int
+		ValidFrom                   func(childComplexity int) int
+		ValidTo                     func(childComplexity int) int
+		WorkLocationReferenceID     func(childComplexity int) int
+	}
+
+	PositionConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PositionEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	PostLeaveAdjustmentPayload struct {
+		Errors           func(childComplexity int) int
+		LeaveEntitlement func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+	}
+
 	Query struct {
-		BrowserSession     func(childComplexity int) int
-		Group              func(childComplexity int, id string) int
-		GroupMembers       func(childComplexity int, groupID string, after *string, before *string, first *int, last *int) int
-		GroupRoles         func(childComplexity int, groupID string, includeExpired *bool, after *string, before *string, first *int, last *int) int
-		Groups             func(childComplexity int, after *string, before *string, first *int, last *int, query *string, activeOnly *bool) int
-		Health             func(childComplexity int) int
-		Me                 func(childComplexity int) int
-		MyAccessSnapshot   func(childComplexity int) int
-		MySessions         func(childComplexity int, after *string, before *string, first *int, last *int, activeOnly *bool) int
-		MyWorkspaceAccess  func(childComplexity int) int
-		Node               func(childComplexity int, id string) int
-		Permission         func(childComplexity int, id string) int
-		Permissions        func(childComplexity int, after *string, before *string, first *int, last *int, query *string, resource *string, isSensitive *bool) int
-		Role               func(childComplexity int, id string) int
-		RoleByCode         func(childComplexity int, code string) int
-		RolePermissions    func(childComplexity int, roleID string, after *string, before *string, first *int, last *int) int
-		Roles              func(childComplexity int, after *string, before *string, first *int, last *int, query *string, managementDomain *string, activeOnly *bool) int
-		User               func(childComplexity int, id string) int
-		UserEffectiveRoles func(childComplexity int, userID string, after *string, before *string, first *int, last *int) int
-		UserGroups         func(childComplexity int, userID string, after *string, before *string, first *int, last *int) int
-		UserIdentities     func(childComplexity int, userID string, after *string, before *string, first *int, last *int) int
-		UserRoles          func(childComplexity int, userID string, includeExpired *bool, after *string, before *string, first *int, last *int) int
-		UserSessions       func(childComplexity int, userID string, activeOnly *bool, after *string, before *string, first *int, last *int) int
-		Users              func(childComplexity int, after *string, before *string, first *int, last *int, query *string, kind *model.UserKind, status *model.UserStatus, includeDeleted *bool) int
+		Address                              func(childComplexity int, id string) int
+		Addresses                            func(childComplexity int, after *string, before *string, first *int, last *int, query *string, countryCode *string, city *string, province *string, postalCode *string) int
+		AddressesByIds                       func(childComplexity int, ids []string) int
+		AllAddresses                         func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllLegalEntities                     func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllLocations                         func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllOrganizationUnits                 func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllParties                           func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllPartyAddressLinks                 func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllPartyContacts                     func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllPartyRoles                        func(childComplexity int, after *string, before *string, first *int, last *int) int
+		AllPartyRolesByKind                  func(childComplexity int, kind model.PartyRoleKind, activeOnly *bool, after *string, before *string, first *int, last *int) int
+		BrowserSession                       func(childComplexity int) int
+		Candidate                            func(childComplexity int, id string) int
+		Candidates                           func(childComplexity int, candidateNumber *string, after *string, before *string, first *int, last *int) int
+		CheckUsername                        func(childComplexity int, username string) int
+		EmployeeAccountRequest               func(childComplexity int, id string) int
+		EmployeeProvisioningRequest          func(childComplexity int, id string) int
+		EmployeeProvisioningRequests         func(childComplexity int, after *string, before *string, first *int, last *int) int
+		EmploymentContract                   func(childComplexity int, id string) int
+		EmploymentContracts                  func(childComplexity int, workerID string, after *string, before *string, first *int, last *int) int
+		EvaluateRepresentativePortalAccess   func(childComplexity int, partyID string, iamUserID string, requiredRole model.PartyRoleKind) int
+		Group                                func(childComplexity int, id string) int
+		GroupMembers                         func(childComplexity int, groupID string, after *string, before *string, first *int, last *int) int
+		GroupRoles                           func(childComplexity int, groupID string, includeExpired *bool, after *string, before *string, first *int, last *int) int
+		Groups                               func(childComplexity int, after *string, before *string, first *int, last *int, query *string, activeOnly *bool) int
+		Health                               func(childComplexity int) int
+		IsAddressReferenced                  func(childComplexity int, id string) int
+		Job                                  func(childComplexity int, id string) int
+		JobFamilies                          func(childComplexity int, after *string, before *string, first *int, last *int) int
+		JobFamily                            func(childComplexity int, id string) int
+		Jobs                                 func(childComplexity int, jobFamilyID *string, after *string, before *string, first *int, last *int) int
+		JobsByIds                            func(childComplexity int, ids []string) int
+		LeaveAdjustment                      func(childComplexity int, id string) int
+		LeaveAdjustments                     func(childComplexity int, entitlementID *string, idempotencyKey *string, after *string, before *string, first *int, last *int) int
+		LeaveEntitlement                     func(childComplexity int, id string) int
+		LeaveEntitlements                    func(childComplexity int, workerID string, after *string, before *string, first *int, last *int) int
+		LeaveLedgerEntries                   func(childComplexity int, entitlementID *string, adjustmentID *string, after *string, before *string, first *int, last *int) int
+		LeaveLedgerEntry                     func(childComplexity int, id string) int
+		LeavePolicies                        func(childComplexity int, after *string, before *string, first *int, last *int) int
+		LeavePolicy                          func(childComplexity int, id string) int
+		LegalEntities                        func(childComplexity int, after *string, before *string, first *int, last *int, query *string, parentLegalEntityID *string, status *model.LegalEntityStatus, primaryOnly *bool, includeDeleted *bool) int
+		LegalEntitiesByIds                   func(childComplexity int, ids []string) int
+		LegalEntitiesByNib                   func(childComplexity int, nib string, after *string, before *string, first *int, last *int) int
+		LegalEntity                          func(childComplexity int, id string) int
+		LegalEntityByCode                    func(childComplexity int, entityCode string) int
+		LegalEntityByTaxIDNumber             func(childComplexity int, taxIDNumber string) int
+		LegalEntityChildren                  func(childComplexity int, parentLegalEntityID string, after *string, before *string, first *int, last *int) int
+		Location                             func(childComplexity int, id string) int
+		LocationByCode                       func(childComplexity int, locationCode string) int
+		LocationChildren                     func(childComplexity int, parentLocationID string, after *string, before *string, first *int, last *int) int
+		Locations                            func(childComplexity int, after *string, before *string, first *int, last *int, query *string, legalEntityID *string, parentLocationID *string, addressID *string, kind *model.LocationKind, activeOnly *bool, includeDeleted *bool) int
+		LocationsByAddressID                 func(childComplexity int, addressID string, after *string, before *string, first *int, last *int) int
+		LocationsByIds                       func(childComplexity int, ids []string) int
+		LocationsByLegalEntityAndKind        func(childComplexity int, legalEntityID string, kind model.LocationKind, activeOnly *bool, after *string, before *string, first *int, last *int) int
+		Me                                   func(childComplexity int) int
+		MyAccessSnapshot                     func(childComplexity int) int
+		MyPayslip                            func(childComplexity int, payrollResultID string) int
+		MyPayslipPDF                         func(childComplexity int, payrollResultID string) int
+		MyPayslips                           func(childComplexity int, payrollPeriodID *string, after *string, before *string, first *int, last *int) int
+		MySessions                           func(childComplexity int, after *string, before *string, first *int, last *int, activeOnly *bool) int
+		MyWorkspaceAccess                    func(childComplexity int) int
+		Node                                 func(childComplexity int, id string) int
+		OffboardingPlan                      func(childComplexity int, id string) int
+		OffboardingPlans                     func(childComplexity int, workerID string, after *string, before *string, first *int, last *int) int
+		OffboardingTask                      func(childComplexity int, id string) int
+		OffboardingTasks                     func(childComplexity int, offboardingPlanID string, after *string, before *string, first *int, last *int) int
+		OrganizationUnit                     func(childComplexity int, id string) int
+		OrganizationUnitByEntityAndCode      func(childComplexity int, legalEntityID string, unitCode string) int
+		OrganizationUnitChildren             func(childComplexity int, parentUnitID string, after *string, before *string, first *int, last *int) int
+		OrganizationUnits                    func(childComplexity int, after *string, before *string, first *int, last *int, query *string, legalEntityID *string, parentUnitID *string, primaryLocationID *string, kind *model.OrgUnitKind, activeOnly *bool, includeDeleted *bool) int
+		OrganizationUnitsByHeadPersonID      func(childComplexity int, headPersonID string, after *string, before *string, first *int, last *int) int
+		OrganizationUnitsByIds               func(childComplexity int, ids []string) int
+		OrganizationUnitsByPrimaryLocationID func(childComplexity int, primaryLocationID string, after *string, before *string, first *int, last *int) int
+		Parties                              func(childComplexity int, after *string, before *string, first *int, last *int, query *string, kind *model.PartyKind, status *model.PartyStatus, role *model.PartyRoleKind, includeDeleted *bool) int
+		PartiesByEmail                       func(childComplexity int, email string, after *string, before *string, first *int, last *int) int
+		PartiesByIds                         func(childComplexity int, ids []string) int
+		Party                                func(childComplexity int, id string) int
+		PartyAddressLink                     func(childComplexity int, id string) int
+		PartyAddressLinks                    func(childComplexity int, after *string, before *string, first *int, last *int, partyID *string, addressID *string, usage *model.AddressUsageKind, primaryOnly *bool) int
+		PartyAddressLinksByAddressID         func(childComplexity int, addressID string, after *string, before *string, first *int, last *int) int
+		PartyAddressLinksByParty             func(childComplexity int, partyID string, after *string, before *string, first *int, last *int) int
+		PartyAddressLinksByPartyAndUsage     func(childComplexity int, partyID string, usage model.AddressUsageKind, after *string, before *string, first *int, last *int) int
+		PartyByCode                          func(childComplexity int, partnerCode string) int
+		PartyByTaxIDNumber                   func(childComplexity int, taxIDNumber string) int
+		PartyContact                         func(childComplexity int, id string) int
+		PartyContacts                        func(childComplexity int, after *string, before *string, first *int, last *int, partyID *string, query *string, contactRole *string, portalAccessStatus *model.PortalAccessStatus, activeOnly *bool, includeDeleted *bool) int
+		PartyContactsByEmail                 func(childComplexity int, email string, after *string, before *string, first *int, last *int) int
+		PartyContactsByIamUserID             func(childComplexity int, iamUserID string, after *string, before *string, first *int, last *int) int
+		PartyContactsByParty                 func(childComplexity int, partyID string, after *string, before *string, first *int, last *int) int
+		PartyRole                            func(childComplexity int, id string) int
+		PartyRoleByPartyAndKind              func(childComplexity int, partyID string, kind model.PartyRoleKind) int
+		PartyRoles                           func(childComplexity int, after *string, before *string, first *int, last *int, partyID *string, role *model.PartyRoleKind, activeOnly *bool, query *string) int
+		PartyRolesByKind                     func(childComplexity int, kind model.PartyRoleKind, activeOnly *bool, after *string, before *string, first *int, last *int) int
+		PartyRolesByParty                    func(childComplexity int, partyID string, after *string, before *string, first *int, last *int) int
+		PayrollGroup                         func(childComplexity int, id string) int
+		PayrollGroups                        func(childComplexity int, after *string, before *string, first *int, last *int) int
+		PayrollPeriod                        func(childComplexity int, id string) int
+		PayrollPeriods                       func(childComplexity int, payrollGroupID *string, after *string, before *string, first *int, last *int) int
+		PayrollResult                        func(childComplexity int, id string) int
+		PayrollResultLine                    func(childComplexity int, id string) int
+		PayrollResultLines                   func(childComplexity int, payrollResultID string, after *string, before *string, first *int, last *int) int
+		PayrollResults                       func(childComplexity int, payrollRunID string, after *string, before *string, first *int, last *int) int
+		PayrollRuleSet                       func(childComplexity int, id string) int
+		PayrollRuleSets                      func(childComplexity int, after *string, before *string, first *int, last *int) int
+		PayrollRun                           func(childComplexity int, id string) int
+		PayrollRuns                          func(childComplexity int, idempotencyKey *string, payrollPeriodID *string, after *string, before *string, first *int, last *int) int
+		Permission                           func(childComplexity int, id string) int
+		Permissions                          func(childComplexity int, after *string, before *string, first *int, last *int, query *string, resource *string, isSensitive *bool) int
+		Position                             func(childComplexity int, id string) int
+		Positions                            func(childComplexity int, legalEntityID *string, after *string, before *string, first *int, last *int) int
+		PrimaryOperatingLegalEntity          func(childComplexity int) int
+		PrimaryPartyAddressLink              func(childComplexity int, partyID string, usage model.AddressUsageKind) int
+		PrimaryPartyContact                  func(childComplexity int, partyID string) int
+		Requisition                          func(childComplexity int, id string) int
+		Requisitions                         func(childComplexity int, requisitionNumber *string, after *string, before *string, first *int, last *int) int
+		Role                                 func(childComplexity int, id string) int
+		RoleByCode                           func(childComplexity int, code string) int
+		RolePermissions                      func(childComplexity int, roleID string, after *string, before *string, first *int, last *int) int
+		Roles                                func(childComplexity int, after *string, before *string, first *int, last *int, query *string, managementDomain *string, activeOnly *bool) int
+		User                                 func(childComplexity int, id string) int
+		UserEffectiveRoles                   func(childComplexity int, userID string, after *string, before *string, first *int, last *int) int
+		UserGroups                           func(childComplexity int, userID string, after *string, before *string, first *int, last *int) int
+		UserIdentities                       func(childComplexity int, userID string, after *string, before *string, first *int, last *int) int
+		UserRoles                            func(childComplexity int, userID string, includeExpired *bool, after *string, before *string, first *int, last *int) int
+		UserSessions                         func(childComplexity int, userID string, activeOnly *bool, after *string, before *string, first *int, last *int) int
+		Users                                func(childComplexity int, after *string, before *string, first *int, last *int, query *string, kind *model.UserKind, status *model.UserStatus, includeDeleted *bool) int
+		ValidateFacilityScope                func(childComplexity int, id string) int
+		ValidateLegalEntityScopeTarget       func(childComplexity int, id string) int
+		ValidateOrganizationUnitScopeTarget  func(childComplexity int, id string) int
+		ValidatePartyRoleScope               func(childComplexity int, partyID string, requiredRole model.PartyRoleKind) int
+		ValidateWarehouseScope               func(childComplexity int, id string) int
+		Worker                               func(childComplexity int, id string) int
+		WorkerAssignment                     func(childComplexity int, id string) int
+		WorkerAssignmentTransfer             func(childComplexity int, id string) int
+		WorkerAssignmentTransfers            func(childComplexity int, workerID string, after *string, before *string, first *int, last *int) int
+		WorkerAssignments                    func(childComplexity int, workerID *string, positionID *string, after *string, before *string, first *int, last *int) int
+		WorkerEmployeeAccountRequest         func(childComplexity int, workerID string) int
+		Workers                              func(childComplexity int, workerNumber *string, legalEntityID *string, after *string, before *string, first *int, last *int) int
+		WorkforcePlan                        func(childComplexity int, id string) int
+		WorkforcePlanLine                    func(childComplexity int, id string) int
+		WorkforcePlanLines                   func(childComplexity int, workforcePlanID *string, after *string, before *string, first *int, last *int) int
+		WorkforcePlans                       func(childComplexity int, after *string, before *string, first *int, last *int) int
+	}
+
+	RecordSignedEmploymentContractPayload struct {
+		EmploymentContract func(childComplexity int) int
+		Errors             func(childComplexity int) int
+		WasSuccessful      func(childComplexity int) int
 	}
 
 	RegenerateMyRecoveryCodesPayload struct {
 		Errors        func(childComplexity int) int
 		RecoveryCodes func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	ReissueEmployeePayslipPayload struct {
+		Errors        func(childComplexity int) int
+		PayslipPDF    func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	RejectLeaveAdjustmentPayload struct {
+		Errors          func(childComplexity int) int
+		LeaveAdjustment func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	RejectRequisitionPayload struct {
+		Errors        func(childComplexity int) int
+		Requisition   func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
@@ -384,10 +1804,64 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	RemovePartyRolePayload struct {
+		Errors        func(childComplexity int) int
+		Removed       func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	RemoveUserIdentityPayload struct {
 		Errors        func(childComplexity int) int
 		Removed       func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
+	}
+
+	RequestEmployeeAccountPayload struct {
+		Errors        func(childComplexity int) int
+		Request       func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	RequestPartyPortalLinkPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	RequestPayrollPostingPayload struct {
+		Errors                func(childComplexity int) int
+		PayrollPostingRequest func(childComplexity int) int
+		WasSuccessful         func(childComplexity int) int
+	}
+
+	Requisition struct {
+		EmploymentCategory          func(childComplexity int) int
+		Headcount                   func(childComplexity int) int
+		HiringManagerWorkerID       func(childComplexity int) int
+		ID                          func(childComplexity int) int
+		JobID                       func(childComplexity int) int
+		OrganizationUnitReferenceID func(childComplexity int) int
+		PositionID                  func(childComplexity int) int
+		RawID                       func(childComplexity int) int
+		RejectionReasonCode         func(childComplexity int) int
+		RequisitionNumber           func(childComplexity int) int
+		RequisitionType             func(childComplexity int) int
+		Status                      func(childComplexity int) int
+		TargetStartDate             func(childComplexity int) int
+		WorkLocationReferenceID     func(childComplexity int) int
+		WorkforcePlanLineID         func(childComplexity int) int
+	}
+
+	RequisitionConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	RequisitionEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	ResendValidationEmailPayload struct {
@@ -411,6 +1885,12 @@ type ComplexityRoot struct {
 	RevokeGroupRolePayload struct {
 		Errors        func(childComplexity int) int
 		Revoked       func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	RevokePartyPortalAccessPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
@@ -487,6 +1967,14 @@ type ComplexityRoot struct {
 		Type func(childComplexity int) int
 	}
 
+	ScopeTargetDecision struct {
+		Code          func(childComplexity int) int
+		Eligible      func(childComplexity int) int
+		LegalEntityID func(childComplexity int) int
+		ScopeKind     func(childComplexity int) int
+		TargetID      func(childComplexity int) int
+	}
+
 	ScopedPermission struct {
 		IsSensitive    func(childComplexity int) int
 		PermissionCode func(childComplexity int) int
@@ -524,6 +2012,24 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	SetPrimaryOperatingLegalEntityPayload struct {
+		Errors        func(childComplexity int) int
+		LegalEntity   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	SetPrimaryPartyAddressLinkPayload struct {
+		Errors        func(childComplexity int) int
+		Link          func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	SetPrimaryPartyContactPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	SetPrimaryUserIdentityPayload struct {
 		Errors        func(childComplexity int) int
 		UserIdentity  func(childComplexity int) int
@@ -536,15 +2042,111 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	StartOffboardingPlanPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingPlan func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	SubmitPayrollRunForReviewPayload struct {
+		Errors        func(childComplexity int) int
+		PayrollRun    func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	SubmitRequisitionPayload struct {
+		Errors        func(childComplexity int) int
+		Requisition   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	SubmitWorkerAssignmentTransferPayload struct {
+		Errors                   func(childComplexity int) int
+		WasSuccessful            func(childComplexity int) int
+		WorkerAssignmentTransfer func(childComplexity int) int
+	}
+
+	SubmitWorkforcePlanPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		WorkforcePlan func(childComplexity int) int
+	}
+
+	SupersedeWorkforcePlanPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		WorkforcePlan func(childComplexity int) int
+	}
+
+	SuspendLegalEntityPayload struct {
+		Errors        func(childComplexity int) int
+		LegalEntity   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	SuspendPartyPayload struct {
+		Errors        func(childComplexity int) int
+		Party         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	SuspendUserPayload struct {
 		Errors        func(childComplexity int) int
 		User          func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
+	TerminateWorkerPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		Worker        func(childComplexity int) int
+	}
+
+	UnlinkPartyAddressPayload struct {
+		Errors        func(childComplexity int) int
+		Unlinked      func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UnlinkPartyPortalUserPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdateAddressPayload struct {
+		Address       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdateCandidatePayload struct {
+		Candidate     func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdateEmploymentContractPayload struct {
+		EmploymentContract func(childComplexity int) int
+		Errors             func(childComplexity int) int
+		WasSuccessful      func(childComplexity int) int
+	}
+
 	UpdateGroupDetailsPayload struct {
 		Errors        func(childComplexity int) int
 		Group         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdateLegalEntityPayload struct {
+		Errors        func(childComplexity int) int
+		LegalEntity   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdateLocationPayload struct {
+		Errors        func(childComplexity int) int
+		Location      func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
 	}
 
@@ -554,10 +2156,76 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	UpdateOrganizationUnitPayload struct {
+		Errors           func(childComplexity int) int
+		OrganizationUnit func(childComplexity int) int
+		WasSuccessful    func(childComplexity int) int
+	}
+
+	UpdatePartyAddressLinkPayload struct {
+		Errors        func(childComplexity int) int
+		Link          func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdatePartyContactPayload struct {
+		Contact       func(childComplexity int) int
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdatePartyProfilePayload struct {
+		Errors        func(childComplexity int) int
+		Party         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdatePartyRoleNotePayload struct {
+		Errors        func(childComplexity int) int
+		Role          func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdatePartyTaxProfilePayload struct {
+		Errors        func(childComplexity int) int
+		Party         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdatePositionPayload struct {
+		Errors        func(childComplexity int) int
+		Position      func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdateRequisitionPayload struct {
+		Errors        func(childComplexity int) int
+		Requisition   func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+	}
+
 	UpdateRoleDetailsPayload struct {
 		Errors        func(childComplexity int) int
 		Role          func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
+	}
+
+	UpdateWorkerPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		Worker        func(childComplexity int) int
+	}
+
+	UpdateWorkforcePlanLinePayload struct {
+		Errors            func(childComplexity int) int
+		WasSuccessful     func(childComplexity int) int
+		WorkforcePlanLine func(childComplexity int) int
+	}
+
+	UpdateWorkforcePlanPayload struct {
+		Errors        func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
+		WorkforcePlan func(childComplexity int) int
 	}
 
 	User struct {
@@ -680,11 +2348,23 @@ type ComplexityRoot struct {
 		UserID       func(childComplexity int) int
 	}
 
+	UsernameAvailabilityPayload struct {
+		Available          func(childComplexity int) int
+		Message            func(childComplexity int) int
+		NormalizedUsername func(childComplexity int) int
+	}
+
 	ValidateUserMfaPayload struct {
 		CsrfToken        func(childComplexity int) int
 		Errors           func(childComplexity int) int
 		RedirectLocation func(childComplexity int) int
 		WasSuccessful    func(childComplexity int) int
+	}
+
+	VerifyAndActivatePartyPayload struct {
+		Errors        func(childComplexity int) int
+		Party         func(childComplexity int) int
+		WasSuccessful func(childComplexity int) int
 	}
 
 	VerifyEmailPayload struct {
@@ -698,6 +2378,141 @@ type ComplexityRoot struct {
 		Errors        func(childComplexity int) int
 		Verified      func(childComplexity int) int
 		WasSuccessful func(childComplexity int) int
+	}
+
+	WaiveOffboardingTaskPayload struct {
+		Errors          func(childComplexity int) int
+		OffboardingTask func(childComplexity int) int
+		WasSuccessful   func(childComplexity int) int
+	}
+
+	Worker struct {
+		HireDate                      func(childComplexity int) int
+		ID                            func(childComplexity int) int
+		PersonPartyReferenceID        func(childComplexity int) int
+		PrimaryLegalEntityReferenceID func(childComplexity int) int
+		RawID                         func(childComplexity int) int
+		ServiceStartDate              func(childComplexity int) int
+		Status                        func(childComplexity int) int
+		WorkerCategory                func(childComplexity int) int
+		WorkerNumber                  func(childComplexity int) int
+	}
+
+	WorkerAssignment struct {
+		ApprovedAt     func(childComplexity int) int
+		AssignmentType func(childComplexity int) int
+		CancelledAt    func(childComplexity int) int
+		FtePercent     func(childComplexity int) int
+		ID             func(childComplexity int) int
+		PositionID     func(childComplexity int) int
+		RawID          func(childComplexity int) int
+		RequestedAt    func(childComplexity int) int
+		ValidFrom      func(childComplexity int) int
+		ValidTo        func(childComplexity int) int
+		WorkerID       func(childComplexity int) int
+	}
+
+	WorkerAssignmentConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	WorkerAssignmentEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	WorkerAssignmentTransfer struct {
+		AppliedAssignmentID func(childComplexity int) int
+		DecidedAt           func(childComplexity int) int
+		EffectiveDate       func(childComplexity int) int
+		ID                  func(childComplexity int) int
+		RawID               func(childComplexity int) int
+		ReasonCode          func(childComplexity int) int
+		RequestedAt         func(childComplexity int) int
+		SourceAssignmentID  func(childComplexity int) int
+		Status              func(childComplexity int) int
+		TargetPositionID    func(childComplexity int) int
+		WorkerID            func(childComplexity int) int
+	}
+
+	WorkerAssignmentTransferConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	WorkerAssignmentTransferEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	WorkerConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	WorkerEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	WorkforcePlan struct {
+		ID                     func(childComplexity int) int
+		LegalEntityReferenceID func(childComplexity int) int
+		PeriodEnd              func(childComplexity int) int
+		PeriodStart            func(childComplexity int) int
+		PlanCode               func(childComplexity int) int
+		PlanVersion            func(childComplexity int) int
+		RawID                  func(childComplexity int) int
+		ScenarioCode           func(childComplexity int) int
+		Status                 func(childComplexity int) int
+		SupersededByPlanID     func(childComplexity int) int
+	}
+
+	WorkforcePlanConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	WorkforcePlanEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	WorkforcePlanLine struct {
+		ActionCode                  func(childComplexity int) int
+		CurrentFte                  func(childComplexity int) int
+		ID                          func(childComplexity int) int
+		JobID                       func(childComplexity int) int
+		LineNumber                  func(childComplexity int) int
+		NeededFrom                  func(childComplexity int) int
+		NeededUntil                 func(childComplexity int) int
+		OrganizationUnitReferenceID func(childComplexity int) int
+		RawID                       func(childComplexity int) int
+		RequiredFte                 func(childComplexity int) int
+		WorkLocationReferenceID     func(childComplexity int) int
+		WorkerCategory              func(childComplexity int) int
+		WorkforcePlanID             func(childComplexity int) int
+	}
+
+	WorkforcePlanLineConnection struct {
+		Edges      func(childComplexity int) int
+		Nodes      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	WorkforcePlanLineEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	WorkspaceAccessPayload struct {
@@ -824,6 +2639,139 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ActivateGroupPayload.WasSuccessful(childComplexity), true
 
+	case "ActivateLegalEntityPayload.errors":
+		if e.ComplexityRoot.ActivateLegalEntityPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateLegalEntityPayload.Errors(childComplexity), true
+	case "ActivateLegalEntityPayload.legal_entity":
+		if e.ComplexityRoot.ActivateLegalEntityPayload.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateLegalEntityPayload.LegalEntity(childComplexity), true
+	case "ActivateLegalEntityPayload.was_successful":
+		if e.ComplexityRoot.ActivateLegalEntityPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateLegalEntityPayload.WasSuccessful(childComplexity), true
+
+	case "ActivateLocationPayload.errors":
+		if e.ComplexityRoot.ActivateLocationPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateLocationPayload.Errors(childComplexity), true
+	case "ActivateLocationPayload.location":
+		if e.ComplexityRoot.ActivateLocationPayload.Location == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateLocationPayload.Location(childComplexity), true
+	case "ActivateLocationPayload.was_successful":
+		if e.ComplexityRoot.ActivateLocationPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateLocationPayload.WasSuccessful(childComplexity), true
+
+	case "ActivateOrganizationUnitPayload.errors":
+		if e.ComplexityRoot.ActivateOrganizationUnitPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateOrganizationUnitPayload.Errors(childComplexity), true
+	case "ActivateOrganizationUnitPayload.organization_unit":
+		if e.ComplexityRoot.ActivateOrganizationUnitPayload.OrganizationUnit == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateOrganizationUnitPayload.OrganizationUnit(childComplexity), true
+	case "ActivateOrganizationUnitPayload.was_successful":
+		if e.ComplexityRoot.ActivateOrganizationUnitPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateOrganizationUnitPayload.WasSuccessful(childComplexity), true
+
+	case "ActivatePartyContactPayload.contact":
+		if e.ComplexityRoot.ActivatePartyContactPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyContactPayload.Contact(childComplexity), true
+	case "ActivatePartyContactPayload.errors":
+		if e.ComplexityRoot.ActivatePartyContactPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyContactPayload.Errors(childComplexity), true
+	case "ActivatePartyContactPayload.was_successful":
+		if e.ComplexityRoot.ActivatePartyContactPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyContactPayload.WasSuccessful(childComplexity), true
+
+	case "ActivatePartyPortalAccessPayload.contact":
+		if e.ComplexityRoot.ActivatePartyPortalAccessPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyPortalAccessPayload.Contact(childComplexity), true
+	case "ActivatePartyPortalAccessPayload.errors":
+		if e.ComplexityRoot.ActivatePartyPortalAccessPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyPortalAccessPayload.Errors(childComplexity), true
+	case "ActivatePartyPortalAccessPayload.was_successful":
+		if e.ComplexityRoot.ActivatePartyPortalAccessPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyPortalAccessPayload.WasSuccessful(childComplexity), true
+
+	case "ActivatePartyRolePayload.errors":
+		if e.ComplexityRoot.ActivatePartyRolePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyRolePayload.Errors(childComplexity), true
+	case "ActivatePartyRolePayload.role":
+		if e.ComplexityRoot.ActivatePartyRolePayload.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyRolePayload.Role(childComplexity), true
+	case "ActivatePartyRolePayload.was_successful":
+		if e.ComplexityRoot.ActivatePartyRolePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePartyRolePayload.WasSuccessful(childComplexity), true
+
+	case "ActivatePositionPayload.errors":
+		if e.ComplexityRoot.ActivatePositionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePositionPayload.Errors(childComplexity), true
+	case "ActivatePositionPayload.position":
+		if e.ComplexityRoot.ActivatePositionPayload.Position == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePositionPayload.Position(childComplexity), true
+	case "ActivatePositionPayload.was_successful":
+		if e.ComplexityRoot.ActivatePositionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivatePositionPayload.WasSuccessful(childComplexity), true
+
 	case "ActivateRolePayload.errors":
 		if e.ComplexityRoot.ActivateRolePayload.Errors == nil {
 			break
@@ -862,6 +2810,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ActivateUserPayload.WasSuccessful(childComplexity), true
 
+	case "ActivateWorkerPayload.errors":
+		if e.ComplexityRoot.ActivateWorkerPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateWorkerPayload.Errors(childComplexity), true
+	case "ActivateWorkerPayload.was_successful":
+		if e.ComplexityRoot.ActivateWorkerPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateWorkerPayload.WasSuccessful(childComplexity), true
+	case "ActivateWorkerPayload.worker":
+		if e.ComplexityRoot.ActivateWorkerPayload.Worker == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ActivateWorkerPayload.Worker(childComplexity), true
+
 	case "AddGroupMemberPayload.errors":
 		if e.ComplexityRoot.AddGroupMemberPayload.Errors == nil {
 			break
@@ -881,6 +2848,281 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.AddGroupMemberPayload.WasSuccessful(childComplexity), true
 
+	case "AddPartyContactPayload.contact":
+		if e.ComplexityRoot.AddPartyContactPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddPartyContactPayload.Contact(childComplexity), true
+	case "AddPartyContactPayload.errors":
+		if e.ComplexityRoot.AddPartyContactPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddPartyContactPayload.Errors(childComplexity), true
+	case "AddPartyContactPayload.was_successful":
+		if e.ComplexityRoot.AddPartyContactPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddPartyContactPayload.WasSuccessful(childComplexity), true
+
+	case "Address.address_line_1":
+		if e.ComplexityRoot.Address.AddressLine1 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.AddressLine1(childComplexity), true
+	case "Address.address_line_2":
+		if e.ComplexityRoot.Address.AddressLine2 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.AddressLine2(childComplexity), true
+	case "Address.city":
+		if e.ComplexityRoot.Address.City == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.City(childComplexity), true
+	case "Address.country_code":
+		if e.ComplexityRoot.Address.CountryCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.CountryCode(childComplexity), true
+	case "Address.created_at":
+		if e.ComplexityRoot.Address.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.CreatedAt(childComplexity), true
+	case "Address.formatted_address":
+		if e.ComplexityRoot.Address.FormattedAddress == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.FormattedAddress(childComplexity), true
+	case "Address.id":
+		if e.ComplexityRoot.Address.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.ID(childComplexity), true
+	case "Address.label":
+		if e.ComplexityRoot.Address.Label == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.Label(childComplexity), true
+	case "Address.latitude":
+		if e.ComplexityRoot.Address.Latitude == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.Latitude(childComplexity), true
+	case "Address.longitude":
+		if e.ComplexityRoot.Address.Longitude == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.Longitude(childComplexity), true
+	case "Address.postal_code":
+		if e.ComplexityRoot.Address.PostalCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.PostalCode(childComplexity), true
+	case "Address.province":
+		if e.ComplexityRoot.Address.Province == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.Province(childComplexity), true
+	case "Address._id":
+		if e.ComplexityRoot.Address.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.RawID(childComplexity), true
+	case "Address.updated_at":
+		if e.ComplexityRoot.Address.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Address.UpdatedAt(childComplexity), true
+
+	case "AddressConnection.edges":
+		if e.ComplexityRoot.AddressConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddressConnection.Edges(childComplexity), true
+	case "AddressConnection.nodes":
+		if e.ComplexityRoot.AddressConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddressConnection.Nodes(childComplexity), true
+	case "AddressConnection.pageInfo":
+		if e.ComplexityRoot.AddressConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddressConnection.PageInfo(childComplexity), true
+	case "AddressConnection.total_count":
+		if e.ComplexityRoot.AddressConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddressConnection.TotalCount(childComplexity), true
+
+	case "AddressEdge.cursor":
+		if e.ComplexityRoot.AddressEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddressEdge.Cursor(childComplexity), true
+	case "AddressEdge.node":
+		if e.ComplexityRoot.AddressEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AddressEdge.Node(childComplexity), true
+
+	case "ApplyPrimaryAssignmentPayload.errors":
+		if e.ComplexityRoot.ApplyPrimaryAssignmentPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApplyPrimaryAssignmentPayload.Errors(childComplexity), true
+	case "ApplyPrimaryAssignmentPayload.was_successful":
+		if e.ComplexityRoot.ApplyPrimaryAssignmentPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApplyPrimaryAssignmentPayload.WasSuccessful(childComplexity), true
+	case "ApplyPrimaryAssignmentPayload.worker":
+		if e.ComplexityRoot.ApplyPrimaryAssignmentPayload.Worker == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApplyPrimaryAssignmentPayload.Worker(childComplexity), true
+
+	case "ApproveLeaveAdjustmentPayload.errors":
+		if e.ComplexityRoot.ApproveLeaveAdjustmentPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveLeaveAdjustmentPayload.Errors(childComplexity), true
+	case "ApproveLeaveAdjustmentPayload.leave_adjustment":
+		if e.ComplexityRoot.ApproveLeaveAdjustmentPayload.LeaveAdjustment == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveLeaveAdjustmentPayload.LeaveAdjustment(childComplexity), true
+	case "ApproveLeaveAdjustmentPayload.was_successful":
+		if e.ComplexityRoot.ApproveLeaveAdjustmentPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveLeaveAdjustmentPayload.WasSuccessful(childComplexity), true
+
+	case "ApproveOffboardingPlanPayload.errors":
+		if e.ComplexityRoot.ApproveOffboardingPlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveOffboardingPlanPayload.Errors(childComplexity), true
+	case "ApproveOffboardingPlanPayload.offboarding_plan":
+		if e.ComplexityRoot.ApproveOffboardingPlanPayload.OffboardingPlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveOffboardingPlanPayload.OffboardingPlan(childComplexity), true
+	case "ApproveOffboardingPlanPayload.was_successful":
+		if e.ComplexityRoot.ApproveOffboardingPlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveOffboardingPlanPayload.WasSuccessful(childComplexity), true
+
+	case "ApprovePayrollRunPayload.errors":
+		if e.ComplexityRoot.ApprovePayrollRunPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApprovePayrollRunPayload.Errors(childComplexity), true
+	case "ApprovePayrollRunPayload.payroll_run":
+		if e.ComplexityRoot.ApprovePayrollRunPayload.PayrollRun == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApprovePayrollRunPayload.PayrollRun(childComplexity), true
+	case "ApprovePayrollRunPayload.was_successful":
+		if e.ComplexityRoot.ApprovePayrollRunPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApprovePayrollRunPayload.WasSuccessful(childComplexity), true
+
+	case "ApproveRequisitionPayload.errors":
+		if e.ComplexityRoot.ApproveRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveRequisitionPayload.Errors(childComplexity), true
+	case "ApproveRequisitionPayload.requisition":
+		if e.ComplexityRoot.ApproveRequisitionPayload.Requisition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveRequisitionPayload.Requisition(childComplexity), true
+	case "ApproveRequisitionPayload.was_successful":
+		if e.ComplexityRoot.ApproveRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveRequisitionPayload.WasSuccessful(childComplexity), true
+
+	case "ApproveWorkerAssignmentPayload.errors":
+		if e.ComplexityRoot.ApproveWorkerAssignmentPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveWorkerAssignmentPayload.Errors(childComplexity), true
+	case "ApproveWorkerAssignmentPayload.was_successful":
+		if e.ComplexityRoot.ApproveWorkerAssignmentPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveWorkerAssignmentPayload.WasSuccessful(childComplexity), true
+	case "ApproveWorkerAssignmentPayload.worker_assignment":
+		if e.ComplexityRoot.ApproveWorkerAssignmentPayload.WorkerAssignment == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveWorkerAssignmentPayload.WorkerAssignment(childComplexity), true
+
+	case "ApproveWorkforcePlanPayload.errors":
+		if e.ComplexityRoot.ApproveWorkforcePlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveWorkforcePlanPayload.Errors(childComplexity), true
+	case "ApproveWorkforcePlanPayload.was_successful":
+		if e.ComplexityRoot.ApproveWorkforcePlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveWorkforcePlanPayload.WasSuccessful(childComplexity), true
+	case "ApproveWorkforcePlanPayload.workforce_plan":
+		if e.ComplexityRoot.ApproveWorkforcePlanPayload.WorkforcePlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ApproveWorkforcePlanPayload.WorkforcePlan(childComplexity), true
+
 	case "AssignGroupRolePayload.errors":
 		if e.ComplexityRoot.AssignGroupRolePayload.Errors == nil {
 			break
@@ -899,6 +3141,44 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.AssignGroupRolePayload.WasSuccessful(childComplexity), true
+
+	case "AssignOrganizationUnitHeadPersonPayload.errors":
+		if e.ComplexityRoot.AssignOrganizationUnitHeadPersonPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AssignOrganizationUnitHeadPersonPayload.Errors(childComplexity), true
+	case "AssignOrganizationUnitHeadPersonPayload.organization_unit":
+		if e.ComplexityRoot.AssignOrganizationUnitHeadPersonPayload.OrganizationUnit == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AssignOrganizationUnitHeadPersonPayload.OrganizationUnit(childComplexity), true
+	case "AssignOrganizationUnitHeadPersonPayload.was_successful":
+		if e.ComplexityRoot.AssignOrganizationUnitHeadPersonPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AssignOrganizationUnitHeadPersonPayload.WasSuccessful(childComplexity), true
+
+	case "AssignPartyRolePayload.errors":
+		if e.ComplexityRoot.AssignPartyRolePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AssignPartyRolePayload.Errors(childComplexity), true
+	case "AssignPartyRolePayload.role":
+		if e.ComplexityRoot.AssignPartyRolePayload.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AssignPartyRolePayload.Role(childComplexity), true
+	case "AssignPartyRolePayload.was_successful":
+		if e.ComplexityRoot.AssignPartyRolePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AssignPartyRolePayload.WasSuccessful(childComplexity), true
 
 	case "AssignRolePermissionPayload.errors":
 		if e.ComplexityRoot.AssignRolePermissionPayload.Errors == nil {
@@ -957,6 +3237,151 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.BrowserSessionPayload.PrincipalID(childComplexity), true
 
+	case "CalculatePayrollRunPayload.errors":
+		if e.ComplexityRoot.CalculatePayrollRunPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CalculatePayrollRunPayload.Errors(childComplexity), true
+	case "CalculatePayrollRunPayload.payroll_run":
+		if e.ComplexityRoot.CalculatePayrollRunPayload.PayrollRun == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CalculatePayrollRunPayload.PayrollRun(childComplexity), true
+	case "CalculatePayrollRunPayload.was_successful":
+		if e.ComplexityRoot.CalculatePayrollRunPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CalculatePayrollRunPayload.WasSuccessful(childComplexity), true
+
+	case "CancelOffboardingPlanPayload.errors":
+		if e.ComplexityRoot.CancelOffboardingPlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelOffboardingPlanPayload.Errors(childComplexity), true
+	case "CancelOffboardingPlanPayload.offboarding_plan":
+		if e.ComplexityRoot.CancelOffboardingPlanPayload.OffboardingPlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelOffboardingPlanPayload.OffboardingPlan(childComplexity), true
+	case "CancelOffboardingPlanPayload.was_successful":
+		if e.ComplexityRoot.CancelOffboardingPlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelOffboardingPlanPayload.WasSuccessful(childComplexity), true
+
+	case "CancelPayrollRunPayload.errors":
+		if e.ComplexityRoot.CancelPayrollRunPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelPayrollRunPayload.Errors(childComplexity), true
+	case "CancelPayrollRunPayload.payroll_run":
+		if e.ComplexityRoot.CancelPayrollRunPayload.PayrollRun == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelPayrollRunPayload.PayrollRun(childComplexity), true
+	case "CancelPayrollRunPayload.was_successful":
+		if e.ComplexityRoot.CancelPayrollRunPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelPayrollRunPayload.WasSuccessful(childComplexity), true
+
+	case "CancelWorkforcePlanPayload.errors":
+		if e.ComplexityRoot.CancelWorkforcePlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelWorkforcePlanPayload.Errors(childComplexity), true
+	case "CancelWorkforcePlanPayload.was_successful":
+		if e.ComplexityRoot.CancelWorkforcePlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelWorkforcePlanPayload.WasSuccessful(childComplexity), true
+	case "CancelWorkforcePlanPayload.workforce_plan":
+		if e.ComplexityRoot.CancelWorkforcePlanPayload.WorkforcePlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CancelWorkforcePlanPayload.WorkforcePlan(childComplexity), true
+
+	case "Candidate.candidate_number":
+		if e.ComplexityRoot.Candidate.CandidateNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Candidate.CandidateNumber(childComplexity), true
+	case "Candidate.candidate_status":
+		if e.ComplexityRoot.Candidate.CandidateStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Candidate.CandidateStatus(childComplexity), true
+	case "Candidate.id":
+		if e.ComplexityRoot.Candidate.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Candidate.ID(childComplexity), true
+	case "Candidate.preferred_name":
+		if e.ComplexityRoot.Candidate.PreferredName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Candidate.PreferredName(childComplexity), true
+	case "Candidate._id":
+		if e.ComplexityRoot.Candidate.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Candidate.RawID(childComplexity), true
+
+	case "CandidateConnection.edges":
+		if e.ComplexityRoot.CandidateConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CandidateConnection.Edges(childComplexity), true
+	case "CandidateConnection.nodes":
+		if e.ComplexityRoot.CandidateConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CandidateConnection.Nodes(childComplexity), true
+	case "CandidateConnection.pageInfo":
+		if e.ComplexityRoot.CandidateConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CandidateConnection.PageInfo(childComplexity), true
+	case "CandidateConnection.total_count":
+		if e.ComplexityRoot.CandidateConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CandidateConnection.TotalCount(childComplexity), true
+
+	case "CandidateEdge.cursor":
+		if e.ComplexityRoot.CandidateEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CandidateEdge.Cursor(childComplexity), true
+	case "CandidateEdge.node":
+		if e.ComplexityRoot.CandidateEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CandidateEdge.Node(childComplexity), true
+
 	case "ChangeUserPasswordPayload.changed":
 		if e.ComplexityRoot.ChangeUserPasswordPayload.Changed == nil {
 			break
@@ -988,6 +3413,82 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ChangeUserPasswordPayload.WasSuccessful(childComplexity), true
 
+	case "CloseLeaveEntitlementPayload.errors":
+		if e.ComplexityRoot.CloseLeaveEntitlementPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CloseLeaveEntitlementPayload.Errors(childComplexity), true
+	case "CloseLeaveEntitlementPayload.leave_entitlement":
+		if e.ComplexityRoot.CloseLeaveEntitlementPayload.LeaveEntitlement == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CloseLeaveEntitlementPayload.LeaveEntitlement(childComplexity), true
+	case "CloseLeaveEntitlementPayload.was_successful":
+		if e.ComplexityRoot.CloseLeaveEntitlementPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CloseLeaveEntitlementPayload.WasSuccessful(childComplexity), true
+
+	case "CloseRequisitionPayload.errors":
+		if e.ComplexityRoot.CloseRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CloseRequisitionPayload.Errors(childComplexity), true
+	case "CloseRequisitionPayload.requisition":
+		if e.ComplexityRoot.CloseRequisitionPayload.Requisition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CloseRequisitionPayload.Requisition(childComplexity), true
+	case "CloseRequisitionPayload.was_successful":
+		if e.ComplexityRoot.CloseRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CloseRequisitionPayload.WasSuccessful(childComplexity), true
+
+	case "CompleteOffboardingPlanPayload.errors":
+		if e.ComplexityRoot.CompleteOffboardingPlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CompleteOffboardingPlanPayload.Errors(childComplexity), true
+	case "CompleteOffboardingPlanPayload.offboarding_plan":
+		if e.ComplexityRoot.CompleteOffboardingPlanPayload.OffboardingPlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CompleteOffboardingPlanPayload.OffboardingPlan(childComplexity), true
+	case "CompleteOffboardingPlanPayload.was_successful":
+		if e.ComplexityRoot.CompleteOffboardingPlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CompleteOffboardingPlanPayload.WasSuccessful(childComplexity), true
+
+	case "CompleteOffboardingTaskPayload.errors":
+		if e.ComplexityRoot.CompleteOffboardingTaskPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CompleteOffboardingTaskPayload.Errors(childComplexity), true
+	case "CompleteOffboardingTaskPayload.offboarding_task":
+		if e.ComplexityRoot.CompleteOffboardingTaskPayload.OffboardingTask == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CompleteOffboardingTaskPayload.OffboardingTask(childComplexity), true
+	case "CompleteOffboardingTaskPayload.was_successful":
+		if e.ComplexityRoot.CompleteOffboardingTaskPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CompleteOffboardingTaskPayload.WasSuccessful(childComplexity), true
+
 	case "ConfirmTotpPayload.enabled":
 		if e.ComplexityRoot.ConfirmTotpPayload.Enabled == nil {
 			break
@@ -1013,6 +3514,44 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ConfirmTotpPayload.WasSuccessful(childComplexity), true
 
+	case "CreateAddressPayload.address":
+		if e.ComplexityRoot.CreateAddressPayload.Address == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateAddressPayload.Address(childComplexity), true
+	case "CreateAddressPayload.errors":
+		if e.ComplexityRoot.CreateAddressPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateAddressPayload.Errors(childComplexity), true
+	case "CreateAddressPayload.was_successful":
+		if e.ComplexityRoot.CreateAddressPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateAddressPayload.WasSuccessful(childComplexity), true
+
+	case "CreateCandidatePayload.candidate":
+		if e.ComplexityRoot.CreateCandidatePayload.Candidate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateCandidatePayload.Candidate(childComplexity), true
+	case "CreateCandidatePayload.errors":
+		if e.ComplexityRoot.CreateCandidatePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateCandidatePayload.Errors(childComplexity), true
+	case "CreateCandidatePayload.was_successful":
+		if e.ComplexityRoot.CreateCandidatePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateCandidatePayload.WasSuccessful(childComplexity), true
+
 	case "CreateEmployeeUserPayload.errors":
 		if e.ComplexityRoot.CreateEmployeeUserPayload.Errors == nil {
 			break
@@ -1032,6 +3571,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.CreateEmployeeUserPayload.WasSuccessful(childComplexity), true
 
+	case "CreateEmploymentContractPayload.employment_contract":
+		if e.ComplexityRoot.CreateEmploymentContractPayload.EmploymentContract == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateEmploymentContractPayload.EmploymentContract(childComplexity), true
+	case "CreateEmploymentContractPayload.errors":
+		if e.ComplexityRoot.CreateEmploymentContractPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateEmploymentContractPayload.Errors(childComplexity), true
+	case "CreateEmploymentContractPayload.was_successful":
+		if e.ComplexityRoot.CreateEmploymentContractPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateEmploymentContractPayload.WasSuccessful(childComplexity), true
+
 	case "CreateGroupPayload.errors":
 		if e.ComplexityRoot.CreateGroupPayload.Errors == nil {
 			break
@@ -1050,6 +3608,234 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CreateGroupPayload.WasSuccessful(childComplexity), true
+
+	case "CreateJobFamilyPayload.errors":
+		if e.ComplexityRoot.CreateJobFamilyPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateJobFamilyPayload.Errors(childComplexity), true
+	case "CreateJobFamilyPayload.job_family":
+		if e.ComplexityRoot.CreateJobFamilyPayload.JobFamily == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateJobFamilyPayload.JobFamily(childComplexity), true
+	case "CreateJobFamilyPayload.was_successful":
+		if e.ComplexityRoot.CreateJobFamilyPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateJobFamilyPayload.WasSuccessful(childComplexity), true
+
+	case "CreateJobPayload.errors":
+		if e.ComplexityRoot.CreateJobPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateJobPayload.Errors(childComplexity), true
+	case "CreateJobPayload.job":
+		if e.ComplexityRoot.CreateJobPayload.Job == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateJobPayload.Job(childComplexity), true
+	case "CreateJobPayload.was_successful":
+		if e.ComplexityRoot.CreateJobPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateJobPayload.WasSuccessful(childComplexity), true
+
+	case "CreateLeaveAdjustmentPayload.errors":
+		if e.ComplexityRoot.CreateLeaveAdjustmentPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLeaveAdjustmentPayload.Errors(childComplexity), true
+	case "CreateLeaveAdjustmentPayload.leave_adjustment":
+		if e.ComplexityRoot.CreateLeaveAdjustmentPayload.LeaveAdjustment == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLeaveAdjustmentPayload.LeaveAdjustment(childComplexity), true
+	case "CreateLeaveAdjustmentPayload.was_successful":
+		if e.ComplexityRoot.CreateLeaveAdjustmentPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLeaveAdjustmentPayload.WasSuccessful(childComplexity), true
+
+	case "CreateLegalEntityPayload.errors":
+		if e.ComplexityRoot.CreateLegalEntityPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLegalEntityPayload.Errors(childComplexity), true
+	case "CreateLegalEntityPayload.legal_entity":
+		if e.ComplexityRoot.CreateLegalEntityPayload.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLegalEntityPayload.LegalEntity(childComplexity), true
+	case "CreateLegalEntityPayload.was_successful":
+		if e.ComplexityRoot.CreateLegalEntityPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLegalEntityPayload.WasSuccessful(childComplexity), true
+
+	case "CreateLocationPayload.errors":
+		if e.ComplexityRoot.CreateLocationPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLocationPayload.Errors(childComplexity), true
+	case "CreateLocationPayload.location":
+		if e.ComplexityRoot.CreateLocationPayload.Location == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLocationPayload.Location(childComplexity), true
+	case "CreateLocationPayload.was_successful":
+		if e.ComplexityRoot.CreateLocationPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateLocationPayload.WasSuccessful(childComplexity), true
+
+	case "CreateOffboardingPlanPayload.errors":
+		if e.ComplexityRoot.CreateOffboardingPlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOffboardingPlanPayload.Errors(childComplexity), true
+	case "CreateOffboardingPlanPayload.offboarding_plan":
+		if e.ComplexityRoot.CreateOffboardingPlanPayload.OffboardingPlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOffboardingPlanPayload.OffboardingPlan(childComplexity), true
+	case "CreateOffboardingPlanPayload.was_successful":
+		if e.ComplexityRoot.CreateOffboardingPlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOffboardingPlanPayload.WasSuccessful(childComplexity), true
+
+	case "CreateOffboardingTaskPayload.errors":
+		if e.ComplexityRoot.CreateOffboardingTaskPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOffboardingTaskPayload.Errors(childComplexity), true
+	case "CreateOffboardingTaskPayload.offboarding_task":
+		if e.ComplexityRoot.CreateOffboardingTaskPayload.OffboardingTask == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOffboardingTaskPayload.OffboardingTask(childComplexity), true
+	case "CreateOffboardingTaskPayload.was_successful":
+		if e.ComplexityRoot.CreateOffboardingTaskPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOffboardingTaskPayload.WasSuccessful(childComplexity), true
+
+	case "CreateOrganizationUnitPayload.errors":
+		if e.ComplexityRoot.CreateOrganizationUnitPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOrganizationUnitPayload.Errors(childComplexity), true
+	case "CreateOrganizationUnitPayload.organization_unit":
+		if e.ComplexityRoot.CreateOrganizationUnitPayload.OrganizationUnit == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOrganizationUnitPayload.OrganizationUnit(childComplexity), true
+	case "CreateOrganizationUnitPayload.was_successful":
+		if e.ComplexityRoot.CreateOrganizationUnitPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateOrganizationUnitPayload.WasSuccessful(childComplexity), true
+
+	case "CreatePartyPayload.errors":
+		if e.ComplexityRoot.CreatePartyPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePartyPayload.Errors(childComplexity), true
+	case "CreatePartyPayload.party":
+		if e.ComplexityRoot.CreatePartyPayload.Party == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePartyPayload.Party(childComplexity), true
+	case "CreatePartyPayload.was_successful":
+		if e.ComplexityRoot.CreatePartyPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePartyPayload.WasSuccessful(childComplexity), true
+
+	case "CreatePayrollRunPayload.errors":
+		if e.ComplexityRoot.CreatePayrollRunPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePayrollRunPayload.Errors(childComplexity), true
+	case "CreatePayrollRunPayload.payroll_run":
+		if e.ComplexityRoot.CreatePayrollRunPayload.PayrollRun == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePayrollRunPayload.PayrollRun(childComplexity), true
+	case "CreatePayrollRunPayload.was_successful":
+		if e.ComplexityRoot.CreatePayrollRunPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePayrollRunPayload.WasSuccessful(childComplexity), true
+
+	case "CreatePositionPayload.errors":
+		if e.ComplexityRoot.CreatePositionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePositionPayload.Errors(childComplexity), true
+	case "CreatePositionPayload.position":
+		if e.ComplexityRoot.CreatePositionPayload.Position == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePositionPayload.Position(childComplexity), true
+	case "CreatePositionPayload.was_successful":
+		if e.ComplexityRoot.CreatePositionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreatePositionPayload.WasSuccessful(childComplexity), true
+
+	case "CreateRequisitionPayload.errors":
+		if e.ComplexityRoot.CreateRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateRequisitionPayload.Errors(childComplexity), true
+	case "CreateRequisitionPayload.requisition":
+		if e.ComplexityRoot.CreateRequisitionPayload.Requisition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateRequisitionPayload.Requisition(childComplexity), true
+	case "CreateRequisitionPayload.was_successful":
+		if e.ComplexityRoot.CreateRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateRequisitionPayload.WasSuccessful(childComplexity), true
 
 	case "CreateRolePayload.errors":
 		if e.ComplexityRoot.CreateRolePayload.Errors == nil {
@@ -1076,6 +3862,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CreateSupplierUserPayload.Errors(childComplexity), true
+	case "CreateSupplierUserPayload.party_contact":
+		if e.ComplexityRoot.CreateSupplierUserPayload.PartyContact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateSupplierUserPayload.PartyContact(childComplexity), true
 	case "CreateSupplierUserPayload.user":
 		if e.ComplexityRoot.CreateSupplierUserPayload.User == nil {
 			break
@@ -1120,6 +3912,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CreateVendorUserPayload.Errors(childComplexity), true
+	case "CreateVendorUserPayload.party_contact":
+		if e.ComplexityRoot.CreateVendorUserPayload.PartyContact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateVendorUserPayload.PartyContact(childComplexity), true
 	case "CreateVendorUserPayload.user":
 		if e.ComplexityRoot.CreateVendorUserPayload.User == nil {
 			break
@@ -1132,6 +3930,82 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.CreateVendorUserPayload.WasSuccessful(childComplexity), true
+
+	case "CreateWorkerAssignmentPayload.errors":
+		if e.ComplexityRoot.CreateWorkerAssignmentPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkerAssignmentPayload.Errors(childComplexity), true
+	case "CreateWorkerAssignmentPayload.was_successful":
+		if e.ComplexityRoot.CreateWorkerAssignmentPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkerAssignmentPayload.WasSuccessful(childComplexity), true
+	case "CreateWorkerAssignmentPayload.worker_assignment":
+		if e.ComplexityRoot.CreateWorkerAssignmentPayload.WorkerAssignment == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkerAssignmentPayload.WorkerAssignment(childComplexity), true
+
+	case "CreateWorkerPayload.errors":
+		if e.ComplexityRoot.CreateWorkerPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkerPayload.Errors(childComplexity), true
+	case "CreateWorkerPayload.was_successful":
+		if e.ComplexityRoot.CreateWorkerPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkerPayload.WasSuccessful(childComplexity), true
+	case "CreateWorkerPayload.worker":
+		if e.ComplexityRoot.CreateWorkerPayload.Worker == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkerPayload.Worker(childComplexity), true
+
+	case "CreateWorkforcePlanLinePayload.errors":
+		if e.ComplexityRoot.CreateWorkforcePlanLinePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkforcePlanLinePayload.Errors(childComplexity), true
+	case "CreateWorkforcePlanLinePayload.was_successful":
+		if e.ComplexityRoot.CreateWorkforcePlanLinePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkforcePlanLinePayload.WasSuccessful(childComplexity), true
+	case "CreateWorkforcePlanLinePayload.workforce_plan_line":
+		if e.ComplexityRoot.CreateWorkforcePlanLinePayload.WorkforcePlanLine == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkforcePlanLinePayload.WorkforcePlanLine(childComplexity), true
+
+	case "CreateWorkforcePlanPayload.errors":
+		if e.ComplexityRoot.CreateWorkforcePlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkforcePlanPayload.Errors(childComplexity), true
+	case "CreateWorkforcePlanPayload.was_successful":
+		if e.ComplexityRoot.CreateWorkforcePlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkforcePlanPayload.WasSuccessful(childComplexity), true
+	case "CreateWorkforcePlanPayload.workforce_plan":
+		if e.ComplexityRoot.CreateWorkforcePlanPayload.WorkforcePlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateWorkforcePlanPayload.WorkforcePlan(childComplexity), true
 
 	case "DeactivateGroupPayload.errors":
 		if e.ComplexityRoot.DeactivateGroupPayload.Errors == nil {
@@ -1152,6 +4026,101 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.DeactivateGroupPayload.WasSuccessful(childComplexity), true
 
+	case "DeactivateLocationPayload.errors":
+		if e.ComplexityRoot.DeactivateLocationPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivateLocationPayload.Errors(childComplexity), true
+	case "DeactivateLocationPayload.location":
+		if e.ComplexityRoot.DeactivateLocationPayload.Location == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivateLocationPayload.Location(childComplexity), true
+	case "DeactivateLocationPayload.was_successful":
+		if e.ComplexityRoot.DeactivateLocationPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivateLocationPayload.WasSuccessful(childComplexity), true
+
+	case "DeactivateOrganizationUnitPayload.errors":
+		if e.ComplexityRoot.DeactivateOrganizationUnitPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivateOrganizationUnitPayload.Errors(childComplexity), true
+	case "DeactivateOrganizationUnitPayload.organization_unit":
+		if e.ComplexityRoot.DeactivateOrganizationUnitPayload.OrganizationUnit == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivateOrganizationUnitPayload.OrganizationUnit(childComplexity), true
+	case "DeactivateOrganizationUnitPayload.was_successful":
+		if e.ComplexityRoot.DeactivateOrganizationUnitPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivateOrganizationUnitPayload.WasSuccessful(childComplexity), true
+
+	case "DeactivatePartyContactPayload.contact":
+		if e.ComplexityRoot.DeactivatePartyContactPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyContactPayload.Contact(childComplexity), true
+	case "DeactivatePartyContactPayload.errors":
+		if e.ComplexityRoot.DeactivatePartyContactPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyContactPayload.Errors(childComplexity), true
+	case "DeactivatePartyContactPayload.was_successful":
+		if e.ComplexityRoot.DeactivatePartyContactPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyContactPayload.WasSuccessful(childComplexity), true
+
+	case "DeactivatePartyPayload.errors":
+		if e.ComplexityRoot.DeactivatePartyPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyPayload.Errors(childComplexity), true
+	case "DeactivatePartyPayload.party":
+		if e.ComplexityRoot.DeactivatePartyPayload.Party == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyPayload.Party(childComplexity), true
+	case "DeactivatePartyPayload.was_successful":
+		if e.ComplexityRoot.DeactivatePartyPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyPayload.WasSuccessful(childComplexity), true
+
+	case "DeactivatePartyRolePayload.errors":
+		if e.ComplexityRoot.DeactivatePartyRolePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyRolePayload.Errors(childComplexity), true
+	case "DeactivatePartyRolePayload.role":
+		if e.ComplexityRoot.DeactivatePartyRolePayload.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyRolePayload.Role(childComplexity), true
+	case "DeactivatePartyRolePayload.was_successful":
+		if e.ComplexityRoot.DeactivatePartyRolePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeactivatePartyRolePayload.WasSuccessful(childComplexity), true
+
 	case "DeactivateRolePayload.errors":
 		if e.ComplexityRoot.DeactivateRolePayload.Errors == nil {
 			break
@@ -1170,6 +4139,82 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.DeactivateRolePayload.WasSuccessful(childComplexity), true
+
+	case "DecideWorkerAssignmentTransferPayload.errors":
+		if e.ComplexityRoot.DecideWorkerAssignmentTransferPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DecideWorkerAssignmentTransferPayload.Errors(childComplexity), true
+	case "DecideWorkerAssignmentTransferPayload.was_successful":
+		if e.ComplexityRoot.DecideWorkerAssignmentTransferPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DecideWorkerAssignmentTransferPayload.WasSuccessful(childComplexity), true
+	case "DecideWorkerAssignmentTransferPayload.worker_assignment_transfer":
+		if e.ComplexityRoot.DecideWorkerAssignmentTransferPayload.WorkerAssignmentTransfer == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DecideWorkerAssignmentTransferPayload.WorkerAssignmentTransfer(childComplexity), true
+
+	case "DeleteAddressPayload.deleted":
+		if e.ComplexityRoot.DeleteAddressPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteAddressPayload.Deleted(childComplexity), true
+	case "DeleteAddressPayload.errors":
+		if e.ComplexityRoot.DeleteAddressPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteAddressPayload.Errors(childComplexity), true
+	case "DeleteAddressPayload.was_successful":
+		if e.ComplexityRoot.DeleteAddressPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteAddressPayload.WasSuccessful(childComplexity), true
+
+	case "DeleteCandidatePayload.deleted":
+		if e.ComplexityRoot.DeleteCandidatePayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteCandidatePayload.Deleted(childComplexity), true
+	case "DeleteCandidatePayload.errors":
+		if e.ComplexityRoot.DeleteCandidatePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteCandidatePayload.Errors(childComplexity), true
+	case "DeleteCandidatePayload.was_successful":
+		if e.ComplexityRoot.DeleteCandidatePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteCandidatePayload.WasSuccessful(childComplexity), true
+
+	case "DeleteEmploymentContractPayload.deleted":
+		if e.ComplexityRoot.DeleteEmploymentContractPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteEmploymentContractPayload.Deleted(childComplexity), true
+	case "DeleteEmploymentContractPayload.errors":
+		if e.ComplexityRoot.DeleteEmploymentContractPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteEmploymentContractPayload.Errors(childComplexity), true
+	case "DeleteEmploymentContractPayload.was_successful":
+		if e.ComplexityRoot.DeleteEmploymentContractPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteEmploymentContractPayload.WasSuccessful(childComplexity), true
 
 	case "DeleteGroupPayload.deleted":
 		if e.ComplexityRoot.DeleteGroupPayload.Deleted == nil {
@@ -1190,6 +4235,101 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.DeleteGroupPayload.WasSuccessful(childComplexity), true
 
+	case "DeleteLegalEntityPayload.deleted":
+		if e.ComplexityRoot.DeleteLegalEntityPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteLegalEntityPayload.Deleted(childComplexity), true
+	case "DeleteLegalEntityPayload.errors":
+		if e.ComplexityRoot.DeleteLegalEntityPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteLegalEntityPayload.Errors(childComplexity), true
+	case "DeleteLegalEntityPayload.was_successful":
+		if e.ComplexityRoot.DeleteLegalEntityPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteLegalEntityPayload.WasSuccessful(childComplexity), true
+
+	case "DeleteLocationPayload.deleted":
+		if e.ComplexityRoot.DeleteLocationPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteLocationPayload.Deleted(childComplexity), true
+	case "DeleteLocationPayload.errors":
+		if e.ComplexityRoot.DeleteLocationPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteLocationPayload.Errors(childComplexity), true
+	case "DeleteLocationPayload.was_successful":
+		if e.ComplexityRoot.DeleteLocationPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteLocationPayload.WasSuccessful(childComplexity), true
+
+	case "DeleteOrganizationUnitPayload.deleted":
+		if e.ComplexityRoot.DeleteOrganizationUnitPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteOrganizationUnitPayload.Deleted(childComplexity), true
+	case "DeleteOrganizationUnitPayload.errors":
+		if e.ComplexityRoot.DeleteOrganizationUnitPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteOrganizationUnitPayload.Errors(childComplexity), true
+	case "DeleteOrganizationUnitPayload.was_successful":
+		if e.ComplexityRoot.DeleteOrganizationUnitPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteOrganizationUnitPayload.WasSuccessful(childComplexity), true
+
+	case "DeletePartyContactPayload.deleted":
+		if e.ComplexityRoot.DeletePartyContactPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePartyContactPayload.Deleted(childComplexity), true
+	case "DeletePartyContactPayload.errors":
+		if e.ComplexityRoot.DeletePartyContactPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePartyContactPayload.Errors(childComplexity), true
+	case "DeletePartyContactPayload.was_successful":
+		if e.ComplexityRoot.DeletePartyContactPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePartyContactPayload.WasSuccessful(childComplexity), true
+
+	case "DeletePartyPayload.deleted":
+		if e.ComplexityRoot.DeletePartyPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePartyPayload.Deleted(childComplexity), true
+	case "DeletePartyPayload.errors":
+		if e.ComplexityRoot.DeletePartyPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePartyPayload.Errors(childComplexity), true
+	case "DeletePartyPayload.was_successful":
+		if e.ComplexityRoot.DeletePartyPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePartyPayload.WasSuccessful(childComplexity), true
+
 	case "DeletePendingUserEmailPayload.deleted":
 		if e.ComplexityRoot.DeletePendingUserEmailPayload.Deleted == nil {
 			break
@@ -1209,6 +4349,44 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.DeletePendingUserEmailPayload.WasSuccessful(childComplexity), true
 
+	case "DeletePositionPayload.deleted":
+		if e.ComplexityRoot.DeletePositionPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePositionPayload.Deleted(childComplexity), true
+	case "DeletePositionPayload.errors":
+		if e.ComplexityRoot.DeletePositionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePositionPayload.Errors(childComplexity), true
+	case "DeletePositionPayload.was_successful":
+		if e.ComplexityRoot.DeletePositionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeletePositionPayload.WasSuccessful(childComplexity), true
+
+	case "DeleteRequisitionPayload.deleted":
+		if e.ComplexityRoot.DeleteRequisitionPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteRequisitionPayload.Deleted(childComplexity), true
+	case "DeleteRequisitionPayload.errors":
+		if e.ComplexityRoot.DeleteRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteRequisitionPayload.Errors(childComplexity), true
+	case "DeleteRequisitionPayload.was_successful":
+		if e.ComplexityRoot.DeleteRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteRequisitionPayload.WasSuccessful(childComplexity), true
+
 	case "DeleteRolePayload.deleted":
 		if e.ComplexityRoot.DeleteRolePayload.Deleted == nil {
 			break
@@ -1227,6 +4405,44 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.DeleteRolePayload.WasSuccessful(childComplexity), true
+
+	case "DeleteWorkforcePlanLinePayload.deleted":
+		if e.ComplexityRoot.DeleteWorkforcePlanLinePayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteWorkforcePlanLinePayload.Deleted(childComplexity), true
+	case "DeleteWorkforcePlanLinePayload.errors":
+		if e.ComplexityRoot.DeleteWorkforcePlanLinePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteWorkforcePlanLinePayload.Errors(childComplexity), true
+	case "DeleteWorkforcePlanLinePayload.was_successful":
+		if e.ComplexityRoot.DeleteWorkforcePlanLinePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteWorkforcePlanLinePayload.WasSuccessful(childComplexity), true
+
+	case "DeleteWorkforcePlanPayload.deleted":
+		if e.ComplexityRoot.DeleteWorkforcePlanPayload.Deleted == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteWorkforcePlanPayload.Deleted(childComplexity), true
+	case "DeleteWorkforcePlanPayload.errors":
+		if e.ComplexityRoot.DeleteWorkforcePlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteWorkforcePlanPayload.Errors(childComplexity), true
+	case "DeleteWorkforcePlanPayload.was_successful":
+		if e.ComplexityRoot.DeleteWorkforcePlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DeleteWorkforcePlanPayload.WasSuccessful(childComplexity), true
 
 	case "DisableMyTotpPayload.disabled":
 		if e.ComplexityRoot.DisableMyTotpPayload.Disabled == nil {
@@ -1266,6 +4482,254 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.DisableUserPayload.WasSuccessful(childComplexity), true
 
+	case "DissolveLegalEntityPayload.errors":
+		if e.ComplexityRoot.DissolveLegalEntityPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DissolveLegalEntityPayload.Errors(childComplexity), true
+	case "DissolveLegalEntityPayload.legal_entity":
+		if e.ComplexityRoot.DissolveLegalEntityPayload.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DissolveLegalEntityPayload.LegalEntity(childComplexity), true
+	case "DissolveLegalEntityPayload.was_successful":
+		if e.ComplexityRoot.DissolveLegalEntityPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DissolveLegalEntityPayload.WasSuccessful(childComplexity), true
+
+	case "EmployeeAccountRequest.id":
+		if e.ComplexityRoot.EmployeeAccountRequest.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeAccountRequest.ID(childComplexity), true
+	case "EmployeeAccountRequest.iam_request_id":
+		if e.ComplexityRoot.EmployeeAccountRequest.IamRequestID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeAccountRequest.IamRequestID(childComplexity), true
+	case "EmployeeAccountRequest.legal_entity_id":
+		if e.ComplexityRoot.EmployeeAccountRequest.LegalEntityID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeAccountRequest.LegalEntityID(childComplexity), true
+	case "EmployeeAccountRequest._id":
+		if e.ComplexityRoot.EmployeeAccountRequest.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeAccountRequest.RawID(childComplexity), true
+	case "EmployeeAccountRequest.requested_at":
+		if e.ComplexityRoot.EmployeeAccountRequest.RequestedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeAccountRequest.RequestedAt(childComplexity), true
+	case "EmployeeAccountRequest.status":
+		if e.ComplexityRoot.EmployeeAccountRequest.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeAccountRequest.Status(childComplexity), true
+	case "EmployeeAccountRequest.worker_id":
+		if e.ComplexityRoot.EmployeeAccountRequest.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeAccountRequest.WorkerID(childComplexity), true
+
+	case "EmployeeProvisioningRequest.id":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.ID(childComplexity), true
+	case "EmployeeProvisioningRequest.legal_entity_id":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.LegalEntityID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.LegalEntityID(childComplexity), true
+	case "EmployeeProvisioningRequest.received_at":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.ReceivedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.ReceivedAt(childComplexity), true
+	case "EmployeeProvisioningRequest.requested_at":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.RequestedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.RequestedAt(childComplexity), true
+	case "EmployeeProvisioningRequest.requested_by_principal_id":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.RequestedByPrincipalID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.RequestedByPrincipalID(childComplexity), true
+	case "EmployeeProvisioningRequest.status":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.Status(childComplexity), true
+	case "EmployeeProvisioningRequest.worker_id":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.WorkerID(childComplexity), true
+	case "EmployeeProvisioningRequest.worker_number":
+		if e.ComplexityRoot.EmployeeProvisioningRequest.WorkerNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequest.WorkerNumber(childComplexity), true
+
+	case "EmployeeProvisioningRequestConnection.edges":
+		if e.ComplexityRoot.EmployeeProvisioningRequestConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequestConnection.Edges(childComplexity), true
+	case "EmployeeProvisioningRequestConnection.nodes":
+		if e.ComplexityRoot.EmployeeProvisioningRequestConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequestConnection.Nodes(childComplexity), true
+	case "EmployeeProvisioningRequestConnection.pageInfo":
+		if e.ComplexityRoot.EmployeeProvisioningRequestConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequestConnection.PageInfo(childComplexity), true
+	case "EmployeeProvisioningRequestConnection.totalCount":
+		if e.ComplexityRoot.EmployeeProvisioningRequestConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequestConnection.TotalCount(childComplexity), true
+
+	case "EmployeeProvisioningRequestEdge.cursor":
+		if e.ComplexityRoot.EmployeeProvisioningRequestEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequestEdge.Cursor(childComplexity), true
+	case "EmployeeProvisioningRequestEdge.node":
+		if e.ComplexityRoot.EmployeeProvisioningRequestEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmployeeProvisioningRequestEdge.Node(childComplexity), true
+
+	case "EmploymentContract.contract_number":
+		if e.ComplexityRoot.EmploymentContract.ContractNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.ContractNumber(childComplexity), true
+	case "EmploymentContract.contract_status":
+		if e.ComplexityRoot.EmploymentContract.ContractStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.ContractStatus(childComplexity), true
+	case "EmploymentContract.contract_type":
+		if e.ComplexityRoot.EmploymentContract.ContractType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.ContractType(childComplexity), true
+	case "EmploymentContract.effective_from":
+		if e.ComplexityRoot.EmploymentContract.EffectiveFrom == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.EffectiveFrom(childComplexity), true
+	case "EmploymentContract.effective_to":
+		if e.ComplexityRoot.EmploymentContract.EffectiveTo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.EffectiveTo(childComplexity), true
+	case "EmploymentContract.employing_legal_entity_reference_id":
+		if e.ComplexityRoot.EmploymentContract.EmployingLegalEntityReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.EmployingLegalEntityReferenceID(childComplexity), true
+	case "EmploymentContract.id":
+		if e.ComplexityRoot.EmploymentContract.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.ID(childComplexity), true
+	case "EmploymentContract._id":
+		if e.ComplexityRoot.EmploymentContract.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.RawID(childComplexity), true
+	case "EmploymentContract.signed_at":
+		if e.ComplexityRoot.EmploymentContract.SignedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.SignedAt(childComplexity), true
+	case "EmploymentContract.worker_id":
+		if e.ComplexityRoot.EmploymentContract.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContract.WorkerID(childComplexity), true
+
+	case "EmploymentContractConnection.edges":
+		if e.ComplexityRoot.EmploymentContractConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContractConnection.Edges(childComplexity), true
+	case "EmploymentContractConnection.nodes":
+		if e.ComplexityRoot.EmploymentContractConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContractConnection.Nodes(childComplexity), true
+	case "EmploymentContractConnection.pageInfo":
+		if e.ComplexityRoot.EmploymentContractConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContractConnection.PageInfo(childComplexity), true
+	case "EmploymentContractConnection.total_count":
+		if e.ComplexityRoot.EmploymentContractConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContractConnection.TotalCount(childComplexity), true
+
+	case "EmploymentContractEdge.cursor":
+		if e.ComplexityRoot.EmploymentContractEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContractEdge.Cursor(childComplexity), true
+	case "EmploymentContractEdge.node":
+		if e.ComplexityRoot.EmploymentContractEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.EmploymentContractEdge.Node(childComplexity), true
+
 	case "EnrollTotpPayload.errors":
 		if e.ComplexityRoot.EnrollTotpPayload.Errors == nil {
 			break
@@ -1290,6 +4754,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.EnrollTotpPayload.WasSuccessful(childComplexity), true
+
+	case "FindOrCreateAddressPayload.address":
+		if e.ComplexityRoot.FindOrCreateAddressPayload.Address == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FindOrCreateAddressPayload.Address(childComplexity), true
+	case "FindOrCreateAddressPayload.created":
+		if e.ComplexityRoot.FindOrCreateAddressPayload.Created == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FindOrCreateAddressPayload.Created(childComplexity), true
+	case "FindOrCreateAddressPayload.errors":
+		if e.ComplexityRoot.FindOrCreateAddressPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FindOrCreateAddressPayload.Errors(childComplexity), true
+	case "FindOrCreateAddressPayload.was_successful":
+		if e.ComplexityRoot.FindOrCreateAddressPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FindOrCreateAddressPayload.WasSuccessful(childComplexity), true
 
 	case "Group.code":
 		if e.ComplexityRoot.Group.Code == nil {
@@ -1524,6 +5013,989 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.GroupRoleEdge.Scope(childComplexity), true
 
+	case "Job.id":
+		if e.ComplexityRoot.Job.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.ID(childComplexity), true
+	case "Job.is_active":
+		if e.ComplexityRoot.Job.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.IsActive(childComplexity), true
+	case "Job.job_code":
+		if e.ComplexityRoot.Job.JobCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.JobCode(childComplexity), true
+	case "Job.job_description":
+		if e.ComplexityRoot.Job.JobDescription == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.JobDescription(childComplexity), true
+	case "Job.job_family_id":
+		if e.ComplexityRoot.Job.JobFamilyID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.JobFamilyID(childComplexity), true
+	case "Job.job_level_code":
+		if e.ComplexityRoot.Job.JobLevelCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.JobLevelCode(childComplexity), true
+	case "Job.job_title":
+		if e.ComplexityRoot.Job.JobTitle == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.JobTitle(childComplexity), true
+	case "Job._id":
+		if e.ComplexityRoot.Job.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.RawID(childComplexity), true
+	case "Job.valid_from":
+		if e.ComplexityRoot.Job.ValidFrom == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.ValidFrom(childComplexity), true
+	case "Job.valid_to":
+		if e.ComplexityRoot.Job.ValidTo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Job.ValidTo(childComplexity), true
+
+	case "JobConnection.edges":
+		if e.ComplexityRoot.JobConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobConnection.Edges(childComplexity), true
+	case "JobConnection.nodes":
+		if e.ComplexityRoot.JobConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobConnection.Nodes(childComplexity), true
+	case "JobConnection.pageInfo":
+		if e.ComplexityRoot.JobConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobConnection.PageInfo(childComplexity), true
+	case "JobConnection.total_count":
+		if e.ComplexityRoot.JobConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobConnection.TotalCount(childComplexity), true
+
+	case "JobEdge.cursor":
+		if e.ComplexityRoot.JobEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobEdge.Cursor(childComplexity), true
+	case "JobEdge.node":
+		if e.ComplexityRoot.JobEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobEdge.Node(childComplexity), true
+
+	case "JobFamily.description":
+		if e.ComplexityRoot.JobFamily.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamily.Description(childComplexity), true
+	case "JobFamily.family_code":
+		if e.ComplexityRoot.JobFamily.FamilyCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamily.FamilyCode(childComplexity), true
+	case "JobFamily.family_name":
+		if e.ComplexityRoot.JobFamily.FamilyName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamily.FamilyName(childComplexity), true
+	case "JobFamily.id":
+		if e.ComplexityRoot.JobFamily.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamily.ID(childComplexity), true
+	case "JobFamily.is_active":
+		if e.ComplexityRoot.JobFamily.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamily.IsActive(childComplexity), true
+	case "JobFamily.job_domain":
+		if e.ComplexityRoot.JobFamily.JobDomain == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamily.JobDomain(childComplexity), true
+	case "JobFamily._id":
+		if e.ComplexityRoot.JobFamily.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamily.RawID(childComplexity), true
+
+	case "JobFamilyConnection.edges":
+		if e.ComplexityRoot.JobFamilyConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamilyConnection.Edges(childComplexity), true
+	case "JobFamilyConnection.nodes":
+		if e.ComplexityRoot.JobFamilyConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamilyConnection.Nodes(childComplexity), true
+	case "JobFamilyConnection.pageInfo":
+		if e.ComplexityRoot.JobFamilyConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamilyConnection.PageInfo(childComplexity), true
+	case "JobFamilyConnection.total_count":
+		if e.ComplexityRoot.JobFamilyConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamilyConnection.TotalCount(childComplexity), true
+
+	case "JobFamilyEdge.cursor":
+		if e.ComplexityRoot.JobFamilyEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamilyEdge.Cursor(childComplexity), true
+	case "JobFamilyEdge.node":
+		if e.ComplexityRoot.JobFamilyEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.JobFamilyEdge.Node(childComplexity), true
+
+	case "LeaveAdjustment.approved_at":
+		if e.ComplexityRoot.LeaveAdjustment.ApprovedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.ApprovedAt(childComplexity), true
+	case "LeaveAdjustment.entitlement_id":
+		if e.ComplexityRoot.LeaveAdjustment.EntitlementID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.EntitlementID(childComplexity), true
+	case "LeaveAdjustment.id":
+		if e.ComplexityRoot.LeaveAdjustment.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.ID(childComplexity), true
+	case "LeaveAdjustment.quantity_delta":
+		if e.ComplexityRoot.LeaveAdjustment.QuantityDelta == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.QuantityDelta(childComplexity), true
+	case "LeaveAdjustment._id":
+		if e.ComplexityRoot.LeaveAdjustment.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.RawID(childComplexity), true
+	case "LeaveAdjustment.reason_code":
+		if e.ComplexityRoot.LeaveAdjustment.ReasonCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.ReasonCode(childComplexity), true
+	case "LeaveAdjustment.rejected_at":
+		if e.ComplexityRoot.LeaveAdjustment.RejectedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.RejectedAt(childComplexity), true
+	case "LeaveAdjustment.rejection_reason_code":
+		if e.ComplexityRoot.LeaveAdjustment.RejectionReasonCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustment.RejectionReasonCode(childComplexity), true
+
+	case "LeaveAdjustmentConnection.edges":
+		if e.ComplexityRoot.LeaveAdjustmentConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustmentConnection.Edges(childComplexity), true
+	case "LeaveAdjustmentConnection.nodes":
+		if e.ComplexityRoot.LeaveAdjustmentConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustmentConnection.Nodes(childComplexity), true
+	case "LeaveAdjustmentConnection.pageInfo":
+		if e.ComplexityRoot.LeaveAdjustmentConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustmentConnection.PageInfo(childComplexity), true
+	case "LeaveAdjustmentConnection.total_count":
+		if e.ComplexityRoot.LeaveAdjustmentConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustmentConnection.TotalCount(childComplexity), true
+
+	case "LeaveAdjustmentEdge.cursor":
+		if e.ComplexityRoot.LeaveAdjustmentEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustmentEdge.Cursor(childComplexity), true
+	case "LeaveAdjustmentEdge.node":
+		if e.ComplexityRoot.LeaveAdjustmentEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveAdjustmentEdge.Node(childComplexity), true
+
+	case "LeaveEntitlement.accrued_quantity":
+		if e.ComplexityRoot.LeaveEntitlement.AccruedQuantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.AccruedQuantity(childComplexity), true
+	case "LeaveEntitlement.adjusted_quantity":
+		if e.ComplexityRoot.LeaveEntitlement.AdjustedQuantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.AdjustedQuantity(childComplexity), true
+	case "LeaveEntitlement.closed_at":
+		if e.ComplexityRoot.LeaveEntitlement.ClosedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.ClosedAt(childComplexity), true
+	case "LeaveEntitlement.closing_balance":
+		if e.ComplexityRoot.LeaveEntitlement.ClosingBalance == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.ClosingBalance(childComplexity), true
+	case "LeaveEntitlement.id":
+		if e.ComplexityRoot.LeaveEntitlement.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.ID(childComplexity), true
+	case "LeaveEntitlement.leave_policy_id":
+		if e.ComplexityRoot.LeaveEntitlement.LeavePolicyID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.LeavePolicyID(childComplexity), true
+	case "LeaveEntitlement.leave_type_code":
+		if e.ComplexityRoot.LeaveEntitlement.LeaveTypeCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.LeaveTypeCode(childComplexity), true
+	case "LeaveEntitlement.opening_balance":
+		if e.ComplexityRoot.LeaveEntitlement.OpeningBalance == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.OpeningBalance(childComplexity), true
+	case "LeaveEntitlement.period_end":
+		if e.ComplexityRoot.LeaveEntitlement.PeriodEnd == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.PeriodEnd(childComplexity), true
+	case "LeaveEntitlement.period_start":
+		if e.ComplexityRoot.LeaveEntitlement.PeriodStart == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.PeriodStart(childComplexity), true
+	case "LeaveEntitlement._id":
+		if e.ComplexityRoot.LeaveEntitlement.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.RawID(childComplexity), true
+	case "LeaveEntitlement.uom_code":
+		if e.ComplexityRoot.LeaveEntitlement.UomCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.UomCode(childComplexity), true
+	case "LeaveEntitlement.used_quantity":
+		if e.ComplexityRoot.LeaveEntitlement.UsedQuantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.UsedQuantity(childComplexity), true
+	case "LeaveEntitlement.worker_id":
+		if e.ComplexityRoot.LeaveEntitlement.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlement.WorkerID(childComplexity), true
+
+	case "LeaveEntitlementConnection.edges":
+		if e.ComplexityRoot.LeaveEntitlementConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlementConnection.Edges(childComplexity), true
+	case "LeaveEntitlementConnection.nodes":
+		if e.ComplexityRoot.LeaveEntitlementConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlementConnection.Nodes(childComplexity), true
+	case "LeaveEntitlementConnection.pageInfo":
+		if e.ComplexityRoot.LeaveEntitlementConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlementConnection.PageInfo(childComplexity), true
+	case "LeaveEntitlementConnection.total_count":
+		if e.ComplexityRoot.LeaveEntitlementConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlementConnection.TotalCount(childComplexity), true
+
+	case "LeaveEntitlementEdge.cursor":
+		if e.ComplexityRoot.LeaveEntitlementEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlementEdge.Cursor(childComplexity), true
+	case "LeaveEntitlementEdge.node":
+		if e.ComplexityRoot.LeaveEntitlementEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveEntitlementEdge.Node(childComplexity), true
+
+	case "LeaveLedgerEntry.adjustment_id":
+		if e.ComplexityRoot.LeaveLedgerEntry.AdjustmentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.AdjustmentID(childComplexity), true
+	case "LeaveLedgerEntry.effective_date":
+		if e.ComplexityRoot.LeaveLedgerEntry.EffectiveDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.EffectiveDate(childComplexity), true
+	case "LeaveLedgerEntry.entitlement_id":
+		if e.ComplexityRoot.LeaveLedgerEntry.EntitlementID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.EntitlementID(childComplexity), true
+	case "LeaveLedgerEntry.entry_sequence":
+		if e.ComplexityRoot.LeaveLedgerEntry.EntrySequence == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.EntrySequence(childComplexity), true
+	case "LeaveLedgerEntry.entry_type":
+		if e.ComplexityRoot.LeaveLedgerEntry.EntryType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.EntryType(childComplexity), true
+	case "LeaveLedgerEntry.id":
+		if e.ComplexityRoot.LeaveLedgerEntry.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.ID(childComplexity), true
+	case "LeaveLedgerEntry.quantity_delta":
+		if e.ComplexityRoot.LeaveLedgerEntry.QuantityDelta == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.QuantityDelta(childComplexity), true
+	case "LeaveLedgerEntry._id":
+		if e.ComplexityRoot.LeaveLedgerEntry.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.RawID(childComplexity), true
+	case "LeaveLedgerEntry.reason_code":
+		if e.ComplexityRoot.LeaveLedgerEntry.ReasonCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.ReasonCode(childComplexity), true
+	case "LeaveLedgerEntry.reverses_entry_id":
+		if e.ComplexityRoot.LeaveLedgerEntry.ReversesEntryID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntry.ReversesEntryID(childComplexity), true
+
+	case "LeaveLedgerEntryConnection.edges":
+		if e.ComplexityRoot.LeaveLedgerEntryConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntryConnection.Edges(childComplexity), true
+	case "LeaveLedgerEntryConnection.nodes":
+		if e.ComplexityRoot.LeaveLedgerEntryConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntryConnection.Nodes(childComplexity), true
+	case "LeaveLedgerEntryConnection.pageInfo":
+		if e.ComplexityRoot.LeaveLedgerEntryConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntryConnection.PageInfo(childComplexity), true
+	case "LeaveLedgerEntryConnection.total_count":
+		if e.ComplexityRoot.LeaveLedgerEntryConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntryConnection.TotalCount(childComplexity), true
+
+	case "LeaveLedgerEntryEdge.cursor":
+		if e.ComplexityRoot.LeaveLedgerEntryEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntryEdge.Cursor(childComplexity), true
+	case "LeaveLedgerEntryEdge.node":
+		if e.ComplexityRoot.LeaveLedgerEntryEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeaveLedgerEntryEdge.Node(childComplexity), true
+
+	case "LeavePolicy.accrual_method":
+		if e.ComplexityRoot.LeavePolicy.AccrualMethod == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.AccrualMethod(childComplexity), true
+	case "LeavePolicy.annual_entitlement":
+		if e.ComplexityRoot.LeavePolicy.AnnualEntitlement == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.AnnualEntitlement(childComplexity), true
+	case "LeavePolicy.carryover_limit":
+		if e.ComplexityRoot.LeavePolicy.CarryoverLimit == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.CarryoverLimit(childComplexity), true
+	case "LeavePolicy.effective_from":
+		if e.ComplexityRoot.LeavePolicy.EffectiveFrom == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.EffectiveFrom(childComplexity), true
+	case "LeavePolicy.effective_to":
+		if e.ComplexityRoot.LeavePolicy.EffectiveTo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.EffectiveTo(childComplexity), true
+	case "LeavePolicy.id":
+		if e.ComplexityRoot.LeavePolicy.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.ID(childComplexity), true
+	case "LeavePolicy.is_active":
+		if e.ComplexityRoot.LeavePolicy.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.IsActive(childComplexity), true
+	case "LeavePolicy.is_paid":
+		if e.ComplexityRoot.LeavePolicy.IsPaid == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.IsPaid(childComplexity), true
+	case "LeavePolicy.jurisdiction_code":
+		if e.ComplexityRoot.LeavePolicy.JurisdictionCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.JurisdictionCode(childComplexity), true
+	case "LeavePolicy.leave_type_code":
+		if e.ComplexityRoot.LeavePolicy.LeaveTypeCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.LeaveTypeCode(childComplexity), true
+	case "LeavePolicy.max_balance":
+		if e.ComplexityRoot.LeavePolicy.MaxBalance == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.MaxBalance(childComplexity), true
+	case "LeavePolicy.minimum_service_days":
+		if e.ComplexityRoot.LeavePolicy.MinimumServiceDays == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.MinimumServiceDays(childComplexity), true
+	case "LeavePolicy.policy_code":
+		if e.ComplexityRoot.LeavePolicy.PolicyCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.PolicyCode(childComplexity), true
+	case "LeavePolicy.policy_name":
+		if e.ComplexityRoot.LeavePolicy.PolicyName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.PolicyName(childComplexity), true
+	case "LeavePolicy.policy_version":
+		if e.ComplexityRoot.LeavePolicy.PolicyVersion == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.PolicyVersion(childComplexity), true
+	case "LeavePolicy._id":
+		if e.ComplexityRoot.LeavePolicy.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicy.RawID(childComplexity), true
+
+	case "LeavePolicyConnection.edges":
+		if e.ComplexityRoot.LeavePolicyConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicyConnection.Edges(childComplexity), true
+	case "LeavePolicyConnection.nodes":
+		if e.ComplexityRoot.LeavePolicyConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicyConnection.Nodes(childComplexity), true
+	case "LeavePolicyConnection.pageInfo":
+		if e.ComplexityRoot.LeavePolicyConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicyConnection.PageInfo(childComplexity), true
+	case "LeavePolicyConnection.total_count":
+		if e.ComplexityRoot.LeavePolicyConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicyConnection.TotalCount(childComplexity), true
+
+	case "LeavePolicyEdge.cursor":
+		if e.ComplexityRoot.LeavePolicyEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicyEdge.Cursor(childComplexity), true
+	case "LeavePolicyEdge.node":
+		if e.ComplexityRoot.LeavePolicyEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LeavePolicyEdge.Node(childComplexity), true
+
+	case "LegalEntity.children":
+		if e.ComplexityRoot.LegalEntity.Children == nil {
+			break
+		}
+
+		args, err := ec.field_LegalEntity_children_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.LegalEntity.Children(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "LegalEntity.created_at":
+		if e.ComplexityRoot.LegalEntity.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.CreatedAt(childComplexity), true
+	case "LegalEntity.deleted_at":
+		if e.ComplexityRoot.LegalEntity.DeletedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.DeletedAt(childComplexity), true
+	case "LegalEntity.dissolution_date":
+		if e.ComplexityRoot.LegalEntity.DissolutionDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.DissolutionDate(childComplexity), true
+	case "LegalEntity.entity_code":
+		if e.ComplexityRoot.LegalEntity.EntityCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.EntityCode(childComplexity), true
+	case "LegalEntity.fiscal_year_start_month":
+		if e.ComplexityRoot.LegalEntity.FiscalYearStartMonth == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.FiscalYearStartMonth(childComplexity), true
+	case "LegalEntity.id":
+		if e.ComplexityRoot.LegalEntity.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.ID(childComplexity), true
+	case "LegalEntity.incorporation_date":
+		if e.ComplexityRoot.LegalEntity.IncorporationDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.IncorporationDate(childComplexity), true
+	case "LegalEntity.is_pkp":
+		if e.ComplexityRoot.LegalEntity.IsPkp == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.IsPkp(childComplexity), true
+	case "LegalEntity.is_primary_operating_entity":
+		if e.ComplexityRoot.LegalEntity.IsPrimaryOperatingEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.IsPrimaryOperatingEntity(childComplexity), true
+	case "LegalEntity.jurisdiction_country_code":
+		if e.ComplexityRoot.LegalEntity.JurisdictionCountryCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.JurisdictionCountryCode(childComplexity), true
+	case "LegalEntity.legal_form":
+		if e.ComplexityRoot.LegalEntity.LegalForm == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.LegalForm(childComplexity), true
+	case "LegalEntity.legal_name":
+		if e.ComplexityRoot.LegalEntity.LegalName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.LegalName(childComplexity), true
+	case "LegalEntity.nib":
+		if e.ComplexityRoot.LegalEntity.Nib == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.Nib(childComplexity), true
+	case "LegalEntity.parent_legal_entity":
+		if e.ComplexityRoot.LegalEntity.ParentLegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.ParentLegalEntity(childComplexity), true
+	case "LegalEntity.parent_legal_entity_id":
+		if e.ComplexityRoot.LegalEntity.ParentLegalEntityID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.ParentLegalEntityID(childComplexity), true
+	case "LegalEntity._id":
+		if e.ComplexityRoot.LegalEntity.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.RawID(childComplexity), true
+	case "LegalEntity.registered_address":
+		if e.ComplexityRoot.LegalEntity.RegisteredAddress == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.RegisteredAddress(childComplexity), true
+	case "LegalEntity.registered_address_id":
+		if e.ComplexityRoot.LegalEntity.RegisteredAddressID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.RegisteredAddressID(childComplexity), true
+	case "LegalEntity.status":
+		if e.ComplexityRoot.LegalEntity.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.Status(childComplexity), true
+	case "LegalEntity.tax_id_number":
+		if e.ComplexityRoot.LegalEntity.TaxIDNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.TaxIDNumber(childComplexity), true
+	case "LegalEntity.trading_name":
+		if e.ComplexityRoot.LegalEntity.TradingName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.TradingName(childComplexity), true
+	case "LegalEntity.updated_at":
+		if e.ComplexityRoot.LegalEntity.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntity.UpdatedAt(childComplexity), true
+
+	case "LegalEntityConnection.edges":
+		if e.ComplexityRoot.LegalEntityConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntityConnection.Edges(childComplexity), true
+	case "LegalEntityConnection.nodes":
+		if e.ComplexityRoot.LegalEntityConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntityConnection.Nodes(childComplexity), true
+	case "LegalEntityConnection.pageInfo":
+		if e.ComplexityRoot.LegalEntityConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntityConnection.PageInfo(childComplexity), true
+	case "LegalEntityConnection.total_count":
+		if e.ComplexityRoot.LegalEntityConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntityConnection.TotalCount(childComplexity), true
+
+	case "LegalEntityEdge.cursor":
+		if e.ComplexityRoot.LegalEntityEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntityEdge.Cursor(childComplexity), true
+	case "LegalEntityEdge.node":
+		if e.ComplexityRoot.LegalEntityEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LegalEntityEdge.Node(childComplexity), true
+
+	case "LinkPartyAddressPayload.errors":
+		if e.ComplexityRoot.LinkPartyAddressPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LinkPartyAddressPayload.Errors(childComplexity), true
+	case "LinkPartyAddressPayload.link":
+		if e.ComplexityRoot.LinkPartyAddressPayload.Link == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LinkPartyAddressPayload.Link(childComplexity), true
+	case "LinkPartyAddressPayload.was_successful":
+		if e.ComplexityRoot.LinkPartyAddressPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LinkPartyAddressPayload.WasSuccessful(childComplexity), true
+
+	case "Location.address":
+		if e.ComplexityRoot.Location.Address == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.Address(childComplexity), true
+	case "Location.address_id":
+		if e.ComplexityRoot.Location.AddressID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.AddressID(childComplexity), true
+	case "Location.children":
+		if e.ComplexityRoot.Location.Children == nil {
+			break
+		}
+
+		args, err := ec.field_Location_children_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Location.Children(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Location.created_at":
+		if e.ComplexityRoot.Location.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.CreatedAt(childComplexity), true
+	case "Location.deleted_at":
+		if e.ComplexityRoot.Location.DeletedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.DeletedAt(childComplexity), true
+	case "Location.id":
+		if e.ComplexityRoot.Location.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.ID(childComplexity), true
+	case "Location.is_active":
+		if e.ComplexityRoot.Location.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.IsActive(childComplexity), true
+	case "Location.kind":
+		if e.ComplexityRoot.Location.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.Kind(childComplexity), true
+	case "Location.legal_entity":
+		if e.ComplexityRoot.Location.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.LegalEntity(childComplexity), true
+	case "Location.legal_entity_id":
+		if e.ComplexityRoot.Location.LegalEntityID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.LegalEntityID(childComplexity), true
+	case "Location.location_code":
+		if e.ComplexityRoot.Location.LocationCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.LocationCode(childComplexity), true
+	case "Location.name":
+		if e.ComplexityRoot.Location.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.Name(childComplexity), true
+	case "Location.operational_attributes_json":
+		if e.ComplexityRoot.Location.OperationalAttributesJSON == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.OperationalAttributesJSON(childComplexity), true
+	case "Location.parent_location":
+		if e.ComplexityRoot.Location.ParentLocation == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.ParentLocation(childComplexity), true
+	case "Location.parent_location_id":
+		if e.ComplexityRoot.Location.ParentLocationID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.ParentLocationID(childComplexity), true
+	case "Location.phone":
+		if e.ComplexityRoot.Location.Phone == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.Phone(childComplexity), true
+	case "Location._id":
+		if e.ComplexityRoot.Location.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.RawID(childComplexity), true
+	case "Location.timezone":
+		if e.ComplexityRoot.Location.Timezone == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.Timezone(childComplexity), true
+	case "Location.updated_at":
+		if e.ComplexityRoot.Location.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Location.UpdatedAt(childComplexity), true
+
+	case "LocationConnection.edges":
+		if e.ComplexityRoot.LocationConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LocationConnection.Edges(childComplexity), true
+	case "LocationConnection.nodes":
+		if e.ComplexityRoot.LocationConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LocationConnection.Nodes(childComplexity), true
+	case "LocationConnection.pageInfo":
+		if e.ComplexityRoot.LocationConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LocationConnection.PageInfo(childComplexity), true
+	case "LocationConnection.total_count":
+		if e.ComplexityRoot.LocationConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LocationConnection.TotalCount(childComplexity), true
+
+	case "LocationEdge.cursor":
+		if e.ComplexityRoot.LocationEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LocationEdge.Cursor(childComplexity), true
+	case "LocationEdge.node":
+		if e.ComplexityRoot.LocationEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.LocationEdge.Node(childComplexity), true
+
 	case "Mutation.activateGroup":
 		if e.ComplexityRoot.Mutation.ActivateGroup == nil {
 			break
@@ -1535,6 +6007,83 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ActivateGroup(childComplexity, args["id"].(string)), true
+	case "Mutation.activateLegalEntity":
+		if e.ComplexityRoot.Mutation.ActivateLegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activateLegalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivateLegalEntity(childComplexity, args["id"].(string)), true
+	case "Mutation.activateLocation":
+		if e.ComplexityRoot.Mutation.ActivateLocation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activateLocation_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivateLocation(childComplexity, args["id"].(string)), true
+	case "Mutation.activateOrganizationUnit":
+		if e.ComplexityRoot.Mutation.ActivateOrganizationUnit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activateOrganizationUnit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivateOrganizationUnit(childComplexity, args["id"].(string)), true
+	case "Mutation.activatePartyContact":
+		if e.ComplexityRoot.Mutation.ActivatePartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activatePartyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivatePartyContact(childComplexity, args["contact_id"].(string)), true
+	case "Mutation.activatePartyPortalAccess":
+		if e.ComplexityRoot.Mutation.ActivatePartyPortalAccess == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activatePartyPortalAccess_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivatePartyPortalAccess(childComplexity, args["contact_id"].(string), args["iam_user_id"].(string)), true
+	case "Mutation.activatePartyRole":
+		if e.ComplexityRoot.Mutation.ActivatePartyRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activatePartyRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivatePartyRole(childComplexity, args["role_id"].(string)), true
+	case "Mutation.activatePosition":
+		if e.ComplexityRoot.Mutation.ActivatePosition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activatePosition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivatePosition(childComplexity, args["id"].(string)), true
 	case "Mutation.activateRole":
 		if e.ComplexityRoot.Mutation.ActivateRole == nil {
 			break
@@ -1557,6 +6106,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ActivateUser(childComplexity, args["user_id"].(string)), true
+	case "Mutation.activateWorker":
+		if e.ComplexityRoot.Mutation.ActivateWorker == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activateWorker_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ActivateWorker(childComplexity, args["id"].(string)), true
 	case "Mutation.addGroupMember":
 		if e.ComplexityRoot.Mutation.AddGroupMember == nil {
 			break
@@ -1568,6 +6128,94 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.AddGroupMember(childComplexity, args["group_id"].(string), args["user_id"].(string)), true
+	case "Mutation.addPartyContact":
+		if e.ComplexityRoot.Mutation.AddPartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addPartyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AddPartyContact(childComplexity, args["input"].(model.AddPartyContactInput)), true
+	case "Mutation.applyPrimaryAssignment":
+		if e.ComplexityRoot.Mutation.ApplyPrimaryAssignment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_applyPrimaryAssignment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ApplyPrimaryAssignment(childComplexity, args["id"].(string), args["assignment_id"].(string)), true
+	case "Mutation.approveLeaveAdjustment":
+		if e.ComplexityRoot.Mutation.ApproveLeaveAdjustment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approveLeaveAdjustment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ApproveLeaveAdjustment(childComplexity, args["id"].(string)), true
+	case "Mutation.approveOffboardingPlan":
+		if e.ComplexityRoot.Mutation.ApproveOffboardingPlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approveOffboardingPlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ApproveOffboardingPlan(childComplexity, args["id"].(string)), true
+	case "Mutation.approvePayrollRun":
+		if e.ComplexityRoot.Mutation.ApprovePayrollRun == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approvePayrollRun_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ApprovePayrollRun(childComplexity, args["payroll_run_id"].(string)), true
+	case "Mutation.approveRequisition":
+		if e.ComplexityRoot.Mutation.ApproveRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approveRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ApproveRequisition(childComplexity, args["id"].(string)), true
+	case "Mutation.approveWorkerAssignment":
+		if e.ComplexityRoot.Mutation.ApproveWorkerAssignment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approveWorkerAssignment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ApproveWorkerAssignment(childComplexity, args["id"].(string)), true
+	case "Mutation.approveWorkforcePlan":
+		if e.ComplexityRoot.Mutation.ApproveWorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approveWorkforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ApproveWorkforcePlan(childComplexity, args["id"].(string)), true
 	case "Mutation.assignGroupRole":
 		if e.ComplexityRoot.Mutation.AssignGroupRole == nil {
 			break
@@ -1579,6 +6227,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.AssignGroupRole(childComplexity, args["input"].(model.AssignGroupRoleInput)), true
+	case "Mutation.assignOrganizationUnitHeadPerson":
+		if e.ComplexityRoot.Mutation.AssignOrganizationUnitHeadPerson == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_assignOrganizationUnitHeadPerson_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AssignOrganizationUnitHeadPerson(childComplexity, args["id"].(string), args["head_person_id"].(*string)), true
+	case "Mutation.assignPartyRole":
+		if e.ComplexityRoot.Mutation.AssignPartyRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_assignPartyRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AssignPartyRole(childComplexity, args["input"].(model.AssignPartyRoleInput)), true
 	case "Mutation.assignRolePermission":
 		if e.ComplexityRoot.Mutation.AssignRolePermission == nil {
 			break
@@ -1601,6 +6271,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.AssignUserRole(childComplexity, args["input"].(model.AssignUserRoleInput)), true
+	case "Mutation.calculatePayrollRun":
+		if e.ComplexityRoot.Mutation.CalculatePayrollRun == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_calculatePayrollRun_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CalculatePayrollRun(childComplexity, args["payroll_run_id"].(string)), true
+	case "Mutation.cancelOffboardingPlan":
+		if e.ComplexityRoot.Mutation.CancelOffboardingPlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelOffboardingPlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CancelOffboardingPlan(childComplexity, args["id"].(string), args["reason"].(string)), true
+	case "Mutation.cancelPayrollRun":
+		if e.ComplexityRoot.Mutation.CancelPayrollRun == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelPayrollRun_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CancelPayrollRun(childComplexity, args["payroll_run_id"].(string), args["reason"].(string)), true
+	case "Mutation.cancelWorkforcePlan":
+		if e.ComplexityRoot.Mutation.CancelWorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelWorkforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CancelWorkforcePlan(childComplexity, args["id"].(string)), true
 	case "Mutation.changeUserPassword":
 		if e.ComplexityRoot.Mutation.ChangeUserPassword == nil {
 			break
@@ -1623,6 +6337,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ChangeUsername(childComplexity, args["input"].(model.UsernameInput)), true
+	case "Mutation.closeLeaveEntitlement":
+		if e.ComplexityRoot.Mutation.CloseLeaveEntitlement == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_closeLeaveEntitlement_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CloseLeaveEntitlement(childComplexity, args["id"].(string)), true
+	case "Mutation.closeRequisition":
+		if e.ComplexityRoot.Mutation.CloseRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_closeRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CloseRequisition(childComplexity, args["id"].(string)), true
+	case "Mutation.completeOffboardingPlan":
+		if e.ComplexityRoot.Mutation.CompleteOffboardingPlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_completeOffboardingPlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CompleteOffboardingPlan(childComplexity, args["id"].(string), args["final_payroll_run_id"].(string), args["finance_clearance_reference_id"].(string)), true
+	case "Mutation.completeOffboardingTask":
+		if e.ComplexityRoot.Mutation.CompleteOffboardingTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_completeOffboardingTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CompleteOffboardingTask(childComplexity, args["id"].(string), args["owner_confirmation_reference_id"].(string)), true
 	case "Mutation.confirmMyTotp":
 		if e.ComplexityRoot.Mutation.ConfirmMyTotp == nil {
 			break
@@ -1634,6 +6392,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ConfirmMyTotp(childComplexity, args["input"].(model.ConfirmTotpInput)), true
+	case "Mutation.createAddress":
+		if e.ComplexityRoot.Mutation.CreateAddress == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createAddress_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateAddress(childComplexity, args["input"].(model.CreateAddressInput)), true
+	case "Mutation.createCandidate":
+		if e.ComplexityRoot.Mutation.CreateCandidate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createCandidate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateCandidate(childComplexity, args["input"].(model.CreateCandidateInput)), true
 	case "Mutation.createEmployeeUser":
 		if e.ComplexityRoot.Mutation.CreateEmployeeUser == nil {
 			break
@@ -1645,6 +6425,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateEmployeeUser(childComplexity, args["input"].(model.CreateEmployeeUserInput)), true
+	case "Mutation.createEmploymentContract":
+		if e.ComplexityRoot.Mutation.CreateEmploymentContract == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createEmploymentContract_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateEmploymentContract(childComplexity, args["input"].(model.CreateEmploymentContractInput)), true
 	case "Mutation.createGroup":
 		if e.ComplexityRoot.Mutation.CreateGroup == nil {
 			break
@@ -1656,6 +6447,138 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateGroup(childComplexity, args["input"].(model.CreateGroupInput)), true
+	case "Mutation.createJob":
+		if e.ComplexityRoot.Mutation.CreateJob == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createJob_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateJob(childComplexity, args["input"].(model.CreateJobInput)), true
+	case "Mutation.createJobFamily":
+		if e.ComplexityRoot.Mutation.CreateJobFamily == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createJobFamily_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateJobFamily(childComplexity, args["input"].(model.CreateJobFamilyInput)), true
+	case "Mutation.createLeaveAdjustment":
+		if e.ComplexityRoot.Mutation.CreateLeaveAdjustment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createLeaveAdjustment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateLeaveAdjustment(childComplexity, args["input"].(model.CreateLeaveAdjustmentInput)), true
+	case "Mutation.createLegalEntity":
+		if e.ComplexityRoot.Mutation.CreateLegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createLegalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateLegalEntity(childComplexity, args["input"].(model.CreateLegalEntityInput)), true
+	case "Mutation.createLocation":
+		if e.ComplexityRoot.Mutation.CreateLocation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createLocation_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateLocation(childComplexity, args["input"].(model.CreateLocationInput)), true
+	case "Mutation.createOffboardingPlan":
+		if e.ComplexityRoot.Mutation.CreateOffboardingPlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createOffboardingPlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateOffboardingPlan(childComplexity, args["input"].(model.CreateOffboardingPlanInput)), true
+	case "Mutation.createOffboardingTask":
+		if e.ComplexityRoot.Mutation.CreateOffboardingTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createOffboardingTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateOffboardingTask(childComplexity, args["input"].(model.CreateOffboardingTaskInput)), true
+	case "Mutation.createOrganizationUnit":
+		if e.ComplexityRoot.Mutation.CreateOrganizationUnit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createOrganizationUnit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateOrganizationUnit(childComplexity, args["input"].(model.CreateOrganizationUnitInput)), true
+	case "Mutation.createParty":
+		if e.ComplexityRoot.Mutation.CreateParty == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateParty(childComplexity, args["input"].(model.CreatePartyInput)), true
+	case "Mutation.createPayrollRun":
+		if e.ComplexityRoot.Mutation.CreatePayrollRun == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPayrollRun_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreatePayrollRun(childComplexity, args["input"].(model.CreatePayrollRunInput)), true
+	case "Mutation.createPosition":
+		if e.ComplexityRoot.Mutation.CreatePosition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPosition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreatePosition(childComplexity, args["input"].(model.CreatePositionInput)), true
+	case "Mutation.createRequisition":
+		if e.ComplexityRoot.Mutation.CreateRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateRequisition(childComplexity, args["input"].(model.CreateRequisitionInput)), true
 	case "Mutation.createRole":
 		if e.ComplexityRoot.Mutation.CreateRole == nil {
 			break
@@ -1700,6 +6623,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateVendorUser(childComplexity, args["input"].(model.CreateVendorUserInput)), true
+	case "Mutation.createWorker":
+		if e.ComplexityRoot.Mutation.CreateWorker == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createWorker_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateWorker(childComplexity, args["input"].(model.CreateWorkerInput)), true
+	case "Mutation.createWorkerAssignment":
+		if e.ComplexityRoot.Mutation.CreateWorkerAssignment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createWorkerAssignment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateWorkerAssignment(childComplexity, args["input"].(model.CreateWorkerAssignmentInput)), true
+	case "Mutation.createWorkforcePlan":
+		if e.ComplexityRoot.Mutation.CreateWorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createWorkforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateWorkforcePlan(childComplexity, args["input"].(model.CreateWorkforcePlanInput)), true
+	case "Mutation.createWorkforcePlanLine":
+		if e.ComplexityRoot.Mutation.CreateWorkforcePlanLine == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createWorkforcePlanLine_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateWorkforcePlanLine(childComplexity, args["input"].(model.CreateWorkforcePlanLineInput)), true
 	case "Mutation.deactivateGroup":
 		if e.ComplexityRoot.Mutation.DeactivateGroup == nil {
 			break
@@ -1711,6 +6678,61 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeactivateGroup(childComplexity, args["id"].(string)), true
+	case "Mutation.deactivateLocation":
+		if e.ComplexityRoot.Mutation.DeactivateLocation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deactivateLocation_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeactivateLocation(childComplexity, args["id"].(string)), true
+	case "Mutation.deactivateOrganizationUnit":
+		if e.ComplexityRoot.Mutation.DeactivateOrganizationUnit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deactivateOrganizationUnit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeactivateOrganizationUnit(childComplexity, args["id"].(string)), true
+	case "Mutation.deactivateParty":
+		if e.ComplexityRoot.Mutation.DeactivateParty == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deactivateParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeactivateParty(childComplexity, args["id"].(string)), true
+	case "Mutation.deactivatePartyContact":
+		if e.ComplexityRoot.Mutation.DeactivatePartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deactivatePartyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeactivatePartyContact(childComplexity, args["contact_id"].(string)), true
+	case "Mutation.deactivatePartyRole":
+		if e.ComplexityRoot.Mutation.DeactivatePartyRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deactivatePartyRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeactivatePartyRole(childComplexity, args["role_id"].(string)), true
 	case "Mutation.deactivateRole":
 		if e.ComplexityRoot.Mutation.DeactivateRole == nil {
 			break
@@ -1722,6 +6744,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeactivateRole(childComplexity, args["id"].(string)), true
+	case "Mutation.decideWorkerAssignmentTransfer":
+		if e.ComplexityRoot.Mutation.DecideWorkerAssignmentTransfer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_decideWorkerAssignmentTransfer_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DecideWorkerAssignmentTransfer(childComplexity, args["id"].(string), args["decision"].(model.WorkerAssignmentTransferDecision)), true
+	case "Mutation.deleteAddress":
+		if e.ComplexityRoot.Mutation.DeleteAddress == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteAddress_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteAddress(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteCandidate":
+		if e.ComplexityRoot.Mutation.DeleteCandidate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteCandidate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteCandidate(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteEmploymentContract":
+		if e.ComplexityRoot.Mutation.DeleteEmploymentContract == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteEmploymentContract_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteEmploymentContract(childComplexity, args["id"].(string)), true
 	case "Mutation.deleteGroup":
 		if e.ComplexityRoot.Mutation.DeleteGroup == nil {
 			break
@@ -1733,12 +6799,89 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteGroup(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteLegalEntity":
+		if e.ComplexityRoot.Mutation.DeleteLegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteLegalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteLegalEntity(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteLocation":
+		if e.ComplexityRoot.Mutation.DeleteLocation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteLocation_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteLocation(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteOrganizationUnit":
+		if e.ComplexityRoot.Mutation.DeleteOrganizationUnit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteOrganizationUnit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteOrganizationUnit(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteParty":
+		if e.ComplexityRoot.Mutation.DeleteParty == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteParty(childComplexity, args["id"].(string)), true
+	case "Mutation.deletePartyContact":
+		if e.ComplexityRoot.Mutation.DeletePartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePartyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeletePartyContact(childComplexity, args["contact_id"].(string)), true
 	case "Mutation.deletePendingUserEmail":
 		if e.ComplexityRoot.Mutation.DeletePendingUserEmail == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Mutation.DeletePendingUserEmail(childComplexity), true
+	case "Mutation.deletePosition":
+		if e.ComplexityRoot.Mutation.DeletePosition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePosition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeletePosition(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteRequisition":
+		if e.ComplexityRoot.Mutation.DeleteRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteRequisition(childComplexity, args["id"].(string)), true
 	case "Mutation.deleteRole":
 		if e.ComplexityRoot.Mutation.DeleteRole == nil {
 			break
@@ -1750,6 +6893,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteRole(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteWorkforcePlan":
+		if e.ComplexityRoot.Mutation.DeleteWorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteWorkforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteWorkforcePlan(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteWorkforcePlanLine":
+		if e.ComplexityRoot.Mutation.DeleteWorkforcePlanLine == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteWorkforcePlanLine_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteWorkforcePlanLine(childComplexity, args["id"].(string)), true
 	case "Mutation.disableMyTotp":
 		if e.ComplexityRoot.Mutation.DisableMyTotp == nil {
 			break
@@ -1767,6 +6932,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DisableUser(childComplexity, args["user_id"].(string)), true
+	case "Mutation.dissolveLegalEntity":
+		if e.ComplexityRoot.Mutation.DissolveLegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_dissolveLegalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DissolveLegalEntity(childComplexity, args["id"].(string), args["dissolution_date"].(*time.Time)), true
 	case "Mutation._empty":
 		if e.ComplexityRoot.Mutation.Empty == nil {
 			break
@@ -1779,12 +6955,100 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.EnrollMyTotp(childComplexity), true
+	case "Mutation.findOrCreateAddress":
+		if e.ComplexityRoot.Mutation.FindOrCreateAddress == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_findOrCreateAddress_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.FindOrCreateAddress(childComplexity, args["input"].(model.FindOrCreateAddressInput)), true
+	case "Mutation.linkPartyAddress":
+		if e.ComplexityRoot.Mutation.LinkPartyAddress == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_linkPartyAddress_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.LinkPartyAddress(childComplexity, args["input"].(model.LinkPartyAddressInput)), true
+	case "Mutation.openRequisition":
+		if e.ComplexityRoot.Mutation.OpenRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_openRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.OpenRequisition(childComplexity, args["id"].(string)), true
+	case "Mutation.postLeaveAdjustment":
+		if e.ComplexityRoot.Mutation.PostLeaveAdjustment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_postLeaveAdjustment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.PostLeaveAdjustment(childComplexity, args["input"].(model.PostLeaveAdjustmentInput)), true
+	case "Mutation.recordSignedEmploymentContract":
+		if e.ComplexityRoot.Mutation.RecordSignedEmploymentContract == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_recordSignedEmploymentContract_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RecordSignedEmploymentContract(childComplexity, args["id"].(string), args["document_version_id"].(string)), true
 	case "Mutation.regenerateMyRecoveryCodes":
 		if e.ComplexityRoot.Mutation.RegenerateMyRecoveryCodes == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Mutation.RegenerateMyRecoveryCodes(childComplexity), true
+	case "Mutation.reissueEmployeePayslip":
+		if e.ComplexityRoot.Mutation.ReissueEmployeePayslip == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_reissueEmployeePayslip_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ReissueEmployeePayslip(childComplexity, args["worker_id"].(string), args["payroll_result_id"].(string)), true
+	case "Mutation.rejectLeaveAdjustment":
+		if e.ComplexityRoot.Mutation.RejectLeaveAdjustment == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_rejectLeaveAdjustment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RejectLeaveAdjustment(childComplexity, args["id"].(string), args["reason_code"].(string)), true
+	case "Mutation.rejectRequisition":
+		if e.ComplexityRoot.Mutation.RejectRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_rejectRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RejectRequisition(childComplexity, args["id"].(string), args["reason_code"].(string)), true
 	case "Mutation.removeGroupMember":
 		if e.ComplexityRoot.Mutation.RemoveGroupMember == nil {
 			break
@@ -1796,6 +7060,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RemoveGroupMember(childComplexity, args["group_id"].(string), args["user_id"].(string)), true
+	case "Mutation.removePartyRole":
+		if e.ComplexityRoot.Mutation.RemovePartyRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removePartyRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RemovePartyRole(childComplexity, args["role_id"].(string)), true
 	case "Mutation.removeUserIdentity":
 		if e.ComplexityRoot.Mutation.RemoveUserIdentity == nil {
 			break
@@ -1807,6 +7082,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RemoveUserIdentity(childComplexity, args["user_id"].(string), args["identity_id"].(string)), true
+	case "Mutation.requestEmployeeAccount":
+		if e.ComplexityRoot.Mutation.RequestEmployeeAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_requestEmployeeAccount_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RequestEmployeeAccount(childComplexity, args["input"].(model.RequestEmployeeAccountInput)), true
+	case "Mutation.requestPartyPortalLink":
+		if e.ComplexityRoot.Mutation.RequestPartyPortalLink == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_requestPartyPortalLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RequestPartyPortalLink(childComplexity, args["contact_id"].(string), args["iam_user_id"].(string)), true
+	case "Mutation.requestPayrollPosting":
+		if e.ComplexityRoot.Mutation.RequestPayrollPosting == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_requestPayrollPosting_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RequestPayrollPosting(childComplexity, args["payroll_run_id"].(string)), true
 	case "Mutation.resendValidationEmailToken":
 		if e.ComplexityRoot.Mutation.ResendValidationEmailToken == nil {
 			break
@@ -1851,6 +7159,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RevokeGroupRole(childComplexity, args["assignment_id"].(string)), true
+	case "Mutation.revokePartyPortalAccess":
+		if e.ComplexityRoot.Mutation.RevokePartyPortalAccess == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_revokePartyPortalAccess_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RevokePartyPortalAccess(childComplexity, args["contact_id"].(string)), true
 	case "Mutation.revokeRolePermission":
 		if e.ComplexityRoot.Mutation.RevokeRolePermission == nil {
 			break
@@ -1884,6 +7203,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RevokeUserRole(childComplexity, args["assignment_id"].(string)), true
+	case "Mutation.setPrimaryOperatingLegalEntity":
+		if e.ComplexityRoot.Mutation.SetPrimaryOperatingLegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setPrimaryOperatingLegalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SetPrimaryOperatingLegalEntity(childComplexity, args["id"].(string)), true
+	case "Mutation.setPrimaryPartyAddressLink":
+		if e.ComplexityRoot.Mutation.SetPrimaryPartyAddressLink == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setPrimaryPartyAddressLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SetPrimaryPartyAddressLink(childComplexity, args["link_id"].(string)), true
+	case "Mutation.setPrimaryPartyContact":
+		if e.ComplexityRoot.Mutation.SetPrimaryPartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setPrimaryPartyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SetPrimaryPartyContact(childComplexity, args["party_id"].(string), args["contact_id"].(string)), true
 	case "Mutation.setPrimaryUserIdentity":
 		if e.ComplexityRoot.Mutation.SetPrimaryUserIdentity == nil {
 			break
@@ -1906,6 +7258,94 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.SoftDeleteUser(childComplexity, args["user_id"].(string)), true
+	case "Mutation.startOffboardingPlan":
+		if e.ComplexityRoot.Mutation.StartOffboardingPlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_startOffboardingPlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.StartOffboardingPlan(childComplexity, args["id"].(string)), true
+	case "Mutation.submitPayrollRunForReview":
+		if e.ComplexityRoot.Mutation.SubmitPayrollRunForReview == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitPayrollRunForReview_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SubmitPayrollRunForReview(childComplexity, args["payroll_run_id"].(string)), true
+	case "Mutation.submitRequisition":
+		if e.ComplexityRoot.Mutation.SubmitRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SubmitRequisition(childComplexity, args["id"].(string)), true
+	case "Mutation.submitWorkerAssignmentTransfer":
+		if e.ComplexityRoot.Mutation.SubmitWorkerAssignmentTransfer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitWorkerAssignmentTransfer_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SubmitWorkerAssignmentTransfer(childComplexity, args["input"].(model.SubmitWorkerAssignmentTransferInput)), true
+	case "Mutation.submitWorkforcePlan":
+		if e.ComplexityRoot.Mutation.SubmitWorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitWorkforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SubmitWorkforcePlan(childComplexity, args["id"].(string)), true
+	case "Mutation.supersedeWorkforcePlan":
+		if e.ComplexityRoot.Mutation.SupersedeWorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_supersedeWorkforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SupersedeWorkforcePlan(childComplexity, args["id"].(string), args["replacement_plan_id"].(string), args["reason_code"].(string)), true
+	case "Mutation.suspendLegalEntity":
+		if e.ComplexityRoot.Mutation.SuspendLegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_suspendLegalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SuspendLegalEntity(childComplexity, args["id"].(string)), true
+	case "Mutation.suspendParty":
+		if e.ComplexityRoot.Mutation.SuspendParty == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_suspendParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SuspendParty(childComplexity, args["id"].(string)), true
 	case "Mutation.suspendUser":
 		if e.ComplexityRoot.Mutation.SuspendUser == nil {
 			break
@@ -1917,6 +7357,72 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.SuspendUser(childComplexity, args["user_id"].(string)), true
+	case "Mutation.terminateWorker":
+		if e.ComplexityRoot.Mutation.TerminateWorker == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_terminateWorker_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.TerminateWorker(childComplexity, args["id"].(string), args["offboarding_plan_id"].(string)), true
+	case "Mutation.unlinkPartyAddress":
+		if e.ComplexityRoot.Mutation.UnlinkPartyAddress == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unlinkPartyAddress_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UnlinkPartyAddress(childComplexity, args["link_id"].(string)), true
+	case "Mutation.unlinkPartyPortalUser":
+		if e.ComplexityRoot.Mutation.UnlinkPartyPortalUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unlinkPartyPortalUser_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UnlinkPartyPortalUser(childComplexity, args["contact_id"].(string)), true
+	case "Mutation.updateAddress":
+		if e.ComplexityRoot.Mutation.UpdateAddress == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAddress_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateAddress(childComplexity, args["input"].(model.UpdateAddressInput)), true
+	case "Mutation.updateCandidate":
+		if e.ComplexityRoot.Mutation.UpdateCandidate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateCandidate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateCandidate(childComplexity, args["id"].(string), args["input"].(model.UpdateCandidateInput)), true
+	case "Mutation.updateEmploymentContract":
+		if e.ComplexityRoot.Mutation.UpdateEmploymentContract == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateEmploymentContract_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateEmploymentContract(childComplexity, args["id"].(string), args["input"].(model.UpdateEmploymentContractInput)), true
 	case "Mutation.updateGroupDetails":
 		if e.ComplexityRoot.Mutation.UpdateGroupDetails == nil {
 			break
@@ -1928,6 +7434,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateGroupDetails(childComplexity, args["input"].(model.UpdateGroupDetailsInput)), true
+	case "Mutation.updateLegalEntity":
+		if e.ComplexityRoot.Mutation.UpdateLegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateLegalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateLegalEntity(childComplexity, args["input"].(model.UpdateLegalEntityInput)), true
+	case "Mutation.updateLocation":
+		if e.ComplexityRoot.Mutation.UpdateLocation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateLocation_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateLocation(childComplexity, args["input"].(model.UpdateLocationInput)), true
 	case "Mutation.updateMyProfile":
 		if e.ComplexityRoot.Mutation.UpdateMyProfile == nil {
 			break
@@ -1939,6 +7467,94 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateMyProfile(childComplexity, args["input"].(model.UpdateMyProfileInput)), true
+	case "Mutation.updateOrganizationUnit":
+		if e.ComplexityRoot.Mutation.UpdateOrganizationUnit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateOrganizationUnit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateOrganizationUnit(childComplexity, args["input"].(model.UpdateOrganizationUnitInput)), true
+	case "Mutation.updatePartyAddressLink":
+		if e.ComplexityRoot.Mutation.UpdatePartyAddressLink == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePartyAddressLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdatePartyAddressLink(childComplexity, args["input"].(model.UpdatePartyAddressLinkInput)), true
+	case "Mutation.updatePartyContact":
+		if e.ComplexityRoot.Mutation.UpdatePartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePartyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdatePartyContact(childComplexity, args["input"].(model.UpdatePartyContactInput)), true
+	case "Mutation.updatePartyProfile":
+		if e.ComplexityRoot.Mutation.UpdatePartyProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePartyProfile_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdatePartyProfile(childComplexity, args["input"].(model.UpdatePartyProfileInput)), true
+	case "Mutation.updatePartyRoleNote":
+		if e.ComplexityRoot.Mutation.UpdatePartyRoleNote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePartyRoleNote_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdatePartyRoleNote(childComplexity, args["input"].(model.UpdatePartyRoleNoteInput)), true
+	case "Mutation.updatePartyTaxProfile":
+		if e.ComplexityRoot.Mutation.UpdatePartyTaxProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePartyTaxProfile_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdatePartyTaxProfile(childComplexity, args["input"].(model.UpdatePartyTaxProfileInput)), true
+	case "Mutation.updatePosition":
+		if e.ComplexityRoot.Mutation.UpdatePosition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePosition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdatePosition(childComplexity, args["id"].(string), args["input"].(model.UpdatePositionInput)), true
+	case "Mutation.updateRequisition":
+		if e.ComplexityRoot.Mutation.UpdateRequisition == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateRequisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateRequisition(childComplexity, args["id"].(string), args["input"].(model.UpdateRequisitionInput)), true
 	case "Mutation.updateRoleDetails":
 		if e.ComplexityRoot.Mutation.UpdateRoleDetails == nil {
 			break
@@ -1961,6 +7577,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateUserEmail(childComplexity, args["input"].(model.UserEmailInput)), true
+	case "Mutation.updateWorker":
+		if e.ComplexityRoot.Mutation.UpdateWorker == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateWorker_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateWorker(childComplexity, args["id"].(string), args["input"].(model.UpdateWorkerInput)), true
+	case "Mutation.updateWorkforcePlan":
+		if e.ComplexityRoot.Mutation.UpdateWorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateWorkforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateWorkforcePlan(childComplexity, args["id"].(string), args["input"].(model.UpdateWorkforcePlanInput)), true
+	case "Mutation.updateWorkforcePlanLine":
+		if e.ComplexityRoot.Mutation.UpdateWorkforcePlanLine == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateWorkforcePlanLine_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateWorkforcePlanLine(childComplexity, args["id"].(string), args["input"].(model.UpdateWorkforcePlanLineInput)), true
 	case "Mutation.uploadAvatarUser":
 		if e.ComplexityRoot.Mutation.UploadAvatarUser == nil {
 			break
@@ -2011,6 +7660,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ValidateUserMfa(childComplexity, args["input"].(model.ValidateUserMfaInput)), true
+	case "Mutation.verifyAndActivateParty":
+		if e.ComplexityRoot.Mutation.VerifyAndActivateParty == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_verifyAndActivateParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.VerifyAndActivateParty(childComplexity, args["id"].(string)), true
 	case "Mutation.verifyEmail":
 		if e.ComplexityRoot.Mutation.VerifyEmail == nil {
 			break
@@ -2033,6 +7693,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.VerifyMySessionMfa(childComplexity, args["totp_code"].(string)), true
+	case "Mutation.waiveOffboardingTask":
+		if e.ComplexityRoot.Mutation.WaiveOffboardingTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_waiveOffboardingTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.WaiveOffboardingTask(childComplexity, args["id"].(string), args["reason"].(string)), true
 
 	case "MutationError.message":
 		if e.ComplexityRoot.MutationError.Message == nil {
@@ -2046,6 +7717,451 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.MutationError.Type(childComplexity), true
+
+	case "MyPayslip.document_version_id":
+		if e.ComplexityRoot.MyPayslip.DocumentVersionID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.DocumentVersionID(childComplexity), true
+	case "MyPayslip.payment_status":
+		if e.ComplexityRoot.MyPayslip.PaymentStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.PaymentStatus(childComplexity), true
+	case "MyPayslip.payroll_period_id":
+		if e.ComplexityRoot.MyPayslip.PayrollPeriodID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.PayrollPeriodID(childComplexity), true
+	case "MyPayslip.payroll_result_id":
+		if e.ComplexityRoot.MyPayslip.PayrollResultID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.PayrollResultID(childComplexity), true
+	case "MyPayslip.period_code":
+		if e.ComplexityRoot.MyPayslip.PeriodCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.PeriodCode(childComplexity), true
+	case "MyPayslip.period_end":
+		if e.ComplexityRoot.MyPayslip.PeriodEnd == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.PeriodEnd(childComplexity), true
+	case "MyPayslip.period_start":
+		if e.ComplexityRoot.MyPayslip.PeriodStart == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.PeriodStart(childComplexity), true
+	case "MyPayslip.published_at":
+		if e.ComplexityRoot.MyPayslip.PublishedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.PublishedAt(childComplexity), true
+	case "MyPayslip.scheduled_pay_date":
+		if e.ComplexityRoot.MyPayslip.ScheduledPayDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslip.ScheduledPayDate(childComplexity), true
+
+	case "MyPayslipConnection.edges":
+		if e.ComplexityRoot.MyPayslipConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslipConnection.Edges(childComplexity), true
+	case "MyPayslipConnection.nodes":
+		if e.ComplexityRoot.MyPayslipConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslipConnection.Nodes(childComplexity), true
+	case "MyPayslipConnection.pageInfo":
+		if e.ComplexityRoot.MyPayslipConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslipConnection.PageInfo(childComplexity), true
+	case "MyPayslipConnection.total_count":
+		if e.ComplexityRoot.MyPayslipConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslipConnection.TotalCount(childComplexity), true
+
+	case "MyPayslipEdge.cursor":
+		if e.ComplexityRoot.MyPayslipEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslipEdge.Cursor(childComplexity), true
+	case "MyPayslipEdge.node":
+		if e.ComplexityRoot.MyPayslipEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslipEdge.Node(childComplexity), true
+
+	case "MyPayslipPDF.content_base64":
+		if e.ComplexityRoot.MyPayslipPDF.ContentBase64 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.MyPayslipPDF.ContentBase64(childComplexity), true
+
+	case "OffboardingPlan.id":
+		if e.ComplexityRoot.OffboardingPlan.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlan.ID(childComplexity), true
+	case "OffboardingPlan.last_working_date":
+		if e.ComplexityRoot.OffboardingPlan.LastWorkingDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlan.LastWorkingDate(childComplexity), true
+	case "OffboardingPlan.plan_number":
+		if e.ComplexityRoot.OffboardingPlan.PlanNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlan.PlanNumber(childComplexity), true
+	case "OffboardingPlan._id":
+		if e.ComplexityRoot.OffboardingPlan.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlan.RawID(childComplexity), true
+	case "OffboardingPlan.status":
+		if e.ComplexityRoot.OffboardingPlan.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlan.Status(childComplexity), true
+	case "OffboardingPlan.termination_effective_date":
+		if e.ComplexityRoot.OffboardingPlan.TerminationEffectiveDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlan.TerminationEffectiveDate(childComplexity), true
+	case "OffboardingPlan.worker_id":
+		if e.ComplexityRoot.OffboardingPlan.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlan.WorkerID(childComplexity), true
+
+	case "OffboardingPlanConnection.edges":
+		if e.ComplexityRoot.OffboardingPlanConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlanConnection.Edges(childComplexity), true
+	case "OffboardingPlanConnection.nodes":
+		if e.ComplexityRoot.OffboardingPlanConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlanConnection.Nodes(childComplexity), true
+	case "OffboardingPlanConnection.pageInfo":
+		if e.ComplexityRoot.OffboardingPlanConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlanConnection.PageInfo(childComplexity), true
+	case "OffboardingPlanConnection.total_count":
+		if e.ComplexityRoot.OffboardingPlanConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlanConnection.TotalCount(childComplexity), true
+
+	case "OffboardingPlanEdge.cursor":
+		if e.ComplexityRoot.OffboardingPlanEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlanEdge.Cursor(childComplexity), true
+	case "OffboardingPlanEdge.node":
+		if e.ComplexityRoot.OffboardingPlanEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingPlanEdge.Node(childComplexity), true
+
+	case "OffboardingTask.due_at":
+		if e.ComplexityRoot.OffboardingTask.DueAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.DueAt(childComplexity), true
+	case "OffboardingTask.id":
+		if e.ComplexityRoot.OffboardingTask.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.ID(childComplexity), true
+	case "OffboardingTask.is_mandatory":
+		if e.ComplexityRoot.OffboardingTask.IsMandatory == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.IsMandatory(childComplexity), true
+	case "OffboardingTask.offboarding_plan_id":
+		if e.ComplexityRoot.OffboardingTask.OffboardingPlanID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.OffboardingPlanID(childComplexity), true
+	case "OffboardingTask.owner_management":
+		if e.ComplexityRoot.OffboardingTask.OwnerManagement == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.OwnerManagement(childComplexity), true
+	case "OffboardingTask._id":
+		if e.ComplexityRoot.OffboardingTask.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.RawID(childComplexity), true
+	case "OffboardingTask.status":
+		if e.ComplexityRoot.OffboardingTask.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.Status(childComplexity), true
+	case "OffboardingTask.task_code":
+		if e.ComplexityRoot.OffboardingTask.TaskCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.TaskCode(childComplexity), true
+	case "OffboardingTask.task_name":
+		if e.ComplexityRoot.OffboardingTask.TaskName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTask.TaskName(childComplexity), true
+
+	case "OffboardingTaskConnection.edges":
+		if e.ComplexityRoot.OffboardingTaskConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTaskConnection.Edges(childComplexity), true
+	case "OffboardingTaskConnection.nodes":
+		if e.ComplexityRoot.OffboardingTaskConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTaskConnection.Nodes(childComplexity), true
+	case "OffboardingTaskConnection.pageInfo":
+		if e.ComplexityRoot.OffboardingTaskConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTaskConnection.PageInfo(childComplexity), true
+	case "OffboardingTaskConnection.total_count":
+		if e.ComplexityRoot.OffboardingTaskConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTaskConnection.TotalCount(childComplexity), true
+
+	case "OffboardingTaskEdge.cursor":
+		if e.ComplexityRoot.OffboardingTaskEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTaskEdge.Cursor(childComplexity), true
+	case "OffboardingTaskEdge.node":
+		if e.ComplexityRoot.OffboardingTaskEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OffboardingTaskEdge.Node(childComplexity), true
+
+	case "OpenRequisitionPayload.errors":
+		if e.ComplexityRoot.OpenRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OpenRequisitionPayload.Errors(childComplexity), true
+	case "OpenRequisitionPayload.requisition":
+		if e.ComplexityRoot.OpenRequisitionPayload.Requisition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OpenRequisitionPayload.Requisition(childComplexity), true
+	case "OpenRequisitionPayload.was_successful":
+		if e.ComplexityRoot.OpenRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OpenRequisitionPayload.WasSuccessful(childComplexity), true
+
+	case "OrganizationUnit.children":
+		if e.ComplexityRoot.OrganizationUnit.Children == nil {
+			break
+		}
+
+		args, err := ec.field_OrganizationUnit_children_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.Children(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "OrganizationUnit.cost_center_code":
+		if e.ComplexityRoot.OrganizationUnit.CostCenterCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.CostCenterCode(childComplexity), true
+	case "OrganizationUnit.created_at":
+		if e.ComplexityRoot.OrganizationUnit.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.CreatedAt(childComplexity), true
+	case "OrganizationUnit.deleted_at":
+		if e.ComplexityRoot.OrganizationUnit.DeletedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.DeletedAt(childComplexity), true
+	case "OrganizationUnit.head_person_id":
+		if e.ComplexityRoot.OrganizationUnit.HeadPersonID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.HeadPersonID(childComplexity), true
+	case "OrganizationUnit.id":
+		if e.ComplexityRoot.OrganizationUnit.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.ID(childComplexity), true
+	case "OrganizationUnit.is_active":
+		if e.ComplexityRoot.OrganizationUnit.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.IsActive(childComplexity), true
+	case "OrganizationUnit.kind":
+		if e.ComplexityRoot.OrganizationUnit.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.Kind(childComplexity), true
+	case "OrganizationUnit.legal_entity":
+		if e.ComplexityRoot.OrganizationUnit.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.LegalEntity(childComplexity), true
+	case "OrganizationUnit.legal_entity_id":
+		if e.ComplexityRoot.OrganizationUnit.LegalEntityID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.LegalEntityID(childComplexity), true
+	case "OrganizationUnit.name":
+		if e.ComplexityRoot.OrganizationUnit.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.Name(childComplexity), true
+	case "OrganizationUnit.parent_unit":
+		if e.ComplexityRoot.OrganizationUnit.ParentUnit == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.ParentUnit(childComplexity), true
+	case "OrganizationUnit.parent_unit_id":
+		if e.ComplexityRoot.OrganizationUnit.ParentUnitID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.ParentUnitID(childComplexity), true
+	case "OrganizationUnit.primary_location":
+		if e.ComplexityRoot.OrganizationUnit.PrimaryLocation == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.PrimaryLocation(childComplexity), true
+	case "OrganizationUnit.primary_location_id":
+		if e.ComplexityRoot.OrganizationUnit.PrimaryLocationID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.PrimaryLocationID(childComplexity), true
+	case "OrganizationUnit._id":
+		if e.ComplexityRoot.OrganizationUnit.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.RawID(childComplexity), true
+	case "OrganizationUnit.unit_code":
+		if e.ComplexityRoot.OrganizationUnit.UnitCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.UnitCode(childComplexity), true
+	case "OrganizationUnit.updated_at":
+		if e.ComplexityRoot.OrganizationUnit.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnit.UpdatedAt(childComplexity), true
+
+	case "OrganizationUnitConnection.edges":
+		if e.ComplexityRoot.OrganizationUnitConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnitConnection.Edges(childComplexity), true
+	case "OrganizationUnitConnection.nodes":
+		if e.ComplexityRoot.OrganizationUnitConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnitConnection.Nodes(childComplexity), true
+	case "OrganizationUnitConnection.pageInfo":
+		if e.ComplexityRoot.OrganizationUnitConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnitConnection.PageInfo(childComplexity), true
+	case "OrganizationUnitConnection.total_count":
+		if e.ComplexityRoot.OrganizationUnitConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnitConnection.TotalCount(childComplexity), true
+
+	case "OrganizationUnitEdge.cursor":
+		if e.ComplexityRoot.OrganizationUnitEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnitEdge.Cursor(childComplexity), true
+	case "OrganizationUnitEdge.node":
+		if e.ComplexityRoot.OrganizationUnitEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.OrganizationUnitEdge.Node(childComplexity), true
 
 	case "PageInfo.endCursor":
 		if e.ComplexityRoot.PageInfo.EndCursor == nil {
@@ -2071,6 +8187,1138 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.PageInfo.StartCursor(childComplexity), true
+
+	case "Party.addresses":
+		if e.ComplexityRoot.Party.Addresses == nil {
+			break
+		}
+
+		args, err := ec.field_Party_addresses_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Party.Addresses(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Party.contacts":
+		if e.ComplexityRoot.Party.Contacts == nil {
+			break
+		}
+
+		args, err := ec.field_Party_contacts_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Party.Contacts(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Party.created_at":
+		if e.ComplexityRoot.Party.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.CreatedAt(childComplexity), true
+	case "Party.deleted_at":
+		if e.ComplexityRoot.Party.DeletedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.DeletedAt(childComplexity), true
+	case "Party.display_name":
+		if e.ComplexityRoot.Party.DisplayName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.DisplayName(childComplexity), true
+	case "Party.email":
+		if e.ComplexityRoot.Party.Email == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.Email(childComplexity), true
+	case "Party.id":
+		if e.ComplexityRoot.Party.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.ID(childComplexity), true
+	case "Party.is_pkp":
+		if e.ComplexityRoot.Party.IsPkp == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.IsPkp(childComplexity), true
+	case "Party.is_tax_exempt":
+		if e.ComplexityRoot.Party.IsTaxExempt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.IsTaxExempt(childComplexity), true
+	case "Party.kind":
+		if e.ComplexityRoot.Party.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.Kind(childComplexity), true
+	case "Party.legal_name":
+		if e.ComplexityRoot.Party.LegalName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.LegalName(childComplexity), true
+	case "Party.notes":
+		if e.ComplexityRoot.Party.Notes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.Notes(childComplexity), true
+	case "Party.partner_code":
+		if e.ComplexityRoot.Party.PartnerCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.PartnerCode(childComplexity), true
+	case "Party.phone":
+		if e.ComplexityRoot.Party.Phone == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.Phone(childComplexity), true
+	case "Party.preferred_language":
+		if e.ComplexityRoot.Party.PreferredLanguage == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.PreferredLanguage(childComplexity), true
+	case "Party._id":
+		if e.ComplexityRoot.Party.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.RawID(childComplexity), true
+	case "Party.roles":
+		if e.ComplexityRoot.Party.Roles == nil {
+			break
+		}
+
+		args, err := ec.field_Party_roles_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Party.Roles(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Party.status":
+		if e.ComplexityRoot.Party.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.Status(childComplexity), true
+	case "Party.tax_exemption_reason":
+		if e.ComplexityRoot.Party.TaxExemptionReason == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.TaxExemptionReason(childComplexity), true
+	case "Party.tax_id_number":
+		if e.ComplexityRoot.Party.TaxIDNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.TaxIDNumber(childComplexity), true
+	case "Party.tax_registered_name":
+		if e.ComplexityRoot.Party.TaxRegisteredName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.TaxRegisteredName(childComplexity), true
+	case "Party.tax_verified_at":
+		if e.ComplexityRoot.Party.TaxVerifiedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.TaxVerifiedAt(childComplexity), true
+	case "Party.updated_at":
+		if e.ComplexityRoot.Party.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.UpdatedAt(childComplexity), true
+	case "Party.website_url":
+		if e.ComplexityRoot.Party.WebsiteURL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Party.WebsiteURL(childComplexity), true
+
+	case "PartyAddress.address":
+		if e.ComplexityRoot.PartyAddress.Address == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.Address(childComplexity), true
+	case "PartyAddress.address_id":
+		if e.ComplexityRoot.PartyAddress.AddressID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.AddressID(childComplexity), true
+	case "PartyAddress.created_at":
+		if e.ComplexityRoot.PartyAddress.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.CreatedAt(childComplexity), true
+	case "PartyAddress.id":
+		if e.ComplexityRoot.PartyAddress.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.ID(childComplexity), true
+	case "PartyAddress.is_primary":
+		if e.ComplexityRoot.PartyAddress.IsPrimary == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.IsPrimary(childComplexity), true
+	case "PartyAddress.party_id":
+		if e.ComplexityRoot.PartyAddress.PartyID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.PartyID(childComplexity), true
+	case "PartyAddress._id":
+		if e.ComplexityRoot.PartyAddress.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.RawID(childComplexity), true
+	case "PartyAddress.updated_at":
+		if e.ComplexityRoot.PartyAddress.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.UpdatedAt(childComplexity), true
+	case "PartyAddress.usage":
+		if e.ComplexityRoot.PartyAddress.Usage == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddress.Usage(childComplexity), true
+
+	case "PartyAddressConnection.edges":
+		if e.ComplexityRoot.PartyAddressConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddressConnection.Edges(childComplexity), true
+	case "PartyAddressConnection.nodes":
+		if e.ComplexityRoot.PartyAddressConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddressConnection.Nodes(childComplexity), true
+	case "PartyAddressConnection.pageInfo":
+		if e.ComplexityRoot.PartyAddressConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddressConnection.PageInfo(childComplexity), true
+	case "PartyAddressConnection.total_count":
+		if e.ComplexityRoot.PartyAddressConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddressConnection.TotalCount(childComplexity), true
+
+	case "PartyAddressEdge.cursor":
+		if e.ComplexityRoot.PartyAddressEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddressEdge.Cursor(childComplexity), true
+	case "PartyAddressEdge.node":
+		if e.ComplexityRoot.PartyAddressEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyAddressEdge.Node(childComplexity), true
+
+	case "PartyConnection.edges":
+		if e.ComplexityRoot.PartyConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyConnection.Edges(childComplexity), true
+	case "PartyConnection.nodes":
+		if e.ComplexityRoot.PartyConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyConnection.Nodes(childComplexity), true
+	case "PartyConnection.pageInfo":
+		if e.ComplexityRoot.PartyConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyConnection.PageInfo(childComplexity), true
+	case "PartyConnection.total_count":
+		if e.ComplexityRoot.PartyConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyConnection.TotalCount(childComplexity), true
+
+	case "PartyContact.contact_role":
+		if e.ComplexityRoot.PartyContact.ContactRole == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.ContactRole(childComplexity), true
+	case "PartyContact.created_at":
+		if e.ComplexityRoot.PartyContact.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.CreatedAt(childComplexity), true
+	case "PartyContact.deleted_at":
+		if e.ComplexityRoot.PartyContact.DeletedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.DeletedAt(childComplexity), true
+	case "PartyContact.email":
+		if e.ComplexityRoot.PartyContact.Email == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.Email(childComplexity), true
+	case "PartyContact.full_name":
+		if e.ComplexityRoot.PartyContact.FullName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.FullName(childComplexity), true
+	case "PartyContact.id":
+		if e.ComplexityRoot.PartyContact.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.ID(childComplexity), true
+	case "PartyContact.iam_user_id":
+		if e.ComplexityRoot.PartyContact.IamUserID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.IamUserID(childComplexity), true
+	case "PartyContact.is_active":
+		if e.ComplexityRoot.PartyContact.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.IsActive(childComplexity), true
+	case "PartyContact.is_primary":
+		if e.ComplexityRoot.PartyContact.IsPrimary == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.IsPrimary(childComplexity), true
+	case "PartyContact.job_title":
+		if e.ComplexityRoot.PartyContact.JobTitle == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.JobTitle(childComplexity), true
+	case "PartyContact.party_id":
+		if e.ComplexityRoot.PartyContact.PartyID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.PartyID(childComplexity), true
+	case "PartyContact.phone":
+		if e.ComplexityRoot.PartyContact.Phone == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.Phone(childComplexity), true
+	case "PartyContact.portal_access_status":
+		if e.ComplexityRoot.PartyContact.PortalAccessStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.PortalAccessStatus(childComplexity), true
+	case "PartyContact._id":
+		if e.ComplexityRoot.PartyContact.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.RawID(childComplexity), true
+	case "PartyContact.updated_at":
+		if e.ComplexityRoot.PartyContact.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContact.UpdatedAt(childComplexity), true
+
+	case "PartyContactConnection.edges":
+		if e.ComplexityRoot.PartyContactConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContactConnection.Edges(childComplexity), true
+	case "PartyContactConnection.nodes":
+		if e.ComplexityRoot.PartyContactConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContactConnection.Nodes(childComplexity), true
+	case "PartyContactConnection.pageInfo":
+		if e.ComplexityRoot.PartyContactConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContactConnection.PageInfo(childComplexity), true
+	case "PartyContactConnection.total_count":
+		if e.ComplexityRoot.PartyContactConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContactConnection.TotalCount(childComplexity), true
+
+	case "PartyContactEdge.cursor":
+		if e.ComplexityRoot.PartyContactEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContactEdge.Cursor(childComplexity), true
+	case "PartyContactEdge.node":
+		if e.ComplexityRoot.PartyContactEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyContactEdge.Node(childComplexity), true
+
+	case "PartyEdge.cursor":
+		if e.ComplexityRoot.PartyEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyEdge.Cursor(childComplexity), true
+	case "PartyEdge.node":
+		if e.ComplexityRoot.PartyEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyEdge.Node(childComplexity), true
+
+	case "PartyRole.created_at":
+		if e.ComplexityRoot.PartyRole.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.CreatedAt(childComplexity), true
+	case "PartyRole.id":
+		if e.ComplexityRoot.PartyRole.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.ID(childComplexity), true
+	case "PartyRole.is_active":
+		if e.ComplexityRoot.PartyRole.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.IsActive(childComplexity), true
+	case "PartyRole.party_id":
+		if e.ComplexityRoot.PartyRole.PartyID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.PartyID(childComplexity), true
+	case "PartyRole._id":
+		if e.ComplexityRoot.PartyRole.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.RawID(childComplexity), true
+	case "PartyRole.reference_note":
+		if e.ComplexityRoot.PartyRole.ReferenceNote == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.ReferenceNote(childComplexity), true
+	case "PartyRole.role":
+		if e.ComplexityRoot.PartyRole.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.Role(childComplexity), true
+	case "PartyRole.updated_at":
+		if e.ComplexityRoot.PartyRole.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRole.UpdatedAt(childComplexity), true
+
+	case "PartyRoleConnection.edges":
+		if e.ComplexityRoot.PartyRoleConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRoleConnection.Edges(childComplexity), true
+	case "PartyRoleConnection.nodes":
+		if e.ComplexityRoot.PartyRoleConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRoleConnection.Nodes(childComplexity), true
+	case "PartyRoleConnection.pageInfo":
+		if e.ComplexityRoot.PartyRoleConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRoleConnection.PageInfo(childComplexity), true
+	case "PartyRoleConnection.total_count":
+		if e.ComplexityRoot.PartyRoleConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRoleConnection.TotalCount(childComplexity), true
+
+	case "PartyRoleEdge.cursor":
+		if e.ComplexityRoot.PartyRoleEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRoleEdge.Cursor(childComplexity), true
+	case "PartyRoleEdge.node":
+		if e.ComplexityRoot.PartyRoleEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartyRoleEdge.Node(childComplexity), true
+
+	case "PayrollGroup.currency_code":
+		if e.ComplexityRoot.PayrollGroup.CurrencyCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.CurrencyCode(childComplexity), true
+	case "PayrollGroup.currency_scale":
+		if e.ComplexityRoot.PayrollGroup.CurrencyScale == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.CurrencyScale(childComplexity), true
+	case "PayrollGroup.employing_legal_entity_reference_id":
+		if e.ComplexityRoot.PayrollGroup.EmployingLegalEntityReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.EmployingLegalEntityReferenceID(childComplexity), true
+	case "PayrollGroup.group_code":
+		if e.ComplexityRoot.PayrollGroup.GroupCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.GroupCode(childComplexity), true
+	case "PayrollGroup.group_name":
+		if e.ComplexityRoot.PayrollGroup.GroupName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.GroupName(childComplexity), true
+	case "PayrollGroup.id":
+		if e.ComplexityRoot.PayrollGroup.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.ID(childComplexity), true
+	case "PayrollGroup.is_active":
+		if e.ComplexityRoot.PayrollGroup.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.IsActive(childComplexity), true
+	case "PayrollGroup.jurisdiction_code":
+		if e.ComplexityRoot.PayrollGroup.JurisdictionCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.JurisdictionCode(childComplexity), true
+	case "PayrollGroup.pay_frequency":
+		if e.ComplexityRoot.PayrollGroup.PayFrequency == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.PayFrequency(childComplexity), true
+	case "PayrollGroup._id":
+		if e.ComplexityRoot.PayrollGroup.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.RawID(childComplexity), true
+	case "PayrollGroup.timezone":
+		if e.ComplexityRoot.PayrollGroup.Timezone == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroup.Timezone(childComplexity), true
+
+	case "PayrollGroupConnection.edges":
+		if e.ComplexityRoot.PayrollGroupConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroupConnection.Edges(childComplexity), true
+	case "PayrollGroupConnection.nodes":
+		if e.ComplexityRoot.PayrollGroupConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroupConnection.Nodes(childComplexity), true
+	case "PayrollGroupConnection.pageInfo":
+		if e.ComplexityRoot.PayrollGroupConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroupConnection.PageInfo(childComplexity), true
+	case "PayrollGroupConnection.total_count":
+		if e.ComplexityRoot.PayrollGroupConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroupConnection.TotalCount(childComplexity), true
+
+	case "PayrollGroupEdge.cursor":
+		if e.ComplexityRoot.PayrollGroupEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroupEdge.Cursor(childComplexity), true
+	case "PayrollGroupEdge.node":
+		if e.ComplexityRoot.PayrollGroupEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollGroupEdge.Node(childComplexity), true
+
+	case "PayrollPeriod.currency_code":
+		if e.ComplexityRoot.PayrollPeriod.CurrencyCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.CurrencyCode(childComplexity), true
+	case "PayrollPeriod.employing_legal_entity_reference_id":
+		if e.ComplexityRoot.PayrollPeriod.EmployingLegalEntityReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.EmployingLegalEntityReferenceID(childComplexity), true
+	case "PayrollPeriod.id":
+		if e.ComplexityRoot.PayrollPeriod.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.ID(childComplexity), true
+	case "PayrollPeriod.jurisdiction_code":
+		if e.ComplexityRoot.PayrollPeriod.JurisdictionCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.JurisdictionCode(childComplexity), true
+	case "PayrollPeriod.pay_date":
+		if e.ComplexityRoot.PayrollPeriod.PayDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.PayDate(childComplexity), true
+	case "PayrollPeriod.payroll_group_id":
+		if e.ComplexityRoot.PayrollPeriod.PayrollGroupID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.PayrollGroupID(childComplexity), true
+	case "PayrollPeriod.period_code":
+		if e.ComplexityRoot.PayrollPeriod.PeriodCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.PeriodCode(childComplexity), true
+	case "PayrollPeriod.period_end":
+		if e.ComplexityRoot.PayrollPeriod.PeriodEnd == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.PeriodEnd(childComplexity), true
+	case "PayrollPeriod.period_start":
+		if e.ComplexityRoot.PayrollPeriod.PeriodStart == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.PeriodStart(childComplexity), true
+	case "PayrollPeriod.period_status":
+		if e.ComplexityRoot.PayrollPeriod.PeriodStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.PeriodStatus(childComplexity), true
+	case "PayrollPeriod._id":
+		if e.ComplexityRoot.PayrollPeriod.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriod.RawID(childComplexity), true
+
+	case "PayrollPeriodConnection.edges":
+		if e.ComplexityRoot.PayrollPeriodConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriodConnection.Edges(childComplexity), true
+	case "PayrollPeriodConnection.nodes":
+		if e.ComplexityRoot.PayrollPeriodConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriodConnection.Nodes(childComplexity), true
+	case "PayrollPeriodConnection.pageInfo":
+		if e.ComplexityRoot.PayrollPeriodConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriodConnection.PageInfo(childComplexity), true
+	case "PayrollPeriodConnection.total_count":
+		if e.ComplexityRoot.PayrollPeriodConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriodConnection.TotalCount(childComplexity), true
+
+	case "PayrollPeriodEdge.cursor":
+		if e.ComplexityRoot.PayrollPeriodEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriodEdge.Cursor(childComplexity), true
+	case "PayrollPeriodEdge.node":
+		if e.ComplexityRoot.PayrollPeriodEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPeriodEdge.Node(childComplexity), true
+
+	case "PayrollPostingRequest.payroll_run_id":
+		if e.ComplexityRoot.PayrollPostingRequest.PayrollRunID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPostingRequest.PayrollRunID(childComplexity), true
+	case "PayrollPostingRequest.posting_requested_at":
+		if e.ComplexityRoot.PayrollPostingRequest.PostingRequestedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPostingRequest.PostingRequestedAt(childComplexity), true
+	case "PayrollPostingRequest.status":
+		if e.ComplexityRoot.PayrollPostingRequest.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollPostingRequest.Status(childComplexity), true
+
+	case "PayrollResult.currency_code":
+		if e.ComplexityRoot.PayrollResult.CurrencyCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.CurrencyCode(childComplexity), true
+	case "PayrollResult.employer_cost_amount":
+		if e.ComplexityRoot.PayrollResult.EmployerCostAmount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.EmployerCostAmount(childComplexity), true
+	case "PayrollResult.gross_amount":
+		if e.ComplexityRoot.PayrollResult.GrossAmount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.GrossAmount(childComplexity), true
+	case "PayrollResult.id":
+		if e.ComplexityRoot.PayrollResult.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.ID(childComplexity), true
+	case "PayrollResult.net_pay_amount":
+		if e.ComplexityRoot.PayrollResult.NetPayAmount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.NetPayAmount(childComplexity), true
+	case "PayrollResult.payroll_run_id":
+		if e.ComplexityRoot.PayrollResult.PayrollRunID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.PayrollRunID(childComplexity), true
+	case "PayrollResult._id":
+		if e.ComplexityRoot.PayrollResult.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.RawID(childComplexity), true
+	case "PayrollResult.reimbursement_amount":
+		if e.ComplexityRoot.PayrollResult.ReimbursementAmount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.ReimbursementAmount(childComplexity), true
+	case "PayrollResult.result_status":
+		if e.ComplexityRoot.PayrollResult.ResultStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.ResultStatus(childComplexity), true
+	case "PayrollResult.total_deductions":
+		if e.ComplexityRoot.PayrollResult.TotalDeductions == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.TotalDeductions(childComplexity), true
+	case "PayrollResult.worker_id":
+		if e.ComplexityRoot.PayrollResult.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResult.WorkerID(childComplexity), true
+
+	case "PayrollResultConnection.edges":
+		if e.ComplexityRoot.PayrollResultConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultConnection.Edges(childComplexity), true
+	case "PayrollResultConnection.nodes":
+		if e.ComplexityRoot.PayrollResultConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultConnection.Nodes(childComplexity), true
+	case "PayrollResultConnection.pageInfo":
+		if e.ComplexityRoot.PayrollResultConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultConnection.PageInfo(childComplexity), true
+	case "PayrollResultConnection.total_count":
+		if e.ComplexityRoot.PayrollResultConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultConnection.TotalCount(childComplexity), true
+
+	case "PayrollResultEdge.cursor":
+		if e.ComplexityRoot.PayrollResultEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultEdge.Cursor(childComplexity), true
+	case "PayrollResultEdge.node":
+		if e.ComplexityRoot.PayrollResultEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultEdge.Node(childComplexity), true
+
+	case "PayrollResultLine.amount":
+		if e.ComplexityRoot.PayrollResultLine.Amount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.Amount(childComplexity), true
+	case "PayrollResultLine.component_code":
+		if e.ComplexityRoot.PayrollResultLine.ComponentCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.ComponentCode(childComplexity), true
+	case "PayrollResultLine.component_name":
+		if e.ComplexityRoot.PayrollResultLine.ComponentName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.ComponentName(childComplexity), true
+	case "PayrollResultLine.component_type":
+		if e.ComplexityRoot.PayrollResultLine.ComponentType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.ComponentType(childComplexity), true
+	case "PayrollResultLine.id":
+		if e.ComplexityRoot.PayrollResultLine.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.ID(childComplexity), true
+	case "PayrollResultLine.line_sequence":
+		if e.ComplexityRoot.PayrollResultLine.LineSequence == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.LineSequence(childComplexity), true
+	case "PayrollResultLine.payroll_result_id":
+		if e.ComplexityRoot.PayrollResultLine.PayrollResultID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.PayrollResultID(childComplexity), true
+	case "PayrollResultLine.quantity":
+		if e.ComplexityRoot.PayrollResultLine.Quantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.Quantity(childComplexity), true
+	case "PayrollResultLine.rate":
+		if e.ComplexityRoot.PayrollResultLine.Rate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.Rate(childComplexity), true
+	case "PayrollResultLine._id":
+		if e.ComplexityRoot.PayrollResultLine.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.RawID(childComplexity), true
+	case "PayrollResultLine.taxable_base":
+		if e.ComplexityRoot.PayrollResultLine.TaxableBase == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLine.TaxableBase(childComplexity), true
+
+	case "PayrollResultLineConnection.edges":
+		if e.ComplexityRoot.PayrollResultLineConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLineConnection.Edges(childComplexity), true
+	case "PayrollResultLineConnection.nodes":
+		if e.ComplexityRoot.PayrollResultLineConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLineConnection.Nodes(childComplexity), true
+	case "PayrollResultLineConnection.pageInfo":
+		if e.ComplexityRoot.PayrollResultLineConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLineConnection.PageInfo(childComplexity), true
+	case "PayrollResultLineConnection.total_count":
+		if e.ComplexityRoot.PayrollResultLineConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLineConnection.TotalCount(childComplexity), true
+
+	case "PayrollResultLineEdge.cursor":
+		if e.ComplexityRoot.PayrollResultLineEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLineEdge.Cursor(childComplexity), true
+	case "PayrollResultLineEdge.node":
+		if e.ComplexityRoot.PayrollResultLineEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollResultLineEdge.Node(childComplexity), true
+
+	case "PayrollRuleSet.approved_at":
+		if e.ComplexityRoot.PayrollRuleSet.ApprovedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.ApprovedAt(childComplexity), true
+	case "PayrollRuleSet.effective_from":
+		if e.ComplexityRoot.PayrollRuleSet.EffectiveFrom == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.EffectiveFrom(childComplexity), true
+	case "PayrollRuleSet.effective_to":
+		if e.ComplexityRoot.PayrollRuleSet.EffectiveTo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.EffectiveTo(childComplexity), true
+	case "PayrollRuleSet.id":
+		if e.ComplexityRoot.PayrollRuleSet.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.ID(childComplexity), true
+	case "PayrollRuleSet.jurisdiction_code":
+		if e.ComplexityRoot.PayrollRuleSet.JurisdictionCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.JurisdictionCode(childComplexity), true
+	case "PayrollRuleSet._id":
+		if e.ComplexityRoot.PayrollRuleSet.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.RawID(childComplexity), true
+	case "PayrollRuleSet.rule_code":
+		if e.ComplexityRoot.PayrollRuleSet.RuleCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.RuleCode(childComplexity), true
+	case "PayrollRuleSet.rule_version":
+		if e.ComplexityRoot.PayrollRuleSet.RuleVersion == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSet.RuleVersion(childComplexity), true
+
+	case "PayrollRuleSetConnection.edges":
+		if e.ComplexityRoot.PayrollRuleSetConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSetConnection.Edges(childComplexity), true
+	case "PayrollRuleSetConnection.nodes":
+		if e.ComplexityRoot.PayrollRuleSetConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSetConnection.Nodes(childComplexity), true
+	case "PayrollRuleSetConnection.pageInfo":
+		if e.ComplexityRoot.PayrollRuleSetConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSetConnection.PageInfo(childComplexity), true
+	case "PayrollRuleSetConnection.total_count":
+		if e.ComplexityRoot.PayrollRuleSetConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSetConnection.TotalCount(childComplexity), true
+
+	case "PayrollRuleSetEdge.cursor":
+		if e.ComplexityRoot.PayrollRuleSetEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSetEdge.Cursor(childComplexity), true
+	case "PayrollRuleSetEdge.node":
+		if e.ComplexityRoot.PayrollRuleSetEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRuleSetEdge.Node(childComplexity), true
+
+	case "PayrollRun.calculated_at":
+		if e.ComplexityRoot.PayrollRun.CalculatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.CalculatedAt(childComplexity), true
+	case "PayrollRun.cancelled_at":
+		if e.ComplexityRoot.PayrollRun.CancelledAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.CancelledAt(childComplexity), true
+	case "PayrollRun.finance_journal_reference_id":
+		if e.ComplexityRoot.PayrollRun.FinanceJournalReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.FinanceJournalReferenceID(childComplexity), true
+	case "PayrollRun.finance_settled_at":
+		if e.ComplexityRoot.PayrollRun.FinanceSettledAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.FinanceSettledAt(childComplexity), true
+	case "PayrollRun.id":
+		if e.ComplexityRoot.PayrollRun.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.ID(childComplexity), true
+	case "PayrollRun.payroll_period_id":
+		if e.ComplexityRoot.PayrollRun.PayrollPeriodID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.PayrollPeriodID(childComplexity), true
+	case "PayrollRun.posting_requested_at":
+		if e.ComplexityRoot.PayrollRun.PostingRequestedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.PostingRequestedAt(childComplexity), true
+	case "PayrollRun._id":
+		if e.ComplexityRoot.PayrollRun.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.RawID(childComplexity), true
+	case "PayrollRun.run_number":
+		if e.ComplexityRoot.PayrollRun.RunNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.RunNumber(childComplexity), true
+	case "PayrollRun.status":
+		if e.ComplexityRoot.PayrollRun.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRun.Status(childComplexity), true
+
+	case "PayrollRunConnection.edges":
+		if e.ComplexityRoot.PayrollRunConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRunConnection.Edges(childComplexity), true
+	case "PayrollRunConnection.nodes":
+		if e.ComplexityRoot.PayrollRunConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRunConnection.Nodes(childComplexity), true
+	case "PayrollRunConnection.pageInfo":
+		if e.ComplexityRoot.PayrollRunConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRunConnection.PageInfo(childComplexity), true
+	case "PayrollRunConnection.total_count":
+		if e.ComplexityRoot.PayrollRunConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRunConnection.TotalCount(childComplexity), true
+
+	case "PayrollRunEdge.cursor":
+		if e.ComplexityRoot.PayrollRunEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRunEdge.Cursor(childComplexity), true
+	case "PayrollRunEdge.node":
+		if e.ComplexityRoot.PayrollRunEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PayrollRunEdge.Node(childComplexity), true
 
 	case "Permission.action":
 		if e.ComplexityRoot.Permission.Action == nil {
@@ -2159,12 +9407,410 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.PermissionEdge.Node(childComplexity), true
 
+	case "PortalAccessEvaluation.active_roles":
+		if e.ComplexityRoot.PortalAccessEvaluation.ActiveRoles == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PortalAccessEvaluation.ActiveRoles(childComplexity), true
+	case "PortalAccessEvaluation.allowed":
+		if e.ComplexityRoot.PortalAccessEvaluation.Allowed == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PortalAccessEvaluation.Allowed(childComplexity), true
+	case "PortalAccessEvaluation.contact_id":
+		if e.ComplexityRoot.PortalAccessEvaluation.ContactID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PortalAccessEvaluation.ContactID(childComplexity), true
+	case "PortalAccessEvaluation.iam_user_id":
+		if e.ComplexityRoot.PortalAccessEvaluation.IamUserID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PortalAccessEvaluation.IamUserID(childComplexity), true
+	case "PortalAccessEvaluation.party_id":
+		if e.ComplexityRoot.PortalAccessEvaluation.PartyID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PortalAccessEvaluation.PartyID(childComplexity), true
+
+	case "Position.headcount_authorized":
+		if e.ComplexityRoot.Position.HeadcountAuthorized == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.HeadcountAuthorized(childComplexity), true
+	case "Position.id":
+		if e.ComplexityRoot.Position.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.ID(childComplexity), true
+	case "Position.job_id":
+		if e.ComplexityRoot.Position.JobID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.JobID(childComplexity), true
+	case "Position.legal_entity_reference_id":
+		if e.ComplexityRoot.Position.LegalEntityReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.LegalEntityReferenceID(childComplexity), true
+	case "Position.organization_unit_reference_id":
+		if e.ComplexityRoot.Position.OrganizationUnitReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.OrganizationUnitReferenceID(childComplexity), true
+	case "Position.position_code":
+		if e.ComplexityRoot.Position.PositionCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.PositionCode(childComplexity), true
+	case "Position.position_status":
+		if e.ComplexityRoot.Position.PositionStatus == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.PositionStatus(childComplexity), true
+	case "Position.position_title":
+		if e.ComplexityRoot.Position.PositionTitle == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.PositionTitle(childComplexity), true
+	case "Position._id":
+		if e.ComplexityRoot.Position.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.RawID(childComplexity), true
+	case "Position.reports_to_position_id":
+		if e.ComplexityRoot.Position.ReportsToPositionID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.ReportsToPositionID(childComplexity), true
+	case "Position.valid_from":
+		if e.ComplexityRoot.Position.ValidFrom == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.ValidFrom(childComplexity), true
+	case "Position.valid_to":
+		if e.ComplexityRoot.Position.ValidTo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.ValidTo(childComplexity), true
+	case "Position.work_location_reference_id":
+		if e.ComplexityRoot.Position.WorkLocationReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Position.WorkLocationReferenceID(childComplexity), true
+
+	case "PositionConnection.edges":
+		if e.ComplexityRoot.PositionConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PositionConnection.Edges(childComplexity), true
+	case "PositionConnection.nodes":
+		if e.ComplexityRoot.PositionConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PositionConnection.Nodes(childComplexity), true
+	case "PositionConnection.pageInfo":
+		if e.ComplexityRoot.PositionConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PositionConnection.PageInfo(childComplexity), true
+	case "PositionConnection.total_count":
+		if e.ComplexityRoot.PositionConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PositionConnection.TotalCount(childComplexity), true
+
+	case "PositionEdge.cursor":
+		if e.ComplexityRoot.PositionEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PositionEdge.Cursor(childComplexity), true
+	case "PositionEdge.node":
+		if e.ComplexityRoot.PositionEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PositionEdge.Node(childComplexity), true
+
+	case "PostLeaveAdjustmentPayload.errors":
+		if e.ComplexityRoot.PostLeaveAdjustmentPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PostLeaveAdjustmentPayload.Errors(childComplexity), true
+	case "PostLeaveAdjustmentPayload.leave_entitlement":
+		if e.ComplexityRoot.PostLeaveAdjustmentPayload.LeaveEntitlement == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PostLeaveAdjustmentPayload.LeaveEntitlement(childComplexity), true
+	case "PostLeaveAdjustmentPayload.was_successful":
+		if e.ComplexityRoot.PostLeaveAdjustmentPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PostLeaveAdjustmentPayload.WasSuccessful(childComplexity), true
+
+	case "Query.address":
+		if e.ComplexityRoot.Query.Address == nil {
+			break
+		}
+
+		args, err := ec.field_Query_address_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Address(childComplexity, args["id"].(string)), true
+	case "Query.addresses":
+		if e.ComplexityRoot.Query.Addresses == nil {
+			break
+		}
+
+		args, err := ec.field_Query_addresses_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Addresses(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["query"].(*string), args["country_code"].(*string), args["city"].(*string), args["province"].(*string), args["postal_code"].(*string)), true
+	case "Query.addressesByIds":
+		if e.ComplexityRoot.Query.AddressesByIds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_addressesByIds_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AddressesByIds(childComplexity, args["ids"].([]string)), true
+	case "Query.allAddresses":
+		if e.ComplexityRoot.Query.AllAddresses == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allAddresses_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllAddresses(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allLegalEntities":
+		if e.ComplexityRoot.Query.AllLegalEntities == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allLegalEntities_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllLegalEntities(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allLocations":
+		if e.ComplexityRoot.Query.AllLocations == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allLocations_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllLocations(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allOrganizationUnits":
+		if e.ComplexityRoot.Query.AllOrganizationUnits == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allOrganizationUnits_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllOrganizationUnits(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allParties":
+		if e.ComplexityRoot.Query.AllParties == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allParties_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllParties(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allPartyAddressLinks":
+		if e.ComplexityRoot.Query.AllPartyAddressLinks == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allPartyAddressLinks_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllPartyAddressLinks(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allPartyContacts":
+		if e.ComplexityRoot.Query.AllPartyContacts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allPartyContacts_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllPartyContacts(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allPartyRoles":
+		if e.ComplexityRoot.Query.AllPartyRoles == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allPartyRoles_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllPartyRoles(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.allPartyRolesByKind":
+		if e.ComplexityRoot.Query.AllPartyRolesByKind == nil {
+			break
+		}
+
+		args, err := ec.field_Query_allPartyRolesByKind_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AllPartyRolesByKind(childComplexity, args["kind"].(model.PartyRoleKind), args["active_only"].(*bool), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
 	case "Query.browserSession":
 		if e.ComplexityRoot.Query.BrowserSession == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Query.BrowserSession(childComplexity), true
+	case "Query.candidate":
+		if e.ComplexityRoot.Query.Candidate == nil {
+			break
+		}
+
+		args, err := ec.field_Query_candidate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Candidate(childComplexity, args["id"].(string)), true
+	case "Query.candidates":
+		if e.ComplexityRoot.Query.Candidates == nil {
+			break
+		}
+
+		args, err := ec.field_Query_candidates_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Candidates(childComplexity, args["candidate_number"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.checkUsername":
+		if e.ComplexityRoot.Query.CheckUsername == nil {
+			break
+		}
+
+		args, err := ec.field_Query_checkUsername_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.CheckUsername(childComplexity, args["username"].(string)), true
+	case "Query.employeeAccountRequest":
+		if e.ComplexityRoot.Query.EmployeeAccountRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Query_employeeAccountRequest_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.EmployeeAccountRequest(childComplexity, args["id"].(string)), true
+	case "Query.employeeProvisioningRequest":
+		if e.ComplexityRoot.Query.EmployeeProvisioningRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Query_employeeProvisioningRequest_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.EmployeeProvisioningRequest(childComplexity, args["id"].(string)), true
+	case "Query.employeeProvisioningRequests":
+		if e.ComplexityRoot.Query.EmployeeProvisioningRequests == nil {
+			break
+		}
+
+		args, err := ec.field_Query_employeeProvisioningRequests_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.EmployeeProvisioningRequests(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.employmentContract":
+		if e.ComplexityRoot.Query.EmploymentContract == nil {
+			break
+		}
+
+		args, err := ec.field_Query_employmentContract_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.EmploymentContract(childComplexity, args["id"].(string)), true
+	case "Query.employmentContracts":
+		if e.ComplexityRoot.Query.EmploymentContracts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_employmentContracts_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.EmploymentContracts(childComplexity, args["worker_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.evaluateRepresentativePortalAccess":
+		if e.ComplexityRoot.Query.EvaluateRepresentativePortalAccess == nil {
+			break
+		}
+
+		args, err := ec.field_Query_evaluateRepresentativePortalAccess_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.EvaluateRepresentativePortalAccess(childComplexity, args["party_id"].(string), args["iam_user_id"].(string), args["required_role"].(model.PartyRoleKind)), true
 	case "Query.group":
 		if e.ComplexityRoot.Query.Group == nil {
 			break
@@ -2216,6 +9862,314 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.Health(childComplexity), true
 
+	case "Query.isAddressReferenced":
+		if e.ComplexityRoot.Query.IsAddressReferenced == nil {
+			break
+		}
+
+		args, err := ec.field_Query_isAddressReferenced_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.IsAddressReferenced(childComplexity, args["id"].(string)), true
+	case "Query.job":
+		if e.ComplexityRoot.Query.Job == nil {
+			break
+		}
+
+		args, err := ec.field_Query_job_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Job(childComplexity, args["id"].(string)), true
+	case "Query.jobFamilies":
+		if e.ComplexityRoot.Query.JobFamilies == nil {
+			break
+		}
+
+		args, err := ec.field_Query_jobFamilies_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.JobFamilies(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.jobFamily":
+		if e.ComplexityRoot.Query.JobFamily == nil {
+			break
+		}
+
+		args, err := ec.field_Query_jobFamily_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.JobFamily(childComplexity, args["id"].(string)), true
+	case "Query.jobs":
+		if e.ComplexityRoot.Query.Jobs == nil {
+			break
+		}
+
+		args, err := ec.field_Query_jobs_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Jobs(childComplexity, args["job_family_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.jobsByIds":
+		if e.ComplexityRoot.Query.JobsByIds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_jobsByIds_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.JobsByIds(childComplexity, args["ids"].([]string)), true
+	case "Query.leaveAdjustment":
+		if e.ComplexityRoot.Query.LeaveAdjustment == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leaveAdjustment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeaveAdjustment(childComplexity, args["id"].(string)), true
+	case "Query.leaveAdjustments":
+		if e.ComplexityRoot.Query.LeaveAdjustments == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leaveAdjustments_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeaveAdjustments(childComplexity, args["entitlement_id"].(*string), args["idempotency_key"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.leaveEntitlement":
+		if e.ComplexityRoot.Query.LeaveEntitlement == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leaveEntitlement_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeaveEntitlement(childComplexity, args["id"].(string)), true
+	case "Query.leaveEntitlements":
+		if e.ComplexityRoot.Query.LeaveEntitlements == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leaveEntitlements_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeaveEntitlements(childComplexity, args["worker_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.leaveLedgerEntries":
+		if e.ComplexityRoot.Query.LeaveLedgerEntries == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leaveLedgerEntries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeaveLedgerEntries(childComplexity, args["entitlement_id"].(*string), args["adjustment_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.leaveLedgerEntry":
+		if e.ComplexityRoot.Query.LeaveLedgerEntry == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leaveLedgerEntry_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeaveLedgerEntry(childComplexity, args["id"].(string)), true
+	case "Query.leavePolicies":
+		if e.ComplexityRoot.Query.LeavePolicies == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leavePolicies_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeavePolicies(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.leavePolicy":
+		if e.ComplexityRoot.Query.LeavePolicy == nil {
+			break
+		}
+
+		args, err := ec.field_Query_leavePolicy_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LeavePolicy(childComplexity, args["id"].(string)), true
+	case "Query.legalEntities":
+		if e.ComplexityRoot.Query.LegalEntities == nil {
+			break
+		}
+
+		args, err := ec.field_Query_legalEntities_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LegalEntities(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["query"].(*string), args["parent_legal_entity_id"].(*string), args["status"].(*model.LegalEntityStatus), args["primary_only"].(*bool), args["include_deleted"].(*bool)), true
+	case "Query.legalEntitiesByIds":
+		if e.ComplexityRoot.Query.LegalEntitiesByIds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_legalEntitiesByIds_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LegalEntitiesByIds(childComplexity, args["ids"].([]string)), true
+	case "Query.legalEntitiesByNib":
+		if e.ComplexityRoot.Query.LegalEntitiesByNib == nil {
+			break
+		}
+
+		args, err := ec.field_Query_legalEntitiesByNib_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LegalEntitiesByNib(childComplexity, args["nib"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.legalEntity":
+		if e.ComplexityRoot.Query.LegalEntity == nil {
+			break
+		}
+
+		args, err := ec.field_Query_legalEntity_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LegalEntity(childComplexity, args["id"].(string)), true
+	case "Query.legalEntityByCode":
+		if e.ComplexityRoot.Query.LegalEntityByCode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_legalEntityByCode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LegalEntityByCode(childComplexity, args["entity_code"].(string)), true
+	case "Query.legalEntityByTaxIdNumber":
+		if e.ComplexityRoot.Query.LegalEntityByTaxIDNumber == nil {
+			break
+		}
+
+		args, err := ec.field_Query_legalEntityByTaxIdNumber_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LegalEntityByTaxIDNumber(childComplexity, args["tax_id_number"].(string)), true
+	case "Query.legalEntityChildren":
+		if e.ComplexityRoot.Query.LegalEntityChildren == nil {
+			break
+		}
+
+		args, err := ec.field_Query_legalEntityChildren_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LegalEntityChildren(childComplexity, args["parent_legal_entity_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.location":
+		if e.ComplexityRoot.Query.Location == nil {
+			break
+		}
+
+		args, err := ec.field_Query_location_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Location(childComplexity, args["id"].(string)), true
+	case "Query.locationByCode":
+		if e.ComplexityRoot.Query.LocationByCode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_locationByCode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LocationByCode(childComplexity, args["location_code"].(string)), true
+	case "Query.locationChildren":
+		if e.ComplexityRoot.Query.LocationChildren == nil {
+			break
+		}
+
+		args, err := ec.field_Query_locationChildren_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LocationChildren(childComplexity, args["parent_location_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.locations":
+		if e.ComplexityRoot.Query.Locations == nil {
+			break
+		}
+
+		args, err := ec.field_Query_locations_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Locations(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["query"].(*string), args["legal_entity_id"].(*string), args["parent_location_id"].(*string), args["address_id"].(*string), args["kind"].(*model.LocationKind), args["active_only"].(*bool), args["include_deleted"].(*bool)), true
+	case "Query.locationsByAddressId":
+		if e.ComplexityRoot.Query.LocationsByAddressID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_locationsByAddressId_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LocationsByAddressID(childComplexity, args["address_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.locationsByIds":
+		if e.ComplexityRoot.Query.LocationsByIds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_locationsByIds_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LocationsByIds(childComplexity, args["ids"].([]string)), true
+	case "Query.locationsByLegalEntityAndKind":
+		if e.ComplexityRoot.Query.LocationsByLegalEntityAndKind == nil {
+			break
+		}
+
+		args, err := ec.field_Query_locationsByLegalEntityAndKind_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.LocationsByLegalEntityAndKind(childComplexity, args["legal_entity_id"].(string), args["kind"].(model.LocationKind), args["active_only"].(*bool), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
 	case "Query.me":
 		if e.ComplexityRoot.Query.Me == nil {
 			break
@@ -2228,6 +10182,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.MyAccessSnapshot(childComplexity), true
+	case "Query.myPayslip":
+		if e.ComplexityRoot.Query.MyPayslip == nil {
+			break
+		}
+
+		args, err := ec.field_Query_myPayslip_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.MyPayslip(childComplexity, args["payroll_result_id"].(string)), true
+	case "Query.myPayslipPdf":
+		if e.ComplexityRoot.Query.MyPayslipPDF == nil {
+			break
+		}
+
+		args, err := ec.field_Query_myPayslipPdf_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.MyPayslipPDF(childComplexity, args["payroll_result_id"].(string)), true
+	case "Query.myPayslips":
+		if e.ComplexityRoot.Query.MyPayslips == nil {
+			break
+		}
+
+		args, err := ec.field_Query_myPayslips_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.MyPayslips(childComplexity, args["payroll_period_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
 	case "Query.mySessions":
 		if e.ComplexityRoot.Query.MySessions == nil {
 			break
@@ -2256,6 +10243,490 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Node(childComplexity, args["id"].(string)), true
+	case "Query.offboardingPlan":
+		if e.ComplexityRoot.Query.OffboardingPlan == nil {
+			break
+		}
+
+		args, err := ec.field_Query_offboardingPlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OffboardingPlan(childComplexity, args["id"].(string)), true
+	case "Query.offboardingPlans":
+		if e.ComplexityRoot.Query.OffboardingPlans == nil {
+			break
+		}
+
+		args, err := ec.field_Query_offboardingPlans_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OffboardingPlans(childComplexity, args["worker_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.offboardingTask":
+		if e.ComplexityRoot.Query.OffboardingTask == nil {
+			break
+		}
+
+		args, err := ec.field_Query_offboardingTask_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OffboardingTask(childComplexity, args["id"].(string)), true
+	case "Query.offboardingTasks":
+		if e.ComplexityRoot.Query.OffboardingTasks == nil {
+			break
+		}
+
+		args, err := ec.field_Query_offboardingTasks_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OffboardingTasks(childComplexity, args["offboarding_plan_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.organizationUnit":
+		if e.ComplexityRoot.Query.OrganizationUnit == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationUnit_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OrganizationUnit(childComplexity, args["id"].(string)), true
+	case "Query.organizationUnitByEntityAndCode":
+		if e.ComplexityRoot.Query.OrganizationUnitByEntityAndCode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationUnitByEntityAndCode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OrganizationUnitByEntityAndCode(childComplexity, args["legal_entity_id"].(string), args["unit_code"].(string)), true
+	case "Query.organizationUnitChildren":
+		if e.ComplexityRoot.Query.OrganizationUnitChildren == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationUnitChildren_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OrganizationUnitChildren(childComplexity, args["parent_unit_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.organizationUnits":
+		if e.ComplexityRoot.Query.OrganizationUnits == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationUnits_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OrganizationUnits(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["query"].(*string), args["legal_entity_id"].(*string), args["parent_unit_id"].(*string), args["primary_location_id"].(*string), args["kind"].(*model.OrgUnitKind), args["active_only"].(*bool), args["include_deleted"].(*bool)), true
+	case "Query.organizationUnitsByHeadPersonId":
+		if e.ComplexityRoot.Query.OrganizationUnitsByHeadPersonID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationUnitsByHeadPersonId_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OrganizationUnitsByHeadPersonID(childComplexity, args["head_person_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.organizationUnitsByIds":
+		if e.ComplexityRoot.Query.OrganizationUnitsByIds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationUnitsByIds_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OrganizationUnitsByIds(childComplexity, args["ids"].([]string)), true
+	case "Query.organizationUnitsByPrimaryLocationId":
+		if e.ComplexityRoot.Query.OrganizationUnitsByPrimaryLocationID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationUnitsByPrimaryLocationId_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.OrganizationUnitsByPrimaryLocationID(childComplexity, args["primary_location_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.parties":
+		if e.ComplexityRoot.Query.Parties == nil {
+			break
+		}
+
+		args, err := ec.field_Query_parties_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Parties(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["query"].(*string), args["kind"].(*model.PartyKind), args["status"].(*model.PartyStatus), args["role"].(*model.PartyRoleKind), args["include_deleted"].(*bool)), true
+	case "Query.partiesByEmail":
+		if e.ComplexityRoot.Query.PartiesByEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partiesByEmail_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartiesByEmail(childComplexity, args["email"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partiesByIds":
+		if e.ComplexityRoot.Query.PartiesByIds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partiesByIds_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartiesByIds(childComplexity, args["ids"].([]string)), true
+	case "Query.party":
+		if e.ComplexityRoot.Query.Party == nil {
+			break
+		}
+
+		args, err := ec.field_Query_party_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Party(childComplexity, args["id"].(string)), true
+	case "Query.partyAddressLink":
+		if e.ComplexityRoot.Query.PartyAddressLink == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyAddressLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyAddressLink(childComplexity, args["id"].(string)), true
+	case "Query.partyAddressLinks":
+		if e.ComplexityRoot.Query.PartyAddressLinks == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyAddressLinks_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyAddressLinks(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["party_id"].(*string), args["address_id"].(*string), args["usage"].(*model.AddressUsageKind), args["primary_only"].(*bool)), true
+	case "Query.partyAddressLinksByAddressId":
+		if e.ComplexityRoot.Query.PartyAddressLinksByAddressID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyAddressLinksByAddressId_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyAddressLinksByAddressID(childComplexity, args["address_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partyAddressLinksByParty":
+		if e.ComplexityRoot.Query.PartyAddressLinksByParty == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyAddressLinksByParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyAddressLinksByParty(childComplexity, args["party_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partyAddressLinksByPartyAndUsage":
+		if e.ComplexityRoot.Query.PartyAddressLinksByPartyAndUsage == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyAddressLinksByPartyAndUsage_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyAddressLinksByPartyAndUsage(childComplexity, args["party_id"].(string), args["usage"].(model.AddressUsageKind), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partyByCode":
+		if e.ComplexityRoot.Query.PartyByCode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyByCode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyByCode(childComplexity, args["partner_code"].(string)), true
+	case "Query.partyByTaxIdNumber":
+		if e.ComplexityRoot.Query.PartyByTaxIDNumber == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyByTaxIdNumber_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyByTaxIDNumber(childComplexity, args["tax_id_number"].(string)), true
+	case "Query.partyContact":
+		if e.ComplexityRoot.Query.PartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyContact(childComplexity, args["id"].(string)), true
+	case "Query.partyContacts":
+		if e.ComplexityRoot.Query.PartyContacts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyContacts_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyContacts(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["party_id"].(*string), args["query"].(*string), args["contact_role"].(*string), args["portal_access_status"].(*model.PortalAccessStatus), args["active_only"].(*bool), args["include_deleted"].(*bool)), true
+	case "Query.partyContactsByEmail":
+		if e.ComplexityRoot.Query.PartyContactsByEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyContactsByEmail_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyContactsByEmail(childComplexity, args["email"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partyContactsByIamUserId":
+		if e.ComplexityRoot.Query.PartyContactsByIamUserID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyContactsByIamUserId_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyContactsByIamUserID(childComplexity, args["iam_user_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partyContactsByParty":
+		if e.ComplexityRoot.Query.PartyContactsByParty == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyContactsByParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyContactsByParty(childComplexity, args["party_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partyRole":
+		if e.ComplexityRoot.Query.PartyRole == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyRole(childComplexity, args["id"].(string)), true
+	case "Query.partyRoleByPartyAndKind":
+		if e.ComplexityRoot.Query.PartyRoleByPartyAndKind == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyRoleByPartyAndKind_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyRoleByPartyAndKind(childComplexity, args["party_id"].(string), args["kind"].(model.PartyRoleKind)), true
+	case "Query.partyRoles":
+		if e.ComplexityRoot.Query.PartyRoles == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyRoles_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyRoles(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["party_id"].(*string), args["role"].(*model.PartyRoleKind), args["active_only"].(*bool), args["query"].(*string)), true
+	case "Query.partyRolesByKind":
+		if e.ComplexityRoot.Query.PartyRolesByKind == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyRolesByKind_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyRolesByKind(childComplexity, args["kind"].(model.PartyRoleKind), args["active_only"].(*bool), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.partyRolesByParty":
+		if e.ComplexityRoot.Query.PartyRolesByParty == nil {
+			break
+		}
+
+		args, err := ec.field_Query_partyRolesByParty_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PartyRolesByParty(childComplexity, args["party_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.payrollGroup":
+		if e.ComplexityRoot.Query.PayrollGroup == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollGroup_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollGroup(childComplexity, args["id"].(string)), true
+	case "Query.payrollGroups":
+		if e.ComplexityRoot.Query.PayrollGroups == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollGroups_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollGroups(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.payrollPeriod":
+		if e.ComplexityRoot.Query.PayrollPeriod == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollPeriod_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollPeriod(childComplexity, args["id"].(string)), true
+	case "Query.payrollPeriods":
+		if e.ComplexityRoot.Query.PayrollPeriods == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollPeriods_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollPeriods(childComplexity, args["payroll_group_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.payrollResult":
+		if e.ComplexityRoot.Query.PayrollResult == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollResult_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollResult(childComplexity, args["id"].(string)), true
+	case "Query.payrollResultLine":
+		if e.ComplexityRoot.Query.PayrollResultLine == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollResultLine_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollResultLine(childComplexity, args["id"].(string)), true
+	case "Query.payrollResultLines":
+		if e.ComplexityRoot.Query.PayrollResultLines == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollResultLines_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollResultLines(childComplexity, args["payroll_result_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.payrollResults":
+		if e.ComplexityRoot.Query.PayrollResults == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollResults_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollResults(childComplexity, args["payroll_run_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.payrollRuleSet":
+		if e.ComplexityRoot.Query.PayrollRuleSet == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollRuleSet_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollRuleSet(childComplexity, args["id"].(string)), true
+	case "Query.payrollRuleSets":
+		if e.ComplexityRoot.Query.PayrollRuleSets == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollRuleSets_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollRuleSets(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.payrollRun":
+		if e.ComplexityRoot.Query.PayrollRun == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollRun_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollRun(childComplexity, args["id"].(string)), true
+	case "Query.payrollRuns":
+		if e.ComplexityRoot.Query.PayrollRuns == nil {
+			break
+		}
+
+		args, err := ec.field_Query_payrollRuns_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PayrollRuns(childComplexity, args["idempotency_key"].(*string), args["payroll_period_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
 	case "Query.permission":
 		if e.ComplexityRoot.Query.Permission == nil {
 			break
@@ -2278,6 +10749,78 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Permissions(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["query"].(*string), args["resource"].(*string), args["is_sensitive"].(*bool)), true
+	case "Query.position":
+		if e.ComplexityRoot.Query.Position == nil {
+			break
+		}
+
+		args, err := ec.field_Query_position_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Position(childComplexity, args["id"].(string)), true
+	case "Query.positions":
+		if e.ComplexityRoot.Query.Positions == nil {
+			break
+		}
+
+		args, err := ec.field_Query_positions_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Positions(childComplexity, args["legal_entity_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.primaryOperatingLegalEntity":
+		if e.ComplexityRoot.Query.PrimaryOperatingLegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.PrimaryOperatingLegalEntity(childComplexity), true
+	case "Query.primaryPartyAddressLink":
+		if e.ComplexityRoot.Query.PrimaryPartyAddressLink == nil {
+			break
+		}
+
+		args, err := ec.field_Query_primaryPartyAddressLink_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PrimaryPartyAddressLink(childComplexity, args["party_id"].(string), args["usage"].(model.AddressUsageKind)), true
+	case "Query.primaryPartyContact":
+		if e.ComplexityRoot.Query.PrimaryPartyContact == nil {
+			break
+		}
+
+		args, err := ec.field_Query_primaryPartyContact_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.PrimaryPartyContact(childComplexity, args["party_id"].(string)), true
+	case "Query.requisition":
+		if e.ComplexityRoot.Query.Requisition == nil {
+			break
+		}
+
+		args, err := ec.field_Query_requisition_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Requisition(childComplexity, args["id"].(string)), true
+	case "Query.requisitions":
+		if e.ComplexityRoot.Query.Requisitions == nil {
+			break
+		}
+
+		args, err := ec.field_Query_requisitions_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Requisitions(childComplexity, args["requisition_number"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
 	case "Query.role":
 		if e.ComplexityRoot.Query.Role == nil {
 			break
@@ -2399,6 +10942,201 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Users(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int), args["query"].(*string), args["kind"].(*model.UserKind), args["status"].(*model.UserStatus), args["include_deleted"].(*bool)), true
+	case "Query.validateFacilityScope":
+		if e.ComplexityRoot.Query.ValidateFacilityScope == nil {
+			break
+		}
+
+		args, err := ec.field_Query_validateFacilityScope_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ValidateFacilityScope(childComplexity, args["id"].(string)), true
+	case "Query.validateLegalEntityScopeTarget":
+		if e.ComplexityRoot.Query.ValidateLegalEntityScopeTarget == nil {
+			break
+		}
+
+		args, err := ec.field_Query_validateLegalEntityScopeTarget_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ValidateLegalEntityScopeTarget(childComplexity, args["id"].(string)), true
+	case "Query.validateOrganizationUnitScopeTarget":
+		if e.ComplexityRoot.Query.ValidateOrganizationUnitScopeTarget == nil {
+			break
+		}
+
+		args, err := ec.field_Query_validateOrganizationUnitScopeTarget_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ValidateOrganizationUnitScopeTarget(childComplexity, args["id"].(string)), true
+	case "Query.validatePartyRoleScope":
+		if e.ComplexityRoot.Query.ValidatePartyRoleScope == nil {
+			break
+		}
+
+		args, err := ec.field_Query_validatePartyRoleScope_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ValidatePartyRoleScope(childComplexity, args["party_id"].(string), args["required_role"].(model.PartyRoleKind)), true
+	case "Query.validateWarehouseScope":
+		if e.ComplexityRoot.Query.ValidateWarehouseScope == nil {
+			break
+		}
+
+		args, err := ec.field_Query_validateWarehouseScope_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ValidateWarehouseScope(childComplexity, args["id"].(string)), true
+	case "Query.worker":
+		if e.ComplexityRoot.Query.Worker == nil {
+			break
+		}
+
+		args, err := ec.field_Query_worker_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Worker(childComplexity, args["id"].(string)), true
+	case "Query.workerAssignment":
+		if e.ComplexityRoot.Query.WorkerAssignment == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workerAssignment_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkerAssignment(childComplexity, args["id"].(string)), true
+	case "Query.workerAssignmentTransfer":
+		if e.ComplexityRoot.Query.WorkerAssignmentTransfer == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workerAssignmentTransfer_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkerAssignmentTransfer(childComplexity, args["id"].(string)), true
+	case "Query.workerAssignmentTransfers":
+		if e.ComplexityRoot.Query.WorkerAssignmentTransfers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workerAssignmentTransfers_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkerAssignmentTransfers(childComplexity, args["worker_id"].(string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.workerAssignments":
+		if e.ComplexityRoot.Query.WorkerAssignments == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workerAssignments_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkerAssignments(childComplexity, args["worker_id"].(*string), args["position_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.workerEmployeeAccountRequest":
+		if e.ComplexityRoot.Query.WorkerEmployeeAccountRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workerEmployeeAccountRequest_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkerEmployeeAccountRequest(childComplexity, args["worker_id"].(string)), true
+	case "Query.workers":
+		if e.ComplexityRoot.Query.Workers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workers_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Workers(childComplexity, args["worker_number"].(*string), args["legal_entity_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.workforcePlan":
+		if e.ComplexityRoot.Query.WorkforcePlan == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workforcePlan_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkforcePlan(childComplexity, args["id"].(string)), true
+	case "Query.workforcePlanLine":
+		if e.ComplexityRoot.Query.WorkforcePlanLine == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workforcePlanLine_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkforcePlanLine(childComplexity, args["id"].(string)), true
+	case "Query.workforcePlanLines":
+		if e.ComplexityRoot.Query.WorkforcePlanLines == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workforcePlanLines_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkforcePlanLines(childComplexity, args["workforce_plan_id"].(*string), args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+	case "Query.workforcePlans":
+		if e.ComplexityRoot.Query.WorkforcePlans == nil {
+			break
+		}
+
+		args, err := ec.field_Query_workforcePlans_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.WorkforcePlans(childComplexity, args["after"].(*string), args["before"].(*string), args["first"].(*int), args["last"].(*int)), true
+
+	case "RecordSignedEmploymentContractPayload.employment_contract":
+		if e.ComplexityRoot.RecordSignedEmploymentContractPayload.EmploymentContract == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RecordSignedEmploymentContractPayload.EmploymentContract(childComplexity), true
+	case "RecordSignedEmploymentContractPayload.errors":
+		if e.ComplexityRoot.RecordSignedEmploymentContractPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RecordSignedEmploymentContractPayload.Errors(childComplexity), true
+	case "RecordSignedEmploymentContractPayload.was_successful":
+		if e.ComplexityRoot.RecordSignedEmploymentContractPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RecordSignedEmploymentContractPayload.WasSuccessful(childComplexity), true
 
 	case "RegenerateMyRecoveryCodesPayload.errors":
 		if e.ComplexityRoot.RegenerateMyRecoveryCodesPayload.Errors == nil {
@@ -2419,6 +11157,63 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.RegenerateMyRecoveryCodesPayload.WasSuccessful(childComplexity), true
 
+	case "ReissueEmployeePayslipPayload.errors":
+		if e.ComplexityRoot.ReissueEmployeePayslipPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReissueEmployeePayslipPayload.Errors(childComplexity), true
+	case "ReissueEmployeePayslipPayload.payslip_pdf":
+		if e.ComplexityRoot.ReissueEmployeePayslipPayload.PayslipPDF == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReissueEmployeePayslipPayload.PayslipPDF(childComplexity), true
+	case "ReissueEmployeePayslipPayload.was_successful":
+		if e.ComplexityRoot.ReissueEmployeePayslipPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReissueEmployeePayslipPayload.WasSuccessful(childComplexity), true
+
+	case "RejectLeaveAdjustmentPayload.errors":
+		if e.ComplexityRoot.RejectLeaveAdjustmentPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RejectLeaveAdjustmentPayload.Errors(childComplexity), true
+	case "RejectLeaveAdjustmentPayload.leave_adjustment":
+		if e.ComplexityRoot.RejectLeaveAdjustmentPayload.LeaveAdjustment == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RejectLeaveAdjustmentPayload.LeaveAdjustment(childComplexity), true
+	case "RejectLeaveAdjustmentPayload.was_successful":
+		if e.ComplexityRoot.RejectLeaveAdjustmentPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RejectLeaveAdjustmentPayload.WasSuccessful(childComplexity), true
+
+	case "RejectRequisitionPayload.errors":
+		if e.ComplexityRoot.RejectRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RejectRequisitionPayload.Errors(childComplexity), true
+	case "RejectRequisitionPayload.requisition":
+		if e.ComplexityRoot.RejectRequisitionPayload.Requisition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RejectRequisitionPayload.Requisition(childComplexity), true
+	case "RejectRequisitionPayload.was_successful":
+		if e.ComplexityRoot.RejectRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RejectRequisitionPayload.WasSuccessful(childComplexity), true
+
 	case "RemoveGroupMemberPayload.errors":
 		if e.ComplexityRoot.RemoveGroupMemberPayload.Errors == nil {
 			break
@@ -2438,6 +11233,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.RemoveGroupMemberPayload.WasSuccessful(childComplexity), true
 
+	case "RemovePartyRolePayload.errors":
+		if e.ComplexityRoot.RemovePartyRolePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RemovePartyRolePayload.Errors(childComplexity), true
+	case "RemovePartyRolePayload.removed":
+		if e.ComplexityRoot.RemovePartyRolePayload.Removed == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RemovePartyRolePayload.Removed(childComplexity), true
+	case "RemovePartyRolePayload.was_successful":
+		if e.ComplexityRoot.RemovePartyRolePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RemovePartyRolePayload.WasSuccessful(childComplexity), true
+
 	case "RemoveUserIdentityPayload.errors":
 		if e.ComplexityRoot.RemoveUserIdentityPayload.Errors == nil {
 			break
@@ -2456,6 +11270,192 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.RemoveUserIdentityPayload.WasSuccessful(childComplexity), true
+
+	case "RequestEmployeeAccountPayload.errors":
+		if e.ComplexityRoot.RequestEmployeeAccountPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestEmployeeAccountPayload.Errors(childComplexity), true
+	case "RequestEmployeeAccountPayload.request":
+		if e.ComplexityRoot.RequestEmployeeAccountPayload.Request == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestEmployeeAccountPayload.Request(childComplexity), true
+	case "RequestEmployeeAccountPayload.was_successful":
+		if e.ComplexityRoot.RequestEmployeeAccountPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestEmployeeAccountPayload.WasSuccessful(childComplexity), true
+
+	case "RequestPartyPortalLinkPayload.contact":
+		if e.ComplexityRoot.RequestPartyPortalLinkPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestPartyPortalLinkPayload.Contact(childComplexity), true
+	case "RequestPartyPortalLinkPayload.errors":
+		if e.ComplexityRoot.RequestPartyPortalLinkPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestPartyPortalLinkPayload.Errors(childComplexity), true
+	case "RequestPartyPortalLinkPayload.was_successful":
+		if e.ComplexityRoot.RequestPartyPortalLinkPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestPartyPortalLinkPayload.WasSuccessful(childComplexity), true
+
+	case "RequestPayrollPostingPayload.errors":
+		if e.ComplexityRoot.RequestPayrollPostingPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestPayrollPostingPayload.Errors(childComplexity), true
+	case "RequestPayrollPostingPayload.payroll_posting_request":
+		if e.ComplexityRoot.RequestPayrollPostingPayload.PayrollPostingRequest == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestPayrollPostingPayload.PayrollPostingRequest(childComplexity), true
+	case "RequestPayrollPostingPayload.was_successful":
+		if e.ComplexityRoot.RequestPayrollPostingPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequestPayrollPostingPayload.WasSuccessful(childComplexity), true
+
+	case "Requisition.employment_category":
+		if e.ComplexityRoot.Requisition.EmploymentCategory == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.EmploymentCategory(childComplexity), true
+	case "Requisition.headcount":
+		if e.ComplexityRoot.Requisition.Headcount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.Headcount(childComplexity), true
+	case "Requisition.hiring_manager_worker_id":
+		if e.ComplexityRoot.Requisition.HiringManagerWorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.HiringManagerWorkerID(childComplexity), true
+	case "Requisition.id":
+		if e.ComplexityRoot.Requisition.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.ID(childComplexity), true
+	case "Requisition.job_id":
+		if e.ComplexityRoot.Requisition.JobID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.JobID(childComplexity), true
+	case "Requisition.organization_unit_reference_id":
+		if e.ComplexityRoot.Requisition.OrganizationUnitReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.OrganizationUnitReferenceID(childComplexity), true
+	case "Requisition.position_id":
+		if e.ComplexityRoot.Requisition.PositionID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.PositionID(childComplexity), true
+	case "Requisition._id":
+		if e.ComplexityRoot.Requisition.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.RawID(childComplexity), true
+	case "Requisition.rejection_reason_code":
+		if e.ComplexityRoot.Requisition.RejectionReasonCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.RejectionReasonCode(childComplexity), true
+	case "Requisition.requisition_number":
+		if e.ComplexityRoot.Requisition.RequisitionNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.RequisitionNumber(childComplexity), true
+	case "Requisition.requisition_type":
+		if e.ComplexityRoot.Requisition.RequisitionType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.RequisitionType(childComplexity), true
+	case "Requisition.status":
+		if e.ComplexityRoot.Requisition.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.Status(childComplexity), true
+	case "Requisition.target_start_date":
+		if e.ComplexityRoot.Requisition.TargetStartDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.TargetStartDate(childComplexity), true
+	case "Requisition.work_location_reference_id":
+		if e.ComplexityRoot.Requisition.WorkLocationReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.WorkLocationReferenceID(childComplexity), true
+	case "Requisition.workforce_plan_line_id":
+		if e.ComplexityRoot.Requisition.WorkforcePlanLineID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Requisition.WorkforcePlanLineID(childComplexity), true
+
+	case "RequisitionConnection.edges":
+		if e.ComplexityRoot.RequisitionConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequisitionConnection.Edges(childComplexity), true
+	case "RequisitionConnection.nodes":
+		if e.ComplexityRoot.RequisitionConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequisitionConnection.Nodes(childComplexity), true
+	case "RequisitionConnection.pageInfo":
+		if e.ComplexityRoot.RequisitionConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequisitionConnection.PageInfo(childComplexity), true
+	case "RequisitionConnection.total_count":
+		if e.ComplexityRoot.RequisitionConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequisitionConnection.TotalCount(childComplexity), true
+
+	case "RequisitionEdge.cursor":
+		if e.ComplexityRoot.RequisitionEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequisitionEdge.Cursor(childComplexity), true
+	case "RequisitionEdge.node":
+		if e.ComplexityRoot.RequisitionEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RequisitionEdge.Node(childComplexity), true
 
 	case "ResendValidationEmailPayload.errors":
 		if e.ComplexityRoot.ResendValidationEmailPayload.Errors == nil {
@@ -2532,6 +11532,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.RevokeGroupRolePayload.WasSuccessful(childComplexity), true
+
+	case "RevokePartyPortalAccessPayload.contact":
+		if e.ComplexityRoot.RevokePartyPortalAccessPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RevokePartyPortalAccessPayload.Contact(childComplexity), true
+	case "RevokePartyPortalAccessPayload.errors":
+		if e.ComplexityRoot.RevokePartyPortalAccessPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RevokePartyPortalAccessPayload.Errors(childComplexity), true
+	case "RevokePartyPortalAccessPayload.was_successful":
+		if e.ComplexityRoot.RevokePartyPortalAccessPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.RevokePartyPortalAccessPayload.WasSuccessful(childComplexity), true
 
 	case "RevokeRolePermissionPayload.errors":
 		if e.ComplexityRoot.RevokeRolePermissionPayload.Errors == nil {
@@ -2806,6 +11825,37 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Scope.Type(childComplexity), true
 
+	case "ScopeTargetDecision.code":
+		if e.ComplexityRoot.ScopeTargetDecision.Code == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScopeTargetDecision.Code(childComplexity), true
+	case "ScopeTargetDecision.eligible":
+		if e.ComplexityRoot.ScopeTargetDecision.Eligible == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScopeTargetDecision.Eligible(childComplexity), true
+	case "ScopeTargetDecision.legal_entity_id":
+		if e.ComplexityRoot.ScopeTargetDecision.LegalEntityID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScopeTargetDecision.LegalEntityID(childComplexity), true
+	case "ScopeTargetDecision.scope_kind":
+		if e.ComplexityRoot.ScopeTargetDecision.ScopeKind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScopeTargetDecision.ScopeKind(childComplexity), true
+	case "ScopeTargetDecision.target_id":
+		if e.ComplexityRoot.ScopeTargetDecision.TargetID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ScopeTargetDecision.TargetID(childComplexity), true
+
 	case "ScopedPermission.is_sensitive":
 		if e.ComplexityRoot.ScopedPermission.IsSensitive == nil {
 			break
@@ -2960,6 +12010,63 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.SessionEdge.Node(childComplexity), true
 
+	case "SetPrimaryOperatingLegalEntityPayload.errors":
+		if e.ComplexityRoot.SetPrimaryOperatingLegalEntityPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryOperatingLegalEntityPayload.Errors(childComplexity), true
+	case "SetPrimaryOperatingLegalEntityPayload.legal_entity":
+		if e.ComplexityRoot.SetPrimaryOperatingLegalEntityPayload.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryOperatingLegalEntityPayload.LegalEntity(childComplexity), true
+	case "SetPrimaryOperatingLegalEntityPayload.was_successful":
+		if e.ComplexityRoot.SetPrimaryOperatingLegalEntityPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryOperatingLegalEntityPayload.WasSuccessful(childComplexity), true
+
+	case "SetPrimaryPartyAddressLinkPayload.errors":
+		if e.ComplexityRoot.SetPrimaryPartyAddressLinkPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryPartyAddressLinkPayload.Errors(childComplexity), true
+	case "SetPrimaryPartyAddressLinkPayload.link":
+		if e.ComplexityRoot.SetPrimaryPartyAddressLinkPayload.Link == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryPartyAddressLinkPayload.Link(childComplexity), true
+	case "SetPrimaryPartyAddressLinkPayload.was_successful":
+		if e.ComplexityRoot.SetPrimaryPartyAddressLinkPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryPartyAddressLinkPayload.WasSuccessful(childComplexity), true
+
+	case "SetPrimaryPartyContactPayload.contact":
+		if e.ComplexityRoot.SetPrimaryPartyContactPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryPartyContactPayload.Contact(childComplexity), true
+	case "SetPrimaryPartyContactPayload.errors":
+		if e.ComplexityRoot.SetPrimaryPartyContactPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryPartyContactPayload.Errors(childComplexity), true
+	case "SetPrimaryPartyContactPayload.was_successful":
+		if e.ComplexityRoot.SetPrimaryPartyContactPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SetPrimaryPartyContactPayload.WasSuccessful(childComplexity), true
+
 	case "SetPrimaryUserIdentityPayload.errors":
 		if e.ComplexityRoot.SetPrimaryUserIdentityPayload.Errors == nil {
 			break
@@ -2998,6 +12105,158 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.SoftDeleteUserPayload.WasSuccessful(childComplexity), true
 
+	case "StartOffboardingPlanPayload.errors":
+		if e.ComplexityRoot.StartOffboardingPlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.StartOffboardingPlanPayload.Errors(childComplexity), true
+	case "StartOffboardingPlanPayload.offboarding_plan":
+		if e.ComplexityRoot.StartOffboardingPlanPayload.OffboardingPlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.StartOffboardingPlanPayload.OffboardingPlan(childComplexity), true
+	case "StartOffboardingPlanPayload.was_successful":
+		if e.ComplexityRoot.StartOffboardingPlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.StartOffboardingPlanPayload.WasSuccessful(childComplexity), true
+
+	case "SubmitPayrollRunForReviewPayload.errors":
+		if e.ComplexityRoot.SubmitPayrollRunForReviewPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitPayrollRunForReviewPayload.Errors(childComplexity), true
+	case "SubmitPayrollRunForReviewPayload.payroll_run":
+		if e.ComplexityRoot.SubmitPayrollRunForReviewPayload.PayrollRun == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitPayrollRunForReviewPayload.PayrollRun(childComplexity), true
+	case "SubmitPayrollRunForReviewPayload.was_successful":
+		if e.ComplexityRoot.SubmitPayrollRunForReviewPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitPayrollRunForReviewPayload.WasSuccessful(childComplexity), true
+
+	case "SubmitRequisitionPayload.errors":
+		if e.ComplexityRoot.SubmitRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitRequisitionPayload.Errors(childComplexity), true
+	case "SubmitRequisitionPayload.requisition":
+		if e.ComplexityRoot.SubmitRequisitionPayload.Requisition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitRequisitionPayload.Requisition(childComplexity), true
+	case "SubmitRequisitionPayload.was_successful":
+		if e.ComplexityRoot.SubmitRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitRequisitionPayload.WasSuccessful(childComplexity), true
+
+	case "SubmitWorkerAssignmentTransferPayload.errors":
+		if e.ComplexityRoot.SubmitWorkerAssignmentTransferPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitWorkerAssignmentTransferPayload.Errors(childComplexity), true
+	case "SubmitWorkerAssignmentTransferPayload.was_successful":
+		if e.ComplexityRoot.SubmitWorkerAssignmentTransferPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitWorkerAssignmentTransferPayload.WasSuccessful(childComplexity), true
+	case "SubmitWorkerAssignmentTransferPayload.worker_assignment_transfer":
+		if e.ComplexityRoot.SubmitWorkerAssignmentTransferPayload.WorkerAssignmentTransfer == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitWorkerAssignmentTransferPayload.WorkerAssignmentTransfer(childComplexity), true
+
+	case "SubmitWorkforcePlanPayload.errors":
+		if e.ComplexityRoot.SubmitWorkforcePlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitWorkforcePlanPayload.Errors(childComplexity), true
+	case "SubmitWorkforcePlanPayload.was_successful":
+		if e.ComplexityRoot.SubmitWorkforcePlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitWorkforcePlanPayload.WasSuccessful(childComplexity), true
+	case "SubmitWorkforcePlanPayload.workforce_plan":
+		if e.ComplexityRoot.SubmitWorkforcePlanPayload.WorkforcePlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SubmitWorkforcePlanPayload.WorkforcePlan(childComplexity), true
+
+	case "SupersedeWorkforcePlanPayload.errors":
+		if e.ComplexityRoot.SupersedeWorkforcePlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SupersedeWorkforcePlanPayload.Errors(childComplexity), true
+	case "SupersedeWorkforcePlanPayload.was_successful":
+		if e.ComplexityRoot.SupersedeWorkforcePlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SupersedeWorkforcePlanPayload.WasSuccessful(childComplexity), true
+	case "SupersedeWorkforcePlanPayload.workforce_plan":
+		if e.ComplexityRoot.SupersedeWorkforcePlanPayload.WorkforcePlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SupersedeWorkforcePlanPayload.WorkforcePlan(childComplexity), true
+
+	case "SuspendLegalEntityPayload.errors":
+		if e.ComplexityRoot.SuspendLegalEntityPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SuspendLegalEntityPayload.Errors(childComplexity), true
+	case "SuspendLegalEntityPayload.legal_entity":
+		if e.ComplexityRoot.SuspendLegalEntityPayload.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SuspendLegalEntityPayload.LegalEntity(childComplexity), true
+	case "SuspendLegalEntityPayload.was_successful":
+		if e.ComplexityRoot.SuspendLegalEntityPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SuspendLegalEntityPayload.WasSuccessful(childComplexity), true
+
+	case "SuspendPartyPayload.errors":
+		if e.ComplexityRoot.SuspendPartyPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SuspendPartyPayload.Errors(childComplexity), true
+	case "SuspendPartyPayload.party":
+		if e.ComplexityRoot.SuspendPartyPayload.Party == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SuspendPartyPayload.Party(childComplexity), true
+	case "SuspendPartyPayload.was_successful":
+		if e.ComplexityRoot.SuspendPartyPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SuspendPartyPayload.WasSuccessful(childComplexity), true
+
 	case "SuspendUserPayload.errors":
 		if e.ComplexityRoot.SuspendUserPayload.Errors == nil {
 			break
@@ -3016,6 +12275,120 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SuspendUserPayload.WasSuccessful(childComplexity), true
+
+	case "TerminateWorkerPayload.errors":
+		if e.ComplexityRoot.TerminateWorkerPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TerminateWorkerPayload.Errors(childComplexity), true
+	case "TerminateWorkerPayload.was_successful":
+		if e.ComplexityRoot.TerminateWorkerPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TerminateWorkerPayload.WasSuccessful(childComplexity), true
+	case "TerminateWorkerPayload.worker":
+		if e.ComplexityRoot.TerminateWorkerPayload.Worker == nil {
+			break
+		}
+
+		return e.ComplexityRoot.TerminateWorkerPayload.Worker(childComplexity), true
+
+	case "UnlinkPartyAddressPayload.errors":
+		if e.ComplexityRoot.UnlinkPartyAddressPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnlinkPartyAddressPayload.Errors(childComplexity), true
+	case "UnlinkPartyAddressPayload.unlinked":
+		if e.ComplexityRoot.UnlinkPartyAddressPayload.Unlinked == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnlinkPartyAddressPayload.Unlinked(childComplexity), true
+	case "UnlinkPartyAddressPayload.was_successful":
+		if e.ComplexityRoot.UnlinkPartyAddressPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnlinkPartyAddressPayload.WasSuccessful(childComplexity), true
+
+	case "UnlinkPartyPortalUserPayload.contact":
+		if e.ComplexityRoot.UnlinkPartyPortalUserPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnlinkPartyPortalUserPayload.Contact(childComplexity), true
+	case "UnlinkPartyPortalUserPayload.errors":
+		if e.ComplexityRoot.UnlinkPartyPortalUserPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnlinkPartyPortalUserPayload.Errors(childComplexity), true
+	case "UnlinkPartyPortalUserPayload.was_successful":
+		if e.ComplexityRoot.UnlinkPartyPortalUserPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UnlinkPartyPortalUserPayload.WasSuccessful(childComplexity), true
+
+	case "UpdateAddressPayload.address":
+		if e.ComplexityRoot.UpdateAddressPayload.Address == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateAddressPayload.Address(childComplexity), true
+	case "UpdateAddressPayload.errors":
+		if e.ComplexityRoot.UpdateAddressPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateAddressPayload.Errors(childComplexity), true
+	case "UpdateAddressPayload.was_successful":
+		if e.ComplexityRoot.UpdateAddressPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateAddressPayload.WasSuccessful(childComplexity), true
+
+	case "UpdateCandidatePayload.candidate":
+		if e.ComplexityRoot.UpdateCandidatePayload.Candidate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateCandidatePayload.Candidate(childComplexity), true
+	case "UpdateCandidatePayload.errors":
+		if e.ComplexityRoot.UpdateCandidatePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateCandidatePayload.Errors(childComplexity), true
+	case "UpdateCandidatePayload.was_successful":
+		if e.ComplexityRoot.UpdateCandidatePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateCandidatePayload.WasSuccessful(childComplexity), true
+
+	case "UpdateEmploymentContractPayload.employment_contract":
+		if e.ComplexityRoot.UpdateEmploymentContractPayload.EmploymentContract == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateEmploymentContractPayload.EmploymentContract(childComplexity), true
+	case "UpdateEmploymentContractPayload.errors":
+		if e.ComplexityRoot.UpdateEmploymentContractPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateEmploymentContractPayload.Errors(childComplexity), true
+	case "UpdateEmploymentContractPayload.was_successful":
+		if e.ComplexityRoot.UpdateEmploymentContractPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateEmploymentContractPayload.WasSuccessful(childComplexity), true
 
 	case "UpdateGroupDetailsPayload.errors":
 		if e.ComplexityRoot.UpdateGroupDetailsPayload.Errors == nil {
@@ -3036,6 +12409,44 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.UpdateGroupDetailsPayload.WasSuccessful(childComplexity), true
 
+	case "UpdateLegalEntityPayload.errors":
+		if e.ComplexityRoot.UpdateLegalEntityPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateLegalEntityPayload.Errors(childComplexity), true
+	case "UpdateLegalEntityPayload.legal_entity":
+		if e.ComplexityRoot.UpdateLegalEntityPayload.LegalEntity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateLegalEntityPayload.LegalEntity(childComplexity), true
+	case "UpdateLegalEntityPayload.was_successful":
+		if e.ComplexityRoot.UpdateLegalEntityPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateLegalEntityPayload.WasSuccessful(childComplexity), true
+
+	case "UpdateLocationPayload.errors":
+		if e.ComplexityRoot.UpdateLocationPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateLocationPayload.Errors(childComplexity), true
+	case "UpdateLocationPayload.location":
+		if e.ComplexityRoot.UpdateLocationPayload.Location == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateLocationPayload.Location(childComplexity), true
+	case "UpdateLocationPayload.was_successful":
+		if e.ComplexityRoot.UpdateLocationPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateLocationPayload.WasSuccessful(childComplexity), true
+
 	case "UpdateMyProfilePayload.errors":
 		if e.ComplexityRoot.UpdateMyProfilePayload.Errors == nil {
 			break
@@ -3055,6 +12466,158 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.UpdateMyProfilePayload.WasSuccessful(childComplexity), true
 
+	case "UpdateOrganizationUnitPayload.errors":
+		if e.ComplexityRoot.UpdateOrganizationUnitPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateOrganizationUnitPayload.Errors(childComplexity), true
+	case "UpdateOrganizationUnitPayload.organization_unit":
+		if e.ComplexityRoot.UpdateOrganizationUnitPayload.OrganizationUnit == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateOrganizationUnitPayload.OrganizationUnit(childComplexity), true
+	case "UpdateOrganizationUnitPayload.was_successful":
+		if e.ComplexityRoot.UpdateOrganizationUnitPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateOrganizationUnitPayload.WasSuccessful(childComplexity), true
+
+	case "UpdatePartyAddressLinkPayload.errors":
+		if e.ComplexityRoot.UpdatePartyAddressLinkPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyAddressLinkPayload.Errors(childComplexity), true
+	case "UpdatePartyAddressLinkPayload.link":
+		if e.ComplexityRoot.UpdatePartyAddressLinkPayload.Link == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyAddressLinkPayload.Link(childComplexity), true
+	case "UpdatePartyAddressLinkPayload.was_successful":
+		if e.ComplexityRoot.UpdatePartyAddressLinkPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyAddressLinkPayload.WasSuccessful(childComplexity), true
+
+	case "UpdatePartyContactPayload.contact":
+		if e.ComplexityRoot.UpdatePartyContactPayload.Contact == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyContactPayload.Contact(childComplexity), true
+	case "UpdatePartyContactPayload.errors":
+		if e.ComplexityRoot.UpdatePartyContactPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyContactPayload.Errors(childComplexity), true
+	case "UpdatePartyContactPayload.was_successful":
+		if e.ComplexityRoot.UpdatePartyContactPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyContactPayload.WasSuccessful(childComplexity), true
+
+	case "UpdatePartyProfilePayload.errors":
+		if e.ComplexityRoot.UpdatePartyProfilePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyProfilePayload.Errors(childComplexity), true
+	case "UpdatePartyProfilePayload.party":
+		if e.ComplexityRoot.UpdatePartyProfilePayload.Party == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyProfilePayload.Party(childComplexity), true
+	case "UpdatePartyProfilePayload.was_successful":
+		if e.ComplexityRoot.UpdatePartyProfilePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyProfilePayload.WasSuccessful(childComplexity), true
+
+	case "UpdatePartyRoleNotePayload.errors":
+		if e.ComplexityRoot.UpdatePartyRoleNotePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyRoleNotePayload.Errors(childComplexity), true
+	case "UpdatePartyRoleNotePayload.role":
+		if e.ComplexityRoot.UpdatePartyRoleNotePayload.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyRoleNotePayload.Role(childComplexity), true
+	case "UpdatePartyRoleNotePayload.was_successful":
+		if e.ComplexityRoot.UpdatePartyRoleNotePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyRoleNotePayload.WasSuccessful(childComplexity), true
+
+	case "UpdatePartyTaxProfilePayload.errors":
+		if e.ComplexityRoot.UpdatePartyTaxProfilePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyTaxProfilePayload.Errors(childComplexity), true
+	case "UpdatePartyTaxProfilePayload.party":
+		if e.ComplexityRoot.UpdatePartyTaxProfilePayload.Party == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyTaxProfilePayload.Party(childComplexity), true
+	case "UpdatePartyTaxProfilePayload.was_successful":
+		if e.ComplexityRoot.UpdatePartyTaxProfilePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePartyTaxProfilePayload.WasSuccessful(childComplexity), true
+
+	case "UpdatePositionPayload.errors":
+		if e.ComplexityRoot.UpdatePositionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePositionPayload.Errors(childComplexity), true
+	case "UpdatePositionPayload.position":
+		if e.ComplexityRoot.UpdatePositionPayload.Position == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePositionPayload.Position(childComplexity), true
+	case "UpdatePositionPayload.was_successful":
+		if e.ComplexityRoot.UpdatePositionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdatePositionPayload.WasSuccessful(childComplexity), true
+
+	case "UpdateRequisitionPayload.errors":
+		if e.ComplexityRoot.UpdateRequisitionPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateRequisitionPayload.Errors(childComplexity), true
+	case "UpdateRequisitionPayload.requisition":
+		if e.ComplexityRoot.UpdateRequisitionPayload.Requisition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateRequisitionPayload.Requisition(childComplexity), true
+	case "UpdateRequisitionPayload.was_successful":
+		if e.ComplexityRoot.UpdateRequisitionPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateRequisitionPayload.WasSuccessful(childComplexity), true
+
 	case "UpdateRoleDetailsPayload.errors":
 		if e.ComplexityRoot.UpdateRoleDetailsPayload.Errors == nil {
 			break
@@ -3073,6 +12636,63 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.UpdateRoleDetailsPayload.WasSuccessful(childComplexity), true
+
+	case "UpdateWorkerPayload.errors":
+		if e.ComplexityRoot.UpdateWorkerPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkerPayload.Errors(childComplexity), true
+	case "UpdateWorkerPayload.was_successful":
+		if e.ComplexityRoot.UpdateWorkerPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkerPayload.WasSuccessful(childComplexity), true
+	case "UpdateWorkerPayload.worker":
+		if e.ComplexityRoot.UpdateWorkerPayload.Worker == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkerPayload.Worker(childComplexity), true
+
+	case "UpdateWorkforcePlanLinePayload.errors":
+		if e.ComplexityRoot.UpdateWorkforcePlanLinePayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkforcePlanLinePayload.Errors(childComplexity), true
+	case "UpdateWorkforcePlanLinePayload.was_successful":
+		if e.ComplexityRoot.UpdateWorkforcePlanLinePayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkforcePlanLinePayload.WasSuccessful(childComplexity), true
+	case "UpdateWorkforcePlanLinePayload.workforce_plan_line":
+		if e.ComplexityRoot.UpdateWorkforcePlanLinePayload.WorkforcePlanLine == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkforcePlanLinePayload.WorkforcePlanLine(childComplexity), true
+
+	case "UpdateWorkforcePlanPayload.errors":
+		if e.ComplexityRoot.UpdateWorkforcePlanPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkforcePlanPayload.Errors(childComplexity), true
+	case "UpdateWorkforcePlanPayload.was_successful":
+		if e.ComplexityRoot.UpdateWorkforcePlanPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkforcePlanPayload.WasSuccessful(childComplexity), true
+	case "UpdateWorkforcePlanPayload.workforce_plan":
+		if e.ComplexityRoot.UpdateWorkforcePlanPayload.WorkforcePlan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UpdateWorkforcePlanPayload.WorkforcePlan(childComplexity), true
 
 	case "User.auth_epoch":
 		if e.ComplexityRoot.User.AuthEpoch == nil {
@@ -3581,6 +13201,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.UserRoleEdge.UserID(childComplexity), true
 
+	case "UsernameAvailabilityPayload.available":
+		if e.ComplexityRoot.UsernameAvailabilityPayload.Available == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UsernameAvailabilityPayload.Available(childComplexity), true
+	case "UsernameAvailabilityPayload.message":
+		if e.ComplexityRoot.UsernameAvailabilityPayload.Message == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UsernameAvailabilityPayload.Message(childComplexity), true
+	case "UsernameAvailabilityPayload.normalized_username":
+		if e.ComplexityRoot.UsernameAvailabilityPayload.NormalizedUsername == nil {
+			break
+		}
+
+		return e.ComplexityRoot.UsernameAvailabilityPayload.NormalizedUsername(childComplexity), true
+
 	case "ValidateUserMfaPayload.csrfToken":
 		if e.ComplexityRoot.ValidateUserMfaPayload.CsrfToken == nil {
 			break
@@ -3605,6 +13244,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ValidateUserMfaPayload.WasSuccessful(childComplexity), true
+
+	case "VerifyAndActivatePartyPayload.errors":
+		if e.ComplexityRoot.VerifyAndActivatePartyPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.VerifyAndActivatePartyPayload.Errors(childComplexity), true
+	case "VerifyAndActivatePartyPayload.party":
+		if e.ComplexityRoot.VerifyAndActivatePartyPayload.Party == nil {
+			break
+		}
+
+		return e.ComplexityRoot.VerifyAndActivatePartyPayload.Party(childComplexity), true
+	case "VerifyAndActivatePartyPayload.was_successful":
+		if e.ComplexityRoot.VerifyAndActivatePartyPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.VerifyAndActivatePartyPayload.WasSuccessful(childComplexity), true
 
 	case "VerifyEmailPayload.errors":
 		if e.ComplexityRoot.VerifyEmailPayload.Errors == nil {
@@ -3650,6 +13308,544 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.VerifyMySessionMfaPayload.WasSuccessful(childComplexity), true
 
+	case "WaiveOffboardingTaskPayload.errors":
+		if e.ComplexityRoot.WaiveOffboardingTaskPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WaiveOffboardingTaskPayload.Errors(childComplexity), true
+	case "WaiveOffboardingTaskPayload.offboarding_task":
+		if e.ComplexityRoot.WaiveOffboardingTaskPayload.OffboardingTask == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WaiveOffboardingTaskPayload.OffboardingTask(childComplexity), true
+	case "WaiveOffboardingTaskPayload.was_successful":
+		if e.ComplexityRoot.WaiveOffboardingTaskPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WaiveOffboardingTaskPayload.WasSuccessful(childComplexity), true
+
+	case "Worker.hire_date":
+		if e.ComplexityRoot.Worker.HireDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.HireDate(childComplexity), true
+	case "Worker.id":
+		if e.ComplexityRoot.Worker.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.ID(childComplexity), true
+	case "Worker.person_party_reference_id":
+		if e.ComplexityRoot.Worker.PersonPartyReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.PersonPartyReferenceID(childComplexity), true
+	case "Worker.primary_legal_entity_reference_id":
+		if e.ComplexityRoot.Worker.PrimaryLegalEntityReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.PrimaryLegalEntityReferenceID(childComplexity), true
+	case "Worker._id":
+		if e.ComplexityRoot.Worker.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.RawID(childComplexity), true
+	case "Worker.service_start_date":
+		if e.ComplexityRoot.Worker.ServiceStartDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.ServiceStartDate(childComplexity), true
+	case "Worker.status":
+		if e.ComplexityRoot.Worker.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.Status(childComplexity), true
+	case "Worker.worker_category":
+		if e.ComplexityRoot.Worker.WorkerCategory == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.WorkerCategory(childComplexity), true
+	case "Worker.worker_number":
+		if e.ComplexityRoot.Worker.WorkerNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Worker.WorkerNumber(childComplexity), true
+
+	case "WorkerAssignment.approved_at":
+		if e.ComplexityRoot.WorkerAssignment.ApprovedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.ApprovedAt(childComplexity), true
+	case "WorkerAssignment.assignment_type":
+		if e.ComplexityRoot.WorkerAssignment.AssignmentType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.AssignmentType(childComplexity), true
+	case "WorkerAssignment.cancelled_at":
+		if e.ComplexityRoot.WorkerAssignment.CancelledAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.CancelledAt(childComplexity), true
+	case "WorkerAssignment.fte_percent":
+		if e.ComplexityRoot.WorkerAssignment.FtePercent == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.FtePercent(childComplexity), true
+	case "WorkerAssignment.id":
+		if e.ComplexityRoot.WorkerAssignment.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.ID(childComplexity), true
+	case "WorkerAssignment.position_id":
+		if e.ComplexityRoot.WorkerAssignment.PositionID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.PositionID(childComplexity), true
+	case "WorkerAssignment._id":
+		if e.ComplexityRoot.WorkerAssignment.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.RawID(childComplexity), true
+	case "WorkerAssignment.requested_at":
+		if e.ComplexityRoot.WorkerAssignment.RequestedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.RequestedAt(childComplexity), true
+	case "WorkerAssignment.valid_from":
+		if e.ComplexityRoot.WorkerAssignment.ValidFrom == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.ValidFrom(childComplexity), true
+	case "WorkerAssignment.valid_to":
+		if e.ComplexityRoot.WorkerAssignment.ValidTo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.ValidTo(childComplexity), true
+	case "WorkerAssignment.worker_id":
+		if e.ComplexityRoot.WorkerAssignment.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignment.WorkerID(childComplexity), true
+
+	case "WorkerAssignmentConnection.edges":
+		if e.ComplexityRoot.WorkerAssignmentConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentConnection.Edges(childComplexity), true
+	case "WorkerAssignmentConnection.nodes":
+		if e.ComplexityRoot.WorkerAssignmentConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentConnection.Nodes(childComplexity), true
+	case "WorkerAssignmentConnection.pageInfo":
+		if e.ComplexityRoot.WorkerAssignmentConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentConnection.PageInfo(childComplexity), true
+	case "WorkerAssignmentConnection.total_count":
+		if e.ComplexityRoot.WorkerAssignmentConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentConnection.TotalCount(childComplexity), true
+
+	case "WorkerAssignmentEdge.cursor":
+		if e.ComplexityRoot.WorkerAssignmentEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentEdge.Cursor(childComplexity), true
+	case "WorkerAssignmentEdge.node":
+		if e.ComplexityRoot.WorkerAssignmentEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentEdge.Node(childComplexity), true
+
+	case "WorkerAssignmentTransfer.applied_assignment_id":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.AppliedAssignmentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.AppliedAssignmentID(childComplexity), true
+	case "WorkerAssignmentTransfer.decided_at":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.DecidedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.DecidedAt(childComplexity), true
+	case "WorkerAssignmentTransfer.effective_date":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.EffectiveDate == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.EffectiveDate(childComplexity), true
+	case "WorkerAssignmentTransfer.id":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.ID(childComplexity), true
+	case "WorkerAssignmentTransfer._id":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.RawID(childComplexity), true
+	case "WorkerAssignmentTransfer.reason_code":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.ReasonCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.ReasonCode(childComplexity), true
+	case "WorkerAssignmentTransfer.requested_at":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.RequestedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.RequestedAt(childComplexity), true
+	case "WorkerAssignmentTransfer.source_assignment_id":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.SourceAssignmentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.SourceAssignmentID(childComplexity), true
+	case "WorkerAssignmentTransfer.status":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.Status(childComplexity), true
+	case "WorkerAssignmentTransfer.target_position_id":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.TargetPositionID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.TargetPositionID(childComplexity), true
+	case "WorkerAssignmentTransfer.worker_id":
+		if e.ComplexityRoot.WorkerAssignmentTransfer.WorkerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransfer.WorkerID(childComplexity), true
+
+	case "WorkerAssignmentTransferConnection.edges":
+		if e.ComplexityRoot.WorkerAssignmentTransferConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransferConnection.Edges(childComplexity), true
+	case "WorkerAssignmentTransferConnection.nodes":
+		if e.ComplexityRoot.WorkerAssignmentTransferConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransferConnection.Nodes(childComplexity), true
+	case "WorkerAssignmentTransferConnection.pageInfo":
+		if e.ComplexityRoot.WorkerAssignmentTransferConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransferConnection.PageInfo(childComplexity), true
+	case "WorkerAssignmentTransferConnection.total_count":
+		if e.ComplexityRoot.WorkerAssignmentTransferConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransferConnection.TotalCount(childComplexity), true
+
+	case "WorkerAssignmentTransferEdge.cursor":
+		if e.ComplexityRoot.WorkerAssignmentTransferEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransferEdge.Cursor(childComplexity), true
+	case "WorkerAssignmentTransferEdge.node":
+		if e.ComplexityRoot.WorkerAssignmentTransferEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerAssignmentTransferEdge.Node(childComplexity), true
+
+	case "WorkerConnection.edges":
+		if e.ComplexityRoot.WorkerConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerConnection.Edges(childComplexity), true
+	case "WorkerConnection.nodes":
+		if e.ComplexityRoot.WorkerConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerConnection.Nodes(childComplexity), true
+	case "WorkerConnection.pageInfo":
+		if e.ComplexityRoot.WorkerConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerConnection.PageInfo(childComplexity), true
+	case "WorkerConnection.total_count":
+		if e.ComplexityRoot.WorkerConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerConnection.TotalCount(childComplexity), true
+
+	case "WorkerEdge.cursor":
+		if e.ComplexityRoot.WorkerEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerEdge.Cursor(childComplexity), true
+	case "WorkerEdge.node":
+		if e.ComplexityRoot.WorkerEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkerEdge.Node(childComplexity), true
+
+	case "WorkforcePlan.id":
+		if e.ComplexityRoot.WorkforcePlan.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.ID(childComplexity), true
+	case "WorkforcePlan.legal_entity_reference_id":
+		if e.ComplexityRoot.WorkforcePlan.LegalEntityReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.LegalEntityReferenceID(childComplexity), true
+	case "WorkforcePlan.period_end":
+		if e.ComplexityRoot.WorkforcePlan.PeriodEnd == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.PeriodEnd(childComplexity), true
+	case "WorkforcePlan.period_start":
+		if e.ComplexityRoot.WorkforcePlan.PeriodStart == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.PeriodStart(childComplexity), true
+	case "WorkforcePlan.plan_code":
+		if e.ComplexityRoot.WorkforcePlan.PlanCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.PlanCode(childComplexity), true
+	case "WorkforcePlan.plan_version":
+		if e.ComplexityRoot.WorkforcePlan.PlanVersion == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.PlanVersion(childComplexity), true
+	case "WorkforcePlan._id":
+		if e.ComplexityRoot.WorkforcePlan.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.RawID(childComplexity), true
+	case "WorkforcePlan.scenario_code":
+		if e.ComplexityRoot.WorkforcePlan.ScenarioCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.ScenarioCode(childComplexity), true
+	case "WorkforcePlan.status":
+		if e.ComplexityRoot.WorkforcePlan.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.Status(childComplexity), true
+	case "WorkforcePlan.superseded_by_plan_id":
+		if e.ComplexityRoot.WorkforcePlan.SupersededByPlanID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlan.SupersededByPlanID(childComplexity), true
+
+	case "WorkforcePlanConnection.edges":
+		if e.ComplexityRoot.WorkforcePlanConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanConnection.Edges(childComplexity), true
+	case "WorkforcePlanConnection.nodes":
+		if e.ComplexityRoot.WorkforcePlanConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanConnection.Nodes(childComplexity), true
+	case "WorkforcePlanConnection.pageInfo":
+		if e.ComplexityRoot.WorkforcePlanConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanConnection.PageInfo(childComplexity), true
+	case "WorkforcePlanConnection.total_count":
+		if e.ComplexityRoot.WorkforcePlanConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanConnection.TotalCount(childComplexity), true
+
+	case "WorkforcePlanEdge.cursor":
+		if e.ComplexityRoot.WorkforcePlanEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanEdge.Cursor(childComplexity), true
+	case "WorkforcePlanEdge.node":
+		if e.ComplexityRoot.WorkforcePlanEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanEdge.Node(childComplexity), true
+
+	case "WorkforcePlanLine.action_code":
+		if e.ComplexityRoot.WorkforcePlanLine.ActionCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.ActionCode(childComplexity), true
+	case "WorkforcePlanLine.current_fte":
+		if e.ComplexityRoot.WorkforcePlanLine.CurrentFte == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.CurrentFte(childComplexity), true
+	case "WorkforcePlanLine.id":
+		if e.ComplexityRoot.WorkforcePlanLine.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.ID(childComplexity), true
+	case "WorkforcePlanLine.job_id":
+		if e.ComplexityRoot.WorkforcePlanLine.JobID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.JobID(childComplexity), true
+	case "WorkforcePlanLine.line_number":
+		if e.ComplexityRoot.WorkforcePlanLine.LineNumber == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.LineNumber(childComplexity), true
+	case "WorkforcePlanLine.needed_from":
+		if e.ComplexityRoot.WorkforcePlanLine.NeededFrom == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.NeededFrom(childComplexity), true
+	case "WorkforcePlanLine.needed_until":
+		if e.ComplexityRoot.WorkforcePlanLine.NeededUntil == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.NeededUntil(childComplexity), true
+	case "WorkforcePlanLine.organization_unit_reference_id":
+		if e.ComplexityRoot.WorkforcePlanLine.OrganizationUnitReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.OrganizationUnitReferenceID(childComplexity), true
+	case "WorkforcePlanLine._id":
+		if e.ComplexityRoot.WorkforcePlanLine.RawID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.RawID(childComplexity), true
+	case "WorkforcePlanLine.required_fte":
+		if e.ComplexityRoot.WorkforcePlanLine.RequiredFte == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.RequiredFte(childComplexity), true
+	case "WorkforcePlanLine.work_location_reference_id":
+		if e.ComplexityRoot.WorkforcePlanLine.WorkLocationReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.WorkLocationReferenceID(childComplexity), true
+	case "WorkforcePlanLine.worker_category":
+		if e.ComplexityRoot.WorkforcePlanLine.WorkerCategory == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.WorkerCategory(childComplexity), true
+	case "WorkforcePlanLine.workforce_plan_id":
+		if e.ComplexityRoot.WorkforcePlanLine.WorkforcePlanID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLine.WorkforcePlanID(childComplexity), true
+
+	case "WorkforcePlanLineConnection.edges":
+		if e.ComplexityRoot.WorkforcePlanLineConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLineConnection.Edges(childComplexity), true
+	case "WorkforcePlanLineConnection.nodes":
+		if e.ComplexityRoot.WorkforcePlanLineConnection.Nodes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLineConnection.Nodes(childComplexity), true
+	case "WorkforcePlanLineConnection.pageInfo":
+		if e.ComplexityRoot.WorkforcePlanLineConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLineConnection.PageInfo(childComplexity), true
+	case "WorkforcePlanLineConnection.total_count":
+		if e.ComplexityRoot.WorkforcePlanLineConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLineConnection.TotalCount(childComplexity), true
+
+	case "WorkforcePlanLineEdge.cursor":
+		if e.ComplexityRoot.WorkforcePlanLineEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLineEdge.Cursor(childComplexity), true
+	case "WorkforcePlanLineEdge.node":
+		if e.ComplexityRoot.WorkforcePlanLineEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WorkforcePlanLineEdge.Node(childComplexity), true
+
 	case "WorkspaceAccessPayload.canAccessIdentity":
 		if e.ComplexityRoot.WorkspaceAccessPayload.CanAccessIdentity == nil {
 			break
@@ -3672,21 +13868,63 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalers := func() *graphql.InputUnmarshalerIndex {
 		return graphql.NewInputUnmarshalerIndex(
+			graphql.NewInputUnmarshaler("AddPartyContactInput", ec.unmarshalInputAddPartyContactInput),
 			graphql.NewInputUnmarshaler("AssignGroupRoleInput", ec.unmarshalInputAssignGroupRoleInput),
+			graphql.NewInputUnmarshaler("AssignPartyRoleInput", ec.unmarshalInputAssignPartyRoleInput),
 			graphql.NewInputUnmarshaler("AssignUserRoleInput", ec.unmarshalInputAssignUserRoleInput),
 			graphql.NewInputUnmarshaler("ChangeUserPasswordInput", ec.unmarshalInputChangeUserPasswordInput),
 			graphql.NewInputUnmarshaler("ConfirmTotpInput", ec.unmarshalInputConfirmTotpInput),
+			graphql.NewInputUnmarshaler("CreateAddressInput", ec.unmarshalInputCreateAddressInput),
+			graphql.NewInputUnmarshaler("CreateCandidateInput", ec.unmarshalInputCreateCandidateInput),
 			graphql.NewInputUnmarshaler("CreateEmployeeUserInput", ec.unmarshalInputCreateEmployeeUserInput),
+			graphql.NewInputUnmarshaler("CreateEmploymentContractInput", ec.unmarshalInputCreateEmploymentContractInput),
 			graphql.NewInputUnmarshaler("CreateGroupInput", ec.unmarshalInputCreateGroupInput),
+			graphql.NewInputUnmarshaler("CreateJobFamilyInput", ec.unmarshalInputCreateJobFamilyInput),
+			graphql.NewInputUnmarshaler("CreateJobInput", ec.unmarshalInputCreateJobInput),
+			graphql.NewInputUnmarshaler("CreateLeaveAdjustmentInput", ec.unmarshalInputCreateLeaveAdjustmentInput),
+			graphql.NewInputUnmarshaler("CreateLegalEntityInput", ec.unmarshalInputCreateLegalEntityInput),
+			graphql.NewInputUnmarshaler("CreateLocationInput", ec.unmarshalInputCreateLocationInput),
+			graphql.NewInputUnmarshaler("CreateOffboardingPlanInput", ec.unmarshalInputCreateOffboardingPlanInput),
+			graphql.NewInputUnmarshaler("CreateOffboardingTaskInput", ec.unmarshalInputCreateOffboardingTaskInput),
+			graphql.NewInputUnmarshaler("CreateOrganizationUnitInput", ec.unmarshalInputCreateOrganizationUnitInput),
+			graphql.NewInputUnmarshaler("CreatePartyInput", ec.unmarshalInputCreatePartyInput),
+			graphql.NewInputUnmarshaler("CreatePayrollRunInput", ec.unmarshalInputCreatePayrollRunInput),
+			graphql.NewInputUnmarshaler("CreatePositionInput", ec.unmarshalInputCreatePositionInput),
+			graphql.NewInputUnmarshaler("CreateRequisitionInput", ec.unmarshalInputCreateRequisitionInput),
 			graphql.NewInputUnmarshaler("CreateRoleInput", ec.unmarshalInputCreateRoleInput),
 			graphql.NewInputUnmarshaler("CreateSupplierUserInput", ec.unmarshalInputCreateSupplierUserInput),
 			graphql.NewInputUnmarshaler("CreateUserInput", ec.unmarshalInputCreateUserInput),
 			graphql.NewInputUnmarshaler("CreateVendorUserInput", ec.unmarshalInputCreateVendorUserInput),
+			graphql.NewInputUnmarshaler("CreateWorkerAssignmentInput", ec.unmarshalInputCreateWorkerAssignmentInput),
+			graphql.NewInputUnmarshaler("CreateWorkerInput", ec.unmarshalInputCreateWorkerInput),
+			graphql.NewInputUnmarshaler("CreateWorkforcePlanInput", ec.unmarshalInputCreateWorkforcePlanInput),
+			graphql.NewInputUnmarshaler("CreateWorkforcePlanLineInput", ec.unmarshalInputCreateWorkforcePlanLineInput),
+			graphql.NewInputUnmarshaler("FindOrCreateAddressInput", ec.unmarshalInputFindOrCreateAddressInput),
 			graphql.NewInputUnmarshaler("IAMResetPasswordInput", ec.unmarshalInputIAMResetPasswordInput),
+			graphql.NewInputUnmarshaler("LinkPartyAddressInput", ec.unmarshalInputLinkPartyAddressInput),
+			graphql.NewInputUnmarshaler("PostLeaveAdjustmentInput", ec.unmarshalInputPostLeaveAdjustmentInput),
+			graphql.NewInputUnmarshaler("RequestEmployeeAccountInput", ec.unmarshalInputRequestEmployeeAccountInput),
 			graphql.NewInputUnmarshaler("ResendValidationEmailInput", ec.unmarshalInputResendValidationEmailInput),
+			graphql.NewInputUnmarshaler("SubmitWorkerAssignmentTransferInput", ec.unmarshalInputSubmitWorkerAssignmentTransferInput),
+			graphql.NewInputUnmarshaler("UpdateAddressInput", ec.unmarshalInputUpdateAddressInput),
+			graphql.NewInputUnmarshaler("UpdateCandidateInput", ec.unmarshalInputUpdateCandidateInput),
+			graphql.NewInputUnmarshaler("UpdateEmploymentContractInput", ec.unmarshalInputUpdateEmploymentContractInput),
 			graphql.NewInputUnmarshaler("UpdateGroupDetailsInput", ec.unmarshalInputUpdateGroupDetailsInput),
+			graphql.NewInputUnmarshaler("UpdateLegalEntityInput", ec.unmarshalInputUpdateLegalEntityInput),
+			graphql.NewInputUnmarshaler("UpdateLocationInput", ec.unmarshalInputUpdateLocationInput),
 			graphql.NewInputUnmarshaler("UpdateMyProfileInput", ec.unmarshalInputUpdateMyProfileInput),
+			graphql.NewInputUnmarshaler("UpdateOrganizationUnitInput", ec.unmarshalInputUpdateOrganizationUnitInput),
+			graphql.NewInputUnmarshaler("UpdatePartyAddressLinkInput", ec.unmarshalInputUpdatePartyAddressLinkInput),
+			graphql.NewInputUnmarshaler("UpdatePartyContactInput", ec.unmarshalInputUpdatePartyContactInput),
+			graphql.NewInputUnmarshaler("UpdatePartyProfileInput", ec.unmarshalInputUpdatePartyProfileInput),
+			graphql.NewInputUnmarshaler("UpdatePartyRoleNoteInput", ec.unmarshalInputUpdatePartyRoleNoteInput),
+			graphql.NewInputUnmarshaler("UpdatePartyTaxProfileInput", ec.unmarshalInputUpdatePartyTaxProfileInput),
+			graphql.NewInputUnmarshaler("UpdatePositionInput", ec.unmarshalInputUpdatePositionInput),
+			graphql.NewInputUnmarshaler("UpdateRequisitionInput", ec.unmarshalInputUpdateRequisitionInput),
 			graphql.NewInputUnmarshaler("UpdateRoleDetailsInput", ec.unmarshalInputUpdateRoleDetailsInput),
+			graphql.NewInputUnmarshaler("UpdateWorkerInput", ec.unmarshalInputUpdateWorkerInput),
+			graphql.NewInputUnmarshaler("UpdateWorkforcePlanInput", ec.unmarshalInputUpdateWorkforcePlanInput),
+			graphql.NewInputUnmarshaler("UpdateWorkforcePlanLineInput", ec.unmarshalInputUpdateWorkforcePlanLineInput),
 			graphql.NewInputUnmarshaler("UserAvatarUploadInput", ec.unmarshalInputUserAvatarUploadInput),
 			graphql.NewInputUnmarshaler("UserEmailInput", ec.unmarshalInputUserEmailInput),
 			graphql.NewInputUnmarshaler("UserLoginInput", ec.unmarshalInputUserLoginInput),
@@ -3770,6 +14008,2689 @@ func newExecutionContext(
 }
 
 var sources = []*ast.Source{
+	{Name: "../../graphql/enterprise_foundation/ef_address.graphql", Input: `# Zona 2 — Skema GraphQL domain master alamat geografis (Address) pada Enterprise Foundation.
+
+# Address merepresentasikan master alamat geografis bersama (` + "`" + `gid://integrione/address/<uuid>` + "`" + `).
+type Address implements Node {
+  id: ID!
+  _id: ID!
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+  created_at: Time!
+  updated_at: Time!
+}
+
+type AddressEdge {
+  node: Address!
+  cursor: String!
+}
+
+type AddressConnection {
+  edges: [AddressEdge!]!
+  nodes: [Address!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateAddressInput {
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+}
+
+input FindOrCreateAddressInput {
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+}
+
+input UpdateAddressInput {
+  id: ID!
+  label: String
+  address_line_1: String!
+  address_line_2: String
+  city: String!
+  province: String
+  postal_code: String
+  country_code: String!
+  formatted_address: String
+  latitude: Float
+  longitude: Float
+}
+
+type CreateAddressPayload implements MutationResult {
+  address: Address
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type FindOrCreateAddressPayload implements MutationResult {
+  address: Address
+  created: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateAddressPayload implements MutationResult {
+  address: Address
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteAddressPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  address(id: ID!): Address
+  addressesByIds(ids: [ID!]!): [Address!]!
+  addresses(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    country_code: String
+    city: String
+    province: String
+    postal_code: String
+  ): AddressConnection!
+  allAddresses(after: String, before: String, first: Int, last: Int): AddressConnection!
+  isAddressReferenced(id: ID!): Boolean!
+}
+
+extend type Mutation {
+  createAddress(input: CreateAddressInput!): CreateAddressPayload!
+  findOrCreateAddress(input: FindOrCreateAddressInput!): FindOrCreateAddressPayload!
+  updateAddress(input: UpdateAddressInput!): UpdateAddressPayload!
+  deleteAddress(id: ID!): DeleteAddressPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/enterprise_foundation/ef_common.graphql", Input: `# Zona 2 — Tipe dan enum bersama domain Enterprise Foundation.
+# Seluruh tipe mengikuti konvensi snake_case serta integrasi scope target lintas manajemen.
+
+enum ScopeTargetKind {
+  LEGAL_ENTITY
+  ORGANIZATION_UNIT
+  FACILITY
+  SUPPLIER_PARTY
+  VENDOR_PARTY
+}
+
+# ScopeTargetDecision merangkum hasil evaluasi kelayakan target scope Enterprise Foundation untuk otorisasi ABAC.
+type ScopeTargetDecision {
+  eligible: Boolean!
+  scope_kind: ScopeTargetKind!
+  target_id: ID!
+  code: String!
+  legal_entity_id: ID!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/enterprise_foundation/ef_legal_entity.graphql", Input: `# Zona 2 — Skema GraphQL domain badan hukum (LegalEntity) pada Enterprise Foundation.
+
+enum LegalEntityStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  DISSOLVED
+}
+
+# LegalEntity merepresentasikan badan hukum internal perusahaan (` + "`" + `gid://integrione/legal-entity/<uuid>` + "`" + `).
+type LegalEntity implements Node {
+  id: ID!
+  _id: ID!
+  parent_legal_entity_id: ID
+  entity_code: String!
+  legal_name: String!
+  trading_name: String
+  legal_form: String
+  is_primary_operating_entity: Boolean!
+  status: LegalEntityStatus!
+  jurisdiction_country_code: String!
+  nib: String
+  tax_id_number: String
+  is_pkp: Boolean!
+  registered_address_id: ID
+  fiscal_year_start_month: Int!
+  incorporation_date: Time
+  dissolution_date: Time
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik LegalEntity.
+  parent_legal_entity: LegalEntity
+  registered_address: Address
+  children(after: String, before: String, first: Int, last: Int): LegalEntityConnection!
+}
+
+type LegalEntityEdge {
+  node: LegalEntity!
+  cursor: String!
+}
+
+type LegalEntityConnection {
+  edges: [LegalEntityEdge!]!
+  nodes: [LegalEntity!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateLegalEntityInput {
+  parent_legal_entity_id: ID
+  entity_code: String!
+  legal_name: String!
+  trading_name: String
+  legal_form: String
+  is_primary_operating_entity: Boolean = false
+  status: LegalEntityStatus = PENDING
+  jurisdiction_country_code: String!
+  nib: String
+  tax_id_number: String
+  is_pkp: Boolean = false
+  registered_address_id: ID
+  fiscal_year_start_month: Int = 1
+  incorporation_date: Time
+  dissolution_date: Time
+}
+
+input UpdateLegalEntityInput {
+  id: ID!
+  parent_legal_entity_id: ID
+  legal_name: String!
+  trading_name: String
+  legal_form: String
+  jurisdiction_country_code: String!
+  nib: String
+  tax_id_number: String
+  is_pkp: Boolean = false
+  registered_address_id: ID
+  fiscal_year_start_month: Int = 1
+  incorporation_date: Time
+  dissolution_date: Time
+}
+
+type CreateLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SetPrimaryOperatingLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SuspendLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DissolveLegalEntityPayload implements MutationResult {
+  legal_entity: LegalEntity
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteLegalEntityPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  legalEntity(id: ID!): LegalEntity
+  legalEntitiesByIds(ids: [ID!]!): [LegalEntity!]!
+  legalEntityByCode(entity_code: String!): LegalEntity
+  legalEntityByTaxIdNumber(tax_id_number: String!): LegalEntity
+  legalEntitiesByNib(nib: String!, after: String, before: String, first: Int, last: Int): LegalEntityConnection!
+  primaryOperatingLegalEntity: LegalEntity
+  legalEntities(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    parent_legal_entity_id: ID
+    status: LegalEntityStatus
+    primary_only: Boolean
+    include_deleted: Boolean = false
+  ): LegalEntityConnection!
+  allLegalEntities(after: String, before: String, first: Int, last: Int): LegalEntityConnection!
+  legalEntityChildren(
+    parent_legal_entity_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LegalEntityConnection!
+  validateLegalEntityScopeTarget(id: ID!): ScopeTargetDecision!
+}
+
+extend type Mutation {
+  createLegalEntity(input: CreateLegalEntityInput!): CreateLegalEntityPayload!
+  updateLegalEntity(input: UpdateLegalEntityInput!): UpdateLegalEntityPayload!
+  setPrimaryOperatingLegalEntity(id: ID!): SetPrimaryOperatingLegalEntityPayload!
+  activateLegalEntity(id: ID!): ActivateLegalEntityPayload!
+  suspendLegalEntity(id: ID!): SuspendLegalEntityPayload!
+  dissolveLegalEntity(id: ID!, dissolution_date: Time): DissolveLegalEntityPayload!
+  deleteLegalEntity(id: ID!): DeleteLegalEntityPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/enterprise_foundation/ef_location.graphql", Input: `# Zona 2 — Skema GraphQL domain lokasi fisik operasional (Location) pada Enterprise Foundation.
+
+enum LocationKind {
+  HEADQUARTERS
+  WAREHOUSE
+  RETAIL_STORE
+  BRANCH_OFFICE
+}
+
+# Location merepresentasikan lokasi fisik operasional internal (` + "`" + `gid://integrione/location/<uuid>` + "`" + `).
+type Location implements Node {
+  id: ID!
+  _id: ID!
+  legal_entity_id: ID!
+  parent_location_id: ID
+  address_id: ID
+  location_code: String!
+  name: String!
+  kind: LocationKind!
+  phone: String
+  timezone: String!
+  operational_attributes_json: String!
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik Location.
+  legal_entity: LegalEntity
+  parent_location: Location
+  address: Address
+  children(after: String, before: String, first: Int, last: Int): LocationConnection!
+}
+
+type LocationEdge {
+  node: Location!
+  cursor: String!
+}
+
+type LocationConnection {
+  edges: [LocationEdge!]!
+  nodes: [Location!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateLocationInput {
+  legal_entity_id: ID!
+  parent_location_id: ID
+  address_id: ID
+  location_code: String!
+  name: String!
+  kind: LocationKind!
+  phone: String
+  timezone: String!
+  operational_attributes_json: String
+}
+
+input UpdateLocationInput {
+  id: ID!
+  parent_location_id: ID
+  address_id: ID
+  name: String!
+  kind: LocationKind!
+  phone: String
+  timezone: String!
+  operational_attributes_json: String
+}
+
+type CreateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivateLocationPayload implements MutationResult {
+  location: Location
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteLocationPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  location(id: ID!): Location
+  locationsByIds(ids: [ID!]!): [Location!]!
+  locationByCode(location_code: String!): Location
+  locationsByLegalEntityAndKind(
+    legal_entity_id: ID!
+    kind: LocationKind!
+    active_only: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LocationConnection!
+  locationsByAddressId(
+    address_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LocationConnection!
+  locationChildren(
+    parent_location_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): LocationConnection!
+  locations(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    legal_entity_id: ID
+    parent_location_id: ID
+    address_id: ID
+    kind: LocationKind
+    active_only: Boolean = false
+    include_deleted: Boolean = false
+  ): LocationConnection!
+  allLocations(after: String, before: String, first: Int, last: Int): LocationConnection!
+  validateFacilityScope(id: ID!): ScopeTargetDecision!
+  validateWarehouseScope(id: ID!): ScopeTargetDecision!
+}
+
+extend type Mutation {
+  createLocation(input: CreateLocationInput!): CreateLocationPayload!
+  updateLocation(input: UpdateLocationInput!): UpdateLocationPayload!
+  activateLocation(id: ID!): ActivateLocationPayload!
+  deactivateLocation(id: ID!): DeactivateLocationPayload!
+  deleteLocation(id: ID!): DeleteLocationPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/enterprise_foundation/ef_organization_unit.graphql", Input: `# Zona 2 — Skema GraphQL domain unit kerja internal (OrganizationUnit) pada Enterprise Foundation.
+
+enum OrgUnitKind {
+  DIVISION
+  DEPARTMENT
+  TEAM
+  BRANCH
+  OTHER
+}
+
+# OrganizationUnit merepresentasikan unit organisasi internal (` + "`" + `gid://integrione/organization-unit/<uuid>` + "`" + `).
+type OrganizationUnit implements Node {
+  id: ID!
+  _id: ID!
+  legal_entity_id: ID!
+  parent_unit_id: ID
+  primary_location_id: ID
+  unit_code: String!
+  name: String!
+  kind: OrgUnitKind!
+  cost_center_code: String
+  head_person_id: ID
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik OrganizationUnit.
+  legal_entity: LegalEntity
+  parent_unit: OrganizationUnit
+  primary_location: Location
+  children(after: String, before: String, first: Int, last: Int): OrganizationUnitConnection!
+}
+
+type OrganizationUnitEdge {
+  node: OrganizationUnit!
+  cursor: String!
+}
+
+type OrganizationUnitConnection {
+  edges: [OrganizationUnitEdge!]!
+  nodes: [OrganizationUnit!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input CreateOrganizationUnitInput {
+  legal_entity_id: ID!
+  parent_unit_id: ID
+  primary_location_id: ID
+  unit_code: String!
+  name: String!
+  kind: OrgUnitKind!
+  cost_center_code: String
+  head_person_id: ID
+}
+
+input UpdateOrganizationUnitInput {
+  id: ID!
+  parent_unit_id: ID
+  primary_location_id: ID
+  name: String!
+  kind: OrgUnitKind!
+  cost_center_code: String
+  head_person_id: ID
+  preserve_head_person: Boolean! = false
+}
+
+type CreateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AssignOrganizationUnitHeadPersonPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivateOrganizationUnitPayload implements MutationResult {
+  organization_unit: OrganizationUnit
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeleteOrganizationUnitPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  organizationUnit(id: ID!): OrganizationUnit
+  organizationUnitsByIds(ids: [ID!]!): [OrganizationUnit!]!
+  organizationUnitByEntityAndCode(legal_entity_id: ID!, unit_code: String!): OrganizationUnit
+  organizationUnitsByHeadPersonId(
+    head_person_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationUnitConnection!
+  organizationUnitsByPrimaryLocationId(
+    primary_location_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationUnitConnection!
+  organizationUnitChildren(
+    parent_unit_id: ID!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationUnitConnection!
+  organizationUnits(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    legal_entity_id: ID
+    parent_unit_id: ID
+    primary_location_id: ID
+    kind: OrgUnitKind
+    active_only: Boolean = false
+    include_deleted: Boolean = false
+  ): OrganizationUnitConnection!
+  allOrganizationUnits(after: String, before: String, first: Int, last: Int): OrganizationUnitConnection!
+  validateOrganizationUnitScopeTarget(id: ID!): ScopeTargetDecision!
+}
+
+extend type Mutation {
+  createOrganizationUnit(input: CreateOrganizationUnitInput!): CreateOrganizationUnitPayload!
+  updateOrganizationUnit(input: UpdateOrganizationUnitInput!): UpdateOrganizationUnitPayload!
+  assignOrganizationUnitHeadPerson(id: ID!, head_person_id: ID): AssignOrganizationUnitHeadPersonPayload!
+  activateOrganizationUnit(id: ID!): ActivateOrganizationUnitPayload!
+  deactivateOrganizationUnit(id: ID!): DeactivateOrganizationUnitPayload!
+  deleteOrganizationUnit(id: ID!): DeleteOrganizationUnitPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/enterprise_foundation/ef_party.graphql", Input: `# Zona 2 — Skema GraphQL domain mitra eksternal (Party), peran bisnis, PIC portal IAM, dan tautan alamat.
+
+enum PartyKind {
+  ORGANIZATION
+  INDIVIDUAL
+  FINANCIAL_ENTITY
+  GOVERNMENT_BODY
+}
+
+enum PartyStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum PartyRoleKind {
+  SUPPLIER
+  VENDOR
+  CUSTOMER_B2B
+  CARRIER
+  FINANCIAL_INSTITUTION
+  OTHER
+}
+
+enum PortalAccessStatus {
+  NONE
+  PENDING_LINK
+  ACTIVE
+  REVOKED
+}
+
+enum AddressUsageKind {
+  REGISTERED_OFFICE
+  HEADQUARTERS
+  BILLING
+  SHIPPING
+  OTHER
+}
+
+# Party merepresentasikan entitas master mitra bisnis eksternal (` + "`" + `gid://integrione/party/<uuid>` + "`" + `).
+type Party implements Node {
+  id: ID!
+  _id: ID!
+  partner_code: String!
+  kind: PartyKind!
+  display_name: String!
+  legal_name: String
+  email: String
+  phone: String
+  website_url: String
+  tax_id_number: String
+  tax_registered_name: String
+  is_pkp: Boolean!
+  is_tax_exempt: Boolean!
+  tax_exemption_reason: String
+  tax_verified_at: Time
+  preferred_language: String!
+  status: PartyStatus!
+  notes: String
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+
+  # Relasi grafik terhubung milik Party.
+  roles(after: String, before: String, first: Int, last: Int): PartyRoleConnection!
+  contacts(after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  addresses(after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+}
+
+type PartyEdge {
+  node: Party!
+  cursor: String!
+}
+
+type PartyConnection {
+  edges: [PartyEdge!]!
+  nodes: [Party!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# PartyRole merepresentasikan peran bisnis resmi milik satu mitra (` + "`" + `gid://integrione/party-role/<uuid>` + "`" + `).
+type PartyRole implements Node {
+  id: ID!
+  _id: ID!
+  party_id: ID!
+  role: PartyRoleKind!
+  is_active: Boolean!
+  reference_note: String
+  created_at: Time!
+  updated_at: Time!
+}
+
+type PartyRoleEdge {
+  node: PartyRole!
+  cursor: String!
+}
+
+type PartyRoleConnection {
+  edges: [PartyRoleEdge!]!
+  nodes: [PartyRole!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# PartyContact merepresentasikan PIC mitra serta tautan portal IAM opsional (` + "`" + `gid://integrione/party-contact/<uuid>` + "`" + `).
+type PartyContact implements Node {
+  id: ID!
+  _id: ID!
+  party_id: ID!
+  iam_user_id: ID
+  full_name: String!
+  job_title: String
+  contact_role: String!
+  email: String
+  phone: String
+  portal_access_status: PortalAccessStatus!
+  is_primary: Boolean!
+  is_active: Boolean!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+}
+
+type PartyContactEdge {
+  node: PartyContact!
+  cursor: String!
+}
+
+type PartyContactConnection {
+  edges: [PartyContactEdge!]!
+  nodes: [PartyContact!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# PartyAddress merepresentasikan relasi antara mitra dan master alamat (` + "`" + `gid://integrione/party-address/<uuid>` + "`" + `).
+type PartyAddress implements Node {
+  id: ID!
+  _id: ID!
+  party_id: ID!
+  address_id: ID!
+  usage: AddressUsageKind!
+  is_primary: Boolean!
+  created_at: Time!
+  updated_at: Time!
+
+  # Relasi detail master alamat.
+  address: Address
+}
+
+type PartyAddressEdge {
+  node: PartyAddress!
+  cursor: String!
+}
+
+type PartyAddressConnection {
+  edges: [PartyAddressEdge!]!
+  nodes: [PartyAddress!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+type PortalAccessEvaluation {
+  allowed: Boolean!
+  party_id: ID!
+  contact_id: ID!
+  iam_user_id: ID!
+  active_roles: [PartyRoleKind!]!
+}
+
+input CreatePartyInput {
+  partner_code: String!
+  kind: PartyKind!
+  display_name: String!
+  legal_name: String
+  email: String
+  phone: String
+  website_url: String
+  tax_id_number: String
+  tax_registered_name: String
+  is_pkp: Boolean = false
+  is_tax_exempt: Boolean = false
+  tax_exemption_reason: String
+  tax_verified_at: Time
+  preferred_language: String = "id"
+  status: PartyStatus = PENDING_VERIFICATION
+  notes: String
+}
+
+input UpdatePartyProfileInput {
+  id: ID!
+  kind: PartyKind!
+  display_name: String!
+  legal_name: String
+  email: String
+  phone: String
+  website_url: String
+  preferred_language: String!
+  notes: String
+}
+
+input UpdatePartyTaxProfileInput {
+  id: ID!
+  tax_id_number: String
+  tax_registered_name: String
+  is_pkp: Boolean = false
+  is_tax_exempt: Boolean = false
+  tax_exemption_reason: String
+  tax_verified_at: Time
+}
+
+input AssignPartyRoleInput {
+  party_id: ID!
+  role: PartyRoleKind!
+  reference_note: String
+}
+
+input UpdatePartyRoleNoteInput {
+  id: ID!
+  reference_note: String
+}
+
+input AddPartyContactInput {
+  party_id: ID!
+  iam_user_id: ID
+  full_name: String!
+  job_title: String
+  contact_role: String!
+  email: String
+  phone: String
+  portal_access_status: PortalAccessStatus = NONE
+  is_primary: Boolean = false
+}
+
+input UpdatePartyContactInput {
+  id: ID!
+  full_name: String!
+  job_title: String
+  contact_role: String!
+  email: String
+  phone: String
+  is_primary: Boolean = false
+}
+
+input LinkPartyAddressInput {
+  party_id: ID!
+  address_id: ID!
+  usage: AddressUsageKind!
+  is_primary: Boolean = false
+  replace_primary: Boolean = false
+}
+
+input UpdatePartyAddressLinkInput {
+  id: ID!
+  usage: AddressUsageKind!
+  is_primary: Boolean = false
+  replace_primary: Boolean = false
+}
+
+type CreatePartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyProfilePayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyTaxProfilePayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type VerifyAndActivatePartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SuspendPartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivatePartyPayload implements MutationResult {
+  party: Party
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeletePartyPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AssignPartyRolePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyRoleNotePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivatePartyRolePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivatePartyRolePayload implements MutationResult {
+  role: PartyRole
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RemovePartyRolePayload implements MutationResult {
+  removed: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type AddPartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SetPrimaryPartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RequestPartyPortalLinkPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivatePartyPortalAccessPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type RevokePartyPortalAccessPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UnlinkPartyPortalUserPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type ActivatePartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeactivatePartyContactPayload implements MutationResult {
+  contact: PartyContact
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type DeletePartyContactPayload implements MutationResult {
+  deleted: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type LinkPartyAddressPayload implements MutationResult {
+  link: PartyAddress
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UpdatePartyAddressLinkPayload implements MutationResult {
+  link: PartyAddress
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type SetPrimaryPartyAddressLinkPayload implements MutationResult {
+  link: PartyAddress
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+type UnlinkPartyAddressPayload implements MutationResult {
+  unlinked: Boolean
+  errors: [MutationError!]!
+  was_successful: Boolean!
+}
+
+extend type Query {
+  # Party core.
+  party(id: ID!): Party
+  partiesByIds(ids: [ID!]!): [Party!]!
+  partyByCode(partner_code: String!): Party
+  partyByTaxIdNumber(tax_id_number: String!): Party
+  partiesByEmail(email: String!, after: String, before: String, first: Int, last: Int): PartyConnection!
+  parties(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    query: String
+    kind: PartyKind
+    status: PartyStatus
+    role: PartyRoleKind
+    include_deleted: Boolean = false
+  ): PartyConnection!
+  allParties(after: String, before: String, first: Int, last: Int): PartyConnection!
+
+  # Party roles.
+  partyRole(id: ID!): PartyRole
+  partyRolesByParty(party_id: ID!, after: String, before: String, first: Int, last: Int): PartyRoleConnection!
+  partyRoleByPartyAndKind(party_id: ID!, kind: PartyRoleKind!): PartyRole
+  partyRoles(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    party_id: ID
+    role: PartyRoleKind
+    active_only: Boolean = false
+    query: String
+  ): PartyRoleConnection!
+  allPartyRoles(after: String, before: String, first: Int, last: Int): PartyRoleConnection!
+  partyRolesByKind(
+    kind: PartyRoleKind!
+    active_only: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): PartyRoleConnection!
+  allPartyRolesByKind(
+    kind: PartyRoleKind!
+    active_only: Boolean = false
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): PartyRoleConnection!
+  validatePartyRoleScope(party_id: ID!, required_role: PartyRoleKind!): ScopeTargetDecision!
+
+  # Party contacts dan portal IAM.
+  partyContact(id: ID!): PartyContact
+  partyContactsByParty(party_id: ID!, after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  primaryPartyContact(party_id: ID!): PartyContact
+  partyContactsByIamUserId(iam_user_id: ID!, after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  partyContactsByEmail(email: String!, after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  partyContacts(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    party_id: ID
+    query: String
+    contact_role: String
+    portal_access_status: PortalAccessStatus
+    active_only: Boolean = false
+    include_deleted: Boolean = false
+  ): PartyContactConnection!
+  allPartyContacts(after: String, before: String, first: Int, last: Int): PartyContactConnection!
+  evaluateRepresentativePortalAccess(
+    party_id: ID!
+    iam_user_id: ID!
+    required_role: PartyRoleKind!
+  ): PortalAccessEvaluation!
+
+  # Relasi alamat mitra.
+  partyAddressLink(id: ID!): PartyAddress
+  partyAddressLinksByParty(party_id: ID!, after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+  partyAddressLinksByPartyAndUsage(
+    party_id: ID!
+    usage: AddressUsageKind!
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): PartyAddressConnection!
+  primaryPartyAddressLink(party_id: ID!, usage: AddressUsageKind!): PartyAddress
+  partyAddressLinksByAddressId(address_id: ID!, after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+  partyAddressLinks(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    party_id: ID
+    address_id: ID
+    usage: AddressUsageKind
+    primary_only: Boolean
+  ): PartyAddressConnection!
+  allPartyAddressLinks(after: String, before: String, first: Int, last: Int): PartyAddressConnection!
+}
+
+extend type Mutation {
+  # Party core.
+  createParty(input: CreatePartyInput!): CreatePartyPayload!
+  updatePartyProfile(input: UpdatePartyProfileInput!): UpdatePartyProfilePayload!
+  updatePartyTaxProfile(input: UpdatePartyTaxProfileInput!): UpdatePartyTaxProfilePayload!
+  verifyAndActivateParty(id: ID!): VerifyAndActivatePartyPayload!
+  suspendParty(id: ID!): SuspendPartyPayload!
+  deactivateParty(id: ID!): DeactivatePartyPayload!
+  deleteParty(id: ID!): DeletePartyPayload!
+
+  # Party roles.
+  assignPartyRole(input: AssignPartyRoleInput!): AssignPartyRolePayload!
+  updatePartyRoleNote(input: UpdatePartyRoleNoteInput!): UpdatePartyRoleNotePayload!
+  activatePartyRole(role_id: ID!): ActivatePartyRolePayload!
+  deactivatePartyRole(role_id: ID!): DeactivatePartyRolePayload!
+  removePartyRole(role_id: ID!): RemovePartyRolePayload!
+
+  # Party contacts dan portal IAM.
+  addPartyContact(input: AddPartyContactInput!): AddPartyContactPayload!
+  updatePartyContact(input: UpdatePartyContactInput!): UpdatePartyContactPayload!
+  setPrimaryPartyContact(party_id: ID!, contact_id: ID!): SetPrimaryPartyContactPayload!
+  requestPartyPortalLink(contact_id: ID!, iam_user_id: ID!): RequestPartyPortalLinkPayload!
+  activatePartyPortalAccess(contact_id: ID!, iam_user_id: ID!): ActivatePartyPortalAccessPayload!
+  revokePartyPortalAccess(contact_id: ID!): RevokePartyPortalAccessPayload!
+  unlinkPartyPortalUser(contact_id: ID!): UnlinkPartyPortalUserPayload!
+  activatePartyContact(contact_id: ID!): ActivatePartyContactPayload!
+  deactivatePartyContact(contact_id: ID!): DeactivatePartyContactPayload!
+  deletePartyContact(contact_id: ID!): DeletePartyContactPayload!
+
+  # Relasi alamat mitra.
+  linkPartyAddress(input: LinkPartyAddressInput!): LinkPartyAddressPayload!
+  updatePartyAddressLink(input: UpdatePartyAddressLinkInput!): UpdatePartyAddressLinkPayload!
+  setPrimaryPartyAddressLink(link_id: ID!): SetPrimaryPartyAddressLinkPayload!
+  unlinkPartyAddress(link_id: ID!): UnlinkPartyAddressPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_access_request.graphql", Input: `type EmployeeAccountRequest implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  legal_entity_id: ID!
+  status: String!
+  requested_at: Time!
+  iam_request_id: ID
+}
+
+input RequestEmployeeAccountInput {
+  worker_id: ID!
+}
+
+type RequestEmployeeAccountPayload implements MutationResult {
+  request: EmployeeAccountRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  requestEmployeeAccount(input: RequestEmployeeAccountInput!): RequestEmployeeAccountPayload!
+}
+
+extend type Query {
+  employeeAccountRequest(id: ID!): EmployeeAccountRequest
+  workerEmployeeAccountRequest(worker_id: ID!): EmployeeAccountRequest
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_candidate.graphql", Input: `type Candidate implements Node {
+  id: ID!
+  _id: ID!
+  candidate_number: String!
+  preferred_name: String
+  candidate_status: String!
+}
+
+input CreateCandidateInput {
+  candidate_number: String!
+  preferred_name: String
+  person_party_reference_id: ID
+  contact_reference_id: ID
+  privacy_notice_version: String!
+  notice_acknowledged_at: Time!
+  data_retention_until: String!
+}
+
+type CreateCandidatePayload implements MutationResult {
+  candidate: Candidate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateCandidateInput {
+  preferred_name: String @goField(omittable: true)
+}
+
+type UpdateCandidatePayload implements MutationResult {
+  candidate: Candidate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCandidatePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCandidate(input: CreateCandidateInput!): CreateCandidatePayload!
+  updateCandidate(id: ID!, input: UpdateCandidateInput!): UpdateCandidatePayload!
+  deleteCandidate(id: ID!): DeleteCandidatePayload!
+}
+
+type CandidateEdge {
+  cursor: String!
+  node: Candidate!
+}
+
+type CandidateConnection {
+  edges: [CandidateEdge!]!
+  nodes: [Candidate!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  candidate(id: ID!): Candidate
+  candidates(candidate_number: String, after: String, before: String, first: Int, last: Int): CandidateConnection!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_job.graphql", Input: `type Job implements Node {
+  id: ID!
+  _id: ID!
+  job_family_id: ID!
+  job_code: String!
+  job_title: String!
+  job_level_code: String
+  job_description: String
+  valid_from: String!
+  valid_to: String
+  is_active: Boolean!
+}
+
+type JobEdge {
+  cursor: String!
+  node: Job!
+}
+
+type JobConnection {
+  edges: [JobEdge!]!
+  nodes: [Job!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  job(id: ID!): Job
+  jobsByIds(ids: [ID!]!): [Job!]!
+  jobs(job_family_id: ID, after: String, before: String, first: Int, last: Int): JobConnection!
+}
+
+type JobFamily implements Node {
+  id: ID!
+  _id: ID!
+  family_code: String!
+  family_name: String!
+  description: String
+  job_domain: String!
+  is_active: Boolean!
+}
+
+type JobFamilyEdge {
+  cursor: String!
+  node: JobFamily!
+}
+
+type JobFamilyConnection {
+  edges: [JobFamilyEdge!]!
+  nodes: [JobFamily!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  jobFamily(id: ID!): JobFamily
+  jobFamilies(after: String, before: String, first: Int, last: Int): JobFamilyConnection!
+}
+
+input CreateJobFamilyInput {
+  family_code: String!
+  family_name: String!
+  description: String
+  job_domain: String!
+  is_active: Boolean = true
+}
+
+type CreateJobFamilyPayload implements MutationResult {
+  job_family: JobFamily
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input CreateJobInput {
+  job_family_id: ID!
+  job_code: String!
+  job_title: String!
+  job_level_code: String
+  job_description: String
+  valid_from: String!
+  valid_to: String
+  is_active: Boolean = true
+}
+
+type CreateJobPayload implements MutationResult {
+  job: Job
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createJobFamily(input: CreateJobFamilyInput!): CreateJobFamilyPayload!
+  createJob(input: CreateJobInput!): CreateJobPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_leave_policy.graphql", Input: `type LeavePolicy implements Node {
+  id: ID!
+  _id: ID!
+  policy_code: String!
+  policy_version: Int!
+  policy_name: String!
+  leave_type_code: String!
+  jurisdiction_code: String!
+  accrual_method: String!
+  annual_entitlement: String
+  carryover_limit: String
+  max_balance: String
+  minimum_service_days: Int
+  effective_from: String!
+  effective_to: String
+  is_paid: Boolean!
+  is_active: Boolean!
+}
+
+type LeavePolicyEdge {
+  cursor: String!
+  node: LeavePolicy!
+}
+
+type LeavePolicyConnection {
+  edges: [LeavePolicyEdge!]!
+  nodes: [LeavePolicy!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leavePolicy(id: ID!): LeavePolicy
+  leavePolicies(after: String, before: String, first: Int, last: Int): LeavePolicyConnection!
+}
+
+type LeaveEntitlement implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  leave_policy_id: ID!
+  leave_type_code: String!
+  period_start: String!
+  period_end: String!
+  opening_balance: String!
+  accrued_quantity: String!
+  used_quantity: String!
+  adjusted_quantity: String!
+  closing_balance: String!
+  uom_code: String!
+  closed_at: Time
+}
+
+type LeaveEntitlementEdge {
+  cursor: String!
+  node: LeaveEntitlement!
+}
+
+type LeaveEntitlementConnection {
+  edges: [LeaveEntitlementEdge!]!
+  nodes: [LeaveEntitlement!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leaveEntitlement(id: ID!): LeaveEntitlement
+  leaveEntitlements(worker_id: ID!, after: String, before: String, first: Int, last: Int): LeaveEntitlementConnection!
+}
+
+type LeaveLedgerEntry implements Node {
+  id: ID!
+  _id: ID!
+  entitlement_id: ID!
+  entry_sequence: String!
+  entry_type: String!
+  quantity_delta: String!
+  effective_date: String!
+  adjustment_id: ID
+  reverses_entry_id: ID
+  reason_code: String!
+}
+
+type LeaveLedgerEntryEdge {
+  cursor: String!
+  node: LeaveLedgerEntry!
+}
+
+type LeaveLedgerEntryConnection {
+  edges: [LeaveLedgerEntryEdge!]!
+  nodes: [LeaveLedgerEntry!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leaveLedgerEntry(id: ID!): LeaveLedgerEntry
+  # Sediakan tepat satu filter.
+  leaveLedgerEntries(entitlement_id: ID, adjustment_id: ID, after: String, before: String, first: Int, last: Int): LeaveLedgerEntryConnection!
+}
+
+type LeaveAdjustment implements Node {
+  id: ID!
+  _id: ID!
+  entitlement_id: ID!
+  quantity_delta: String!
+  reason_code: String!
+  approved_at: Time
+  rejected_at: Time
+  rejection_reason_code: String
+}
+
+type LeaveAdjustmentEdge {
+  cursor: String!
+  node: LeaveAdjustment!
+}
+
+type LeaveAdjustmentConnection {
+  edges: [LeaveAdjustmentEdge!]!
+  nodes: [LeaveAdjustment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  leaveAdjustment(id: ID!): LeaveAdjustment
+  # Sediakan tepat satu filter.
+  leaveAdjustments(entitlement_id: ID, idempotency_key: String, after: String, before: String, first: Int, last: Int): LeaveAdjustmentConnection!
+}
+
+type ApproveLeaveAdjustmentPayload implements MutationResult {
+  leave_adjustment: LeaveAdjustment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectLeaveAdjustmentPayload implements MutationResult {
+  leave_adjustment: LeaveAdjustment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  approveLeaveAdjustment(id: ID!): ApproveLeaveAdjustmentPayload!
+  rejectLeaveAdjustment(id: ID!, reason_code: String!): RejectLeaveAdjustmentPayload!
+}
+
+input CreateLeaveAdjustmentInput {
+  entitlement_id: ID!
+  quantity_delta: String!
+  reason_code: String!
+  reason: String!
+  idempotency_key: String!
+}
+
+type CreateLeaveAdjustmentPayload implements MutationResult {
+  leave_adjustment: LeaveAdjustment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createLeaveAdjustment(input: CreateLeaveAdjustmentInput!): CreateLeaveAdjustmentPayload!
+}
+
+type CloseLeaveEntitlementPayload implements MutationResult {
+  leave_entitlement: LeaveEntitlement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  closeLeaveEntitlement(id: ID!): CloseLeaveEntitlementPayload!
+}
+
+input PostLeaveAdjustmentInput {
+  entitlement_id: ID!
+  adjustment_id: ID!
+  quantity_delta: String!
+  effective_date: String!
+  reason_code: String!
+}
+
+type PostLeaveAdjustmentPayload implements MutationResult {
+  leave_entitlement: LeaveEntitlement
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  postLeaveAdjustment(input: PostLeaveAdjustmentInput!): PostLeaveAdjustmentPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_offboarding.graphql", Input: `type OffboardingPlan implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  plan_number: String!
+  status: String!
+  last_working_date: Time!
+  termination_effective_date: Time!
+}
+
+type OffboardingPlanEdge {
+  cursor: String!
+  node: OffboardingPlan!
+}
+
+type OffboardingPlanConnection {
+  edges: [OffboardingPlanEdge!]!
+  nodes: [OffboardingPlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  offboardingPlan(id: ID!): OffboardingPlan
+  offboardingPlans(worker_id: ID!, after: String, before: String, first: Int, last: Int): OffboardingPlanConnection!
+  offboardingTask(id: ID!): OffboardingTask
+  offboardingTasks(offboarding_plan_id: ID!, after: String, before: String, first: Int, last: Int): OffboardingTaskConnection!
+}
+
+type CreateOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CreateOffboardingTaskPayload implements MutationResult {
+  offboarding_task: OffboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteOffboardingTaskPayload implements MutationResult {
+  offboarding_task: OffboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type WaiveOffboardingTaskPayload implements MutationResult {
+  offboarding_task: OffboardingTask
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type StartOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CompleteOffboardingPlanPayload implements MutationResult {
+  offboarding_plan: OffboardingPlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createOffboardingPlan(input: CreateOffboardingPlanInput!): CreateOffboardingPlanPayload!
+  createOffboardingTask(input: CreateOffboardingTaskInput!): CreateOffboardingTaskPayload!
+  completeOffboardingTask(id: ID!, owner_confirmation_reference_id: ID!): CompleteOffboardingTaskPayload!
+  waiveOffboardingTask(id: ID!, reason: String!): WaiveOffboardingTaskPayload!
+  approveOffboardingPlan(id: ID!): ApproveOffboardingPlanPayload!
+  startOffboardingPlan(id: ID!): StartOffboardingPlanPayload!
+  cancelOffboardingPlan(id: ID!, reason: String!): CancelOffboardingPlanPayload!
+  completeOffboardingPlan(id: ID!, final_payroll_run_id: ID!, finance_clearance_reference_id: ID!): CompleteOffboardingPlanPayload!
+}
+
+input CreateOffboardingPlanInput {
+  worker_id: ID!
+  plan_number: String!
+  reason_code: String!
+  notice_date: Time!
+  last_working_date: Time!
+  termination_effective_date: Time!
+}
+
+type OffboardingTask implements Node {
+  id: ID!
+  _id: ID!
+  offboarding_plan_id: ID!
+  task_code: String!
+  task_name: String!
+  owner_management: String!
+  status: String!
+  is_mandatory: Boolean!
+  due_at: Time
+}
+
+input CreateOffboardingTaskInput {
+  offboarding_plan_id: ID!
+  task_code: String!
+  task_name: String!
+  owner_management: String!
+  assigned_principal_id: ID
+  is_mandatory: Boolean
+  due_at: Time
+}
+
+type OffboardingTaskEdge {
+  cursor: String!
+  node: OffboardingTask!
+}
+
+type OffboardingTaskConnection {
+  edges: [OffboardingTaskEdge!]!
+  nodes: [OffboardingTask!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_payroll_posting.graphql", Input: `# Tanda terima pengajuan jurnal ke Finance.
+type PayrollPostingRequest {
+  payroll_run_id: ID!
+  status: String!
+  posting_requested_at: Time!
+}
+
+type RequestPayrollPostingPayload implements MutationResult {
+  payroll_posting_request: PayrollPostingRequest
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  requestPayrollPosting(payroll_run_id: ID!): RequestPayrollPostingPayload!
+}
+
+# Status agregat run untuk operator payroll.
+type PayrollRun implements Node {
+  id: ID!
+  _id: ID!
+  payroll_period_id: ID!
+  run_number: Int!
+  status: String!
+  calculated_at: Time
+  posting_requested_at: Time
+  finance_journal_reference_id: ID
+  finance_settled_at: Time
+  cancelled_at: Time
+}
+
+type PayrollRunEdge {
+  cursor: String!
+  node: PayrollRun!
+}
+
+type PayrollRunConnection {
+  edges: [PayrollRunEdge!]!
+  nodes: [PayrollRun!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollRun(id: ID!): PayrollRun
+  # Gunakan paling banyak satu filter.
+  payrollRuns(idempotency_key: String, payroll_period_id: ID, after: String, before: String, first: Int, last: Int): PayrollRunConnection!
+}
+
+type CalculatePayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SubmitPayrollRunForReviewPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApprovePayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelPayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  calculatePayrollRun(payroll_run_id: ID!): CalculatePayrollRunPayload!
+  submitPayrollRunForReview(payroll_run_id: ID!): SubmitPayrollRunForReviewPayload!
+  approvePayrollRun(payroll_run_id: ID!): ApprovePayrollRunPayload!
+  cancelPayrollRun(payroll_run_id: ID!, reason: String!): CancelPayrollRunPayload!
+}
+
+input CreatePayrollRunInput {
+  payroll_period_id: ID!
+  payroll_group_id: ID!
+  employing_legal_entity_reference_id: ID!
+  currency_code: String!
+  rule_set_id: ID!
+  original_run_id: ID
+  settlement_direction: String
+  run_number: Int!
+  run_type: String!
+  jurisdiction_code: String!
+  rule_engine_name: String!
+  rule_engine_version: String!
+  input_snapshot_reference_id: ID!
+  input_digest_sha256: String!
+  idempotency_key: String!
+}
+
+type CreatePayrollRunPayload implements MutationResult {
+  payroll_run: PayrollRun
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createPayrollRun(input: CreatePayrollRunInput!): CreatePayrollRunPayload!
+}
+
+type PayrollPeriod implements Node {
+  id: ID!
+  _id: ID!
+  payroll_group_id: ID!
+  employing_legal_entity_reference_id: ID!
+  currency_code: String!
+  jurisdiction_code: String!
+  period_code: String!
+  period_start: String!
+  period_end: String!
+  pay_date: String!
+  period_status: String!
+}
+
+type PayrollPeriodEdge {
+  cursor: String!
+  node: PayrollPeriod!
+}
+
+type PayrollPeriodConnection {
+  edges: [PayrollPeriodEdge!]!
+  nodes: [PayrollPeriod!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollPeriod(id: ID!): PayrollPeriod
+  payrollPeriods(payroll_group_id: ID, after: String, before: String, first: Int, last: Int): PayrollPeriodConnection!
+}
+
+type PayrollGroup implements Node {
+  id: ID!
+  _id: ID!
+  group_code: String!
+  group_name: String!
+  employing_legal_entity_reference_id: ID!
+  jurisdiction_code: String!
+  currency_code: String!
+  currency_scale: Int!
+  pay_frequency: String!
+  timezone: String!
+  is_active: Boolean!
+}
+
+type PayrollGroupEdge {
+  cursor: String!
+  node: PayrollGroup!
+}
+
+type PayrollGroupConnection {
+  edges: [PayrollGroupEdge!]!
+  nodes: [PayrollGroup!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollGroup(id: ID!): PayrollGroup
+  payrollGroups(after: String, before: String, first: Int, last: Int): PayrollGroupConnection!
+}
+
+type PayrollRuleSet implements Node {
+  id: ID!
+  _id: ID!
+  rule_code: String!
+  rule_version: String!
+  jurisdiction_code: String!
+  effective_from: String!
+  effective_to: String
+  approved_at: Time
+}
+
+type PayrollRuleSetEdge {
+  cursor: String!
+  node: PayrollRuleSet!
+}
+
+type PayrollRuleSetConnection {
+  edges: [PayrollRuleSetEdge!]!
+  nodes: [PayrollRuleSet!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollRuleSet(id: ID!): PayrollRuleSet
+  payrollRuleSets(after: String, before: String, first: Int, last: Int): PayrollRuleSetConnection!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_payroll_result.graphql", Input: `# Ringkasan hasil kalkulasi untuk reviewer payroll. Nominal menggunakan string desimal.
+type PayrollResult implements Node {
+  id: ID!
+  _id: ID!
+  payroll_run_id: ID!
+  worker_id: ID!
+  currency_code: String!
+  gross_amount: String!
+  reimbursement_amount: String!
+  total_deductions: String!
+  employer_cost_amount: String!
+  net_pay_amount: String!
+  result_status: String!
+}
+
+type PayrollResultEdge {
+  cursor: String!
+  node: PayrollResult!
+}
+
+type PayrollResultConnection {
+  edges: [PayrollResultEdge!]!
+  nodes: [PayrollResult!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollResult(id: ID!): PayrollResult
+  payrollResults(payroll_run_id: ID!, after: String, before: String, first: Int, last: Int): PayrollResultConnection!
+}
+
+type PayrollResultLine implements Node {
+  id: ID!
+  _id: ID!
+  payroll_result_id: ID!
+  component_code: String!
+  component_name: String!
+  component_type: String!
+  amount: String!
+  quantity: String
+  rate: String
+  taxable_base: String
+  line_sequence: Int!
+}
+
+type PayrollResultLineEdge {
+  cursor: String!
+  node: PayrollResultLine!
+}
+
+type PayrollResultLineConnection {
+  edges: [PayrollResultLineEdge!]!
+  nodes: [PayrollResultLine!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  payrollResultLine(id: ID!): PayrollResultLine
+  payrollResultLines(payroll_result_id: ID!, after: String, before: String, first: Int, last: Int): PayrollResultLineConnection!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_payslip.graphql", Input: `# Metadata slip gaji terbit milik pegawai yang sedang bersesi.
+type MyPayslip {
+  payroll_result_id: ID!
+  document_version_id: ID!
+  published_at: Time!
+  scheduled_pay_date: String!
+  payment_status: String!
+  payroll_period_id: ID!
+  period_code: String!
+  period_start: String!
+  period_end: String!
+}
+
+type MyPayslipEdge {
+  cursor: String!
+  node: MyPayslip!
+}
+
+type MyPayslipConnection {
+  edges: [MyPayslipEdge!]!
+  nodes: [MyPayslip!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# Konten privat dari versi PDF yang sudah diperiksa HRM.
+type MyPayslipPDF {
+  content_base64: String!
+}
+
+extend type Query {
+  myPayslip(payroll_result_id: ID!): MyPayslip
+  myPayslipPdf(payroll_result_id: ID!): MyPayslipPDF
+  myPayslips(payroll_period_id: ID, after: String, before: String, first: Int, last: Int): MyPayslipConnection!
+}
+
+type ReissueEmployeePayslipPayload implements MutationResult {
+  payslip_pdf: MyPayslipPDF
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  reissueEmployeePayslip(worker_id: ID!, payroll_result_id: ID!): ReissueEmployeePayslipPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_position.graphql", Input: `type Position implements Node {
+  id: ID!
+  _id: ID!
+  position_code: String!
+  position_title: String!
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  legal_entity_reference_id: ID!
+  reports_to_position_id: ID
+  position_status: String!
+  headcount_authorized: String!
+  work_location_reference_id: ID
+  valid_from: String!
+  valid_to: String
+}
+
+type PositionEdge {
+  cursor: String!
+  node: Position!
+}
+
+type PositionConnection {
+  edges: [PositionEdge!]!
+  nodes: [Position!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  position(id: ID!): Position
+  positions(legal_entity_id: ID, after: String, before: String, first: Int, last: Int): PositionConnection!
+}
+
+type ActivatePositionPayload implements MutationResult {
+  position: Position
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CreatePositionPayload implements MutationResult {
+  position: Position
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdatePositionPayload implements MutationResult {
+  position: Position
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeletePositionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  activatePosition(id: ID!): ActivatePositionPayload!
+  createPosition(input: CreatePositionInput!): CreatePositionPayload!
+  updatePosition(id: ID!, input: UpdatePositionInput!): UpdatePositionPayload!
+  deletePosition(id: ID!): DeletePositionPayload!
+}
+
+input CreatePositionInput {
+  position_code: String!
+  position_title: String!
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  legal_entity_reference_id: ID!
+  reports_to_position_id: ID
+  headcount_authorized: String
+  work_location_reference_id: ID
+  valid_from: String!
+  valid_to: String
+}
+
+input UpdatePositionInput {
+  position_title: String @goField(omittable: true)
+  headcount_authorized: String @goField(omittable: true)
+  work_location_reference_id: ID @goField(omittable: true)
+  valid_from: String @goField(omittable: true)
+  valid_to: String @goField(omittable: true)
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_requisition.graphql", Input: `type Requisition implements Node {
+  id: ID!
+  _id: ID!
+  requisition_number: String!
+  # Tersedia pada detail bila tautan pekerja dapat ditentukan.
+  hiring_manager_worker_id: ID
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  work_location_reference_id: ID
+  position_id: ID
+  workforce_plan_line_id: ID
+  requisition_type: String!
+  status: String!
+  rejection_reason_code: String
+  headcount: Int!
+  target_start_date: String
+  employment_category: String!
+}
+
+type RequisitionEdge {
+  cursor: String!
+  node: Requisition!
+}
+
+type RequisitionConnection {
+  edges: [RequisitionEdge!]!
+  nodes: [Requisition!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  requisition(id: ID!): Requisition
+  requisitions(requisition_number: String, after: String, before: String, first: Int, last: Int): RequisitionConnection!
+}
+
+input CreateRequisitionInput {
+  requisition_number: String!
+  job_id: ID!
+  organization_unit_reference_id: ID!
+  hiring_manager_worker_id: ID!
+  requisition_type: String!
+  employment_category: String!
+  headcount: Int! = 1
+  target_start_date: String
+  position_id: ID
+  workforce_plan_line_id: ID
+  work_location_reference_id: ID
+  idempotency_key: String!
+}
+
+type CreateRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SubmitRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RejectRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteRequisitionPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateRequisitionInput {
+  hiring_manager_worker_id: ID @goField(omittable: true)
+  job_id: ID @goField(omittable: true)
+  organization_unit_reference_id: ID @goField(omittable: true)
+  work_location_reference_id: ID @goField(omittable: true)
+  position_id: ID @goField(omittable: true)
+  workforce_plan_line_id: ID @goField(omittable: true)
+  headcount: Int @goField(omittable: true)
+  target_start_date: String @goField(omittable: true)
+  requisition_type: String @goField(omittable: true)
+  employment_category: String @goField(omittable: true)
+}
+
+type UpdateRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type OpenRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CloseRequisitionPayload implements MutationResult {
+  requisition: Requisition
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  closeRequisition(id: ID!): CloseRequisitionPayload!
+  approveRequisition(id: ID!): ApproveRequisitionPayload!
+  openRequisition(id: ID!): OpenRequisitionPayload!
+  updateRequisition(id: ID!, input: UpdateRequisitionInput!): UpdateRequisitionPayload!
+  deleteRequisition(id: ID!): DeleteRequisitionPayload!
+  rejectRequisition(id: ID!, reason_code: String!): RejectRequisitionPayload!
+  submitRequisition(id: ID!): SubmitRequisitionPayload!
+  createRequisition(input: CreateRequisitionInput!): CreateRequisitionPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_worker.graphql", Input: `# Identitas dan status hubungan kerja yang dibutuhkan operator HRM.
+type Worker implements Node {
+  id: ID!
+  _id: ID!
+  worker_number: String!
+  worker_category: String!
+  status: String!
+  hire_date: String
+  service_start_date: String
+  primary_legal_entity_reference_id: ID!
+  person_party_reference_id: ID
+}
+
+type WorkerEdge {
+  cursor: String!
+  node: Worker!
+}
+
+type WorkerConnection {
+  edges: [WorkerEdge!]!
+  nodes: [Worker!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  worker(id: ID!): Worker
+  # Gunakan paling banyak satu filter.
+  workers(worker_number: String, legal_entity_id: ID, after: String, before: String, first: Int, last: Int): WorkerConnection!
+}
+
+input CreateWorkerInput {
+  worker_number: String!
+  person_party_reference_id: ID!
+  worker_category: String!
+  primary_legal_entity_reference_id: ID!
+  hire_date: String
+  service_start_date: String
+}
+
+input UpdateWorkerInput {
+  hire_date: String @goField(omittable: true)
+  service_start_date: String @goField(omittable: true)
+}
+
+type CreateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ActivateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type TerminateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApplyPrimaryAssignmentPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorker(input: CreateWorkerInput!): CreateWorkerPayload!
+  updateWorker(id: ID!, input: UpdateWorkerInput!): UpdateWorkerPayload!
+  activateWorker(id: ID!): ActivateWorkerPayload!
+  terminateWorker(id: ID!, offboarding_plan_id: ID!): TerminateWorkerPayload!
+  applyPrimaryAssignment(id: ID!, assignment_id: ID!): ApplyPrimaryAssignmentPayload!
+}
+
+type WorkerAssignment implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  position_id: ID!
+  assignment_type: String!
+  fte_percent: String!
+  valid_from: String!
+  valid_to: String
+  approved_at: Time
+  requested_at: Time
+  cancelled_at: Time
+}
+
+type ApproveWorkerAssignmentPayload implements MutationResult {
+  worker_assignment: WorkerAssignment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  approveWorkerAssignment(id: ID!): ApproveWorkerAssignmentPayload!
+}
+
+type WorkerAssignmentEdge {
+  cursor: String!
+  node: WorkerAssignment!
+}
+
+type WorkerAssignmentConnection {
+  edges: [WorkerAssignmentEdge!]!
+  nodes: [WorkerAssignment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workerAssignmentTransfers(worker_id: ID!, after: String, before: String, first: Int, last: Int): WorkerAssignmentTransferConnection!
+  workerAssignmentTransfer(id: ID!): WorkerAssignmentTransfer
+  workerAssignment(id: ID!): WorkerAssignment
+  workerAssignments(worker_id: ID, position_id: ID, after: String, before: String, first: Int, last: Int): WorkerAssignmentConnection!
+}
+
+input CreateWorkerAssignmentInput {
+  worker_id: ID!
+  position_id: ID!
+  manager_worker_id: ID
+  assignment_type: String!
+  fte_percent: String
+  valid_from: String!
+  valid_to: String
+  assignment_reason: String
+}
+
+type CreateWorkerAssignmentPayload implements MutationResult {
+  worker_assignment: WorkerAssignment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkerAssignment(input: CreateWorkerAssignmentInput!): CreateWorkerAssignmentPayload!
+}
+
+type WorkerAssignmentTransfer implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  source_assignment_id: ID!
+  target_position_id: ID!
+  effective_date: String!
+  status: String!
+  reason_code: String!
+  requested_at: Time!
+  decided_at: Time
+  applied_assignment_id: ID
+}
+
+type WorkerAssignmentTransferEdge {
+  cursor: String!
+  node: WorkerAssignmentTransfer!
+}
+
+type WorkerAssignmentTransferConnection {
+  edges: [WorkerAssignmentTransferEdge!]!
+  nodes: [WorkerAssignmentTransfer!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input SubmitWorkerAssignmentTransferInput {
+  worker_id: ID!
+  source_assignment_id: ID!
+  target_position_id: ID!
+  effective_date: String!
+  reason_code: String!
+  idempotency_key: String!
+}
+
+enum WorkerAssignmentTransferDecision {
+  APPROVE
+  REJECT
+}
+
+type SubmitWorkerAssignmentTransferPayload implements MutationResult {
+  worker_assignment_transfer: WorkerAssignmentTransfer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DecideWorkerAssignmentTransferPayload implements MutationResult {
+  worker_assignment_transfer: WorkerAssignmentTransfer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  submitWorkerAssignmentTransfer(input: SubmitWorkerAssignmentTransferInput!): SubmitWorkerAssignmentTransferPayload!
+  decideWorkerAssignmentTransfer(id: ID!, decision: WorkerAssignmentTransferDecision!): DecideWorkerAssignmentTransferPayload!
+}
+
+type EmploymentContract implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  contract_number: String!
+  contract_type: String!
+  contract_status: String!
+  employing_legal_entity_reference_id: ID!
+  effective_from: String!
+  effective_to: String
+  signed_at: Time
+}
+
+type EmploymentContractEdge {
+  cursor: String!
+  node: EmploymentContract!
+}
+
+type EmploymentContractConnection {
+  edges: [EmploymentContractEdge!]!
+  nodes: [EmploymentContract!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  employmentContract(id: ID!): EmploymentContract
+  employmentContracts(worker_id: ID!, after: String, before: String, first: Int, last: Int): EmploymentContractConnection!
+}
+
+input CreateEmploymentContractInput {
+  worker_id: ID!
+  contract_number: String!
+  contract_type: String!
+  employing_legal_entity_reference_id: ID!
+  effective_from: String!
+  effective_to: String
+  probation_end_date: String
+  notice_period_days: Int
+  work_country_code: String!
+  governing_jurisdiction_code: String!
+  collective_agreement_id: ID
+}
+
+type CreateEmploymentContractPayload implements MutationResult {
+  employment_contract: EmploymentContract
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RecordSignedEmploymentContractPayload implements MutationResult {
+  employment_contract: EmploymentContract
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteEmploymentContractPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateEmploymentContractPayload implements MutationResult {
+  employment_contract: EmploymentContract
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createEmploymentContract(input: CreateEmploymentContractInput!): CreateEmploymentContractPayload!
+  recordSignedEmploymentContract(id: ID!, document_version_id: ID!): RecordSignedEmploymentContractPayload!
+  deleteEmploymentContract(id: ID!): DeleteEmploymentContractPayload!
+  updateEmploymentContract(id: ID!, input: UpdateEmploymentContractInput!): UpdateEmploymentContractPayload!
+}
+
+input UpdateEmploymentContractInput {
+  contract_number: String @goField(omittable: true)
+  contract_type: String @goField(omittable: true)
+  effective_from: String @goField(omittable: true)
+  effective_to: String @goField(omittable: true)
+  probation_end_date: String @goField(omittable: true)
+  notice_period_days: Int @goField(omittable: true)
+  work_country_code: String @goField(omittable: true)
+  governing_jurisdiction_code: String @goField(omittable: true)
+  collective_agreement_id: ID @goField(omittable: true)
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/human_resource/hrm_workforce_plan.graphql", Input: `# Ringkasan rencana tenaga kerja per badan hukum.
+type WorkforcePlan implements Node {
+  id: ID!
+  _id: ID!
+  plan_code: String!
+  plan_version: Int!
+  legal_entity_reference_id: ID!
+  period_start: String!
+  period_end: String!
+  scenario_code: String!
+  status: String!
+  superseded_by_plan_id: ID
+}
+
+type WorkforcePlanEdge {
+  cursor: String!
+  node: WorkforcePlan!
+}
+
+type WorkforcePlanConnection {
+  edges: [WorkforcePlanEdge!]!
+  nodes: [WorkforcePlan!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workforcePlan(id: ID!): WorkforcePlan
+  workforcePlans(after: String, before: String, first: Int, last: Int): WorkforcePlanConnection!
+}
+
+type WorkforcePlanLine implements Node {
+  id: ID!
+  _id: ID!
+  workforce_plan_id: ID!
+  line_number: Int!
+  organization_unit_reference_id: ID!
+  job_id: ID!
+  work_location_reference_id: ID
+  worker_category: String!
+  current_fte: String!
+  required_fte: String!
+  needed_from: String!
+  needed_until: String
+  action_code: String!
+}
+
+type WorkforcePlanLineEdge {
+  cursor: String!
+  node: WorkforcePlanLine!
+}
+
+type WorkforcePlanLineConnection {
+  edges: [WorkforcePlanLineEdge!]!
+  nodes: [WorkforcePlanLine!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workforcePlanLine(id: ID!): WorkforcePlanLine
+  workforcePlanLines(workforce_plan_id: ID, after: String, before: String, first: Int, last: Int): WorkforcePlanLineConnection!
+}
+
+type SubmitWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CancelWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkforcePlanPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApproveWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type SupersedeWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  submitWorkforcePlan(id: ID!): SubmitWorkforcePlanPayload!
+  cancelWorkforcePlan(id: ID!): CancelWorkforcePlanPayload!
+  deleteWorkforcePlan(id: ID!): DeleteWorkforcePlanPayload!
+  approveWorkforcePlan(id: ID!): ApproveWorkforcePlanPayload!
+  supersedeWorkforcePlan(id: ID!, replacement_plan_id: ID!, reason_code: String!): SupersedeWorkforcePlanPayload!
+}
+
+input CreateWorkforcePlanInput {
+  plan_code: String!
+  plan_version: Int!
+  legal_entity_reference_id: ID!
+  period_start: String!
+  period_end: String!
+  scenario_code: String
+}
+
+type CreateWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkforcePlan(input: CreateWorkforcePlanInput!): CreateWorkforcePlanPayload!
+}
+
+input CreateWorkforcePlanLineInput {
+  workforce_plan_id: ID!
+  line_number: Int!
+  organization_unit_reference_id: ID!
+  job_id: ID!
+  work_location_reference_id: ID
+  worker_category: String!
+  current_fte: String!
+  required_fte: String!
+  estimated_cost: String
+  currency_code: String
+  needed_from: String!
+  needed_until: String
+  action_code: String!
+  rationale: String!
+}
+
+directive @goField(omittable: Boolean) on INPUT_FIELD_DEFINITION
+
+input UpdateWorkforcePlanInput {
+  period_start: String @goField(omittable: true)
+  period_end: String @goField(omittable: true)
+  scenario_code: String @goField(omittable: true)
+}
+
+type UpdateWorkforcePlanPayload implements MutationResult {
+  workforce_plan: WorkforcePlan
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  updateWorkforcePlan(id: ID!, input: UpdateWorkforcePlanInput!): UpdateWorkforcePlanPayload!
+}
+
+input UpdateWorkforcePlanLineInput {
+  line_number: Int @goField(omittable: true)
+  organization_unit_reference_id: ID @goField(omittable: true)
+  job_id: ID @goField(omittable: true)
+  work_location_reference_id: ID @goField(omittable: true)
+  worker_category: String @goField(omittable: true)
+  current_fte: String @goField(omittable: true)
+  required_fte: String @goField(omittable: true)
+  estimated_cost: String @goField(omittable: true)
+  currency_code: String @goField(omittable: true)
+  needed_from: String @goField(omittable: true)
+  needed_until: String @goField(omittable: true)
+  action_code: String @goField(omittable: true)
+  rationale: String @goField(omittable: true)
+}
+
+type UpdateWorkforcePlanLinePayload implements MutationResult {
+  workforce_plan_line: WorkforcePlanLine
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type CreateWorkforcePlanLinePayload implements MutationResult {
+  workforce_plan_line: WorkforcePlanLine
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteWorkforcePlanLinePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  updateWorkforcePlanLine(id: ID!, input: UpdateWorkforcePlanLineInput!): UpdateWorkforcePlanLinePayload!
+  createWorkforcePlanLine(input: CreateWorkforcePlanLineInput!): CreateWorkforcePlanLinePayload!
+  deleteWorkforcePlanLine(id: ID!): DeleteWorkforcePlanLinePayload!
+}
+`, BuiltIn: false},
 	{Name: "../../graphql/iam/iam_auth.graphql", Input: `# Zona 1 — Skema GraphQL Domain Autentikasi Browser, Profil Diri, MFA, dan Sesi Pribadi (IAM).
 # Kontrak payload & input autentikasi browser berikut dipertahankan persis sesuai query/mutation frontend aktif;
 # tipe profil mandiri & MFA memakai konvensi snake_case.
@@ -3797,6 +16718,8 @@ type WorkspaceAccessPayload {
   defaultLocation: String!
 }
 
+# Input login terpadu untuk akun non-system. Akun USER_KIND_SYSTEM (mis. auto_system_iam) selalu ditolak
+# dengan MutationError AUTHORIZATION ("system cannot login"), termasuk ketika password bernilai kosong.
 input UserLoginInput {
   identifier: String!
   password: String!
@@ -4045,6 +16968,34 @@ extend type Mutation {
   confirmMyTotp(input: ConfirmTotpInput!): ConfirmTotpPayload!
   disableMyTotp: DisableMyTotpPayload!
   regenerateMyRecoveryCodes: RegenerateMyRecoveryCodesPayload!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/iam/iam_employee_provisioning.graphql", Input: `type EmployeeProvisioningRequest {
+  id: ID!
+  worker_id: ID!
+  worker_number: String!
+  legal_entity_id: ID!
+  requested_by_principal_id: ID!
+  requested_at: Time!
+  received_at: Time!
+  status: String!
+}
+
+type EmployeeProvisioningRequestEdge {
+  cursor: String!
+  node: EmployeeProvisioningRequest!
+}
+
+type EmployeeProvisioningRequestConnection {
+  edges: [EmployeeProvisioningRequestEdge!]!
+  nodes: [EmployeeProvisioningRequest!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+extend type Query {
+  employeeProvisioningRequests(after: String, before: String, first: Int, last: Int): EmployeeProvisioningRequestConnection!
+  employeeProvisioningRequest(id: ID!): EmployeeProvisioningRequest
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/iam/iam_rbac.graphql", Input: `# Zona 1 — Skema GraphQL Domain RBAC (Role, Permission, Group, Grant, dan Access Snapshot IAM).
@@ -4648,27 +17599,41 @@ input CreateUserInput {
   password: String!
 }
 
-# CreateEmployeeUserInput digunakan untuk membuat akun pengguna internal karyawan (EMPLOYEE) secara ringkas dengan status awal PENDING
-# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+# CreateEmployeeUserInput digunakan untuk membuat akun pengguna internal karyawan (EMPLOYEE) dengan status awal PENDING
+# sampai tautan verifikasi email dikonfirmasi. Worker HRM wajib ditautkan saat provisioning.
 input CreateEmployeeUserInput {
+  worker_id: ID!
+  provisioning_request_id: ID!
   full_name: String!
   email: String!
   username: String!
   password: String!
 }
 
-# CreateVendorUserInput digunakan untuk membuat akun mitra vendor (VENDOR) secara ringkas dengan status awal PENDING
-# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+# CreateVendorUserInput digunakan untuk membuat akun mitra vendor (VENDOR) yang langsung tertaut pada PIC mitra
+# Enterprise Foundation (` + "`" + `party_contacts.iam_user_id` + "`" + `) melalui ` + "`" + `contact_id` + "`" + ` yang ada atau pembuatan kontak baru pada ` + "`" + `party_id` + "`" + `.
 input CreateVendorUserInput {
+  party_id: ID!
+  contact_id: ID
+  contact_role: String
+  job_title: String
+  phone: String
+  is_primary_contact: Boolean
   full_name: String!
   email: String!
   username: String!
   password: String!
 }
 
-# CreateSupplierUserInput digunakan untuk membuat akun mitra pemasok (SUPPLIER) secara ringkas dengan status awal PENDING
-# sampai tautan verifikasi email diklik; full_name dipetakan ke display_name dan email/username bersifat wajib serta unik.
+# CreateSupplierUserInput digunakan untuk membuat akun mitra pemasok (SUPPLIER) yang langsung tertaut pada PIC mitra
+# Enterprise Foundation (` + "`" + `party_contacts.iam_user_id` + "`" + `) melalui ` + "`" + `contact_id` + "`" + ` yang ada atau pembuatan kontak baru pada ` + "`" + `party_id` + "`" + `.
 input CreateSupplierUserInput {
+  party_id: ID!
+  contact_id: ID
+  contact_role: String
+  job_title: String
+  phone: String
+  is_primary_contact: Boolean
   full_name: String!
   email: String!
   username: String!
@@ -4726,7 +17691,16 @@ extend type Query {
     first: Int
     last: Int
   ): SessionConnection!
+  checkUsername(username: String!): UsernameAvailabilityPayload!
 }
+
+# Payload hasil pemeriksaan ketersediaan username tanpa mengekspos data pribadi atau jenis akun.
+type UsernameAvailabilityPayload {
+  available: Boolean!
+  normalized_username: String!
+  message: String!
+}
+
 # Payload hasil mutasi domain manajemen pengguna dan sesi IAM (implementasi MutationResult).
 # CreateUserPayload mengembalikan objek User hanya untuk pemanggil yang telah login; pendaftaran publik mengembalikan user null serta redirectLocation/header Location ke /login apabila email sudah terdaftar.
 type CreateUserPayload implements MutationResult {
@@ -4744,12 +17718,14 @@ type CreateEmployeeUserPayload implements MutationResult {
 
 type CreateVendorUserPayload implements MutationResult {
   user: User
+  party_contact: PartyContact
   errors: [MutationError!]!
   was_successful: Boolean!
 }
 
 type CreateSupplierUserPayload implements MutationResult {
   user: User
+  party_contact: PartyContact
   errors: [MutationError!]!
   was_successful: Boolean!
 }
@@ -4957,6 +17933,90 @@ func (ec *executionContext) childFields_ActivateGroupPayload(ctx context.Context
 	return nil, fmt.Errorf("no field named %q was found under type ActivateGroupPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_ActivateLegalEntityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "legal_entity":
+		return ec.fieldContext_ActivateLegalEntityPayload_legal_entity(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivateLegalEntityPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivateLegalEntityPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivateLegalEntityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ActivateLocationPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "location":
+		return ec.fieldContext_ActivateLocationPayload_location(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivateLocationPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivateLocationPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivateLocationPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ActivateOrganizationUnitPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "organization_unit":
+		return ec.fieldContext_ActivateOrganizationUnitPayload_organization_unit(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivateOrganizationUnitPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivateOrganizationUnitPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivateOrganizationUnitPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ActivatePartyContactPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_ActivatePartyContactPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivatePartyContactPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivatePartyContactPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivatePartyContactPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ActivatePartyPortalAccessPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_ActivatePartyPortalAccessPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivatePartyPortalAccessPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivatePartyPortalAccessPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivatePartyPortalAccessPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ActivatePartyRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "role":
+		return ec.fieldContext_ActivatePartyRolePayload_role(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivatePartyRolePayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivatePartyRolePayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivatePartyRolePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ActivatePositionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "position":
+		return ec.fieldContext_ActivatePositionPayload_position(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivatePositionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivatePositionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivatePositionPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_ActivateRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "role":
@@ -4981,6 +18041,18 @@ func (ec *executionContext) childFields_ActivateUserPayload(ctx context.Context,
 	return nil, fmt.Errorf("no field named %q was found under type ActivateUserPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_ActivateWorkerPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker":
+		return ec.fieldContext_ActivateWorkerPayload_worker(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ActivateWorkerPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ActivateWorkerPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ActivateWorkerPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_AddGroupMemberPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "group_member_edge":
@@ -4993,6 +18065,160 @@ func (ec *executionContext) childFields_AddGroupMemberPayload(ctx context.Contex
 	return nil, fmt.Errorf("no field named %q was found under type AddGroupMemberPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_AddPartyContactPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_AddPartyContactPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_AddPartyContactPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_AddPartyContactPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AddPartyContactPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_Address(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Address_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Address__id(ctx, field)
+	case "label":
+		return ec.fieldContext_Address_label(ctx, field)
+	case "address_line_1":
+		return ec.fieldContext_Address_address_line_1(ctx, field)
+	case "address_line_2":
+		return ec.fieldContext_Address_address_line_2(ctx, field)
+	case "city":
+		return ec.fieldContext_Address_city(ctx, field)
+	case "province":
+		return ec.fieldContext_Address_province(ctx, field)
+	case "postal_code":
+		return ec.fieldContext_Address_postal_code(ctx, field)
+	case "country_code":
+		return ec.fieldContext_Address_country_code(ctx, field)
+	case "formatted_address":
+		return ec.fieldContext_Address_formatted_address(ctx, field)
+	case "latitude":
+		return ec.fieldContext_Address_latitude(ctx, field)
+	case "longitude":
+		return ec.fieldContext_Address_longitude(ctx, field)
+	case "created_at":
+		return ec.fieldContext_Address_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_Address_updated_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Address", field.Name)
+}
+
+func (ec *executionContext) childFields_AddressConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_AddressConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_AddressConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_AddressConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_AddressConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AddressConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_AddressEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_AddressEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_AddressEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AddressEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_ApplyPrimaryAssignmentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker":
+		return ec.fieldContext_ApplyPrimaryAssignmentPayload_worker(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ApplyPrimaryAssignmentPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ApplyPrimaryAssignmentPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ApplyPrimaryAssignmentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ApproveLeaveAdjustmentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "leave_adjustment":
+		return ec.fieldContext_ApproveLeaveAdjustmentPayload_leave_adjustment(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ApproveLeaveAdjustmentPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ApproveLeaveAdjustmentPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ApproveLeaveAdjustmentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ApproveOffboardingPlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_plan":
+		return ec.fieldContext_ApproveOffboardingPlanPayload_offboarding_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ApproveOffboardingPlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ApproveOffboardingPlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ApproveOffboardingPlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ApprovePayrollRunPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_run":
+		return ec.fieldContext_ApprovePayrollRunPayload_payroll_run(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ApprovePayrollRunPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ApprovePayrollRunPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ApprovePayrollRunPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ApproveRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "requisition":
+		return ec.fieldContext_ApproveRequisitionPayload_requisition(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ApproveRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ApproveRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ApproveRequisitionPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ApproveWorkerAssignmentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker_assignment":
+		return ec.fieldContext_ApproveWorkerAssignmentPayload_worker_assignment(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ApproveWorkerAssignmentPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ApproveWorkerAssignmentPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ApproveWorkerAssignmentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ApproveWorkforcePlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan":
+		return ec.fieldContext_ApproveWorkforcePlanPayload_workforce_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ApproveWorkforcePlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ApproveWorkforcePlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ApproveWorkforcePlanPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_AssignGroupRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "group_role_edge":
@@ -5003,6 +18229,30 @@ func (ec *executionContext) childFields_AssignGroupRolePayload(ctx context.Conte
 		return ec.fieldContext_AssignGroupRolePayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type AssignGroupRolePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_AssignOrganizationUnitHeadPersonPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "organization_unit":
+		return ec.fieldContext_AssignOrganizationUnitHeadPersonPayload_organization_unit(ctx, field)
+	case "errors":
+		return ec.fieldContext_AssignOrganizationUnitHeadPersonPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_AssignOrganizationUnitHeadPersonPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AssignOrganizationUnitHeadPersonPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_AssignPartyRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "role":
+		return ec.fieldContext_AssignPartyRolePayload_role(ctx, field)
+	case "errors":
+		return ec.fieldContext_AssignPartyRolePayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_AssignPartyRolePayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AssignPartyRolePayload", field.Name)
 }
 
 func (ec *executionContext) childFields_AssignRolePermissionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5041,6 +18291,94 @@ func (ec *executionContext) childFields_BrowserSessionPayload(ctx context.Contex
 	return nil, fmt.Errorf("no field named %q was found under type BrowserSessionPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_CalculatePayrollRunPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_run":
+		return ec.fieldContext_CalculatePayrollRunPayload_payroll_run(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CalculatePayrollRunPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CalculatePayrollRunPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CalculatePayrollRunPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CancelOffboardingPlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_plan":
+		return ec.fieldContext_CancelOffboardingPlanPayload_offboarding_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CancelOffboardingPlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CancelOffboardingPlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CancelOffboardingPlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CancelPayrollRunPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_run":
+		return ec.fieldContext_CancelPayrollRunPayload_payroll_run(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CancelPayrollRunPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CancelPayrollRunPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CancelPayrollRunPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CancelWorkforcePlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan":
+		return ec.fieldContext_CancelWorkforcePlanPayload_workforce_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CancelWorkforcePlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CancelWorkforcePlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CancelWorkforcePlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_Candidate(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Candidate_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Candidate__id(ctx, field)
+	case "candidate_number":
+		return ec.fieldContext_Candidate_candidate_number(ctx, field)
+	case "preferred_name":
+		return ec.fieldContext_Candidate_preferred_name(ctx, field)
+	case "candidate_status":
+		return ec.fieldContext_Candidate_candidate_status(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Candidate", field.Name)
+}
+
+func (ec *executionContext) childFields_CandidateConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_CandidateConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_CandidateConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_CandidateConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_CandidateConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CandidateConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_CandidateEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_CandidateEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_CandidateEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CandidateEdge", field.Name)
+}
+
 func (ec *executionContext) childFields_ChangeUserPasswordPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "changed":
@@ -5057,6 +18395,54 @@ func (ec *executionContext) childFields_ChangeUserPasswordPayload(ctx context.Co
 	return nil, fmt.Errorf("no field named %q was found under type ChangeUserPasswordPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_CloseLeaveEntitlementPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "leave_entitlement":
+		return ec.fieldContext_CloseLeaveEntitlementPayload_leave_entitlement(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CloseLeaveEntitlementPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CloseLeaveEntitlementPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CloseLeaveEntitlementPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CloseRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "requisition":
+		return ec.fieldContext_CloseRequisitionPayload_requisition(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CloseRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CloseRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CloseRequisitionPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CompleteOffboardingPlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_plan":
+		return ec.fieldContext_CompleteOffboardingPlanPayload_offboarding_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CompleteOffboardingPlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CompleteOffboardingPlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CompleteOffboardingPlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CompleteOffboardingTaskPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_task":
+		return ec.fieldContext_CompleteOffboardingTaskPayload_offboarding_task(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CompleteOffboardingTaskPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CompleteOffboardingTaskPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CompleteOffboardingTaskPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_ConfirmTotpPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "enabled":
@@ -5071,6 +18457,30 @@ func (ec *executionContext) childFields_ConfirmTotpPayload(ctx context.Context, 
 	return nil, fmt.Errorf("no field named %q was found under type ConfirmTotpPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_CreateAddressPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "address":
+		return ec.fieldContext_CreateAddressPayload_address(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateAddressPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateAddressPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateAddressPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateCandidatePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "candidate":
+		return ec.fieldContext_CreateCandidatePayload_candidate(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateCandidatePayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateCandidatePayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateCandidatePayload", field.Name)
+}
+
 func (ec *executionContext) childFields_CreateEmployeeUserPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "user":
@@ -5083,6 +18493,18 @@ func (ec *executionContext) childFields_CreateEmployeeUserPayload(ctx context.Co
 	return nil, fmt.Errorf("no field named %q was found under type CreateEmployeeUserPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_CreateEmploymentContractPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "employment_contract":
+		return ec.fieldContext_CreateEmploymentContractPayload_employment_contract(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateEmploymentContractPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateEmploymentContractPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateEmploymentContractPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_CreateGroupPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "group":
@@ -5093,6 +18515,150 @@ func (ec *executionContext) childFields_CreateGroupPayload(ctx context.Context, 
 		return ec.fieldContext_CreateGroupPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CreateGroupPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateJobFamilyPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "job_family":
+		return ec.fieldContext_CreateJobFamilyPayload_job_family(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateJobFamilyPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateJobFamilyPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateJobFamilyPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateJobPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "job":
+		return ec.fieldContext_CreateJobPayload_job(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateJobPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateJobPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateJobPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateLeaveAdjustmentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "leave_adjustment":
+		return ec.fieldContext_CreateLeaveAdjustmentPayload_leave_adjustment(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateLeaveAdjustmentPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateLeaveAdjustmentPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateLeaveAdjustmentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateLegalEntityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "legal_entity":
+		return ec.fieldContext_CreateLegalEntityPayload_legal_entity(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateLegalEntityPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateLegalEntityPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateLegalEntityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateLocationPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "location":
+		return ec.fieldContext_CreateLocationPayload_location(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateLocationPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateLocationPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateLocationPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateOffboardingPlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_plan":
+		return ec.fieldContext_CreateOffboardingPlanPayload_offboarding_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateOffboardingPlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateOffboardingPlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateOffboardingPlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateOffboardingTaskPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_task":
+		return ec.fieldContext_CreateOffboardingTaskPayload_offboarding_task(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateOffboardingTaskPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateOffboardingTaskPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateOffboardingTaskPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateOrganizationUnitPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "organization_unit":
+		return ec.fieldContext_CreateOrganizationUnitPayload_organization_unit(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateOrganizationUnitPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateOrganizationUnitPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateOrganizationUnitPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreatePartyPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "party":
+		return ec.fieldContext_CreatePartyPayload_party(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreatePartyPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreatePartyPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreatePartyPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreatePayrollRunPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_run":
+		return ec.fieldContext_CreatePayrollRunPayload_payroll_run(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreatePayrollRunPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreatePayrollRunPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreatePayrollRunPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreatePositionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "position":
+		return ec.fieldContext_CreatePositionPayload_position(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreatePositionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreatePositionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreatePositionPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "requisition":
+		return ec.fieldContext_CreateRequisitionPayload_requisition(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateRequisitionPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_CreateRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5111,6 +18677,8 @@ func (ec *executionContext) childFields_CreateSupplierUserPayload(ctx context.Co
 	switch field.Name {
 	case "user":
 		return ec.fieldContext_CreateSupplierUserPayload_user(ctx, field)
+	case "party_contact":
+		return ec.fieldContext_CreateSupplierUserPayload_party_contact(ctx, field)
 	case "errors":
 		return ec.fieldContext_CreateSupplierUserPayload_errors(ctx, field)
 	case "was_successful":
@@ -5137,12 +18705,62 @@ func (ec *executionContext) childFields_CreateVendorUserPayload(ctx context.Cont
 	switch field.Name {
 	case "user":
 		return ec.fieldContext_CreateVendorUserPayload_user(ctx, field)
+	case "party_contact":
+		return ec.fieldContext_CreateVendorUserPayload_party_contact(ctx, field)
 	case "errors":
 		return ec.fieldContext_CreateVendorUserPayload_errors(ctx, field)
 	case "was_successful":
 		return ec.fieldContext_CreateVendorUserPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CreateVendorUserPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateWorkerAssignmentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker_assignment":
+		return ec.fieldContext_CreateWorkerAssignmentPayload_worker_assignment(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateWorkerAssignmentPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateWorkerAssignmentPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateWorkerAssignmentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateWorkerPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker":
+		return ec.fieldContext_CreateWorkerPayload_worker(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateWorkerPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateWorkerPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateWorkerPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateWorkforcePlanLinePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan_line":
+		return ec.fieldContext_CreateWorkforcePlanLinePayload_workforce_plan_line(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateWorkforcePlanLinePayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateWorkforcePlanLinePayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateWorkforcePlanLinePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateWorkforcePlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan":
+		return ec.fieldContext_CreateWorkforcePlanPayload_workforce_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_CreateWorkforcePlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_CreateWorkforcePlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateWorkforcePlanPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_DeactivateGroupPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5157,6 +18775,66 @@ func (ec *executionContext) childFields_DeactivateGroupPayload(ctx context.Conte
 	return nil, fmt.Errorf("no field named %q was found under type DeactivateGroupPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_DeactivateLocationPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "location":
+		return ec.fieldContext_DeactivateLocationPayload_location(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeactivateLocationPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeactivateLocationPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeactivateLocationPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeactivateOrganizationUnitPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "organization_unit":
+		return ec.fieldContext_DeactivateOrganizationUnitPayload_organization_unit(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeactivateOrganizationUnitPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeactivateOrganizationUnitPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeactivateOrganizationUnitPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeactivatePartyContactPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_DeactivatePartyContactPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeactivatePartyContactPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeactivatePartyContactPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeactivatePartyContactPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeactivatePartyPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "party":
+		return ec.fieldContext_DeactivatePartyPayload_party(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeactivatePartyPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeactivatePartyPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeactivatePartyPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeactivatePartyRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "role":
+		return ec.fieldContext_DeactivatePartyRolePayload_role(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeactivatePartyRolePayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeactivatePartyRolePayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeactivatePartyRolePayload", field.Name)
+}
+
 func (ec *executionContext) childFields_DeactivateRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "role":
@@ -5167,6 +18845,54 @@ func (ec *executionContext) childFields_DeactivateRolePayload(ctx context.Contex
 		return ec.fieldContext_DeactivateRolePayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type DeactivateRolePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DecideWorkerAssignmentTransferPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker_assignment_transfer":
+		return ec.fieldContext_DecideWorkerAssignmentTransferPayload_worker_assignment_transfer(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DecideWorkerAssignmentTransferPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_DecideWorkerAssignmentTransferPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DecideWorkerAssignmentTransferPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteAddressPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteAddressPayload_deleted(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteAddressPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteAddressPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteAddressPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteCandidatePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteCandidatePayload_deleted(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteCandidatePayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteCandidatePayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteCandidatePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteEmploymentContractPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteEmploymentContractPayload_deleted(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteEmploymentContractPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteEmploymentContractPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteEmploymentContractPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_DeleteGroupPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5181,6 +18907,66 @@ func (ec *executionContext) childFields_DeleteGroupPayload(ctx context.Context, 
 	return nil, fmt.Errorf("no field named %q was found under type DeleteGroupPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_DeleteLegalEntityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteLegalEntityPayload_deleted(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteLegalEntityPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteLegalEntityPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteLegalEntityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteLocationPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteLocationPayload_deleted(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteLocationPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteLocationPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteLocationPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteOrganizationUnitPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteOrganizationUnitPayload_deleted(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteOrganizationUnitPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteOrganizationUnitPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteOrganizationUnitPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeletePartyContactPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeletePartyContactPayload_deleted(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeletePartyContactPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeletePartyContactPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeletePartyContactPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeletePartyPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeletePartyPayload_deleted(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeletePartyPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeletePartyPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeletePartyPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_DeletePendingUserEmailPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "deleted":
@@ -5193,6 +18979,30 @@ func (ec *executionContext) childFields_DeletePendingUserEmailPayload(ctx contex
 	return nil, fmt.Errorf("no field named %q was found under type DeletePendingUserEmailPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_DeletePositionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeletePositionPayload_deleted(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeletePositionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeletePositionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeletePositionPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteRequisitionPayload_deleted(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteRequisitionPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_DeleteRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "deleted":
@@ -5203,6 +19013,30 @@ func (ec *executionContext) childFields_DeleteRolePayload(ctx context.Context, f
 		return ec.fieldContext_DeleteRolePayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type DeleteRolePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteWorkforcePlanLinePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteWorkforcePlanLinePayload_deleted(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteWorkforcePlanLinePayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteWorkforcePlanLinePayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteWorkforcePlanLinePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DeleteWorkforcePlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "deleted":
+		return ec.fieldContext_DeleteWorkforcePlanPayload_deleted(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DeleteWorkforcePlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_DeleteWorkforcePlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DeleteWorkforcePlanPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_DisableMyTotpPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5229,6 +19063,134 @@ func (ec *executionContext) childFields_DisableUserPayload(ctx context.Context, 
 	return nil, fmt.Errorf("no field named %q was found under type DisableUserPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_DissolveLegalEntityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "legal_entity":
+		return ec.fieldContext_DissolveLegalEntityPayload_legal_entity(ctx, field)
+	case "errors":
+		return ec.fieldContext_DissolveLegalEntityPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_DissolveLegalEntityPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DissolveLegalEntityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_EmployeeAccountRequest(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_EmployeeAccountRequest_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_EmployeeAccountRequest__id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_EmployeeAccountRequest_worker_id(ctx, field)
+	case "legal_entity_id":
+		return ec.fieldContext_EmployeeAccountRequest_legal_entity_id(ctx, field)
+	case "status":
+		return ec.fieldContext_EmployeeAccountRequest_status(ctx, field)
+	case "requested_at":
+		return ec.fieldContext_EmployeeAccountRequest_requested_at(ctx, field)
+	case "iam_request_id":
+		return ec.fieldContext_EmployeeAccountRequest_iam_request_id(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type EmployeeAccountRequest", field.Name)
+}
+
+func (ec *executionContext) childFields_EmployeeProvisioningRequest(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_EmployeeProvisioningRequest_id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_EmployeeProvisioningRequest_worker_id(ctx, field)
+	case "worker_number":
+		return ec.fieldContext_EmployeeProvisioningRequest_worker_number(ctx, field)
+	case "legal_entity_id":
+		return ec.fieldContext_EmployeeProvisioningRequest_legal_entity_id(ctx, field)
+	case "requested_by_principal_id":
+		return ec.fieldContext_EmployeeProvisioningRequest_requested_by_principal_id(ctx, field)
+	case "requested_at":
+		return ec.fieldContext_EmployeeProvisioningRequest_requested_at(ctx, field)
+	case "received_at":
+		return ec.fieldContext_EmployeeProvisioningRequest_received_at(ctx, field)
+	case "status":
+		return ec.fieldContext_EmployeeProvisioningRequest_status(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type EmployeeProvisioningRequest", field.Name)
+}
+
+func (ec *executionContext) childFields_EmployeeProvisioningRequestConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_EmployeeProvisioningRequestConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_EmployeeProvisioningRequestConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_EmployeeProvisioningRequestConnection_pageInfo(ctx, field)
+	case "totalCount":
+		return ec.fieldContext_EmployeeProvisioningRequestConnection_totalCount(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type EmployeeProvisioningRequestConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_EmployeeProvisioningRequestEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_EmployeeProvisioningRequestEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_EmployeeProvisioningRequestEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type EmployeeProvisioningRequestEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_EmploymentContract(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_EmploymentContract_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_EmploymentContract__id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_EmploymentContract_worker_id(ctx, field)
+	case "contract_number":
+		return ec.fieldContext_EmploymentContract_contract_number(ctx, field)
+	case "contract_type":
+		return ec.fieldContext_EmploymentContract_contract_type(ctx, field)
+	case "contract_status":
+		return ec.fieldContext_EmploymentContract_contract_status(ctx, field)
+	case "employing_legal_entity_reference_id":
+		return ec.fieldContext_EmploymentContract_employing_legal_entity_reference_id(ctx, field)
+	case "effective_from":
+		return ec.fieldContext_EmploymentContract_effective_from(ctx, field)
+	case "effective_to":
+		return ec.fieldContext_EmploymentContract_effective_to(ctx, field)
+	case "signed_at":
+		return ec.fieldContext_EmploymentContract_signed_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type EmploymentContract", field.Name)
+}
+
+func (ec *executionContext) childFields_EmploymentContractConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_EmploymentContractConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_EmploymentContractConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_EmploymentContractConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_EmploymentContractConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type EmploymentContractConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_EmploymentContractEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_EmploymentContractEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_EmploymentContractEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type EmploymentContractEdge", field.Name)
+}
+
 func (ec *executionContext) childFields_EnrollTotpPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "factor_id":
@@ -5241,6 +19203,20 @@ func (ec *executionContext) childFields_EnrollTotpPayload(ctx context.Context, f
 		return ec.fieldContext_EnrollTotpPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type EnrollTotpPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_FindOrCreateAddressPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "address":
+		return ec.fieldContext_FindOrCreateAddressPayload_address(ctx, field)
+	case "created":
+		return ec.fieldContext_FindOrCreateAddressPayload_created(ctx, field)
+	case "errors":
+		return ec.fieldContext_FindOrCreateAddressPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_FindOrCreateAddressPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type FindOrCreateAddressPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_Group(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5357,6 +19333,472 @@ func (ec *executionContext) childFields_GroupRoleEdge(ctx context.Context, field
 	return nil, fmt.Errorf("no field named %q was found under type GroupRoleEdge", field.Name)
 }
 
+func (ec *executionContext) childFields_Job(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Job_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Job__id(ctx, field)
+	case "job_family_id":
+		return ec.fieldContext_Job_job_family_id(ctx, field)
+	case "job_code":
+		return ec.fieldContext_Job_job_code(ctx, field)
+	case "job_title":
+		return ec.fieldContext_Job_job_title(ctx, field)
+	case "job_level_code":
+		return ec.fieldContext_Job_job_level_code(ctx, field)
+	case "job_description":
+		return ec.fieldContext_Job_job_description(ctx, field)
+	case "valid_from":
+		return ec.fieldContext_Job_valid_from(ctx, field)
+	case "valid_to":
+		return ec.fieldContext_Job_valid_to(ctx, field)
+	case "is_active":
+		return ec.fieldContext_Job_is_active(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Job", field.Name)
+}
+
+func (ec *executionContext) childFields_JobConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_JobConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_JobConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_JobConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_JobConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type JobConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_JobEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_JobEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_JobEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type JobEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_JobFamily(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_JobFamily_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_JobFamily__id(ctx, field)
+	case "family_code":
+		return ec.fieldContext_JobFamily_family_code(ctx, field)
+	case "family_name":
+		return ec.fieldContext_JobFamily_family_name(ctx, field)
+	case "description":
+		return ec.fieldContext_JobFamily_description(ctx, field)
+	case "job_domain":
+		return ec.fieldContext_JobFamily_job_domain(ctx, field)
+	case "is_active":
+		return ec.fieldContext_JobFamily_is_active(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type JobFamily", field.Name)
+}
+
+func (ec *executionContext) childFields_JobFamilyConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_JobFamilyConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_JobFamilyConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_JobFamilyConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_JobFamilyConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type JobFamilyConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_JobFamilyEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_JobFamilyEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_JobFamilyEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type JobFamilyEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveAdjustment(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_LeaveAdjustment_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_LeaveAdjustment__id(ctx, field)
+	case "entitlement_id":
+		return ec.fieldContext_LeaveAdjustment_entitlement_id(ctx, field)
+	case "quantity_delta":
+		return ec.fieldContext_LeaveAdjustment_quantity_delta(ctx, field)
+	case "reason_code":
+		return ec.fieldContext_LeaveAdjustment_reason_code(ctx, field)
+	case "approved_at":
+		return ec.fieldContext_LeaveAdjustment_approved_at(ctx, field)
+	case "rejected_at":
+		return ec.fieldContext_LeaveAdjustment_rejected_at(ctx, field)
+	case "rejection_reason_code":
+		return ec.fieldContext_LeaveAdjustment_rejection_reason_code(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveAdjustment", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveAdjustmentConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_LeaveAdjustmentConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_LeaveAdjustmentConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_LeaveAdjustmentConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_LeaveAdjustmentConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveAdjustmentConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveAdjustmentEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_LeaveAdjustmentEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_LeaveAdjustmentEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveAdjustmentEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveEntitlement(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_LeaveEntitlement_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_LeaveEntitlement__id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_LeaveEntitlement_worker_id(ctx, field)
+	case "leave_policy_id":
+		return ec.fieldContext_LeaveEntitlement_leave_policy_id(ctx, field)
+	case "leave_type_code":
+		return ec.fieldContext_LeaveEntitlement_leave_type_code(ctx, field)
+	case "period_start":
+		return ec.fieldContext_LeaveEntitlement_period_start(ctx, field)
+	case "period_end":
+		return ec.fieldContext_LeaveEntitlement_period_end(ctx, field)
+	case "opening_balance":
+		return ec.fieldContext_LeaveEntitlement_opening_balance(ctx, field)
+	case "accrued_quantity":
+		return ec.fieldContext_LeaveEntitlement_accrued_quantity(ctx, field)
+	case "used_quantity":
+		return ec.fieldContext_LeaveEntitlement_used_quantity(ctx, field)
+	case "adjusted_quantity":
+		return ec.fieldContext_LeaveEntitlement_adjusted_quantity(ctx, field)
+	case "closing_balance":
+		return ec.fieldContext_LeaveEntitlement_closing_balance(ctx, field)
+	case "uom_code":
+		return ec.fieldContext_LeaveEntitlement_uom_code(ctx, field)
+	case "closed_at":
+		return ec.fieldContext_LeaveEntitlement_closed_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveEntitlement", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveEntitlementConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_LeaveEntitlementConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_LeaveEntitlementConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_LeaveEntitlementConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_LeaveEntitlementConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveEntitlementConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveEntitlementEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_LeaveEntitlementEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_LeaveEntitlementEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveEntitlementEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveLedgerEntry(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_LeaveLedgerEntry_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_LeaveLedgerEntry__id(ctx, field)
+	case "entitlement_id":
+		return ec.fieldContext_LeaveLedgerEntry_entitlement_id(ctx, field)
+	case "entry_sequence":
+		return ec.fieldContext_LeaveLedgerEntry_entry_sequence(ctx, field)
+	case "entry_type":
+		return ec.fieldContext_LeaveLedgerEntry_entry_type(ctx, field)
+	case "quantity_delta":
+		return ec.fieldContext_LeaveLedgerEntry_quantity_delta(ctx, field)
+	case "effective_date":
+		return ec.fieldContext_LeaveLedgerEntry_effective_date(ctx, field)
+	case "adjustment_id":
+		return ec.fieldContext_LeaveLedgerEntry_adjustment_id(ctx, field)
+	case "reverses_entry_id":
+		return ec.fieldContext_LeaveLedgerEntry_reverses_entry_id(ctx, field)
+	case "reason_code":
+		return ec.fieldContext_LeaveLedgerEntry_reason_code(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveLedgerEntry", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveLedgerEntryConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_LeaveLedgerEntryConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_LeaveLedgerEntryConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_LeaveLedgerEntryConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_LeaveLedgerEntryConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveLedgerEntryConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_LeaveLedgerEntryEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_LeaveLedgerEntryEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_LeaveLedgerEntryEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeaveLedgerEntryEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_LeavePolicy(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_LeavePolicy_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_LeavePolicy__id(ctx, field)
+	case "policy_code":
+		return ec.fieldContext_LeavePolicy_policy_code(ctx, field)
+	case "policy_version":
+		return ec.fieldContext_LeavePolicy_policy_version(ctx, field)
+	case "policy_name":
+		return ec.fieldContext_LeavePolicy_policy_name(ctx, field)
+	case "leave_type_code":
+		return ec.fieldContext_LeavePolicy_leave_type_code(ctx, field)
+	case "jurisdiction_code":
+		return ec.fieldContext_LeavePolicy_jurisdiction_code(ctx, field)
+	case "accrual_method":
+		return ec.fieldContext_LeavePolicy_accrual_method(ctx, field)
+	case "annual_entitlement":
+		return ec.fieldContext_LeavePolicy_annual_entitlement(ctx, field)
+	case "carryover_limit":
+		return ec.fieldContext_LeavePolicy_carryover_limit(ctx, field)
+	case "max_balance":
+		return ec.fieldContext_LeavePolicy_max_balance(ctx, field)
+	case "minimum_service_days":
+		return ec.fieldContext_LeavePolicy_minimum_service_days(ctx, field)
+	case "effective_from":
+		return ec.fieldContext_LeavePolicy_effective_from(ctx, field)
+	case "effective_to":
+		return ec.fieldContext_LeavePolicy_effective_to(ctx, field)
+	case "is_paid":
+		return ec.fieldContext_LeavePolicy_is_paid(ctx, field)
+	case "is_active":
+		return ec.fieldContext_LeavePolicy_is_active(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeavePolicy", field.Name)
+}
+
+func (ec *executionContext) childFields_LeavePolicyConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_LeavePolicyConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_LeavePolicyConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_LeavePolicyConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_LeavePolicyConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeavePolicyConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_LeavePolicyEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_LeavePolicyEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_LeavePolicyEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LeavePolicyEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_LegalEntity(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_LegalEntity_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_LegalEntity__id(ctx, field)
+	case "parent_legal_entity_id":
+		return ec.fieldContext_LegalEntity_parent_legal_entity_id(ctx, field)
+	case "entity_code":
+		return ec.fieldContext_LegalEntity_entity_code(ctx, field)
+	case "legal_name":
+		return ec.fieldContext_LegalEntity_legal_name(ctx, field)
+	case "trading_name":
+		return ec.fieldContext_LegalEntity_trading_name(ctx, field)
+	case "legal_form":
+		return ec.fieldContext_LegalEntity_legal_form(ctx, field)
+	case "is_primary_operating_entity":
+		return ec.fieldContext_LegalEntity_is_primary_operating_entity(ctx, field)
+	case "status":
+		return ec.fieldContext_LegalEntity_status(ctx, field)
+	case "jurisdiction_country_code":
+		return ec.fieldContext_LegalEntity_jurisdiction_country_code(ctx, field)
+	case "nib":
+		return ec.fieldContext_LegalEntity_nib(ctx, field)
+	case "tax_id_number":
+		return ec.fieldContext_LegalEntity_tax_id_number(ctx, field)
+	case "is_pkp":
+		return ec.fieldContext_LegalEntity_is_pkp(ctx, field)
+	case "registered_address_id":
+		return ec.fieldContext_LegalEntity_registered_address_id(ctx, field)
+	case "fiscal_year_start_month":
+		return ec.fieldContext_LegalEntity_fiscal_year_start_month(ctx, field)
+	case "incorporation_date":
+		return ec.fieldContext_LegalEntity_incorporation_date(ctx, field)
+	case "dissolution_date":
+		return ec.fieldContext_LegalEntity_dissolution_date(ctx, field)
+	case "created_at":
+		return ec.fieldContext_LegalEntity_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_LegalEntity_updated_at(ctx, field)
+	case "deleted_at":
+		return ec.fieldContext_LegalEntity_deleted_at(ctx, field)
+	case "parent_legal_entity":
+		return ec.fieldContext_LegalEntity_parent_legal_entity(ctx, field)
+	case "registered_address":
+		return ec.fieldContext_LegalEntity_registered_address(ctx, field)
+	case "children":
+		return ec.fieldContext_LegalEntity_children(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LegalEntity", field.Name)
+}
+
+func (ec *executionContext) childFields_LegalEntityConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_LegalEntityConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_LegalEntityConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_LegalEntityConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_LegalEntityConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LegalEntityConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_LegalEntityEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_LegalEntityEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_LegalEntityEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LegalEntityEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_LinkPartyAddressPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "link":
+		return ec.fieldContext_LinkPartyAddressPayload_link(ctx, field)
+	case "errors":
+		return ec.fieldContext_LinkPartyAddressPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_LinkPartyAddressPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LinkPartyAddressPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_Location(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Location_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Location__id(ctx, field)
+	case "legal_entity_id":
+		return ec.fieldContext_Location_legal_entity_id(ctx, field)
+	case "parent_location_id":
+		return ec.fieldContext_Location_parent_location_id(ctx, field)
+	case "address_id":
+		return ec.fieldContext_Location_address_id(ctx, field)
+	case "location_code":
+		return ec.fieldContext_Location_location_code(ctx, field)
+	case "name":
+		return ec.fieldContext_Location_name(ctx, field)
+	case "kind":
+		return ec.fieldContext_Location_kind(ctx, field)
+	case "phone":
+		return ec.fieldContext_Location_phone(ctx, field)
+	case "timezone":
+		return ec.fieldContext_Location_timezone(ctx, field)
+	case "operational_attributes_json":
+		return ec.fieldContext_Location_operational_attributes_json(ctx, field)
+	case "is_active":
+		return ec.fieldContext_Location_is_active(ctx, field)
+	case "created_at":
+		return ec.fieldContext_Location_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_Location_updated_at(ctx, field)
+	case "deleted_at":
+		return ec.fieldContext_Location_deleted_at(ctx, field)
+	case "legal_entity":
+		return ec.fieldContext_Location_legal_entity(ctx, field)
+	case "parent_location":
+		return ec.fieldContext_Location_parent_location(ctx, field)
+	case "address":
+		return ec.fieldContext_Location_address(ctx, field)
+	case "children":
+		return ec.fieldContext_Location_children(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
+}
+
+func (ec *executionContext) childFields_LocationConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_LocationConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_LocationConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_LocationConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_LocationConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LocationConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_LocationEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_LocationEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_LocationEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type LocationEdge", field.Name)
+}
+
 func (ec *executionContext) childFields_MutationError(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "type":
@@ -5365,6 +19807,232 @@ func (ec *executionContext) childFields_MutationError(ctx context.Context, field
 		return ec.fieldContext_MutationError_message(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type MutationError", field.Name)
+}
+
+func (ec *executionContext) childFields_MyPayslip(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_result_id":
+		return ec.fieldContext_MyPayslip_payroll_result_id(ctx, field)
+	case "document_version_id":
+		return ec.fieldContext_MyPayslip_document_version_id(ctx, field)
+	case "published_at":
+		return ec.fieldContext_MyPayslip_published_at(ctx, field)
+	case "scheduled_pay_date":
+		return ec.fieldContext_MyPayslip_scheduled_pay_date(ctx, field)
+	case "payment_status":
+		return ec.fieldContext_MyPayslip_payment_status(ctx, field)
+	case "payroll_period_id":
+		return ec.fieldContext_MyPayslip_payroll_period_id(ctx, field)
+	case "period_code":
+		return ec.fieldContext_MyPayslip_period_code(ctx, field)
+	case "period_start":
+		return ec.fieldContext_MyPayslip_period_start(ctx, field)
+	case "period_end":
+		return ec.fieldContext_MyPayslip_period_end(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MyPayslip", field.Name)
+}
+
+func (ec *executionContext) childFields_MyPayslipConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_MyPayslipConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_MyPayslipConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_MyPayslipConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_MyPayslipConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MyPayslipConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_MyPayslipEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_MyPayslipEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_MyPayslipEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MyPayslipEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_MyPayslipPDF(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "content_base64":
+		return ec.fieldContext_MyPayslipPDF_content_base64(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type MyPayslipPDF", field.Name)
+}
+
+func (ec *executionContext) childFields_OffboardingPlan(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_OffboardingPlan_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_OffboardingPlan__id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_OffboardingPlan_worker_id(ctx, field)
+	case "plan_number":
+		return ec.fieldContext_OffboardingPlan_plan_number(ctx, field)
+	case "status":
+		return ec.fieldContext_OffboardingPlan_status(ctx, field)
+	case "last_working_date":
+		return ec.fieldContext_OffboardingPlan_last_working_date(ctx, field)
+	case "termination_effective_date":
+		return ec.fieldContext_OffboardingPlan_termination_effective_date(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OffboardingPlan", field.Name)
+}
+
+func (ec *executionContext) childFields_OffboardingPlanConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_OffboardingPlanConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_OffboardingPlanConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_OffboardingPlanConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_OffboardingPlanConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OffboardingPlanConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_OffboardingPlanEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_OffboardingPlanEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_OffboardingPlanEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OffboardingPlanEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_OffboardingTask(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_OffboardingTask_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_OffboardingTask__id(ctx, field)
+	case "offboarding_plan_id":
+		return ec.fieldContext_OffboardingTask_offboarding_plan_id(ctx, field)
+	case "task_code":
+		return ec.fieldContext_OffboardingTask_task_code(ctx, field)
+	case "task_name":
+		return ec.fieldContext_OffboardingTask_task_name(ctx, field)
+	case "owner_management":
+		return ec.fieldContext_OffboardingTask_owner_management(ctx, field)
+	case "status":
+		return ec.fieldContext_OffboardingTask_status(ctx, field)
+	case "is_mandatory":
+		return ec.fieldContext_OffboardingTask_is_mandatory(ctx, field)
+	case "due_at":
+		return ec.fieldContext_OffboardingTask_due_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OffboardingTask", field.Name)
+}
+
+func (ec *executionContext) childFields_OffboardingTaskConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_OffboardingTaskConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_OffboardingTaskConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_OffboardingTaskConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_OffboardingTaskConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OffboardingTaskConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_OffboardingTaskEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_OffboardingTaskEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_OffboardingTaskEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OffboardingTaskEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_OpenRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "requisition":
+		return ec.fieldContext_OpenRequisitionPayload_requisition(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_OpenRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_OpenRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OpenRequisitionPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_OrganizationUnit(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_OrganizationUnit_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_OrganizationUnit__id(ctx, field)
+	case "legal_entity_id":
+		return ec.fieldContext_OrganizationUnit_legal_entity_id(ctx, field)
+	case "parent_unit_id":
+		return ec.fieldContext_OrganizationUnit_parent_unit_id(ctx, field)
+	case "primary_location_id":
+		return ec.fieldContext_OrganizationUnit_primary_location_id(ctx, field)
+	case "unit_code":
+		return ec.fieldContext_OrganizationUnit_unit_code(ctx, field)
+	case "name":
+		return ec.fieldContext_OrganizationUnit_name(ctx, field)
+	case "kind":
+		return ec.fieldContext_OrganizationUnit_kind(ctx, field)
+	case "cost_center_code":
+		return ec.fieldContext_OrganizationUnit_cost_center_code(ctx, field)
+	case "head_person_id":
+		return ec.fieldContext_OrganizationUnit_head_person_id(ctx, field)
+	case "is_active":
+		return ec.fieldContext_OrganizationUnit_is_active(ctx, field)
+	case "created_at":
+		return ec.fieldContext_OrganizationUnit_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_OrganizationUnit_updated_at(ctx, field)
+	case "deleted_at":
+		return ec.fieldContext_OrganizationUnit_deleted_at(ctx, field)
+	case "legal_entity":
+		return ec.fieldContext_OrganizationUnit_legal_entity(ctx, field)
+	case "parent_unit":
+		return ec.fieldContext_OrganizationUnit_parent_unit(ctx, field)
+	case "primary_location":
+		return ec.fieldContext_OrganizationUnit_primary_location(ctx, field)
+	case "children":
+		return ec.fieldContext_OrganizationUnit_children(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OrganizationUnit", field.Name)
+}
+
+func (ec *executionContext) childFields_OrganizationUnitConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_OrganizationUnitConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_OrganizationUnitConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_OrganizationUnitConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_OrganizationUnitConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OrganizationUnitConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_OrganizationUnitEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_OrganizationUnitEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_OrganizationUnitEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type OrganizationUnitEdge", field.Name)
 }
 
 func (ec *executionContext) childFields_PageInfo(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5379,6 +20047,554 @@ func (ec *executionContext) childFields_PageInfo(ctx context.Context, field grap
 		return ec.fieldContext_PageInfo_startCursor(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+}
+
+func (ec *executionContext) childFields_Party(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Party_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Party__id(ctx, field)
+	case "partner_code":
+		return ec.fieldContext_Party_partner_code(ctx, field)
+	case "kind":
+		return ec.fieldContext_Party_kind(ctx, field)
+	case "display_name":
+		return ec.fieldContext_Party_display_name(ctx, field)
+	case "legal_name":
+		return ec.fieldContext_Party_legal_name(ctx, field)
+	case "email":
+		return ec.fieldContext_Party_email(ctx, field)
+	case "phone":
+		return ec.fieldContext_Party_phone(ctx, field)
+	case "website_url":
+		return ec.fieldContext_Party_website_url(ctx, field)
+	case "tax_id_number":
+		return ec.fieldContext_Party_tax_id_number(ctx, field)
+	case "tax_registered_name":
+		return ec.fieldContext_Party_tax_registered_name(ctx, field)
+	case "is_pkp":
+		return ec.fieldContext_Party_is_pkp(ctx, field)
+	case "is_tax_exempt":
+		return ec.fieldContext_Party_is_tax_exempt(ctx, field)
+	case "tax_exemption_reason":
+		return ec.fieldContext_Party_tax_exemption_reason(ctx, field)
+	case "tax_verified_at":
+		return ec.fieldContext_Party_tax_verified_at(ctx, field)
+	case "preferred_language":
+		return ec.fieldContext_Party_preferred_language(ctx, field)
+	case "status":
+		return ec.fieldContext_Party_status(ctx, field)
+	case "notes":
+		return ec.fieldContext_Party_notes(ctx, field)
+	case "created_at":
+		return ec.fieldContext_Party_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_Party_updated_at(ctx, field)
+	case "deleted_at":
+		return ec.fieldContext_Party_deleted_at(ctx, field)
+	case "roles":
+		return ec.fieldContext_Party_roles(ctx, field)
+	case "contacts":
+		return ec.fieldContext_Party_contacts(ctx, field)
+	case "addresses":
+		return ec.fieldContext_Party_addresses(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Party", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyAddress(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PartyAddress_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PartyAddress__id(ctx, field)
+	case "party_id":
+		return ec.fieldContext_PartyAddress_party_id(ctx, field)
+	case "address_id":
+		return ec.fieldContext_PartyAddress_address_id(ctx, field)
+	case "usage":
+		return ec.fieldContext_PartyAddress_usage(ctx, field)
+	case "is_primary":
+		return ec.fieldContext_PartyAddress_is_primary(ctx, field)
+	case "created_at":
+		return ec.fieldContext_PartyAddress_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_PartyAddress_updated_at(ctx, field)
+	case "address":
+		return ec.fieldContext_PartyAddress_address(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyAddress", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyAddressConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PartyAddressConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PartyAddressConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PartyAddressConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PartyAddressConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyAddressConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyAddressEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_PartyAddressEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_PartyAddressEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyAddressEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PartyConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PartyConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PartyConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PartyConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyContact(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PartyContact_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PartyContact__id(ctx, field)
+	case "party_id":
+		return ec.fieldContext_PartyContact_party_id(ctx, field)
+	case "iam_user_id":
+		return ec.fieldContext_PartyContact_iam_user_id(ctx, field)
+	case "full_name":
+		return ec.fieldContext_PartyContact_full_name(ctx, field)
+	case "job_title":
+		return ec.fieldContext_PartyContact_job_title(ctx, field)
+	case "contact_role":
+		return ec.fieldContext_PartyContact_contact_role(ctx, field)
+	case "email":
+		return ec.fieldContext_PartyContact_email(ctx, field)
+	case "phone":
+		return ec.fieldContext_PartyContact_phone(ctx, field)
+	case "portal_access_status":
+		return ec.fieldContext_PartyContact_portal_access_status(ctx, field)
+	case "is_primary":
+		return ec.fieldContext_PartyContact_is_primary(ctx, field)
+	case "is_active":
+		return ec.fieldContext_PartyContact_is_active(ctx, field)
+	case "created_at":
+		return ec.fieldContext_PartyContact_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_PartyContact_updated_at(ctx, field)
+	case "deleted_at":
+		return ec.fieldContext_PartyContact_deleted_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyContact", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyContactConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PartyContactConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PartyContactConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PartyContactConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PartyContactConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyContactConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyContactEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_PartyContactEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_PartyContactEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyContactEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_PartyEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_PartyEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyRole(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PartyRole_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PartyRole__id(ctx, field)
+	case "party_id":
+		return ec.fieldContext_PartyRole_party_id(ctx, field)
+	case "role":
+		return ec.fieldContext_PartyRole_role(ctx, field)
+	case "is_active":
+		return ec.fieldContext_PartyRole_is_active(ctx, field)
+	case "reference_note":
+		return ec.fieldContext_PartyRole_reference_note(ctx, field)
+	case "created_at":
+		return ec.fieldContext_PartyRole_created_at(ctx, field)
+	case "updated_at":
+		return ec.fieldContext_PartyRole_updated_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyRole", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyRoleConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PartyRoleConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PartyRoleConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PartyRoleConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PartyRoleConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyRoleConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PartyRoleEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "node":
+		return ec.fieldContext_PartyRoleEdge_node(ctx, field)
+	case "cursor":
+		return ec.fieldContext_PartyRoleEdge_cursor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartyRoleEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollGroup(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PayrollGroup_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PayrollGroup__id(ctx, field)
+	case "group_code":
+		return ec.fieldContext_PayrollGroup_group_code(ctx, field)
+	case "group_name":
+		return ec.fieldContext_PayrollGroup_group_name(ctx, field)
+	case "employing_legal_entity_reference_id":
+		return ec.fieldContext_PayrollGroup_employing_legal_entity_reference_id(ctx, field)
+	case "jurisdiction_code":
+		return ec.fieldContext_PayrollGroup_jurisdiction_code(ctx, field)
+	case "currency_code":
+		return ec.fieldContext_PayrollGroup_currency_code(ctx, field)
+	case "currency_scale":
+		return ec.fieldContext_PayrollGroup_currency_scale(ctx, field)
+	case "pay_frequency":
+		return ec.fieldContext_PayrollGroup_pay_frequency(ctx, field)
+	case "timezone":
+		return ec.fieldContext_PayrollGroup_timezone(ctx, field)
+	case "is_active":
+		return ec.fieldContext_PayrollGroup_is_active(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollGroup", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollGroupConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PayrollGroupConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PayrollGroupConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PayrollGroupConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PayrollGroupConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollGroupConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollGroupEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_PayrollGroupEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_PayrollGroupEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollGroupEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollPeriod(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PayrollPeriod_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PayrollPeriod__id(ctx, field)
+	case "payroll_group_id":
+		return ec.fieldContext_PayrollPeriod_payroll_group_id(ctx, field)
+	case "employing_legal_entity_reference_id":
+		return ec.fieldContext_PayrollPeriod_employing_legal_entity_reference_id(ctx, field)
+	case "currency_code":
+		return ec.fieldContext_PayrollPeriod_currency_code(ctx, field)
+	case "jurisdiction_code":
+		return ec.fieldContext_PayrollPeriod_jurisdiction_code(ctx, field)
+	case "period_code":
+		return ec.fieldContext_PayrollPeriod_period_code(ctx, field)
+	case "period_start":
+		return ec.fieldContext_PayrollPeriod_period_start(ctx, field)
+	case "period_end":
+		return ec.fieldContext_PayrollPeriod_period_end(ctx, field)
+	case "pay_date":
+		return ec.fieldContext_PayrollPeriod_pay_date(ctx, field)
+	case "period_status":
+		return ec.fieldContext_PayrollPeriod_period_status(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollPeriod", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollPeriodConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PayrollPeriodConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PayrollPeriodConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PayrollPeriodConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PayrollPeriodConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollPeriodConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollPeriodEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_PayrollPeriodEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_PayrollPeriodEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollPeriodEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollPostingRequest(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_run_id":
+		return ec.fieldContext_PayrollPostingRequest_payroll_run_id(ctx, field)
+	case "status":
+		return ec.fieldContext_PayrollPostingRequest_status(ctx, field)
+	case "posting_requested_at":
+		return ec.fieldContext_PayrollPostingRequest_posting_requested_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollPostingRequest", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollResult(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PayrollResult_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PayrollResult__id(ctx, field)
+	case "payroll_run_id":
+		return ec.fieldContext_PayrollResult_payroll_run_id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_PayrollResult_worker_id(ctx, field)
+	case "currency_code":
+		return ec.fieldContext_PayrollResult_currency_code(ctx, field)
+	case "gross_amount":
+		return ec.fieldContext_PayrollResult_gross_amount(ctx, field)
+	case "reimbursement_amount":
+		return ec.fieldContext_PayrollResult_reimbursement_amount(ctx, field)
+	case "total_deductions":
+		return ec.fieldContext_PayrollResult_total_deductions(ctx, field)
+	case "employer_cost_amount":
+		return ec.fieldContext_PayrollResult_employer_cost_amount(ctx, field)
+	case "net_pay_amount":
+		return ec.fieldContext_PayrollResult_net_pay_amount(ctx, field)
+	case "result_status":
+		return ec.fieldContext_PayrollResult_result_status(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollResult", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollResultConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PayrollResultConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PayrollResultConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PayrollResultConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PayrollResultConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollResultConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollResultEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_PayrollResultEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_PayrollResultEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollResultEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollResultLine(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PayrollResultLine_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PayrollResultLine__id(ctx, field)
+	case "payroll_result_id":
+		return ec.fieldContext_PayrollResultLine_payroll_result_id(ctx, field)
+	case "component_code":
+		return ec.fieldContext_PayrollResultLine_component_code(ctx, field)
+	case "component_name":
+		return ec.fieldContext_PayrollResultLine_component_name(ctx, field)
+	case "component_type":
+		return ec.fieldContext_PayrollResultLine_component_type(ctx, field)
+	case "amount":
+		return ec.fieldContext_PayrollResultLine_amount(ctx, field)
+	case "quantity":
+		return ec.fieldContext_PayrollResultLine_quantity(ctx, field)
+	case "rate":
+		return ec.fieldContext_PayrollResultLine_rate(ctx, field)
+	case "taxable_base":
+		return ec.fieldContext_PayrollResultLine_taxable_base(ctx, field)
+	case "line_sequence":
+		return ec.fieldContext_PayrollResultLine_line_sequence(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollResultLine", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollResultLineConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PayrollResultLineConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PayrollResultLineConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PayrollResultLineConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PayrollResultLineConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollResultLineConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollResultLineEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_PayrollResultLineEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_PayrollResultLineEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollResultLineEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollRuleSet(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PayrollRuleSet_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PayrollRuleSet__id(ctx, field)
+	case "rule_code":
+		return ec.fieldContext_PayrollRuleSet_rule_code(ctx, field)
+	case "rule_version":
+		return ec.fieldContext_PayrollRuleSet_rule_version(ctx, field)
+	case "jurisdiction_code":
+		return ec.fieldContext_PayrollRuleSet_jurisdiction_code(ctx, field)
+	case "effective_from":
+		return ec.fieldContext_PayrollRuleSet_effective_from(ctx, field)
+	case "effective_to":
+		return ec.fieldContext_PayrollRuleSet_effective_to(ctx, field)
+	case "approved_at":
+		return ec.fieldContext_PayrollRuleSet_approved_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollRuleSet", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollRuleSetConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PayrollRuleSetConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PayrollRuleSetConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PayrollRuleSetConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PayrollRuleSetConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollRuleSetConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollRuleSetEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_PayrollRuleSetEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_PayrollRuleSetEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollRuleSetEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollRun(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PayrollRun_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_PayrollRun__id(ctx, field)
+	case "payroll_period_id":
+		return ec.fieldContext_PayrollRun_payroll_period_id(ctx, field)
+	case "run_number":
+		return ec.fieldContext_PayrollRun_run_number(ctx, field)
+	case "status":
+		return ec.fieldContext_PayrollRun_status(ctx, field)
+	case "calculated_at":
+		return ec.fieldContext_PayrollRun_calculated_at(ctx, field)
+	case "posting_requested_at":
+		return ec.fieldContext_PayrollRun_posting_requested_at(ctx, field)
+	case "finance_journal_reference_id":
+		return ec.fieldContext_PayrollRun_finance_journal_reference_id(ctx, field)
+	case "finance_settled_at":
+		return ec.fieldContext_PayrollRun_finance_settled_at(ctx, field)
+	case "cancelled_at":
+		return ec.fieldContext_PayrollRun_cancelled_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollRun", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollRunConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PayrollRunConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PayrollRunConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PayrollRunConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PayrollRunConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollRunConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PayrollRunEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_PayrollRunEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_PayrollRunEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PayrollRunEdge", field.Name)
 }
 
 func (ec *executionContext) childFields_Permission(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5427,6 +20643,102 @@ func (ec *executionContext) childFields_PermissionEdge(ctx context.Context, fiel
 	return nil, fmt.Errorf("no field named %q was found under type PermissionEdge", field.Name)
 }
 
+func (ec *executionContext) childFields_PortalAccessEvaluation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "allowed":
+		return ec.fieldContext_PortalAccessEvaluation_allowed(ctx, field)
+	case "party_id":
+		return ec.fieldContext_PortalAccessEvaluation_party_id(ctx, field)
+	case "contact_id":
+		return ec.fieldContext_PortalAccessEvaluation_contact_id(ctx, field)
+	case "iam_user_id":
+		return ec.fieldContext_PortalAccessEvaluation_iam_user_id(ctx, field)
+	case "active_roles":
+		return ec.fieldContext_PortalAccessEvaluation_active_roles(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PortalAccessEvaluation", field.Name)
+}
+
+func (ec *executionContext) childFields_Position(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Position_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Position__id(ctx, field)
+	case "position_code":
+		return ec.fieldContext_Position_position_code(ctx, field)
+	case "position_title":
+		return ec.fieldContext_Position_position_title(ctx, field)
+	case "job_id":
+		return ec.fieldContext_Position_job_id(ctx, field)
+	case "organization_unit_reference_id":
+		return ec.fieldContext_Position_organization_unit_reference_id(ctx, field)
+	case "legal_entity_reference_id":
+		return ec.fieldContext_Position_legal_entity_reference_id(ctx, field)
+	case "reports_to_position_id":
+		return ec.fieldContext_Position_reports_to_position_id(ctx, field)
+	case "position_status":
+		return ec.fieldContext_Position_position_status(ctx, field)
+	case "headcount_authorized":
+		return ec.fieldContext_Position_headcount_authorized(ctx, field)
+	case "work_location_reference_id":
+		return ec.fieldContext_Position_work_location_reference_id(ctx, field)
+	case "valid_from":
+		return ec.fieldContext_Position_valid_from(ctx, field)
+	case "valid_to":
+		return ec.fieldContext_Position_valid_to(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Position", field.Name)
+}
+
+func (ec *executionContext) childFields_PositionConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_PositionConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_PositionConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_PositionConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_PositionConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PositionConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PositionEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_PositionEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_PositionEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PositionEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_PostLeaveAdjustmentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "leave_entitlement":
+		return ec.fieldContext_PostLeaveAdjustmentPayload_leave_entitlement(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_PostLeaveAdjustmentPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_PostLeaveAdjustmentPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PostLeaveAdjustmentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_RecordSignedEmploymentContractPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "employment_contract":
+		return ec.fieldContext_RecordSignedEmploymentContractPayload_employment_contract(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RecordSignedEmploymentContractPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_RecordSignedEmploymentContractPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RecordSignedEmploymentContractPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_RegenerateMyRecoveryCodesPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "recovery_codes":
@@ -5437,6 +20749,42 @@ func (ec *executionContext) childFields_RegenerateMyRecoveryCodesPayload(ctx con
 		return ec.fieldContext_RegenerateMyRecoveryCodesPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type RegenerateMyRecoveryCodesPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_ReissueEmployeePayslipPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payslip_pdf":
+		return ec.fieldContext_ReissueEmployeePayslipPayload_payslip_pdf(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_ReissueEmployeePayslipPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_ReissueEmployeePayslipPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ReissueEmployeePayslipPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_RejectLeaveAdjustmentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "leave_adjustment":
+		return ec.fieldContext_RejectLeaveAdjustmentPayload_leave_adjustment(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RejectLeaveAdjustmentPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_RejectLeaveAdjustmentPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RejectLeaveAdjustmentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_RejectRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "requisition":
+		return ec.fieldContext_RejectRequisitionPayload_requisition(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RejectRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_RejectRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RejectRequisitionPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_RemoveGroupMemberPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5451,6 +20799,18 @@ func (ec *executionContext) childFields_RemoveGroupMemberPayload(ctx context.Con
 	return nil, fmt.Errorf("no field named %q was found under type RemoveGroupMemberPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_RemovePartyRolePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "removed":
+		return ec.fieldContext_RemovePartyRolePayload_removed(ctx, field)
+	case "errors":
+		return ec.fieldContext_RemovePartyRolePayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RemovePartyRolePayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RemovePartyRolePayload", field.Name)
+}
+
 func (ec *executionContext) childFields_RemoveUserIdentityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "removed":
@@ -5461,6 +20821,102 @@ func (ec *executionContext) childFields_RemoveUserIdentityPayload(ctx context.Co
 		return ec.fieldContext_RemoveUserIdentityPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type RemoveUserIdentityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_RequestEmployeeAccountPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "request":
+		return ec.fieldContext_RequestEmployeeAccountPayload_request(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RequestEmployeeAccountPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_RequestEmployeeAccountPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RequestEmployeeAccountPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_RequestPartyPortalLinkPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_RequestPartyPortalLinkPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_RequestPartyPortalLinkPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RequestPartyPortalLinkPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RequestPartyPortalLinkPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_RequestPayrollPostingPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_posting_request":
+		return ec.fieldContext_RequestPayrollPostingPayload_payroll_posting_request(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RequestPayrollPostingPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_RequestPayrollPostingPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RequestPayrollPostingPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_Requisition(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Requisition_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Requisition__id(ctx, field)
+	case "requisition_number":
+		return ec.fieldContext_Requisition_requisition_number(ctx, field)
+	case "hiring_manager_worker_id":
+		return ec.fieldContext_Requisition_hiring_manager_worker_id(ctx, field)
+	case "job_id":
+		return ec.fieldContext_Requisition_job_id(ctx, field)
+	case "organization_unit_reference_id":
+		return ec.fieldContext_Requisition_organization_unit_reference_id(ctx, field)
+	case "work_location_reference_id":
+		return ec.fieldContext_Requisition_work_location_reference_id(ctx, field)
+	case "position_id":
+		return ec.fieldContext_Requisition_position_id(ctx, field)
+	case "workforce_plan_line_id":
+		return ec.fieldContext_Requisition_workforce_plan_line_id(ctx, field)
+	case "requisition_type":
+		return ec.fieldContext_Requisition_requisition_type(ctx, field)
+	case "status":
+		return ec.fieldContext_Requisition_status(ctx, field)
+	case "rejection_reason_code":
+		return ec.fieldContext_Requisition_rejection_reason_code(ctx, field)
+	case "headcount":
+		return ec.fieldContext_Requisition_headcount(ctx, field)
+	case "target_start_date":
+		return ec.fieldContext_Requisition_target_start_date(ctx, field)
+	case "employment_category":
+		return ec.fieldContext_Requisition_employment_category(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Requisition", field.Name)
+}
+
+func (ec *executionContext) childFields_RequisitionConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_RequisitionConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_RequisitionConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_RequisitionConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_RequisitionConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RequisitionConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_RequisitionEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_RequisitionEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_RequisitionEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RequisitionEdge", field.Name)
 }
 
 func (ec *executionContext) childFields_ResendValidationEmailPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5509,6 +20965,18 @@ func (ec *executionContext) childFields_RevokeGroupRolePayload(ctx context.Conte
 		return ec.fieldContext_RevokeGroupRolePayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type RevokeGroupRolePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_RevokePartyPortalAccessPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_RevokePartyPortalAccessPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_RevokePartyPortalAccessPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_RevokePartyPortalAccessPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type RevokePartyPortalAccessPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_RevokeRolePermissionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5657,6 +21125,22 @@ func (ec *executionContext) childFields_Scope(ctx context.Context, field graphql
 	return nil, fmt.Errorf("no field named %q was found under type Scope", field.Name)
 }
 
+func (ec *executionContext) childFields_ScopeTargetDecision(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "eligible":
+		return ec.fieldContext_ScopeTargetDecision_eligible(ctx, field)
+	case "scope_kind":
+		return ec.fieldContext_ScopeTargetDecision_scope_kind(ctx, field)
+	case "target_id":
+		return ec.fieldContext_ScopeTargetDecision_target_id(ctx, field)
+	case "code":
+		return ec.fieldContext_ScopeTargetDecision_code(ctx, field)
+	case "legal_entity_id":
+		return ec.fieldContext_ScopeTargetDecision_legal_entity_id(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ScopeTargetDecision", field.Name)
+}
+
 func (ec *executionContext) childFields_ScopedPermission(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "permission_code":
@@ -5731,6 +21215,42 @@ func (ec *executionContext) childFields_SessionEdge(ctx context.Context, field g
 	return nil, fmt.Errorf("no field named %q was found under type SessionEdge", field.Name)
 }
 
+func (ec *executionContext) childFields_SetPrimaryOperatingLegalEntityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "legal_entity":
+		return ec.fieldContext_SetPrimaryOperatingLegalEntityPayload_legal_entity(ctx, field)
+	case "errors":
+		return ec.fieldContext_SetPrimaryOperatingLegalEntityPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SetPrimaryOperatingLegalEntityPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SetPrimaryOperatingLegalEntityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SetPrimaryPartyAddressLinkPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "link":
+		return ec.fieldContext_SetPrimaryPartyAddressLinkPayload_link(ctx, field)
+	case "errors":
+		return ec.fieldContext_SetPrimaryPartyAddressLinkPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SetPrimaryPartyAddressLinkPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SetPrimaryPartyAddressLinkPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SetPrimaryPartyContactPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_SetPrimaryPartyContactPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_SetPrimaryPartyContactPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SetPrimaryPartyContactPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SetPrimaryPartyContactPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_SetPrimaryUserIdentityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "user_identity":
@@ -5755,6 +21275,102 @@ func (ec *executionContext) childFields_SoftDeleteUserPayload(ctx context.Contex
 	return nil, fmt.Errorf("no field named %q was found under type SoftDeleteUserPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_StartOffboardingPlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_plan":
+		return ec.fieldContext_StartOffboardingPlanPayload_offboarding_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_StartOffboardingPlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_StartOffboardingPlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type StartOffboardingPlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SubmitPayrollRunForReviewPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "payroll_run":
+		return ec.fieldContext_SubmitPayrollRunForReviewPayload_payroll_run(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SubmitPayrollRunForReviewPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_SubmitPayrollRunForReviewPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SubmitPayrollRunForReviewPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SubmitRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "requisition":
+		return ec.fieldContext_SubmitRequisitionPayload_requisition(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SubmitRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_SubmitRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SubmitRequisitionPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SubmitWorkerAssignmentTransferPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker_assignment_transfer":
+		return ec.fieldContext_SubmitWorkerAssignmentTransferPayload_worker_assignment_transfer(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SubmitWorkerAssignmentTransferPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_SubmitWorkerAssignmentTransferPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SubmitWorkerAssignmentTransferPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SubmitWorkforcePlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan":
+		return ec.fieldContext_SubmitWorkforcePlanPayload_workforce_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SubmitWorkforcePlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_SubmitWorkforcePlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SubmitWorkforcePlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SupersedeWorkforcePlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan":
+		return ec.fieldContext_SupersedeWorkforcePlanPayload_workforce_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SupersedeWorkforcePlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_SupersedeWorkforcePlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SupersedeWorkforcePlanPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SuspendLegalEntityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "legal_entity":
+		return ec.fieldContext_SuspendLegalEntityPayload_legal_entity(ctx, field)
+	case "errors":
+		return ec.fieldContext_SuspendLegalEntityPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SuspendLegalEntityPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SuspendLegalEntityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_SuspendPartyPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "party":
+		return ec.fieldContext_SuspendPartyPayload_party(ctx, field)
+	case "errors":
+		return ec.fieldContext_SuspendPartyPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_SuspendPartyPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SuspendPartyPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_SuspendUserPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "user":
@@ -5765,6 +21381,78 @@ func (ec *executionContext) childFields_SuspendUserPayload(ctx context.Context, 
 		return ec.fieldContext_SuspendUserPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type SuspendUserPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_TerminateWorkerPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker":
+		return ec.fieldContext_TerminateWorkerPayload_worker(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_TerminateWorkerPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_TerminateWorkerPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type TerminateWorkerPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UnlinkPartyAddressPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "unlinked":
+		return ec.fieldContext_UnlinkPartyAddressPayload_unlinked(ctx, field)
+	case "errors":
+		return ec.fieldContext_UnlinkPartyAddressPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UnlinkPartyAddressPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UnlinkPartyAddressPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UnlinkPartyPortalUserPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_UnlinkPartyPortalUserPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_UnlinkPartyPortalUserPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UnlinkPartyPortalUserPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UnlinkPartyPortalUserPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateAddressPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "address":
+		return ec.fieldContext_UpdateAddressPayload_address(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateAddressPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateAddressPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateAddressPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateCandidatePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "candidate":
+		return ec.fieldContext_UpdateCandidatePayload_candidate(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateCandidatePayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateCandidatePayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateCandidatePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateEmploymentContractPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "employment_contract":
+		return ec.fieldContext_UpdateEmploymentContractPayload_employment_contract(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateEmploymentContractPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateEmploymentContractPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateEmploymentContractPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_UpdateGroupDetailsPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -5779,6 +21467,30 @@ func (ec *executionContext) childFields_UpdateGroupDetailsPayload(ctx context.Co
 	return nil, fmt.Errorf("no field named %q was found under type UpdateGroupDetailsPayload", field.Name)
 }
 
+func (ec *executionContext) childFields_UpdateLegalEntityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "legal_entity":
+		return ec.fieldContext_UpdateLegalEntityPayload_legal_entity(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateLegalEntityPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateLegalEntityPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateLegalEntityPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateLocationPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "location":
+		return ec.fieldContext_UpdateLocationPayload_location(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateLocationPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateLocationPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateLocationPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_UpdateMyProfilePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "user":
@@ -5791,6 +21503,102 @@ func (ec *executionContext) childFields_UpdateMyProfilePayload(ctx context.Conte
 	return nil, fmt.Errorf("no field named %q was found under type UpdateMyProfilePayload", field.Name)
 }
 
+func (ec *executionContext) childFields_UpdateOrganizationUnitPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "organization_unit":
+		return ec.fieldContext_UpdateOrganizationUnitPayload_organization_unit(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateOrganizationUnitPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateOrganizationUnitPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateOrganizationUnitPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdatePartyAddressLinkPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "link":
+		return ec.fieldContext_UpdatePartyAddressLinkPayload_link(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdatePartyAddressLinkPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdatePartyAddressLinkPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdatePartyAddressLinkPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdatePartyContactPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "contact":
+		return ec.fieldContext_UpdatePartyContactPayload_contact(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdatePartyContactPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdatePartyContactPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdatePartyContactPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdatePartyProfilePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "party":
+		return ec.fieldContext_UpdatePartyProfilePayload_party(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdatePartyProfilePayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdatePartyProfilePayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdatePartyProfilePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdatePartyRoleNotePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "role":
+		return ec.fieldContext_UpdatePartyRoleNotePayload_role(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdatePartyRoleNotePayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdatePartyRoleNotePayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdatePartyRoleNotePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdatePartyTaxProfilePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "party":
+		return ec.fieldContext_UpdatePartyTaxProfilePayload_party(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdatePartyTaxProfilePayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdatePartyTaxProfilePayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdatePartyTaxProfilePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdatePositionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "position":
+		return ec.fieldContext_UpdatePositionPayload_position(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdatePositionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdatePositionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdatePositionPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateRequisitionPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "requisition":
+		return ec.fieldContext_UpdateRequisitionPayload_requisition(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateRequisitionPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateRequisitionPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateRequisitionPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_UpdateRoleDetailsPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "role":
@@ -5801,6 +21609,42 @@ func (ec *executionContext) childFields_UpdateRoleDetailsPayload(ctx context.Con
 		return ec.fieldContext_UpdateRoleDetailsPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type UpdateRoleDetailsPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateWorkerPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "worker":
+		return ec.fieldContext_UpdateWorkerPayload_worker(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateWorkerPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateWorkerPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateWorkerPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateWorkforcePlanLinePayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan_line":
+		return ec.fieldContext_UpdateWorkforcePlanLinePayload_workforce_plan_line(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateWorkforcePlanLinePayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateWorkforcePlanLinePayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateWorkforcePlanLinePayload", field.Name)
+}
+
+func (ec *executionContext) childFields_UpdateWorkforcePlanPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "workforce_plan":
+		return ec.fieldContext_UpdateWorkforcePlanPayload_workforce_plan(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_UpdateWorkforcePlanPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_UpdateWorkforcePlanPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UpdateWorkforcePlanPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_User(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -6043,6 +21887,18 @@ func (ec *executionContext) childFields_UserRoleEdge(ctx context.Context, field 
 	return nil, fmt.Errorf("no field named %q was found under type UserRoleEdge", field.Name)
 }
 
+func (ec *executionContext) childFields_UsernameAvailabilityPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "available":
+		return ec.fieldContext_UsernameAvailabilityPayload_available(ctx, field)
+	case "normalized_username":
+		return ec.fieldContext_UsernameAvailabilityPayload_normalized_username(ctx, field)
+	case "message":
+		return ec.fieldContext_UsernameAvailabilityPayload_message(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type UsernameAvailabilityPayload", field.Name)
+}
+
 func (ec *executionContext) childFields_ValidateUserMfaPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "csrfToken":
@@ -6055,6 +21911,18 @@ func (ec *executionContext) childFields_ValidateUserMfaPayload(ctx context.Conte
 		return ec.fieldContext_ValidateUserMfaPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ValidateUserMfaPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_VerifyAndActivatePartyPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "party":
+		return ec.fieldContext_VerifyAndActivatePartyPayload_party(ctx, field)
+	case "errors":
+		return ec.fieldContext_VerifyAndActivatePartyPayload_errors(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_VerifyAndActivatePartyPayload_was_successful(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type VerifyAndActivatePartyPayload", field.Name)
 }
 
 func (ec *executionContext) childFields_VerifyEmailPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -6081,6 +21949,276 @@ func (ec *executionContext) childFields_VerifyMySessionMfaPayload(ctx context.Co
 		return ec.fieldContext_VerifyMySessionMfaPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type VerifyMySessionMfaPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_WaiveOffboardingTaskPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "offboarding_task":
+		return ec.fieldContext_WaiveOffboardingTaskPayload_offboarding_task(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_WaiveOffboardingTaskPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_WaiveOffboardingTaskPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WaiveOffboardingTaskPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_Worker(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Worker_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_Worker__id(ctx, field)
+	case "worker_number":
+		return ec.fieldContext_Worker_worker_number(ctx, field)
+	case "worker_category":
+		return ec.fieldContext_Worker_worker_category(ctx, field)
+	case "status":
+		return ec.fieldContext_Worker_status(ctx, field)
+	case "hire_date":
+		return ec.fieldContext_Worker_hire_date(ctx, field)
+	case "service_start_date":
+		return ec.fieldContext_Worker_service_start_date(ctx, field)
+	case "primary_legal_entity_reference_id":
+		return ec.fieldContext_Worker_primary_legal_entity_reference_id(ctx, field)
+	case "person_party_reference_id":
+		return ec.fieldContext_Worker_person_party_reference_id(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Worker", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerAssignment(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_WorkerAssignment_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_WorkerAssignment__id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_WorkerAssignment_worker_id(ctx, field)
+	case "position_id":
+		return ec.fieldContext_WorkerAssignment_position_id(ctx, field)
+	case "assignment_type":
+		return ec.fieldContext_WorkerAssignment_assignment_type(ctx, field)
+	case "fte_percent":
+		return ec.fieldContext_WorkerAssignment_fte_percent(ctx, field)
+	case "valid_from":
+		return ec.fieldContext_WorkerAssignment_valid_from(ctx, field)
+	case "valid_to":
+		return ec.fieldContext_WorkerAssignment_valid_to(ctx, field)
+	case "approved_at":
+		return ec.fieldContext_WorkerAssignment_approved_at(ctx, field)
+	case "requested_at":
+		return ec.fieldContext_WorkerAssignment_requested_at(ctx, field)
+	case "cancelled_at":
+		return ec.fieldContext_WorkerAssignment_cancelled_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerAssignment", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerAssignmentConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_WorkerAssignmentConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_WorkerAssignmentConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_WorkerAssignmentConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_WorkerAssignmentConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerAssignmentConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerAssignmentEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_WorkerAssignmentEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_WorkerAssignmentEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerAssignmentEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerAssignmentTransfer(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_WorkerAssignmentTransfer_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_WorkerAssignmentTransfer__id(ctx, field)
+	case "worker_id":
+		return ec.fieldContext_WorkerAssignmentTransfer_worker_id(ctx, field)
+	case "source_assignment_id":
+		return ec.fieldContext_WorkerAssignmentTransfer_source_assignment_id(ctx, field)
+	case "target_position_id":
+		return ec.fieldContext_WorkerAssignmentTransfer_target_position_id(ctx, field)
+	case "effective_date":
+		return ec.fieldContext_WorkerAssignmentTransfer_effective_date(ctx, field)
+	case "status":
+		return ec.fieldContext_WorkerAssignmentTransfer_status(ctx, field)
+	case "reason_code":
+		return ec.fieldContext_WorkerAssignmentTransfer_reason_code(ctx, field)
+	case "requested_at":
+		return ec.fieldContext_WorkerAssignmentTransfer_requested_at(ctx, field)
+	case "decided_at":
+		return ec.fieldContext_WorkerAssignmentTransfer_decided_at(ctx, field)
+	case "applied_assignment_id":
+		return ec.fieldContext_WorkerAssignmentTransfer_applied_assignment_id(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerAssignmentTransfer", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerAssignmentTransferConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_WorkerAssignmentTransferConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_WorkerAssignmentTransferConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_WorkerAssignmentTransferConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_WorkerAssignmentTransferConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerAssignmentTransferConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerAssignmentTransferEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_WorkerAssignmentTransferEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_WorkerAssignmentTransferEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerAssignmentTransferEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_WorkerConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_WorkerConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_WorkerConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_WorkerConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkerEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_WorkerEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_WorkerEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkerEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkforcePlan(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_WorkforcePlan_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_WorkforcePlan__id(ctx, field)
+	case "plan_code":
+		return ec.fieldContext_WorkforcePlan_plan_code(ctx, field)
+	case "plan_version":
+		return ec.fieldContext_WorkforcePlan_plan_version(ctx, field)
+	case "legal_entity_reference_id":
+		return ec.fieldContext_WorkforcePlan_legal_entity_reference_id(ctx, field)
+	case "period_start":
+		return ec.fieldContext_WorkforcePlan_period_start(ctx, field)
+	case "period_end":
+		return ec.fieldContext_WorkforcePlan_period_end(ctx, field)
+	case "scenario_code":
+		return ec.fieldContext_WorkforcePlan_scenario_code(ctx, field)
+	case "status":
+		return ec.fieldContext_WorkforcePlan_status(ctx, field)
+	case "superseded_by_plan_id":
+		return ec.fieldContext_WorkforcePlan_superseded_by_plan_id(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkforcePlan", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkforcePlanConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_WorkforcePlanConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_WorkforcePlanConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_WorkforcePlanConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_WorkforcePlanConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkforcePlanConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkforcePlanEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_WorkforcePlanEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_WorkforcePlanEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkforcePlanEdge", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkforcePlanLine(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_WorkforcePlanLine_id(ctx, field)
+	case "_id":
+		return ec.fieldContext_WorkforcePlanLine__id(ctx, field)
+	case "workforce_plan_id":
+		return ec.fieldContext_WorkforcePlanLine_workforce_plan_id(ctx, field)
+	case "line_number":
+		return ec.fieldContext_WorkforcePlanLine_line_number(ctx, field)
+	case "organization_unit_reference_id":
+		return ec.fieldContext_WorkforcePlanLine_organization_unit_reference_id(ctx, field)
+	case "job_id":
+		return ec.fieldContext_WorkforcePlanLine_job_id(ctx, field)
+	case "work_location_reference_id":
+		return ec.fieldContext_WorkforcePlanLine_work_location_reference_id(ctx, field)
+	case "worker_category":
+		return ec.fieldContext_WorkforcePlanLine_worker_category(ctx, field)
+	case "current_fte":
+		return ec.fieldContext_WorkforcePlanLine_current_fte(ctx, field)
+	case "required_fte":
+		return ec.fieldContext_WorkforcePlanLine_required_fte(ctx, field)
+	case "needed_from":
+		return ec.fieldContext_WorkforcePlanLine_needed_from(ctx, field)
+	case "needed_until":
+		return ec.fieldContext_WorkforcePlanLine_needed_until(ctx, field)
+	case "action_code":
+		return ec.fieldContext_WorkforcePlanLine_action_code(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkforcePlanLine", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkforcePlanLineConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "edges":
+		return ec.fieldContext_WorkforcePlanLineConnection_edges(ctx, field)
+	case "nodes":
+		return ec.fieldContext_WorkforcePlanLineConnection_nodes(ctx, field)
+	case "pageInfo":
+		return ec.fieldContext_WorkforcePlanLineConnection_pageInfo(ctx, field)
+	case "total_count":
+		return ec.fieldContext_WorkforcePlanLineConnection_total_count(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkforcePlanLineConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_WorkforcePlanLineEdge(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "cursor":
+		return ec.fieldContext_WorkforcePlanLineEdge_cursor(ctx, field)
+	case "node":
+		return ec.fieldContext_WorkforcePlanLineEdge_node(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type WorkforcePlanLineEdge", field.Name)
 }
 
 func (ec *executionContext) childFields_WorkspaceAccessPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {

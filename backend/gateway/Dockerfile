@@ -33,6 +33,8 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 
 WORKDIR /src
 COPY shared /src/shared
+COPY services/enterprise_foundation/go.mod services/enterprise_foundation/go.sum /src/services/enterprise_foundation/
+COPY services/human_resource/go.mod services/human_resource/go.sum /src/services/human_resource/
 COPY services/iam/go.mod services/iam/go.sum /src/services/iam/
 COPY gateway/go.mod gateway/go.sum /src/gateway/
 
@@ -42,6 +44,8 @@ RUN go mod download
 # Stage 3: Mengompilasi binary statis gateway-server dan gateway-healthcheck.
 FROM deps AS builder
 
+COPY services/enterprise_foundation /src/services/enterprise_foundation
+COPY services/human_resource /src/services/human_resource
 COPY services/iam /src/services/iam
 COPY gateway /src/gateway
 

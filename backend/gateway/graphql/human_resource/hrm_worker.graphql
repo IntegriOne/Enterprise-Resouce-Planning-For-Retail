@@ -1,0 +1,290 @@
+# Identitas dan status hubungan kerja yang dibutuhkan operator HRM.
+type Worker implements Node {
+  id: ID!
+  _id: ID!
+  worker_number: String!
+  worker_category: String!
+  status: String!
+  hire_date: String
+  service_start_date: String
+  primary_legal_entity_reference_id: ID!
+  person_party_reference_id: ID
+}
+
+type WorkerEdge {
+  cursor: String!
+  node: Worker!
+}
+
+type WorkerConnection {
+  edges: [WorkerEdge!]!
+  nodes: [Worker!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  worker(id: ID!): Worker
+  # Gunakan paling banyak satu filter.
+  workers(worker_number: String, legal_entity_id: ID, after: String, before: String, first: Int, last: Int): WorkerConnection!
+}
+
+input CreateWorkerInput {
+  worker_number: String!
+  person_party_reference_id: ID!
+  worker_category: String!
+  primary_legal_entity_reference_id: ID!
+  hire_date: String
+  service_start_date: String
+}
+
+input UpdateWorkerInput {
+  hire_date: String @goField(omittable: true)
+  service_start_date: String @goField(omittable: true)
+}
+
+type CreateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ActivateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type TerminateWorkerPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type ApplyPrimaryAssignmentPayload implements MutationResult {
+  worker: Worker
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorker(input: CreateWorkerInput!): CreateWorkerPayload!
+  updateWorker(id: ID!, input: UpdateWorkerInput!): UpdateWorkerPayload!
+  activateWorker(id: ID!): ActivateWorkerPayload!
+  terminateWorker(id: ID!, offboarding_plan_id: ID!): TerminateWorkerPayload!
+  applyPrimaryAssignment(id: ID!, assignment_id: ID!): ApplyPrimaryAssignmentPayload!
+}
+
+type WorkerAssignment implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  position_id: ID!
+  assignment_type: String!
+  fte_percent: String!
+  valid_from: String!
+  valid_to: String
+  approved_at: Time
+  requested_at: Time
+  cancelled_at: Time
+}
+
+type ApproveWorkerAssignmentPayload implements MutationResult {
+  worker_assignment: WorkerAssignment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  approveWorkerAssignment(id: ID!): ApproveWorkerAssignmentPayload!
+}
+
+type WorkerAssignmentEdge {
+  cursor: String!
+  node: WorkerAssignment!
+}
+
+type WorkerAssignmentConnection {
+  edges: [WorkerAssignmentEdge!]!
+  nodes: [WorkerAssignment!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  workerAssignmentTransfers(worker_id: ID!, after: String, before: String, first: Int, last: Int): WorkerAssignmentTransferConnection!
+  workerAssignmentTransfer(id: ID!): WorkerAssignmentTransfer
+  workerAssignment(id: ID!): WorkerAssignment
+  workerAssignments(worker_id: ID, position_id: ID, after: String, before: String, first: Int, last: Int): WorkerAssignmentConnection!
+}
+
+input CreateWorkerAssignmentInput {
+  worker_id: ID!
+  position_id: ID!
+  manager_worker_id: ID
+  assignment_type: String!
+  fte_percent: String
+  valid_from: String!
+  valid_to: String
+  assignment_reason: String
+}
+
+type CreateWorkerAssignmentPayload implements MutationResult {
+  worker_assignment: WorkerAssignment
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createWorkerAssignment(input: CreateWorkerAssignmentInput!): CreateWorkerAssignmentPayload!
+}
+
+type WorkerAssignmentTransfer implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  source_assignment_id: ID!
+  target_position_id: ID!
+  effective_date: String!
+  status: String!
+  reason_code: String!
+  requested_at: Time!
+  decided_at: Time
+  applied_assignment_id: ID
+}
+
+type WorkerAssignmentTransferEdge {
+  cursor: String!
+  node: WorkerAssignmentTransfer!
+}
+
+type WorkerAssignmentTransferConnection {
+  edges: [WorkerAssignmentTransferEdge!]!
+  nodes: [WorkerAssignmentTransfer!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+input SubmitWorkerAssignmentTransferInput {
+  worker_id: ID!
+  source_assignment_id: ID!
+  target_position_id: ID!
+  effective_date: String!
+  reason_code: String!
+  idempotency_key: String!
+}
+
+enum WorkerAssignmentTransferDecision {
+  APPROVE
+  REJECT
+}
+
+type SubmitWorkerAssignmentTransferPayload implements MutationResult {
+  worker_assignment_transfer: WorkerAssignmentTransfer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DecideWorkerAssignmentTransferPayload implements MutationResult {
+  worker_assignment_transfer: WorkerAssignmentTransfer
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  submitWorkerAssignmentTransfer(input: SubmitWorkerAssignmentTransferInput!): SubmitWorkerAssignmentTransferPayload!
+  decideWorkerAssignmentTransfer(id: ID!, decision: WorkerAssignmentTransferDecision!): DecideWorkerAssignmentTransferPayload!
+}
+
+type EmploymentContract implements Node {
+  id: ID!
+  _id: ID!
+  worker_id: ID!
+  contract_number: String!
+  contract_type: String!
+  contract_status: String!
+  employing_legal_entity_reference_id: ID!
+  effective_from: String!
+  effective_to: String
+  signed_at: Time
+}
+
+type EmploymentContractEdge {
+  cursor: String!
+  node: EmploymentContract!
+}
+
+type EmploymentContractConnection {
+  edges: [EmploymentContractEdge!]!
+  nodes: [EmploymentContract!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  employmentContract(id: ID!): EmploymentContract
+  employmentContracts(worker_id: ID!, after: String, before: String, first: Int, last: Int): EmploymentContractConnection!
+}
+
+input CreateEmploymentContractInput {
+  worker_id: ID!
+  contract_number: String!
+  contract_type: String!
+  employing_legal_entity_reference_id: ID!
+  effective_from: String!
+  effective_to: String
+  probation_end_date: String
+  notice_period_days: Int
+  work_country_code: String!
+  governing_jurisdiction_code: String!
+  collective_agreement_id: ID
+}
+
+type CreateEmploymentContractPayload implements MutationResult {
+  employment_contract: EmploymentContract
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type RecordSignedEmploymentContractPayload implements MutationResult {
+  employment_contract: EmploymentContract
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteEmploymentContractPayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type UpdateEmploymentContractPayload implements MutationResult {
+  employment_contract: EmploymentContract
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createEmploymentContract(input: CreateEmploymentContractInput!): CreateEmploymentContractPayload!
+  recordSignedEmploymentContract(id: ID!, document_version_id: ID!): RecordSignedEmploymentContractPayload!
+  deleteEmploymentContract(id: ID!): DeleteEmploymentContractPayload!
+  updateEmploymentContract(id: ID!, input: UpdateEmploymentContractInput!): UpdateEmploymentContractPayload!
+}
+
+input UpdateEmploymentContractInput {
+  contract_number: String @goField(omittable: true)
+  contract_type: String @goField(omittable: true)
+  effective_from: String @goField(omittable: true)
+  effective_to: String @goField(omittable: true)
+  probation_end_date: String @goField(omittable: true)
+  notice_period_days: Int @goField(omittable: true)
+  work_country_code: String @goField(omittable: true)
+  governing_jurisdiction_code: String @goField(omittable: true)
+  collective_agreement_id: ID @goField(omittable: true)
+}

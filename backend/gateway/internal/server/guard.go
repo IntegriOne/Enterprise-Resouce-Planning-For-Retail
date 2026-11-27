@@ -67,38 +67,38 @@ func buildOperationGuard(
 
 		req, hasReq := httpRequestFromContext(ctx)
 		if !hasReq {
-			return singleErrorResponse(presenter, middleware.ErrForbidden("http request context missing", nil))
+			return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("http request context missing", nil))
 		}
 		if err := validateOperationComplexityShape(opCtx.Doc, opCtx.Operation, maxGraphQLDepth, maxGraphQLAliases); err != nil {
-			return singleErrorResponse(presenter, err)
+			return singleErrorResponse(ctx, presenter, err)
 		}
 
 		switch opCtx.Operation.Operation {
 		case ast.Subscription:
-			return singleErrorResponse(presenter, middleware.ErrForbidden("subscriptions are not supported on /api/graphql", nil))
+			return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("subscriptions are not supported on /api/graphql", nil))
 
 		case ast.Query:
 			if req.Method != http.MethodGet && req.Method != http.MethodPost {
-				return singleErrorResponse(presenter, middleware.ErrForbidden("http method not allowed for query", nil))
+				return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("http method not allowed for query", nil))
 			}
 			// Query mengizinkan panggilan SSR cookie-only pada POST tanpa Origin/CSRF, namun tetap menolak Origin/Sec-Fetch-Site asing bila hadir.
 			if err := originValidator.ValidateRequest(req.Header, false); err != nil {
-				return singleErrorResponse(presenter, middleware.ErrForbidden("origin is not allowed", err))
+				return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("origin is not allowed", err))
 			}
 			return next(ctx)
 
 		case ast.Mutation:
 			if req.Method == http.MethodGet {
-				return singleErrorResponse(presenter, middleware.ErrForbidden("mutations are not permitted via HTTP GET", nil))
+				return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("mutations are not permitted via HTTP GET", nil))
 			}
 			if req.Method != http.MethodPost {
-				return singleErrorResponse(presenter, middleware.ErrForbidden("mutations require HTTP POST", nil))
+				return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("mutations require HTTP POST", nil))
 			}
 			if err := originValidator.ValidateRequest(req.Header, true); err != nil {
-				return singleErrorResponse(presenter, middleware.ErrForbidden("valid same-origin Origin header is required for mutations", err))
+				return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("valid same-origin Origin header is required for mutations", err))
 			}
 			if authManager == nil {
-				return singleErrorResponse(presenter, middleware.ErrUnavailable("authentication manager unavailable", nil))
+				return singleErrorResponse(ctx, presenter, middleware.ErrUnavailable("authentication manager unavailable", nil))
 			}
 			meta, _ := middleware.RequestMetadataFromContext(ctx)
 			ip := strings.TrimSpace(meta.ClientIP)
@@ -106,11 +106,11 @@ func buildOperationGuard(
 				ip = "unknown"
 			}
 			if err := authManager.CheckRateLimit(ctx, "mutation_ip", ip, mutationRateMax, mutationRateWindow); err != nil {
-				return singleErrorResponse(presenter, err)
+				return singleErrorResponse(ctx, presenter, err)
 			}
 			resolved, err := authManager.RequireMutationCSRF(ctx)
 			if err != nil {
-				return singleErrorResponse(presenter, err)
+				return singleErrorResponse(ctx, presenter, err)
 			}
 			if resolved != nil {
 				ctx = middleware.WithResolvedSession(ctx, resolved)
@@ -118,17 +118,20 @@ func buildOperationGuard(
 			return next(ctx)
 
 		default:
-			return singleErrorResponse(presenter, middleware.ErrForbidden("unsupported GraphQL operation type", nil))
+			return singleErrorResponse(ctx, presenter, middleware.ErrForbidden("unsupported GraphQL operation type", nil))
 		}
 	}
 }
 
-func singleErrorResponse(presenter graphql.ErrorPresenterFunc, err error) graphql.ResponseHandler {
+func singleErrorResponse(ctx context.Context, presenter graphql.ErrorPresenterFunc, err error) graphql.ResponseHandler {
 	if presenter == nil {
 		presenter = graphql.DefaultErrorPresenter
 	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return graphql.OneShot(&graphql.Response{
-		Errors: gqlerror.List{presenter(context.Background(), err)},
+		Errors: gqlerror.List{presenter(ctx, err)},
 	})
 }
 

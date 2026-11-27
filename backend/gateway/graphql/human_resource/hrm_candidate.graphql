@@ -1,0 +1,62 @@
+type Candidate implements Node {
+  id: ID!
+  _id: ID!
+  candidate_number: String!
+  preferred_name: String
+  candidate_status: String!
+}
+
+input CreateCandidateInput {
+  candidate_number: String!
+  preferred_name: String
+  person_party_reference_id: ID
+  contact_reference_id: ID
+  privacy_notice_version: String!
+  notice_acknowledged_at: Time!
+  data_retention_until: String!
+}
+
+type CreateCandidatePayload implements MutationResult {
+  candidate: Candidate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+input UpdateCandidateInput {
+  preferred_name: String @goField(omittable: true)
+}
+
+type UpdateCandidatePayload implements MutationResult {
+  candidate: Candidate
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+type DeleteCandidatePayload implements MutationResult {
+  deleted: Boolean
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  createCandidate(input: CreateCandidateInput!): CreateCandidatePayload!
+  updateCandidate(id: ID!, input: UpdateCandidateInput!): UpdateCandidatePayload!
+  deleteCandidate(id: ID!): DeleteCandidatePayload!
+}
+
+type CandidateEdge {
+  cursor: String!
+  node: Candidate!
+}
+
+type CandidateConnection {
+  edges: [CandidateEdge!]!
+  nodes: [Candidate!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+extend type Query {
+  candidate(id: ID!): Candidate
+  candidates(candidate_number: String, after: String, before: String, first: Int, last: Int): CandidateConnection!
+}

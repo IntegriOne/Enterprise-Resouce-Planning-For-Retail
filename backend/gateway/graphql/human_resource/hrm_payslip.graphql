@@ -1,0 +1,45 @@
+# Metadata slip gaji terbit milik pegawai yang sedang bersesi.
+type MyPayslip {
+  payroll_result_id: ID!
+  document_version_id: ID!
+  published_at: Time!
+  scheduled_pay_date: String!
+  payment_status: String!
+  payroll_period_id: ID!
+  period_code: String!
+  period_start: String!
+  period_end: String!
+}
+
+type MyPayslipEdge {
+  cursor: String!
+  node: MyPayslip!
+}
+
+type MyPayslipConnection {
+  edges: [MyPayslipEdge!]!
+  nodes: [MyPayslip!]!
+  pageInfo: PageInfo!
+  total_count: Int!
+}
+
+# Konten privat dari versi PDF yang sudah diperiksa HRM.
+type MyPayslipPDF {
+  content_base64: String!
+}
+
+extend type Query {
+  myPayslip(payroll_result_id: ID!): MyPayslip
+  myPayslipPdf(payroll_result_id: ID!): MyPayslipPDF
+  myPayslips(payroll_period_id: ID, after: String, before: String, first: Int, last: Int): MyPayslipConnection!
+}
+
+type ReissueEmployeePayslipPayload implements MutationResult {
+  payslip_pdf: MyPayslipPDF
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
+extend type Mutation {
+  reissueEmployeePayslip(worker_id: ID!, payroll_result_id: ID!): ReissueEmployeePayslipPayload!
+}

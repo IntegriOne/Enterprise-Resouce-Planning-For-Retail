@@ -3,10 +3,11 @@ package source_connections
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -15,6 +16,187 @@ import (
 	"github.com/integrione/erp-retail/backend/shared/authcontext"
 	"github.com/integrione/erp-retail/backend/shared/authz"
 )
+
+const (
+	defaultIAMTimeout          = defaultUpstreamTimeout
+	defaultIAMFailureThreshold = defaultCircuitFailureThreshold
+	defaultIAMOpenDuration     = defaultCircuitOpenDuration
+)
+
+var (
+	// ErrIAMCircuitOpen menandakan pemutus sirkuit IAM sedang terbuka akibat kegagalan konektivitas beruntun.
+	ErrIAMCircuitOpen = errors.New("identity service circuit breaker is open")
+	// ErrIAMUnavailable menandakan klien gRPC IAM belum siap atau sedang tidak dapat dijangkau.
+	ErrIAMUnavailable = errors.New("identity client is unavailable")
+)
+
+// NewIAMClientSet membentuk kumpulan stub gRPC IAM beserta state pemutus sirkuit dan batas waktu.
+func NewIAMClientSet(conn grpc.ClientConnInterface, timeout time.Duration) IAMClientSet {
+	return newIAMClientSetWithBreaker(
+		conn,
+		timeout,
+		newCircuitBreaker(defaultIAMFailureThreshold, defaultIAMOpenDuration, ErrIAMCircuitOpen, time.Now),
+	)
+}
+
+func newIAMClientSetWithBreaker(conn grpc.ClientConnInterface, timeout time.Duration, breaker *circuitBreaker) IAMClientSet {
+	if timeout <= 0 {
+		timeout = defaultIAMTimeout
+	}
+	if breaker == nil {
+		breaker = newCircuitBreaker(defaultIAMFailureThreshold, defaultIAMOpenDuration, ErrIAMCircuitOpen, time.Now)
+	}
+	if conn == nil {
+		return IAMClientSet{
+			state: &iamClientState{
+				timeout: timeout,
+				initErr: ErrIAMUnavailable,
+				breaker: breaker,
+			},
+		}
+	}
+	return IAMClientSet{
+		Auth:                 iamv1.NewAuthServiceClient(conn),
+		Users:                iamv1.NewUserServiceClient(conn),
+		Sessions:             iamv1.NewSessionServiceClient(conn),
+		Roles:                iamv1.NewRoleServiceClient(conn),
+		Permission:           iamv1.NewPermissionServiceClient(conn),
+		Groups:               iamv1.NewGroupServiceClient(conn),
+		EmployeeProvisioning: iamv1.NewEmployeeProvisioningServiceClient(conn),
+		state: &iamClientState{
+			timeout: timeout,
+			breaker: breaker,
+		},
+	}
+}
+
+func newDegradedIAMClientSet(timeout time.Duration, initErr error) IAMClientSet {
+	if timeout <= 0 {
+		timeout = defaultIAMTimeout
+	}
+	if initErr == nil {
+		initErr = ErrIAMUnavailable
+	}
+	return IAMClientSet{
+		state: &iamClientState{
+			timeout: timeout,
+			initErr: initErr,
+			breaker: newCircuitBreaker(defaultIAMFailureThreshold, defaultIAMOpenDuration, ErrIAMCircuitOpen, time.Now),
+		},
+	}
+}
+
+// initIAMConnection menyiapkan ClientConn non-blocking untuk IAM tanpa menggagalkan startup Gateway saat IAM sedang mati.
+func initIAMConnection(cfg Config, secretCopy []byte) (*grpc.ClientConn, IAMClientSet, time.Duration, error) {
+	timeout := cfg.IAMTimeout
+	if timeout <= 0 {
+		timeout = defaultIAMTimeout
+	}
+	target := strings.TrimSpace(cfg.IAMTarget)
+	if target == "" {
+		initErr := errors.New("identity grpc target is empty")
+		return nil, newDegradedIAMClientSet(timeout, initErr), timeout, initErr
+	}
+
+	conn, err := newResilientGRPCConn(target, secretCopy)
+	if err != nil {
+		return nil, newDegradedIAMClientSet(timeout, err), timeout, err
+	}
+	return conn, NewIAMClientSet(conn, timeout), timeout, nil
+}
+
+// Managed melaporkan apakah IAMClientSet dibentuk secara resmi melalui Registry/NewIAMClientSet (bukan mock struct-literal).
+func (c IAMClientSet) Managed() bool {
+	return c.state != nil
+}
+
+// InitError mengembalikan kesalahan inisialisasi koneksi IAM bila terjadi degradasi startup.
+func (c IAMClientSet) InitError() error {
+	if c.state == nil {
+		return nil
+	}
+	return c.state.initErr
+}
+
+// Ready melaporkan apakah seluruh stub gRPC IAM aktif tanpa kesalahan inisialisasi.
+func (c IAMClientSet) Ready() bool {
+	return c.InitError() == nil &&
+		c.Auth != nil &&
+		c.Users != nil &&
+		c.Sessions != nil &&
+		c.Roles != nil &&
+		c.Permission != nil &&
+		c.Groups != nil
+}
+
+// InvokeIAM mengeksekusi satu panggilan unary IAM secara terisolasi lengkap dengan timeout, pemutus sirkuit, pemulihan panic, dan validasi respons nil.
+func InvokeIAM[Resp any](
+	ctx context.Context,
+	clients IAMClientSet,
+	stubAvailable bool,
+	timeout time.Duration,
+	call func(context.Context, IAMClientSet) (*Resp, error),
+) (resp *Resp, err error) {
+	if initErr := clients.InitError(); initErr != nil {
+		return nil, middleware.ErrUnavailable("identity service unavailable", initErr)
+	}
+	if !stubAvailable {
+		return nil, middleware.ErrUnavailable("identity service unavailable", ErrIAMUnavailable)
+	}
+	if call == nil {
+		return nil, middleware.NewGatewayError(middleware.CodeInternalError, "internal server error", errors.New("identity rpc callback is nil"))
+	}
+
+	effectiveTimeout := timeout
+	var breaker *circuitBreaker
+	if clients.state != nil {
+		if effectiveTimeout <= 0 {
+			effectiveTimeout = clients.state.timeout
+		}
+		breaker = clients.state.breaker
+	}
+
+	var isProbe bool
+	if breaker != nil {
+		var cbErr error
+		isProbe, cbErr = breaker.beforeCall()
+		if cbErr != nil {
+			return nil, middleware.ErrUnavailable("identity service unavailable", cbErr)
+		}
+	}
+
+	rpcCtx, cancel := withBoundedTimeout(ctx, effectiveTimeout)
+	defer cancel()
+
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			if breaker != nil {
+				breaker.afterCall(isProbe, true, false)
+			}
+			resp = nil
+			err = middleware.ErrUnavailable(
+				"identity service unavailable",
+				fmt.Errorf("recovered identity panic: %v", recovered),
+			)
+		}
+	}()
+
+	res, rpcErr := call(rpcCtx, clients)
+	if breaker != nil {
+		breaker.afterCall(isProbe, isUpstreamUnavailableFailure(ctx, rpcErr), isLocalCallerCancellation(ctx, rpcErr))
+	}
+	if rpcErr != nil {
+		return nil, MapIAMGRPCError(rpcErr)
+	}
+	if res == nil {
+		return nil, middleware.NewGatewayError(
+			middleware.CodeInternalError,
+			"internal server error",
+			errors.New("identity service returned nil response"),
+		)
+	}
+	return res, nil
+}
 
 // IAMRuntimeBridge menghubungkan IAM gRPC ke SnapshotLoader dan Authorizer Gateway tanpa memaparkan status mentah ke resolver.
 type IAMRuntimeBridge struct {
@@ -25,7 +207,7 @@ type IAMRuntimeBridge struct {
 // NewIAMRuntimeBridge membentuk jembatan runtime gRPC IAM untuk penyegaran snapshot dan pemeriksaan reauth sensitif.
 func NewIAMRuntimeBridge(clients IAMClientSet, timeout time.Duration) *IAMRuntimeBridge {
 	if timeout <= 0 {
-		timeout = 5 * time.Second
+		timeout = defaultIAMTimeout
 	}
 	return &IAMRuntimeBridge{
 		clients: clients,
@@ -39,17 +221,17 @@ func (b *IAMRuntimeBridge) RefreshUserAccessSnapshot(
 	userID string,
 	caller authcontext.CallerContext,
 ) (*authz.AccessSnapshot, error) {
-	if b == nil || b.clients.Sessions == nil {
-		return nil, middleware.ErrUnavailable("IAM session client unavailable", nil)
+	if b == nil {
+		return nil, middleware.ErrUnavailable("identity service unavailable", ErrIAMUnavailable)
 	}
-	rpcCtx, cancel := context.WithTimeout(authcontext.WithCaller(ctx, caller), b.timeout)
-	defer cancel()
-
-	resp, err := b.clients.Sessions.RefreshUserAccessSnapshot(rpcCtx, &iamv1.RefreshUserAccessSnapshotRequest{
-		UserId: userID,
+	callCtx := authcontext.WithCaller(ctx, caller)
+	resp, err := InvokeIAM(callCtx, b.clients, b.clients.Sessions != nil, b.timeout, func(rpcCtx context.Context, c IAMClientSet) (*iamv1.RefreshUserAccessSnapshotResponse, error) {
+		return c.Sessions.RefreshUserAccessSnapshot(rpcCtx, &iamv1.RefreshUserAccessSnapshotRequest{
+			UserId: userID,
+		})
 	})
 	if err != nil {
-		return nil, MapIAMGRPCError(err)
+		return nil, err
 	}
 	return MapProtoAccessSnapshot(resp), nil
 }
@@ -62,12 +244,9 @@ func (b *IAMRuntimeBridge) VerifySensitiveSession(
 	requiredScope authz.ScopeGrant,
 	caller authcontext.CallerContext,
 ) error {
-	if b == nil || b.clients.Sessions == nil {
-		return middleware.ErrUnavailable("IAM session client unavailable", nil)
+	if b == nil {
+		return middleware.ErrUnavailable("identity service unavailable", ErrIAMUnavailable)
 	}
-	rpcCtx, cancel := context.WithTimeout(authcontext.WithCaller(ctx, caller), b.timeout)
-	defer cancel()
-
 	var reqScope *iamv1.Scope
 	if strings.TrimSpace(requiredPermission) != "" {
 		var scopeID *string
@@ -78,17 +257,17 @@ func (b *IAMRuntimeBridge) VerifySensitiveSession(
 		reqScope = &iamv1.Scope{Type: ToProtoScopeType(requiredScope.Type), Id: scopeID}
 	}
 
-	_, err := b.clients.Sessions.AuthorizeSession(rpcCtx, &iamv1.AuthorizeSessionRequest{
-		SessionToken:           rawToken,
-		RequireCsrf:            false,
-		RequiredPermission:     requiredPermission,
-		RequiredScope:          reqScope,
-		RequireSensitiveReauth: true,
+	callCtx := authcontext.WithCaller(ctx, caller)
+	_, err := InvokeIAM(callCtx, b.clients, b.clients.Sessions != nil, b.timeout, func(rpcCtx context.Context, c IAMClientSet) (*iamv1.AuthorizeSessionResponse, error) {
+		return c.Sessions.AuthorizeSession(rpcCtx, &iamv1.AuthorizeSessionRequest{
+			SessionToken:           rawToken,
+			RequireCsrf:            false,
+			RequiredPermission:     requiredPermission,
+			RequiredScope:          reqScope,
+			RequireSensitiveReauth: true,
+		})
 	})
-	if err != nil {
-		return MapIAMGRPCError(err)
-	}
-	return nil
+	return err
 }
 
 // MapProtoAccessSnapshot mengonversi keluaran gRPC RefreshUserAccessSnapshot menjadi authz.AccessSnapshot yang siap dipakai Gateway.
@@ -155,6 +334,9 @@ func MapIAMGRPCError(err error) error {
 	if _, ok := middleware.AsGatewayError(err); ok {
 		return err
 	}
+	if errors.Is(err, ErrIAMCircuitOpen) || errors.Is(err, ErrIAMUnavailable) {
+		return middleware.ErrUnavailable("identity service unavailable", err)
+	}
 	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
 		return middleware.ErrUnavailable("upstream identity request timed out", err)
 	}
@@ -166,17 +348,19 @@ func MapIAMGRPCError(err error) error {
 
 	reason := extractErrorReason(st)
 	switch reason {
+	case "iam.service_unavailable", "iam.scope.owner_verification_unavailable":
+		return middleware.ErrUnavailable(safeMessage(st.Message(), "identity service unavailable"), err)
 	case "iam.credential.invalid", "iam.totp.invalid_code", "iam.recovery_code.invalid":
 		return middleware.ErrInvalidCredentials(safeMessage(st.Message(), "invalid credentials"), err)
 	case "iam.credential.locked":
 		return middleware.ErrTooManyRequests("account temporarily locked due to failed attempts", err)
-	case "iam.session.not_found", "iam.session.expired", "iam.session.idle_expired", "iam.session.absolute_expired", "iam.session.revoked":
+	case "iam.session.expired", "iam.session.idle_expired", "iam.session.absolute_expired", "iam.session.revoked":
 		return middleware.ErrUnauthenticated("session expired or invalid", err)
 	case "iam.session.snapshot_stale":
 		return middleware.ErrUnavailable("authorization snapshot stale", err)
-	case "iam.session.reauth_required", "iam.session.csrf_mismatch", "iam.user.inactive", "iam.user.suspended", "iam.user.disabled", "iam.identity.not_verified", "iam.credential.password_rotation_required":
+	case "iam.session.reauth_required", "iam.rbac.sensitive_reauth_required", "iam.session.csrf_mismatch", "iam.user.inactive", "iam.user.suspended", "iam.user.disabled", "iam.identity.not_verified", "iam.credential.password_rotation_required", "iam.user.system_cannot_login", "iam.user.system_interactive_forbidden", "iam.rbac.role_user_kind_mismatch":
 		return middleware.ErrForbidden(safeMessage(st.Message(), "forbidden"), err)
-	case "iam.identity.already_exists", "iam.identity.same_email", "iam.identity.same_username", "iam.identity.limit_exceeded", "iam.identity.email_already_verified", "iam.role.already_exists", "iam.group.already_exists":
+	case "iam.identity.already_exists", "iam.identity.same_email", "iam.identity.same_username", "iam.identity.limit_exceeded", "iam.identity.email_already_verified", "iam.role.already_exists", "iam.role.in_use", "iam.group.already_exists":
 		return middleware.ErrConflict(safeMessage(st.Message(), "request conflicts with current state"), err)
 	case "iam.identity.cannot_remove_last", "iam.identity.cannot_remove_primary", "iam.user.deleted", "iam.role.system_protected", "iam.role.system_immutable":
 		return middleware.ErrUnprocessableEntity(safeMessage(st.Message(), "request could not be processed"), err)
@@ -187,28 +371,23 @@ func MapIAMGRPCError(err error) error {
 		return middleware.ErrInvalidArgument(safeMessage(st.Message(), "invalid input"), err)
 	case codes.NotFound:
 		return middleware.ErrNotFound(safeMessage(st.Message(), "resource not found"), err)
-	case codes.AlreadyExists, codes.FailedPrecondition:
+	case codes.AlreadyExists, codes.FailedPrecondition, codes.Aborted:
 		return middleware.ErrConflict(safeMessage(st.Message(), "request conflicts with current state"), err)
 	case codes.Unauthenticated:
+		// Kegagalan otentikasi konteks internal S2S antar Gateway-IAM tidak boleh menghapus sesi browser pengguna.
+		if isInternalCallerUnauthenticatedMessage(st.Message()) {
+			return middleware.ErrUnavailable("identity service unavailable", err)
+		}
 		return middleware.ErrUnauthenticated("authentication required", err)
 	case codes.PermissionDenied:
 		return middleware.ErrForbidden(safeMessage(st.Message(), "forbidden"), err)
 	case codes.ResourceExhausted:
 		return middleware.ErrTooManyRequests("too many requests, please retry later", err)
-	case codes.Unavailable, codes.DeadlineExceeded:
+	case codes.Unavailable, codes.DeadlineExceeded, codes.Canceled:
 		return middleware.ErrUnavailable("identity service unavailable", err)
 	default:
 		return middleware.NewGatewayError(middleware.CodeInternalError, "internal server error", err)
 	}
-}
-
-func extractErrorReason(st *status.Status) string {
-	for _, detail := range st.Details() {
-		if info, ok := detail.(*errdetails.ErrorInfo); ok {
-			return strings.TrimSpace(info.GetReason())
-		}
-	}
-	return ""
 }
 
 // ExtractIAMErrorReason mengekstrak kode alasan ErrorInfo dari status gRPC IAM bila tersedia.
@@ -226,24 +405,18 @@ func ExtractIAMErrorField(err error) string {
 	if !ok {
 		return ""
 	}
-	for _, detail := range st.Details() {
-		if badReq, ok := detail.(*errdetails.BadRequest); ok {
-			for _, fv := range badReq.GetFieldViolations() {
-				if field := strings.TrimSpace(fv.GetField()); field != "" {
-					return strings.ToLower(field)
-				}
-			}
-		}
-	}
-	return ""
+	return extractErrorField(st)
 }
 
 func safeMessage(msg, fallback string) string {
-	trimmed := strings.TrimSpace(msg)
-	if trimmed == "" {
-		return fallback
-	}
-	return trimmed
+	return sanitizeUpstreamMessage(msg, fallback, "iam:9001", ":9001", "postgres", "redis")
+}
+
+func isInternalCallerUnauthenticatedMessage(msg string) bool {
+	lower := strings.ToLower(strings.TrimSpace(msg))
+	return lower == "internal caller verification is unavailable" ||
+		lower == "invalid internal caller context" ||
+		lower == "missing internal caller context"
 }
 
 // ToProtoScopeType mengubah string scope menjadi enum protobuf ScopeType IAM.
