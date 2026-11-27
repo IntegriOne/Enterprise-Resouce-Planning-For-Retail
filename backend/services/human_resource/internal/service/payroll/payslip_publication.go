@@ -156,7 +156,8 @@ func (s *Service) publishPayslipForResult(ctx context.Context, publicationID, re
 			return hrerrors.ErrReferenceConflict
 		}
 		if result.PayslipDocumentReferenceID != nil {
-			if result.PayslipPublicationReferenceID == nil || !strings.EqualFold(*result.PayslipPublicationReferenceID, publicationID) {
+			if entity.ValidateUUID("document_version_id", *result.PayslipDocumentReferenceID) != nil ||
+				result.PayslipPublicationReferenceID == nil || !strings.EqualFold(*result.PayslipPublicationReferenceID, publicationID) {
 				return hrerrors.ErrReferenceConflict
 			}
 			documentID = *result.PayslipDocumentReferenceID
