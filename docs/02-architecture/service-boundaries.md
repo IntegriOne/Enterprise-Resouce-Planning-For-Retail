@@ -3,7 +3,7 @@
 > **Baseline 12 November 2026.** Kebijakan keamanan/izin harus cocok dengan [agents/arsitektur.md](../../agents/arsitektur.md); ownership ditentukan oleh [boundary management](../../agents/boundary.md). Status runtime perlu dibuktikan dari kode/tes terbaru.
 
 ## Hard invariants
-**Service yang memiliki fakta bisnis mengoreksi faktanya.** SQL, DSN, join, FK dan migration lintas database serta impor Go `internal` management lain **dilarang**. Satu database per management boleh berbagi server PostgreSQL fisik dengan kredensial isolasi; tidak ada kewajiban satu cluster per microservice. Referensi lintas service berupa ID opaque + owner/source + version/status/expiry.
+**Service yang memiliki fakta bisnis mengoreksi faktanya.** SQL, DSN, join, FK dan migration lintas database serta impor Go `internal` management lain **dilarang**. Satu database per management boleh berbagi server PostgreSQL fisik dengan kredensial isolasi; tidak ada kewajiban satu cluster per microservice. Referensi lintas service berupa ID opaque + owner/source + version/status/expiry. Untuk registrasi katalog RBAC agar otomatis tersimpan di production, masing-masing management hanya boleh mendaftarkan manifest deklaratif statis di `backend/shared/rbac/catalogs/{management}.json` (tanpa logika bisnis) agar dieksekusi satu pintu secara idempoten oleh IAM ke database `iam`.
 
 | Fakta | Management pemilik | Konsumen harus |
 |---|---|---|

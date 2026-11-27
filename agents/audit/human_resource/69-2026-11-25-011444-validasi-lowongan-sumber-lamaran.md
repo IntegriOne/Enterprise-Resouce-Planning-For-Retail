@@ -1,0 +1,5 @@
+# Validasi lowongan sumber lamaran
+
+`source_posting_id` sebelumnya selalu menghasilkan `Unavailable`. Validator kini mengunci posting HRM, memastikan posting memakai requisition yang sama dan telah terbit ketika lamaran diterima. Lamaran baru hanya menerima posting berstatus published. Transisi seleksi yang tersedia tetap dapat memproses lamaran historis jika penutupan atau penarikan posting terjadi setelah penerimaan. Aturan requisition dan retensi kandidat tetap berlaku. Urutan lock posting sebelum requisition mengikuti validator posting.
+
+Tes unit mencakup posting terbit, salah requisition, penutupan, penarikan, dan batas waktu penerimaan. Integrasi gRPC bufconn ke PostgreSQL sementara membuktikan penerimaan dan pemrosesan lamaran dengan posting sumber yang tersimpan. Fixture posting disiapkan di PostgreSQL. IAM nyata, verifikasi DRM produksi dan distribusi kanal eksternal masih memerlukan bukti terpisah. Tes unit modul dengan race detector, go vet, serta integrasi paket Recruitment dengan race detector lulus.

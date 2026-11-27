@@ -1,0 +1,8 @@
+# 19 — Provisioning Akun Vendor, Supplier, & Employee Lintas IAM–Enterprise Foundation
+
+- **Tanggal:** 25 November 2026 (09:00 WIB)
+- **Cakupan:** [backend/gateway/](file:///home/muriarfad/Documents/projects/erp-retail/backend/gateway/) (`graphql/iam/iam_user.graphql`, `internal/adapter/enterprise_foundation/portal_provisioning.go`, `internal/adapter/iam/`, `cmd/main.go`, dan E2E suite).
+- **Ringkasan:**
+  - Memastikan `createVendorUser` dan `createSupplierUser` menautkan FK logis `enterprise_foundation.party_contacts.iam_user_id`: pra-validasi kelayakan `Party` + `PartyRole` (`VENDOR`/`SUPPLIER`) + `PartyContact` opsional via `PreparePortalUserProvisioning` sebelum pembuatan user IAM, penautan (`RequestPartyPortalLink`/`AddPartyContact` berstatus `PENDING_LINK`) pasca-pembuatan via `CompletePortalUserProvisioning`, kompensasi `SoftDeleteUser` jika penautan gagal, penegakan izin ganda (`iam.users.write` GLOBAL + `enterprise_foundation.parties.write`), serta isolasi outage D12.
+  - Membuat `CreateEmployeeUserInput.worker_id` opsional `ID` dan gagal tertutup `UNAVAILABLE` tanpa baris yatim bila `worker_id` diisi saat HRM belum terhubung.
+  - Memperkuat [`13-partner-user-provisioning-mutation-create-vendor-supplier-employee-e2e.md`](file:///home/muriarfad/Documents/projects/erp-retail/agents/e2e/gateway/13-partner-user-provisioning-mutation-create-vendor-supplier-employee-e2e.md) (verifikasi DB `party_contacts.iam_user_id` & `iam.users`, EF recovery wait loop, dan isolasi rate limit E2E): unit test `-race` (`8/8` paket) dan `12` suite target E2E HTTPS lulus penuh (`102.155s`).

@@ -1,0 +1,8 @@
+# 11 — Pembaruan Footer Editorial Grounded pada Route `/login`
+
+- **Tanggal:** 25 November 2026 (07:33 WIB)
+- **Cakupan:** `frontend/src/app/login/`
+- **Ringkasan Perubahan:**
+  - Mengubah [`login-footbar.tsx`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/login-footbar.tsx) dan blok `.footbar*` pada [`login.module.css`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/login.module.css) dari strip nav bawah satu baris menjadi **Grounded Editorial Footer** berlatar Deep Navy `#0B2439` beraksen `#DA414A` dengan grid asimetris 3 kolom (`1.55fr 1fr 1fr` desktop, collapse 1 kolom di mobile): identitas IntegriOne & jaminan cookie/CSRF, navigasi akses akun (beranda, toggle daftar/masuk, lupa kata sandi via [`login-experience.tsx`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/login-experience.tsx)), serta ringkasan keamanan sesi netral tanpa menu `/register` maupun `/verify-email`.
+  - Memperbarui [`frontend/src/app/login/README.md`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/README.md) dan [`1-context.md`](file:///home/muriarfad/Documents/projects/erp-retail/agents/frontend/context/iam_management/1-context.md).
+- **Verifikasi:** `next typegen`, `npm run lint`, `tsc --noEmit`, `npm run build` (`15/15` rute), `12/12` unit test `src/lib/graphql/*.test.ts`, `docker compose build frontend-1` & restart `frontend-1`/`frontend-2`/`caddy` `Healthy`, serta verifikasi Chrome Headless di `https://erp.localhost:8443/login` (`1440x900` & `320x740` + `reduced-motion`, target sentuh `44px`, `0` error/warning).

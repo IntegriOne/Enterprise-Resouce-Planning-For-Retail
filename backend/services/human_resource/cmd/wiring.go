@@ -19,6 +19,7 @@ import (
 	appservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
+	payrollrepo "github.com/integrione/erp-retail/backend/services/human_resource/repository/payroll"
 )
 
 // Dependencies berisi hasil wiring eksplisit dari satu database HRM ke seluruh service.
@@ -108,6 +109,11 @@ func buildDependencies(
 		return fail(err)
 	}
 	integrity := security.NewIntegrity(validators)
+	snapshotStore, err := payrollrepo.NewInputSnapshotRepository(handle)
+	if err != nil {
+		return fail(err)
+	}
+	serviceOptions = append(serviceOptions, appservice.WithPayrollInputSnapshots(snapshotStore))
 	services, err := appservice.NewRegistry(repos, operation.Dependencies{Policy: policy, Integrity: integrity}, serviceOptions...)
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM services: %w", err))

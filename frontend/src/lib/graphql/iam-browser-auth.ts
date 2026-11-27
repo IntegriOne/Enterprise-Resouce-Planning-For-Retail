@@ -37,7 +37,12 @@ export type MutationResult = {
 };
 
 export type UserLoginPayload = Partial<MutationResult> & {
-  status?: "AUTHENTICATED" | "MFA_REQUIRED" | null;
+  status?:
+    | "AUTHENTICATED"
+    | "MFA_REQUIRED"
+    | "EMAIL_VERIFICATION_REQUIRED"
+    | "UNVERIFIED"
+    | null;
   mfaChallenge?: string | null;
   mfaExpiresAt?: string | null;
   csrfToken?: string | null;
@@ -306,6 +311,44 @@ export async function submitUserLogin(
   };
 }
 
+// Mendeteksi payload userLogin ketika akun sudah terdaftar namun email belum diverifikasi.
+export function isUnverifiedLoginResponse(
+  payload: Pick<UserLoginPayload, "status" | "redirectLocation"> | null | undefined,
+  locationHeader?: string | null,
+): boolean {
+  const target = (locationHeader || payload?.redirectLocation || "").trim();
+  if (target === "/verify-email") {
+    return true;
+  }
+  return (
+    payload?.status === "EMAIL_VERIFICATION_REQUIRED" ||
+    payload?.status === "UNVERIFIED"
+  );
+}
+
+// Mendeteksi error userLogin ketika server menyatakan email/identitas belum terverifikasi.
+export function isUnverifiedLoginError(error: unknown): boolean {
+  if (!(error instanceof AuthRequestError)) return false;
+  const code = (error.code || "").toUpperCase();
+  const errType = (error.errorType || "").toUpperCase();
+  if (
+    code === "EMAIL_NOT_VERIFIED" ||
+    code === "IDENTITY_NOT_VERIFIED" ||
+    code === "EMAIL_VERIFICATION_REQUIRED" ||
+    errType === "EMAIL_NOT_VERIFIED" ||
+    errType === "IDENTITY_NOT_VERIFIED"
+  ) {
+    return true;
+  }
+  const msg = (error.message || "").toLowerCase();
+  return (
+    msg.includes("identity_not_verified") ||
+    msg.includes("email not verified") ||
+    msg.includes("not verified") ||
+    msg.includes("belum terverifikasi")
+  );
+}
+
 export async function submitValidateUserMfa(
   challenge: string,
   code: string,
@@ -436,6 +479,148 @@ export async function submitChangeUsername(
   );
 }
 
+export async function fetchMyWorkspaceAccessBrowser(
+  signal?: AbortSignal,
+): Promise<MyWorkspaceAccessPayload> {
+  const url = GRAPHQL_PATH + "?query=" + encodeURIComponent(MY_WORKSPACE_ACCESS_QUERY);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      signal,
+    });
+  } catch {
+    throw new AuthRequestError(0, "NETWORK", "Gagal memeriksa akses ruang kerja");
+  }
+
+  let payload: GraphQLResponse<{
+    myWorkspaceAccess?: MyWorkspaceAccessPayload | null;
+  }>;
+  try {
+    payload = (await response.json()) as GraphQLResponse<{
+      myWorkspaceAccess?: MyWorkspaceAccessPayload | null;
+    }>;
+  } catch {
+    throw new AuthRequestError(
+      response.status,
+      "INVALID_RESPONSE",
+      "Format respons akses tidak valid",
+    );
+  }
+
+  if (!response.ok || payload.errors?.length || !payload.data?.myWorkspaceAccess) {
+    const firstErr = payload.errors?.[0];
+    const code = firstErr?.extensions?.code;
+    const errorType =
+      typeof firstErr?.extensions?.type === "string"
+        ? firstErr.extensions.type
+        : undefined;
+    throw new AuthRequestError(
+      response.status,
+      code,
+      firstErr?.message,
+      errorType,
+    );
+  }
+
+  return payload.data.myWorkspaceAccess;
+}
+
+const MY_ACCESS_SNAPSHOT_SERVER_QUERY = `
+  query MyAccessSnapshotServer {
+    myAccessSnapshot {
+      principal_id
+      user_kind
+      status
+      mfa_enabled
+      auth_epoch
+      perm_revision
+      recovery_epoch
+      can_access_identity
+      default_redirect_path
+      allowed_redirect_paths
+      roles { id code name priority default_redirect_path }
+      permissions { permission_code is_sensitive scope { type id } }
+      synced_at_unix
+      fresh_until_unix
+    }
+  }
+`;
+
+/**
+ * Server Component Guard helper untuk mengevaluasi AccessSnapshot lengkap (peran & izin domain)
+ * sebelum merender ruang kerja terlindungi (/human-resource dan /procurement).
+ */
+export async function fetchMyAccessSnapshotServer(
+  cookieHeader: string,
+): Promise<{
+  principal_id: string;
+  user_kind: string;
+  status: string;
+  can_access_identity: boolean;
+  default_redirect_path: string;
+  allowed_redirect_paths: string[];
+  roles: Array<{ id: string; code: string; name: string; priority: number; default_redirect_path: string }>;
+  permissions: Array<{ permission_code: string; is_sensitive: boolean; scope: { type: string; id?: string | null } }>;
+}> {
+  const baseUrl =
+    process.env.GATEWAY_INTERNAL_URL ||
+    (process.env.NODE_ENV === "production"
+      ? "http://gateway-1:8080"
+      : "https://erp.localhost:8443");
+
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/api/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
+      cache: "no-store",
+      body: JSON.stringify({ query: MY_ACCESS_SNAPSHOT_SERVER_QUERY }),
+    });
+  } catch {
+    throw new AuthRequestError(0, "NETWORK", "Gagal menghubungi server otorisasi IAM");
+  }
+
+  if (!response.ok) {
+    throw new AuthRequestError(response.status, "UNAVAILABLE");
+  }
+
+  const payload = (await response.json()) as GraphQLResponse<{
+    myAccessSnapshot?: {
+      principal_id: string;
+      user_kind: string;
+      status: string;
+      can_access_identity: boolean;
+      default_redirect_path: string;
+      allowed_redirect_paths: string[];
+      roles: Array<{ id: string; code: string; name: string; priority: number; default_redirect_path: string }>;
+      permissions: Array<{ permission_code: string; is_sensitive: boolean; scope: { type: string; id?: string | null } }>;
+    } | null;
+  }>;
+
+  if (payload.errors?.length || !payload.data?.myAccessSnapshot) {
+    const firstErr = payload.errors?.[0];
+    const code = firstErr?.extensions?.code;
+    const errorType =
+      typeof firstErr?.extensions?.type === "string"
+        ? firstErr.extensions.type
+        : undefined;
+    throw new AuthRequestError(
+      response.status,
+      code,
+      firstErr?.message,
+      errorType,
+    );
+  }
+
+  return payload.data.myAccessSnapshot;
+}
+
 /**
  * Server Component Guard helper untuk query myWorkspaceAccess
  * Dijalankan di lingkungan server-side Next.js.
@@ -514,6 +699,9 @@ export function formatAuthErrorMessage(
       return "Terjadi kendala internal pada layanan. Silakan coba beberapa saat lagi.";
     }
     if (errKind === "FORBIDDEN" || error.status === 403 || errKind === "AUTHORIZATION") {
+      if (hasServerMessage && rawMsg?.toLowerCase().includes("csrf")) {
+        return "Sesi keamanan formulir telah diperbarui. Silakan kirim kembali permintaan Anda.";
+      }
       if (hasServerMessage) {
         return `${rawMsg}`;
       }
@@ -572,6 +760,91 @@ export function formatAuthErrorMessage(
   }
 }
 
+export const IAM_MIN_PASSWORD_LENGTH = 12;
+export const IAM_MAX_PASSWORD_LENGTH = 128;
+export const IAM_USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{1,62}[a-z0-9]$/;
+
+export type PasswordChecklist = {
+  minLength: boolean;
+  maxLength: boolean;
+  hasUpperAndLower: boolean;
+  hasDigit: boolean;
+  hasSymbol: boolean;
+  noIdentityTerms: boolean;
+};
+
+export function validateIamUsername(raw: string): string | null {
+  const normalized = raw.trim().toLowerCase();
+  if (!normalized) {
+    return "Masukkan username Anda.";
+  }
+  if (!IAM_USERNAME_PATTERN.test(normalized)) {
+    return "Username 3-64 karakter: diawali & diakhiri huruf kecil/angka, boleh memakai titik, garis bawah, atau tanda hubung.";
+  }
+  return null;
+}
+
+function containsForbiddenIdentityTerms(
+  password: string,
+  forbiddenTerms: string[],
+): boolean {
+  const lower = password.toLowerCase();
+  for (const rawTerm of forbiddenTerms) {
+    const term = rawTerm.trim().toLowerCase();
+    if (term.length >= 3 && lower.includes(term)) {
+      return true;
+    }
+    const tokens = term.split(/[@._\-\s]+/);
+    for (const tok of tokens) {
+      if (tok.length >= 3 && lower.includes(tok)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function getPasswordChecklist(
+  password: string,
+  forbiddenTerms: string[] = [],
+): PasswordChecklist {
+  const runeCount = Array.from(password).length;
+  return {
+    minLength: runeCount >= IAM_MIN_PASSWORD_LENGTH,
+    maxLength: runeCount <= IAM_MAX_PASSWORD_LENGTH,
+    hasUpperAndLower: /[A-Z]/.test(password) && /[a-z]/.test(password),
+    hasDigit: /\d/.test(password),
+    hasSymbol: /[^A-Za-z0-9\s]/.test(password),
+    noIdentityTerms: !containsForbiddenIdentityTerms(password, forbiddenTerms),
+  };
+}
+
+export function validateIamPassword(
+  password: string,
+  forbiddenTerms: string[] = [],
+): string | null {
+  if (!password) {
+    return "Masukkan kata sandi akun Anda.";
+  }
+  if (password.includes("\u0000")) {
+    return "Kata sandi mengandung karakter tidak valid.";
+  }
+  const checks = getPasswordChecklist(password, forbiddenTerms);
+  if (!checks.minLength) {
+    return `Kata sandi minimal ${IAM_MIN_PASSWORD_LENGTH} karakter.`;
+  }
+  if (!checks.maxLength) {
+    return `Kata sandi maksimal ${IAM_MAX_PASSWORD_LENGTH} karakter.`;
+  }
+  if (!checks.hasUpperAndLower || !checks.hasDigit || !checks.hasSymbol) {
+    return "Kata sandi wajib memuat huruf besar, huruf kecil, angka, dan simbol.";
+  }
+  if (!checks.noIdentityTerms) {
+    return "Kata sandi tidak boleh memuat bagian dari nama, email, atau username Anda.";
+  }
+  return null;
+}
+
 export function getPasswordStrength(value: string): {
   score: number;
   label: string;
@@ -581,10 +854,10 @@ export function getPasswordStrength(value: string): {
     return { score: 0, label: "", color: "#dde3e8" };
   }
   let score = 0;
-  if (value.length >= 10) score += 1;
+  if (Array.from(value).length >= IAM_MIN_PASSWORD_LENGTH) score += 1;
   if (/[A-Z]/.test(value) && /[a-z]/.test(value)) score += 1;
   if (/\d/.test(value)) score += 1;
-  if (/[^A-Za-z0-9]/.test(value)) score += 1;
+  if (/[^A-Za-z0-9\s]/.test(value)) score += 1;
 
   if (score <= 1) {
     return { score: 25, label: "Lemah", color: "#da414a" };

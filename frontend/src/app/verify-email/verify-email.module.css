@@ -14,7 +14,7 @@
   --font-display: var(--font-fraunces, "Fraunces", Georgia, serif);
   --font-ui: var(--font-source-sans-3, "Source Sans 3", sans-serif);
 
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--brand-offwhite);
@@ -212,6 +212,72 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.resendForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--brand-navy-deep);
+}
+
+.inputField {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--brand-border);
+  background-color: var(--brand-offwhite);
+  color: var(--brand-dark-text);
+  font-size: 0.9375rem;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.inputField:focus {
+  border-color: var(--brand-navy-primary);
+  box-shadow: 0 0 0 3px rgba(19, 53, 84, 0.14);
+}
+
+.feedbackBannerSuccess,
+.feedbackBannerError {
+  width: 100%;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.feedbackBannerSuccess {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.feedbackBannerError {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.primaryBtn:active,
+.secondaryBtn:active {
+  transform: scale(0.99);
 }
 
 .spinner {

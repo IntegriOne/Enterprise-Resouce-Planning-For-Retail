@@ -4,7 +4,12 @@ import { validatePostLoginLocation } from "./redirect-allowlist.ts";
 
 test("validatePostLoginLocation allows exact allowed canonical paths", () => {
   assert.equal(validatePostLoginLocation("/identity"), "/identity");
+  assert.equal(validatePostLoginLocation("/identity/users"), "/identity/users");
   assert.equal(validatePostLoginLocation("/"), "/");
+  assert.equal(validatePostLoginLocation("/profile"), "/profile");
+  assert.equal(validatePostLoginLocation("/account"), "/account");
+  assert.equal(validatePostLoginLocation("/vendor"), "/vendor");
+  assert.equal(validatePostLoginLocation("/supplier"), "/supplier");
   assert.equal(validatePostLoginLocation("  /identity  "), "/identity");
   assert.equal(validatePostLoginLocation("  /  "), "/");
 });

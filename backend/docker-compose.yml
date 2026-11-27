@@ -151,11 +151,6 @@ services:
     volumes:
       - ./deploy/certs/ca.crt:/etc/integrione/certs/ca.crt:ro
       - ./gateway/.local/hrm-client:/etc/integrione/hrm-client:ro
-    depends_on:
-      iam:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "/usr/local/bin/gateway-healthcheck"]
       interval: 10s
@@ -193,13 +188,6 @@ services:
     volumes:
       - ./deploy/certs/ca.crt:/etc/integrione/certs/ca.crt:ro
       - ./gateway/.local/hrm-client:/etc/integrione/hrm-client:ro
-    depends_on:
-      gateway-1:
-        condition: service_healthy
-      iam:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "/usr/local/bin/gateway-healthcheck"]
       interval: 10s

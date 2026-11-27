@@ -2,8 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   AuthRequestError,
+  fetchMyWorkspaceAccessBrowser,
   formatAuthErrorMessage,
   getPasswordStrength,
+  isUnverifiedLoginError,
+  isUnverifiedLoginResponse,
   submitChangeUsername,
   submitCreateUser,
   submitResendValidationEmailToken,
@@ -11,13 +14,58 @@ import {
   submitUserLogin,
   submitUserResetPassword,
   submitVerifyEmail,
+  validateIamPassword,
+  validateIamUsername,
 } from "./iam-browser-auth.ts";
 
-test("getPasswordStrength calculates scores correctly", () => {
+test("getPasswordStrength and validateIamPassword enforce 12-char IAM policy", () => {
   assert.deepEqual(getPasswordStrength(""), { score: 0, label: "", color: "#dde3e8" });
   assert.equal(getPasswordStrength("abc").label, "Lemah");
   assert.equal(getPasswordStrength("Abcdefgh1").label, "Cukup");
-  assert.equal(getPasswordStrength("Abcdefgh1!").label, "Kuat");
+  assert.equal(getPasswordStrength("Abcdefgh1!").label, "Baik");
+  assert.equal(getPasswordStrength("IntegriPass#2026").label, "Kuat");
+
+  assert.match(validateIamPassword("Short1!a") || "", /minimal 12 karakter/);
+  assert.match(validateIamPassword("abcdefghijkl") || "", /huruf besar, huruf kecil, angka, dan simbol/);
+  assert.match(
+    validateIamPassword("BudiSantoso#2026!", ["Budi Santoso", "budi@integrione.test"]) || "",
+    /tidak boleh memuat bagian/,
+  );
+  assert.equal(
+    validateIamPassword("RitelAman#2026!Z", ["Budi Santoso", "budi@integrione.test"]),
+    null,
+  );
+
+  assert.equal(validateIamUsername("budi.santoso"), null);
+  assert.match(validateIamUsername("B!") || "", /3-64 karakter/);
+});
+
+test("fetchMyWorkspaceAccessBrowser queries myWorkspaceAccess via /api/graphql GET", async () => {
+  const originalFetch = globalThis.fetch;
+  let requestedUrl = "";
+  globalThis.fetch = (async (input: URL | RequestInfo) => {
+    requestedUrl = String(input);
+    return new Response(
+      JSON.stringify({
+        data: {
+          myWorkspaceAccess: {
+            canAccessIdentity: true,
+            defaultLocation: "/identity",
+          },
+        },
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }) as typeof fetch;
+
+  try {
+    const res = await fetchMyWorkspaceAccessBrowser();
+    assert.equal(res.canAccessIdentity, true);
+    assert.equal(res.defaultLocation, "/identity");
+    assert.match(requestedUrl, /^\/api\/graphql\?query=.*myWorkspaceAccess/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("formatAuthErrorMessage handles AuthRequestError variants", () => {
@@ -295,4 +343,44 @@ test("submitCreateUser handles public success, email duplicate redirect /login, 
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("isUnverifiedLoginResponse and isUnverifiedLoginError detect unverified login signals", () => {
+  assert.equal(
+    isUnverifiedLoginResponse({ status: "EMAIL_VERIFICATION_REQUIRED", redirectLocation: null }),
+    true,
+  );
+  assert.equal(
+    isUnverifiedLoginResponse({ status: "UNVERIFIED", redirectLocation: null }),
+    true,
+  );
+  assert.equal(
+    isUnverifiedLoginResponse({ status: "AUTHENTICATED", redirectLocation: "/verify-email" }),
+    true,
+  );
+  assert.equal(
+    isUnverifiedLoginResponse({ status: "AUTHENTICATED", redirectLocation: "/identity" }, "/verify-email"),
+    true,
+  );
+  assert.equal(
+    isUnverifiedLoginResponse({ status: "AUTHENTICATED", redirectLocation: "/identity" }),
+    false,
+  );
+
+  assert.equal(
+    isUnverifiedLoginError(new AuthRequestError(401, "EMAIL_NOT_VERIFIED", "email belum terverifikasi")),
+    true,
+  );
+  assert.equal(
+    isUnverifiedLoginError(new AuthRequestError(401, "IDENTITY_NOT_VERIFIED", "identity_not_verified")),
+    true,
+  );
+  assert.equal(
+    isUnverifiedLoginError(new AuthRequestError(401, "AUTHENTICATION", "Account email not verified yet")),
+    true,
+  );
+  assert.equal(
+    isUnverifiedLoginError(new AuthRequestError(401, "AUTHENTICATION", "invalid login credentials")),
+    false,
+  );
 });

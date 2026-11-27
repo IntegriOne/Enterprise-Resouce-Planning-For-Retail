@@ -18,6 +18,12 @@ erp.localhost {
             reverse_proxy gateway-1:8080 gateway-2:8080 {
                 lb_policy round_robin
                 health_uri /api/graphql?query=%7Bhealth%7D
+                health_interval 2s
+                health_timeout 2s
+                fail_duration 5s
+                max_fails 1
+                unhealthy_status 5xx
+                lb_retries 1
             }
         }
 

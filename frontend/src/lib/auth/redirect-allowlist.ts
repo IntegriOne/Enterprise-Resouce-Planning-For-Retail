@@ -1,14 +1,28 @@
 /**
  * Allowlist validator untuk tujuan post-login redirect (Defense-in-depth).
  *
- * Sesuai instruksi dan panduan keamanan IntegriOne:
- * - Hanya menerima canonical exact match: "/identity" atau "/"
+ * Selaras dengan daftar rute portal resmi IntegriOne di Gateway (`defaultAllowedRedirects`):
+ * - Rute portal utama & sub-rute relatif bersih tanpa traversal, query, maupun fragment.
  * - Menolak URL absolut (http://, https://), protocol-relative (//),
  *   skema javascript:, data:, encoded traversal (%2F, ..), fragment,
  *   query string tidak dikenal, maupun CRLF injection.
  */
 
-const ALLOWED_EXACT_PATHS = new Set<string>(["/identity", "/"]);
+const ALLOWED_PORTAL_PREFIXES = [
+  "/",
+  "/identity",
+  "/human-resource",
+  "/procurement",
+  "/warehouse",
+  "/finance",
+  "/accounting",
+  "/product",
+  "/supplier",
+  "/vendor",
+  "/commerce",
+  "/account",
+  "/profile",
+] as const;
 
 export function validatePostLoginLocation(
   locationHeader: string | null | undefined,
@@ -18,7 +32,7 @@ export function validatePostLoginLocation(
   }
 
   const trimmed = locationHeader.trim();
-  if (!trimmed) {
+  if (!trimmed || !trimmed.startsWith("/")) {
     return null;
   }
 
@@ -43,18 +57,24 @@ export function validatePostLoginLocation(
   }
 
   // Tolak query string atau hash fragment pada post-login location canonical
-  if (trimmed.includes("?") || trimmed.includes("#")) {
+  if (trimmed.includes("?") || trimmed.includes("#") || trimmed.includes("\\")) {
     return null;
   }
 
-  // Tolak path traversal
-  if (trimmed.includes("..")) {
+  // Tolak path traversal per segmen
+  const segments = trimmed.split("/");
+  if (segments.some((seg) => seg === ".." || seg === ".")) {
     return null;
   }
 
-  // Exact match terhadap allowlist resmi
-  if (ALLOWED_EXACT_PATHS.has(trimmed)) {
-    return trimmed;
+  // Izinkan kecocokan persis pada portal resmi atau sub-rute valid di bawah prefiks non-root
+  for (const allowed of ALLOWED_PORTAL_PREFIXES) {
+    if (trimmed === allowed) {
+      return trimmed;
+    }
+    if (allowed !== "/" && trimmed.startsWith(`${allowed}/`)) {
+      return trimmed;
+    }
   }
 
   return null;

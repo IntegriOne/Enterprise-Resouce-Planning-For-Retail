@@ -2,9 +2,11 @@ go 1.27.4
 
 use (
 	./gateway
+	./services/enterprise_foundation
 	./services/human_resource
 	./services/iam
 	./shared/authcontext
 	./shared/authsession
 	./shared/authz
+	./shared/rbac
 )

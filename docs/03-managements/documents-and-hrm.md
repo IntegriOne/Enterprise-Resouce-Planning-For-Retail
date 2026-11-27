@@ -19,9 +19,9 @@ HRM menguasai worker, kontrak, penempatan, cuti/kompensasi sesuai domain aktual.
 [Desain HRM–Talent dan bukti SQL](../../backend/services/human_resource/docs/talent-management.md) · [DBML aktif](../../backend/services/human_resource/db/schema/human_resource_management.dbml). Statusnya desain/baseline teruji, belum implementasi runtime/E2E.
 
 ## F1/F2
-Employee onboarding→HRM persetujuan hubungan kerja→IAM access request/independent approval→active role scoped enterprise unit. Supplier/vendor **bukan** HRM worker hanya karena menerima akses portal. Kasus PII employee atau kontrak membutuhkan audit/retensi serta prinsip least privilege.
+HRM mencatat hubungan kerja dan mengajukan akun untuk pekerja aktif. IAM memproses pengajuan dengan MFA, memvalidasi badan hukum melalui Enterprise Foundation, lalu menautkan akun melalui gRPC privat HRM. Pemberian role bisnis tetap mengikuti proses IAM dan scope Enterprise Foundation. [Operasi dan verifikasi onboarding](../../agents/grpc/hrm/33-alur-pengajuan-akun-employee.md). Supplier/vendor **bukan** HRM worker hanya karena menerima akses portal. Kasus PII employee atau kontrak membutuhkan audit/retensi serta prinsip least privilege.
 
 ## Test dan status
 Kedua domain memerlukan service tests dan E2E sesuai cakupan. Dokumen source/audit HRM yang lebih baru memegang detail aktual; jangan menganggap status planned DRM sudah hilang tanpa bukti.
 
-[DRM](../../backend/services/document_records_management/README.md) · [HRM](../../backend/services/human_resource_management/README.md) · [source principal](../../agents/principals.md).
+[Kebutuhan DRM dari HRM](../../agents/grpc/hrm/24-kebutuhan-integrasi-drm.md) · [HRM](../../backend/services/human_resource/README.md) · [model user IAM](../../agents/users.md).

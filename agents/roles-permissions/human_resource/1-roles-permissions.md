@@ -1,10 +1,10 @@
 # Katalog Roles & Permissions: Human Resource Management
 
-Status: **keputusan katalog management** oleh developer HRM atas mandat owner 16 November 2026, dengan [katalog Enterprise Foundation](../enterprise_foundation/1-roles-permissions.md) sebagai pola. Ini menetapkan kode dan batas izin HRM; belum membuat permission atau grant di IAM. Seluruh 22 domain dan kontrak gRPC terdaftar, tetapi aktivasi bisnis tetap memerlukan validator, scope dan E2E yang terbukti.
+Status: **keputusan katalog management** oleh developer HRM atas mandat owner 16 November 2026 (diperbarui 25 November 2026), dengan [katalog Enterprise Foundation](../enterprise_foundation/1-roles-permissions.md) sebagai pola. Ini menetapkan kode dan batas izin HRM; belum membuat permission atau grant di IAM. Seluruh 22 domain dan kontrak gRPC terdaftar beserta validator integritas untuk seluruh 78 resource berkode mutasi + `hr_leave_ledger_entries` (79 validator), namun wiring Gateway dan aktivasi grant IAM nyata tetap ditangguhkan sampai tahap integrasi Gateway.
 
 ## Prinsip penamaan dan aktivasi
 
-Permission memakai format `human_resource.<resource>.<action>`. Resource mengikuti nama tabel tanpa awalan `hr_`, bukan string bebas dari request. Contoh: `human_resource.workers.read`, `human_resource.workers.create`, `human_resource.leave_entitlements.post`, `human_resource.career_paths.approve`. Untuk operasi biasa, action adalah `read`, `create`, `update`, atau `delete`; enam command sensitif yang sudah ada memakai action tersendiri. Mapping RPC: GetByID/GetAll/FindBy/count → `.read`, Create → `.create`, Update → `.update`, dan Delete → `.delete` pada resource yang sama. Kode `.write` tidak dipakai: pemisahan `create`, `update`, dan `delete` mencegah satu grant tulis memberi hak menghapus atau mengubah data di luar tugasnya. Ini keputusan katalog HRM meskipun katalog Enterprise Foundation saat ini masih memakai `.write`.
+Permission memakai format `human_resource.<resource>.<action>`. Resource mengikuti nama tabel tanpa awalan `hr_`, bukan string bebas dari request. Contoh: `human_resource.workers.read`, `human_resource.workers.create`, `human_resource.leave_entitlements.post`, `human_resource.career_paths.approve`. Untuk operasi biasa, action adalah `read`, `create`, `update`, atau `delete`; command sensitif yang sudah ada memakai action tersendiri. Mapping RPC: GetByID/GetAll/FindBy/count → `.read`, Create → `.create`, Update → `.update`, dan Delete → `.delete` pada resource yang sama. Kode `.write` tidak dipakai: pemisahan `create`, `update`, dan `delete` mencegah satu grant tulis memberi hak menghapus atau mengubah data di luar tugasnya. Ini keputusan katalog HRM meskipun katalog Enterprise Foundation saat ini masih memakai `.write`.
 
 GetByID, GetAll, FindBy dan count memakai `read` yang sama; filter scope diterapkan sebelum pagination dan count. Create, Update dan Delete **masing-masing** memerlukan permission sendiri dan tetap diuji terhadap workflow, status final, kepemilikan objek, serta pemeriksaan ulang sebelum commit. Izin CRUD tidak mengizinkan command khusus. Tidak ada permission wildcard dan tidak ada pewarisan hak bisnis otomatis dari role Super Admin IAM.
 
@@ -35,7 +35,7 @@ GetByID, GetAll, FindBy dan count memakai `read` yang sama; filter scope diterap
 | talent | talent_frameworks, talent_dimensions, talent_review_cycles, talent_assessments, talent_assessment_scores, talent_calibration_sessions, talent_calibration_decisions, talent_pools, talent_pool_memberships | Panel/cycle/unit; asesmen final, kalibrasi dan evidence dipisahkan. |
 | promotion | promotion_recommendations, promotion_decisions | Worker, target assignment dan approval independen; approval tidak langsung mengubah jabatan. |
 
-Inventaris ini dicocokkan dengan `TableName()` entity HRM pada 16 November 2026: 84 resource bisnis pada 22 domain. Setiap nama resource menghasilkan `human_resource.<resource>.read`. Sebanyak 78 resource juga menghasilkan `.create`, `.update`, dan `.delete` sebagai kode terpisah. Enam resource berikut **hanya memiliki `.read`** karena merupakan riwayat, ledger, atau hasil yang dihasilkan workflow: `worker_lifecycle_events`, `application_stage_history`, `payroll_results`, `payroll_result_lines`, `leave_ledger_entries`, dan `engagement_survey_results`. Total dasar: 318 kode (84 read + 78 create + 78 update + 78 delete), ditambah dua puluh command khusus di bawah = **338 kode**. Permission `.delete` tersedia dalam katalog tetapi tidak diberikan dalam template role umum; pemakaiannya memerlukan mandat retensi dan workflow per resource. Dua tabel integrasi (`hr_inbox_events`, `hr_outbox_events`) tidak menjadi permission CRUD pengguna. Kode adalah katalog untuk provisioning resmi IAM, bukan seed atau grant.
+Inventaris ini dicocokkan dengan `catalog.go` dan `TableName()` entity HRM: 84 resource bisnis pada 22 domain dengan **398 kode permission aktif** pada `PermissionCatalog()` (**482 pemetaan operasi** pada `rpcPermissionCatalog` sebagaimana diverifikasi `catalog_test.go`). Sebanyak 78 resource menghasilkan `.read`, `.create`, `.update`, dan `.delete` sebagai kode terpisah, sementara 6 resource riwayat/ledger/hasil hanya memiliki `.read` (`worker_lifecycle_events`, `application_stage_history`, `payroll_results`, `payroll_result_lines`, `leave_ledger_entries`, dan `engagement_survey_results`), ditambah command workflow aktif pada recruitment, performance, promotion, talent, onboarding, career, payroll, leave, dan policy (`human_resource.policy_acknowledgements.acknowledge`). Permission `.delete` tidak diberikan dalam template role umum. Dua tabel integrasi (`hr_inbox_events`, `hr_outbox_events`) tidak menjadi permission CRUD pengguna. Kode adalah katalog untuk provisioning resmi IAM, bukan seed atau grant.
 
 ### Matriks izin eksplisit per resource
 
@@ -46,7 +46,7 @@ Setiap sel tindakan adalah **kode permission tersendiri** dengan awalan `human_r
 | workforceplanning | `job_families` | read, create, update, delete | — |
 | workforceplanning | `jobs` | read, create, update, delete | — |
 | workforceplanning | `positions` | read, create, update, delete | — |
-| workforceplanning | `workforce_plans` | read, create, update, delete | — |
+| workforceplanning | `workforce_plans` | read, create, update, delete | submit, approve, cancel, supersede |
 | workforceplanning | `workforce_plan_lines` | read, create, update, delete | — |
 | personnel | `workers` | read, create, update, delete | — |
 | personnel | `employment_contracts` | read, create, update, delete | — |
@@ -63,13 +63,13 @@ Setiap sel tindakan adalah **kode permission tersendiri** dengan awalan `human_r
 | recruitment | `interview_feedback` | read, create, update, delete | — |
 | recruitment | `offers` | read, create, update, delete | — |
 | recruitment | `job_postings` | read, create, update, delete | publish, close, withdraw |
-| recruitment | `application_assessments` | read, create, update, delete | — |
+| recruitment | `application_assessments` | read, create, update, delete | complete |
 | onboarding | `onboarding_plans` | read, create, update, delete | start, complete |
 | onboarding | `onboarding_tasks` | read, create, update, delete | complete |
 | compensation | `compensation_bands` | read, create, update, delete | — |
-| compensation | `compensation_records` | read, create, update, delete | — |
+| compensation | `compensation_records` | read, create, update, delete | approve |
 | benefits | `benefit_plans` | read, create, update, delete | — |
-| benefits | `benefit_enrollments` | read, create, update, delete | — |
+| benefits | `benefit_enrollments` | read, create, update, delete | approve, end |
 | payroll | `pay_components` | read, create, update, delete | — |
 | payroll | `payroll_rule_sets` | read, create, update, delete | — |
 | payroll | `payroll_groups` | read, create, update, delete | — |
@@ -80,36 +80,36 @@ Setiap sel tindakan adalah **kode permission tersendiri** dengan awalan `human_r
 | payroll | `payroll_result_lines` | read | — |
 | payroll | `payroll_adjustments` | read, create, update, delete | — |
 | leave | `leave_policies` | read, create, update, delete | — |
-| leave | `leave_entitlements` | read, create, update, delete | post |
-| leave | `leave_adjustments` | read, create, update, delete | approve |
+| leave | `leave_entitlements` | read, create, update, delete | post, close |
+| leave | `leave_adjustments` | read, create, update, delete | approve, reject |
 | leave | `leave_ledger_entries` | read | — |
 | competency | `competencies` | read, create, update, delete | — |
 | competency | `worker_qualifications` | read, create, update, delete | — |
 | competency | `job_competencies` | read, create, update, delete | — |
 | competency | `worker_competency_assessments` | read, create, update, delete | — |
-| performance | `performance_cycles` | read, create, update, delete | launch |
-| performance | `performance_goals` | read, create, update, delete | — |
+| performance | `performance_cycles` | read, create, update, delete | launch, close |
+| performance | `performance_goals` | read, create, update, delete | submit, approve, reject |
 | performance | `performance_goal_updates` | read, create, update, delete | — |
-| performance | `performance_reviews` | read, create, update, delete | — |
+| performance | `performance_reviews` | read, create, update, delete | submit, finalize |
 | performance | `performance_review_goal_scores` | read, create, update, delete | — |
 | learning | `learning_courses` | read, create, update, delete | — |
 | learning | `learning_course_competencies` | read, create, update, delete | — |
-| learning | `learning_enrollments` | read, create, update, delete | — |
+| learning | `learning_enrollments` | read, create, update, delete | start, complete, withdraw |
 | succession | `succession_plans` | read, create, update, delete | — |
 | succession | `succession_candidates` | read, create, update, delete | — |
 | employeerelations | `employee_relations_cases` | read, create, update, delete | — |
 | employeerelations | `employee_relations_events` | read, create, update, delete | — |
 | employeerelations | `collective_agreements` | read, create, update, delete | — |
 | offboarding | `offboarding_plans` | read, create, update, delete | — |
-| offboarding | `offboarding_tasks` | read, create, update, delete | — |
-| career | `development_plans` | read, create, update, delete | — |
-| career | `development_actions` | read, create, update, delete | — |
+| offboarding | `offboarding_tasks` | read, create, update, delete | complete, waive |
+| career | `development_plans` | read, create, update, delete | approve, complete |
+| career | `development_actions` | read, create, update, delete | complete |
 | career | `career_paths` | read, create, update, delete | approve |
 | career | `career_path_transitions` | read, create, update, delete | — |
 | career | `worker_career_aspirations` | read, create, update, delete | — |
 | policy | `policies` | read, create, update, delete | — |
-| policy | `policy_acknowledgements` | read, create, update, delete | — |
-| hrservice | `service_requests` | read, create, update, delete | — |
+| policy | `policy_acknowledgements` | read, create, update, delete | acknowledge |
+| hrservice | `service_requests` | read, create, update, delete | assign, resolve, close, cancel |
 | hrservice | `service_request_events` | read, create, update, delete | — |
 | engagement | `engagement_surveys` | read, create, update, delete | — |
 | engagement | `engagement_survey_results` | read | — |
@@ -118,44 +118,37 @@ Setiap sel tindakan adalah **kode permission tersendiri** dengan awalan `human_r
 | analytics | `human_capital_metric_snapshots` | read, create, update, delete | — |
 | talent | `talent_frameworks` | read, create, update, delete | — |
 | talent | `talent_dimensions` | read, create, update, delete | — |
-| talent | `talent_review_cycles` | read, create, update, delete | — |
-| talent | `talent_assessments` | read, create, update, delete | finalize |
+| talent | `talent_review_cycles` | read, create, update, delete | launch, start_calibration, close |
+| talent | `talent_assessments` | read, create, update, delete | submit, withdraw, finalize |
 | talent | `talent_assessment_scores` | read, create, update, delete | — |
-| talent | `talent_calibration_sessions` | read, create, update, delete | — |
+| talent | `talent_calibration_sessions` | read, create, update, delete | open, approve |
 | talent | `talent_calibration_decisions` | read, create, update, delete | — |
 | talent | `talent_pools` | read, create, update, delete | — |
-| talent | `talent_pool_memberships` | read, create, update, delete | — |
-| promotion | `promotion_recommendations` | read, create, update, delete | — |
-| promotion | `promotion_decisions` | read, create, update, delete | — |
+| talent | `talent_pool_memberships` | read, create, update, delete | approve, reject, exit |
+| promotion | `promotion_recommendations` | read, create, update, delete | submit |
+| promotion | `promotion_decisions` | read, create, update, delete | approve, reject, return, apply |
 
-`approve` untuk `leave_adjustments`, `payroll_runs`, `career_paths`, dan `requisitions`, `reject`, `open` dan `close` untuk `requisitions`, `launch` untuk `performance_cycles`, `start` dan `complete` untuk `onboarding_plans`, `complete` untuk `onboarding_tasks`, `submit` untuk `requisitions`, `start_screening`, `advance` dan `reject` untuk `applications`, `post` untuk `leave_entitlements`, dan `finalize` untuk `talent_assessments` tidak dapat diganti oleh izin `update`. Kebutuhan approval lain seperti offer, workforce plan, kalibrasi, dan promosi belum mempunyai RPC command khusus pada kontrak saat ini. Bila command tersebut dikembangkan, setiap tindakan bisnis harus mendapat permission tersendiri serta pemeriksaan state, pemisahan tugas, scope objek, dan recheck dekat commit. Jangan menafsirkan keberadaan kolom status atau `approved_by` sebagai izin untuk menyetujui lewat CRUD generik.
+Perluasan workflow di atas (`performance`, `promotion`, `talent`, `application_assessments.complete`, `policy_acknowledgements.acknowledge`, `worker_assignments.approve`, `positions.activate`, `workers.activate`, `workers.apply_primary_assignment`) kini telah aktif pada `PermissionCatalog()` (**398 kode total, 481 pemetaan operasi**) beserta validator integritasnya (78/78 resource mutasi + `hr_leave_ledger_entries`), tetapi tetap tidak dapat digantikan oleh izin `update` dan belum membuka provisioning grant IAM secara otomatis.
 
-### Kode tindakan workflow yang direncanakan
+### Kode tindakan workflow dan prasyaratnya
 
-Daftar ini menetapkan **nama permission yang akan dipakai ketika command-nya diimplementasikan**. Kode yang masih berada pada daftar rancangan belum ada dalam `PermissionCatalog()` runtime dan tidak boleh diprovisikan sebagai grant IAM; jumlah kode aktif saat ini 338. Setiap command memerlukan RPC tersendiri, validasi transisi status, mandat actor, pemeriksaan scope objek, audit, transaksi, outbox bila ada efek lintas modul, serta pengujian negatif sebelum diaktifkan. Tindakan seperti `approve`, `reject`, `return`, `publish`, `complete`, dan `apply` merupakan hak berbeda; hak `update` tidak menggantikannya. Nama `approve` berlaku untuk keputusan HRM atas objek HRM; keputusan grant akses tetap milik IAM dan pembayaran/jurnal tetap milik Finance. Katalog rancangan ini mencakup transisi yang dibutuhkan model HRM, bukan klaim bahwa seluruh workflow telah diimplementasikan.
+Daftar ini menetapkan **nama permission yang akan dipakai ketika command tambahan diimplementasikan**. Matriks ini mencakup aksi yang sudah ada dan aksi yang masih direncanakan. Periksa keberadaan kode di `PermissionCatalog()` dan status operasi pada handoff gRPC sebelum mengajukan provisioning IAM. Katalog runtime memiliki **398** kode. [Handoff gRPC HRM](../../grpc/hrm/1-inventaris-operasi-grpc-hrm.md) Setiap command memerlukan RPC tersendiri, validasi transisi status, mandat actor, pemeriksaan scope objek, audit, transaksi, outbox bila ada efek lintas modul, serta pengujian negatif sebelum diaktifkan. Tindakan seperti `approve`, `reject`, `return`, `publish`, `complete`, dan `apply` merupakan hak berbeda; hak `update` tidak menggantikannya. Nama `approve` berlaku untuk keputusan HRM atas objek HRM; keputusan grant akses tetap milik IAM dan pembayaran/jurnal tetap milik Finance.
 
-| Domain | Kode permission rancangan | Keputusan atau efek yang harus dijaga |
+| Domain | Kode permission | Keputusan atau efek yang harus dijaga |
 | --- | --- | --- |
-| workforceplanning | `human_resource.workforce_plans.submit`, `human_resource.workforce_plans.approve`, `human_resource.workforce_plans.supersede`, `human_resource.workforce_plans.cancel` | Pengusul dan penyetuju terpisah; persetujuan memerlukan bukti anggaran Finance; versi lama tidak boleh ditimpa. |
 | personnel | `human_resource.workers.link_principal`, `human_resource.workers.activate`, `human_resource.workers.suspend`, `human_resource.workers.terminate` | Link principal IAM diverifikasi, satu principal satu worker aktif; status kerja dan event lifecycle berasal dari command; grant/revoke akses tetap IAM. |
 | personnel | `human_resource.worker_assignments.transfer` | Mutasi penempatan dan primary assignment atomik; validasi posisi, unit dan legal entity dari Foundation; perubahan akses hanya diajukan ke IAM. |
 | personnel | `human_resource.employment_contracts.approve`, `human_resource.employment_contracts.activate`, `human_resource.employment_contracts.end`, `human_resource.worker_documents.verify`, `human_resource.worker_documents.reject` | Persetujuan dan pengaktifan kontrak dipisahkan dari input draft; bukti tanda tangan/versi dokumen diverifikasi melalui DRM. Verifikasi dokumen pekerja menyimpan actor dan alasan. |
 | recruitment | `human_resource.offers.approve`, `human_resource.offers.issue`, `human_resource.offers.withdraw` | Persetujuan kompensasi mendahului penerbitan; versi dan digest dokumen DRM terikat; respons kandidat tidak boleh diisi atas nama kandidat oleh staf HR. |
-| recruitment | `human_resource.offers.accept`, `human_resource.offers.decline` | Keputusan kandidat harus berasal dari kanal/bukti yang memverifikasi kandidat, bukan klaim operator HR. Permission `.advance` sudah aktif hanya untuk screening ke shortlist; tahap lain belum tersedia. |
+| recruitment | `human_resource.offers.accept`, `human_resource.offers.decline` | Keputusan kandidat harus berasal dari kanal/bukti yang memverifikasi kandidat, bukan klaim operator HR. Perpindahan tahap lamaran memakai command dan izin workflow terpisah. |
 | recruitment | `human_resource.application_assessments.complete` | Asesmen selesai mencatat assessor serta waktu server, lalu dibekukan dari CRUD draft. |
-| offboarding | `human_resource.offboarding_plans.approve`, `human_resource.offboarding_plans.start`, `human_resource.offboarding_plans.complete` | Penyetuju berbeda dari pengusul; clearance dan tanggal efektif diperiksa; penutupan hubungan kerja dan pencabutan akses memakai proses pemilik masing-masing. |
-| offboarding | `human_resource.offboarding_tasks.complete`, `human_resource.offboarding_tasks.waive` | Konfirmasi owner tugas atau alasan waiver dicatat; task yang belum diselesaikan atau di-waive menghalangi penutupan plan. |
 | compensation | `human_resource.compensation_records.submit`, `human_resource.compensation_records.approve`, `human_resource.compensation_records.reject`, `human_resource.compensation_records.activate` | Pengusul, penyetuju dan tanggal efektif dipisahkan; perubahan gaji resmi tidak dapat disahkan melalui `update` draft. |
-| benefits | `human_resource.benefit_enrollments.approve`, `human_resource.benefit_enrollments.end` | Runtime saat ini hanya menerima pengajuan `pending` untuk plan lokal tanpa aturan eligibilitas khusus. Persetujuan, kontribusi/provider, dan akhir benefit masih memerlukan command serta verifikasi owner; berakhirnya benefit tidak menghapus riwayat. |
 | payroll | `human_resource.payroll_runs.calculate`, `human_resource.payroll_runs.submit_review`, `human_resource.payroll_runs.request_posting` | Snapshot sumber, periode, rule dan idempotensi terikat; kalkulator tidak bisa menyetujui hasilnya sendiri. Setelah approval HRM, `request_posting` mengajukan jurnal kepada Finance; status posted/paid hanya diperbarui dari bukti otoritatif Finance melalui integrasi workload yang tervalidasi, tanpa permission bisnis HRM untuk membayar. |
-| leave | `human_resource.leave_adjustments.reject`, `human_resource.leave_entitlements.close` | Penolakan koreksi dan penutupan hak cuti masih memerlukan command serta audit sendiri. Persetujuan koreksi sudah aktif dengan izin `human_resource.leave_adjustments.approve`. |
 | performance | `human_resource.performance_goals.submit`, `human_resource.performance_goals.approve`, `human_resource.performance_goals.reject`, `human_resource.performance_reviews.submit`, `human_resource.performance_reviews.finalize`, `human_resource.performance_cycles.close` | Reviewer/manager dan worker terkait diverifikasi; evidence serta bobot disahkan; review final immutable dan siklus ditutup setelah semua kewajiban selesai. |
 | learning | `human_resource.learning_enrollments.complete`, `human_resource.worker_qualifications.verify` | Kehadiran, bukti dan hasil pelatihan diverifikasi; kompetensi tidak dinaikkan otomatis. Verifikasi kualifikasi memeriksa bukti eksternal serta pemisahan pencatat dan pemeriksa. |
 | succession | `human_resource.succession_plans.approve`, `human_resource.succession_candidates.nominate`, `human_resource.succession_candidates.withdraw` | Mandat panel dan konflik kepentingan diperiksa; kandidat tidak memperoleh jabatan lewat persetujuan rencana. |
 | employeerelations | `human_resource.employee_relations_cases.resolve` | Pihak berwenang, retensi dan bukti penyelesaian diperiksa; narasi kasus tetap dibatasi. |
-| career | `human_resource.development_plans.approve` | Coach/manager dan worker terkait diperiksa; persetujuan rencana tidak mengubah posisi resmi. |
 | policy | `human_resource.policies.publish`, `human_resource.policy_acknowledgements.acknowledge` | Versi dokumen efektif dibekukan; acknowledgement hanya oleh worker bersangkutan. |
-| hrservice | `human_resource.service_requests.assign`, `human_resource.service_requests.resolve`, `human_resource.service_requests.close` | PIC dan scope kasus diverifikasi; resolusi membutuhkan bukti, sedangkan penutupan mencatat keputusan serta actor. |
 | engagement | `human_resource.engagement_surveys.publish`, `human_resource.engagement_surveys.close` | Audiens dan anonimitas dijaga; hasil individual tidak dibuka oleh izin agregat. |
 | accessrequest | `human_resource.access_requests.submit`, `human_resource.access_requests.recommend` | HRM hanya mengajukan atau memberi rekomendasi; keputusan dan grant hanya di IAM. Tidak ada `human_resource.access_requests.approve`. |
 | talent | `human_resource.talent_review_cycles.launch`, `human_resource.talent_review_cycles.start_calibration`, `human_resource.talent_review_cycles.close`, `human_resource.talent_assessments.submit`, `human_resource.talent_assessments.withdraw`, `human_resource.talent_calibration_sessions.open`, `human_resource.talent_calibration_sessions.approve`, `human_resource.talent_calibration_sessions.close` | Mandat panel, asesmen final, bukti rapat dan konflik kepentingan diperiksa; kalibrasi tidak menimpa skor awal. |
@@ -251,10 +244,12 @@ Operasi yang wajib step-up: seluruh Delete; create/update posisi; baca/create/up
 
 Gateway menolak request tanpa autentikasi, permission, scope dan step-up sebelum RPC. Service HRM tetap memverifikasi proof internal dan memeriksa permission, scope objek, SoD serta invariant sebagai pemilik data menurut `agents/arsitektur.md` D01–D12 dan `agents/boundary.md`; keputusan katalog ini tidak menghapus pemeriksaan service. Penolakan HMAC internal dari downstream harus diperlakukan Gateway sebagai kegagalan dependency, bukan logout pengguna, mengikuti pola Enterprise Foundation.
 
-Status runtime saat pembaruan ini: adapter HRM masih hanya menerima grant `global`; peta 338 permission telah dihubungkan ke policy service, tetapi belum ada provisioning/grant IAM dan validator integrity belum tersedia untuk seluruh mutasi. Command `onboarding_tasks.complete` dan `job_postings.publish` memiliki jalur gRPC dan validasi HRM, namun tetap gagal tertutup di runtime produksi sampai verifikasi bukti versi DRM tersedia. `job_postings.close`, `job_postings.withdraw`, `applications.advance` untuk shortlist, `applications.reject`, dan `requisitions.reject` dapat dijalankan untuk objek yang sah. Grant dengan `legal_entity`, `organization_unit`, atau `self` **harus ditolak** sampai filter list, get, finder/count dan mutasi diuji E2E. Tidak ada role, permission atau grant IAM yang dibuat oleh dokumen ini; provisioning tetap melalui alur resmi IAM.
+Status runtime saat pembaruan 25 November 2026: peta **398 permission** (**482 pemetaan operasi**) serta **79 validator integritas** (78 resource mutasi + ledger cuti) dan workflow performance/promotion/talent/policy/recruitment telah aktif di server gRPC HRM serta teruji gRPC→PostgreSQL disposable; adapter HRM masih hanya menerima grant `global` (dan `legal_entity` khusus baca `workers`) serta menunggu provisioning IAM dan wiring GraphQL Gateway pada tahap berikutnya. Command yang mewajibkan bukti eksternal DRM/Finance non-Foundation (misalnya `onboarding_tasks.complete`, `job_postings.publish`) tetap gagal tertutup di runtime produksi sampai adapter owner terkait tersedia. Grant dengan `legal_entity` non-worker, `organization_unit`, atau `self` **harus ditolak** sampai filter list, get, finder/count dan mutasi diuji E2E Gateway/IAM. Tidak ada role, permission atau grant IAM yang dibuat oleh dokumen ini; provisioning tetap melalui alur resmi IAM.
 
 ## Pengujian sebelum aktivasi
 
 Minimal dua identitas: berizin dan terautentikasi tanpa permission. Uji scope lain, UUID objek tebakan, finder/count, deny, expired/revoked session, perubahan revision, Redis/gate unavailable, MFA, SoD dan rollback transaksi. Untuk mutasi child, adapter integrity wajib mengunci parent serta memeriksa status final dan referensi owner dalam transaksi yang sama.
 
 Policy saat ini menerima grant global eksplisit untuk resource yang sudah dipetakan. Khusus pembacaan `workers`, grant `legal_entity` disaring menurut `primary_legal_entity_reference_id` pada GetByID, GetAll, finder, dan count sebelum pagination. Scope parsial pada resource lain serta seluruh mutasi dengan grant parsial tetap ditolak. Mutasi juga ditolak bila validator integrity resource belum ada. Ini pembatasan sementara, bukan persetujuan memberikan global grant kepada operator.
+
+Izin sensitif `human_resource.workers.activate` tersedia di manifest resmi IAM bersama izin pembuatan dan pembacaan pekerja serta pengajuan akun. Runner HTTPS memasang izin melalui role sementara lewat GraphQL dan menguji penolakan aktivasi sebelum MFA. [Regresi HTTPS](../../e2e/gateway/140-iam-mutation-create-employee-wajib-id-pengajuan.md).

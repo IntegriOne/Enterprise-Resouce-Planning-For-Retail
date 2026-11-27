@@ -50,7 +50,7 @@ hanya berdasarkan Caddy.
 IAM role/group/assignment/override menyuplai grant yang dibatasi action, effect, source, scope, validity, session activation, DENY dan conditions. Service bisnis memperoleh atribut objek dari database sendiri; customer account bukan principal ID dan vendor party tidak otomatis grant. Operasi `node(id:)`, list/count, nested, alias, bulk/export dan field PII memakai scope yang sama. IAM `superadmin` bukan wildcard semua management.
 
 ## Klasifikasi actor
-PUBLIC (listing LIVE), GUEST_OWNED (cart own+CSRF), IAM_SELF, IAM_PROTECTED (staff+ABAC), WORKLOAD (authenticated identity/audience). Gateway dapat menolak awal, tetapi service pemilik menegakkan invariant. Bila katalog permission belum aktif, operasi protected ditolak; jangan seed speculative roles.
+PUBLIC (listing LIVE), GUEST_OWNED (cart own+CSRF), IAM_SELF, IAM_PROTECTED (staff+ABAC), WORKLOAD (authenticated identity/audience). Gateway dapat menolak awal, tetapi service pemilik menegakkan invariant. Bila katalog permission belum aktif, operasi protected ditolak. **Jangan melakukan seed spekulatif** (*user grant* acak atau permission untuk operasi yang belum punya kontrak); sebaliknya, seluruh *permission* dan *template role* terverifikasi milik modul aktif wajib didaftarkan lewat manifest deklaratif (`backend/shared/rbac/catalogs/{management}.json`) agar disinkronkan otoritatif ke PostgreSQL `iam` saat startup production.
 
 ## Test gate
 Browser HTTPS, Origin/CSRF, MFA/login/logout/rotate, 30m/8h/30s boundary with test clock, dual credential rejection, stale/revoke effective, Redis down, two principal/scope, signed reference gRPC, wrong-party Node, no state/outbox on DENY. Perlu test sungguhan untuk status VERIFIED.

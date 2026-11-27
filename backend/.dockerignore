@@ -12,3 +12,5 @@ tmp
 bin
 deploy/certs/*.key
 deploy/redis/.dev-redis-secrets
+gateway/.local
+services/human_resource/.local

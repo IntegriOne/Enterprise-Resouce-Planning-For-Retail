@@ -2,7 +2,7 @@
 
 **Status:** Pedoman Wajib Lintas Agent (Frontend, UI/UX, IAM Management, Finance, Commerce, dan Gateway)  
 **Diperbarui:** 14 November 2026 *(revisi: arsitektur `/profile`, keamanan DRM anti-IDOR, dan blueprint Customer Payment Gateway)*  
-**Rujukan terkait:** [AGENTS.md](../AGENTS.md), [agents/principals.md](../agents/principals.md), [agents/boundary.md](../agents/boundary.md), [docs/00-governance/decisions.md](00-governance/decisions.md)
+**Rujukan terkait:** [AGENTS.md](../AGENTS.md), [agents/users.md](../agents/users.md), [agents/boundary.md](../agents/boundary.md), [docs/00-governance/decisions.md](00-governance/decisions.md)
 
 ---
 
@@ -14,7 +14,7 @@ Perspektif resmi yang wajib dipakai seluruh agent:
 
 1. **Codebase Single-Tenant per Perusahaan:** Kita membangun codebase aplikasi terpadu (**Web Commerce + Sistem Operasional Retail ERP**) dengan model **satu instalasi per perusahaan (*single-tenant*)** untuk dipakai langsung oleh brand/perusahaan ritel klien, bukan website pemasaran SaaS untuk berjualan langganan ERP.
 2. **Posisi Brand "IntegriOne" Saat Development:** Selama fase development, aplikasi diposisikan seolah-olah perusahaan ritel **IntegriOne** sendiri yang mengoperasikan website toko dan sistem operasionalnya. Seluruh tampilan publik dan halaman masuk merepresentasikan brand **IntegriOne** kepada pelanggan maupun internal.
-3. **Satu Pintu Masuk Umum (`/login`):** Sesuai arsitektur satu `principals` (`principal_kind=human`) di IAM ([agents/principals.md](../agents/principals.md)), hanya ada **satu halaman `/login`** untuk tiga kelompok pengguna:
+3. **Satu Pintu Masuk Umum (`/login`):** Sesuai arsitektur satu tabel `users` (`customer`, `employee`, `vendor`, `supplier`) di IAM ([agents/users.md](../agents/users.md)), hanya ada **satu halaman `/login`** untuk tiga kelompok pengguna:
    - **Calon Pembeli / Customer Web Commerce**
    - **Internal (Employee / Staf / Admin)**
    - **Eksternal Mitra (Vendor CMT / Supplier Bahan Mentah)**

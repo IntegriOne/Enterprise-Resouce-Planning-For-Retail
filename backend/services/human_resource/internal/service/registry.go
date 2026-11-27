@@ -74,22 +74,23 @@ type OffboardingVerifiers struct {
 }
 
 type registryOptions struct {
-	payrollSettlement   payrollservice.PayrollSettlementVerifier
-	payrollPayment      payrollservice.PayrollPaymentVerifier
-	payrollPosting      payrollservice.PayrollPostingVerifier
-	contractSignature   personnelservice.ContractSignatureVerifier
-	payslipPublication  payrollservice.PayslipPublicationProcessor
-	payslipReissue      payrollservice.PayslipReissueVerifier
-	payslipVerifier     payrollservice.PayslipVerifier
-	principalLink       personnelservice.PrincipalLinkVerifier
-	hrServiceResolution hrserviceservice.ResolutionVerifier
-	onboardingEvidence  onboardingservice.EvidenceVerifier
-	workforceBudget     workforceplanningservice.WorkforceBudgetVerifier
-	offboarding         OffboardingVerifiers
-	payrollCalculator   payrollservice.Calculator
-	successionApproval  successionservice.ApprovalVerifier
-	recruitment         RecruitmentVerifiers
-	requisitionMandate  recruitmentservice.RequisitionMandateVerifier
+	payrollInputSnapshots payrollservice.InputSnapshotStore
+	payrollSettlement     payrollservice.PayrollSettlementVerifier
+	payrollPayment        payrollservice.PayrollPaymentVerifier
+	payrollPosting        payrollservice.PayrollPostingVerifier
+	contractSignature     personnelservice.ContractSignatureVerifier
+	payslipPublication    payrollservice.PayslipPublicationProcessor
+	payslipReissue        payrollservice.PayslipReissueVerifier
+	payslipVerifier       payrollservice.PayslipVerifier
+	principalLink         personnelservice.PrincipalLinkVerifier
+	hrServiceResolution   hrserviceservice.ResolutionVerifier
+	onboardingEvidence    onboardingservice.EvidenceVerifier
+	workforceBudget       workforceplanningservice.WorkforceBudgetVerifier
+	offboarding           OffboardingVerifiers
+	payrollCalculator     payrollservice.Calculator
+	successionApproval    successionservice.ApprovalVerifier
+	recruitment           RecruitmentVerifiers
+	requisitionMandate    recruitmentservice.RequisitionMandateVerifier
 }
 
 // RegistryOption mengatur adapter tambahan tanpa mengubah repository atau policy.
@@ -147,6 +148,11 @@ func WithSuccessionApprovalVerifier(verifier successionservice.ApprovalVerifier)
 	return func(options *registryOptions) {
 		options.successionApproval = verifier
 	}
+}
+
+// WithPayrollInputSnapshots memasang penyimpanan snapshot input HRM.
+func WithPayrollInputSnapshots(store payrollservice.InputSnapshotStore) RegistryOption {
+	return func(cfg *registryOptions) { cfg.payrollInputSnapshots = store }
 }
 
 // WithPayrollCalculator memasukkan adapter mesin kalkulasi payroll.
@@ -294,6 +300,7 @@ func NewRegistry(repos *repository.Registry, runtime operation.Dependencies, opt
 		return nil, err
 	}
 	r.Payroll, err = payrollservice.NewService(payrollservice.Dependencies{
+		InputSnapshots:     cfg.payrollInputSnapshots,
 		PayrollSettlement:  cfg.payrollSettlement,
 		PayrollPayment:     cfg.payrollPayment,
 		PayrollPosting:     cfg.payrollPosting,

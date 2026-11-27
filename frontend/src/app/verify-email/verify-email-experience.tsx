@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import rawStyles from "./verify-email.module.css";
 import {
   fetchBrowserSession,
   formatAuthErrorMessage,
+  submitResendValidationEmailToken,
   submitVerifyEmail,
   type EmailVerificationStatus,
 } from "@/lib/graphql/iam-browser-auth";
@@ -17,12 +18,14 @@ const styles = new Proxy((rawStyles ?? {}) as Record<string, string>, {
 });
 
 type VerifyState =
+  | "checking" // Pemeriksaan awal token fragment di browser
+  | "needs_verification" // Pengalihan pasca-login belum terverifikasi atau akses tanpa token
   | "ready" // Memiliki token, menunggu klik konfirmasi
   | "verifying" // Sedang memproses mutasi
   | "VERIFIED" // Berhasil diverifikasi
   | "EXPIRED" // Token kedaluwarsa
   | "ALREADY_USED" // Token sudah pernah digunakan
-  | "INVALID" // Token tidak valid atau tidak ditemukan
+  | "INVALID" // Token tidak valid
   | "service_error"; // Error jaringan / 500 / CSRF
 
 function Icon({
@@ -119,48 +122,63 @@ function BrandMark() {
 }
 
 export default function VerifyEmailExperience() {
-  const [state, setState] = useState<VerifyState>("ready");
+  const [state, setState] = useState<VerifyState>("checking");
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [resendEmail, setResendEmail] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   // Simpan token sementara hanya di ref memori komponen (tidak di localStorage/sessionStorage/cookie)
   const tokenRef = useRef<string | null>(null);
   const submitLockRef = useRef(false);
 
   useEffect(() => {
-    // 1. Ekstrak fragment dari window.location.hash: #token=<raw>
     if (typeof window === "undefined") return;
 
-    const hash = window.location.hash;
-    let extractedToken: string | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
-    if (hash && hash.startsWith("#")) {
-      const params = new URLSearchParams(hash.slice(1));
-      const rawToken = params.get("token");
-      if (rawToken && rawToken.trim()) {
-        extractedToken = rawToken.trim();
+    const consumeHashFragment = (fromHashChange = false) => {
+      const hash = window.location.hash;
+      const hasHashFragment = Boolean(hash && hash.length > 1);
+      if (fromHashChange && !hasHashFragment) {
+        return;
       }
-    }
 
-    // 2. SEGERA bersihkan fragment dari URL browser sebelum request atau tindakan apa pun
-    // Mencegah kebocoran token ke log browser / history / referer
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState(
-        null,
-        "",
-        window.location.pathname + window.location.search,
-      );
-    }
-
-    const timer = setTimeout(() => {
-      if (!extractedToken) {
-        // Tidak ada token pada fragment: render view INVALID tanpa melakukan GraphQL mutation
-        setState("INVALID");
-      } else {
-        tokenRef.current = extractedToken;
-        setState("ready");
+      let extractedToken: string | null = null;
+      if (hash && hash.startsWith("#")) {
+        const params = new URLSearchParams(hash.slice(1));
+        const rawToken = params.get("token");
+        if (rawToken && rawToken.trim()) {
+          extractedToken = rawToken.trim();
+        }
       }
-    }, 0);
+
+      // SEGERA bersihkan fragment dari URL browser sebelum request atau tindakan apa pun
+      // untuk mencegah kebocoran token ke log browser / history / referer.
+      if (window.history && window.history.replaceState && hasHashFragment) {
+        window.history.replaceState(
+          null,
+          "",
+          window.location.pathname + window.location.search,
+        );
+      }
+
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (!extractedToken) {
+          setState(hasHashFragment ? "INVALID" : "needs_verification");
+        } else {
+          tokenRef.current = extractedToken;
+          setState("ready");
+        }
+      }, 0);
+    };
+
+    consumeHashFragment(false);
+    const onHashChange = () => consumeHashFragment(true);
+    window.addEventListener("hashchange", onHashChange);
 
     // Bootstrap pre-auth session untuk CSRF token
     void fetchBrowserSession()
@@ -171,8 +189,49 @@ export default function VerifyEmailExperience() {
         // Abaikan sementara jika tertunda
       });
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("hashchange", onHashChange);
+    };
   }, []);
+
+  async function handleResendSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (resendLoading) return;
+
+    const trimmedEmail = resendEmail.trim();
+    setResendEmail(trimmedEmail);
+    setResendError(null);
+    setResendNotice(null);
+
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setResendError("Masukkan alamat email yang valid untuk menerima tautan baru.");
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      let activeCsrf = csrfToken;
+      if (!activeCsrf) {
+        try {
+          const session = await fetchBrowserSession();
+          activeCsrf = session.csrfToken;
+          setCsrfToken(activeCsrf);
+        } catch {
+          // Lanjutkan jika bootstrap belum mengembalikan token eksplisit
+        }
+      }
+
+      await submitResendValidationEmailToken(trimmedEmail, activeCsrf);
+      setResendNotice(
+        "Jika alamat email terdaftar dan belum terverifikasi, tautan verifikasi baru telah dikirim ke kotak masuk Anda.",
+      );
+    } catch (err) {
+      setResendError(formatAuthErrorMessage(err, "verify"));
+    } finally {
+      setResendLoading(false);
+    }
+  }
 
   async function handleConfirmVerification() {
     if (submitLockRef.current || state === "verifying") return;
@@ -237,7 +296,7 @@ export default function VerifyEmailExperience() {
             </div>
             <div className={styles.navBrandText}>
               <span className={styles.navBrandName}>IntegriOne</span>
-              <span className={styles.navBrandTag}>Identity &amp; Gateway</span>
+              <span className={styles.navBrandTag}>Koleksi &amp; Layanan Akun</span>
             </div>
           </Link>
           <div className={styles.navRight}>
@@ -251,6 +310,83 @@ export default function VerifyEmailExperience() {
       {/* Main Container */}
       <main className={styles.mainContainer}>
         <div className={styles.card}>
+          {state === "checking" && (
+            <div className={styles.cardContent}>
+              <div className={styles.spinner} aria-hidden="true" />
+              <h1 className={styles.heading}>Menyiapkan Halaman Verifikasi...</h1>
+              <p className={styles.description}>
+                Mohon tunggu sejenak, kami sedang memeriksa tautan verifikasi
+                Anda.
+              </p>
+            </div>
+          )}
+
+          {state === "needs_verification" && (
+            <div className={styles.cardContent}>
+              <div className={`${styles.iconWrap} ${styles.iconWarning}`}>
+                <Icon name="mail" size={32} />
+              </div>
+              <h1 className={styles.heading}>Verifikasi Email Diperlukan</h1>
+              <p className={styles.description}>
+                Akun Anda belum dapat masuk sebelum alamat email terverifikasi.
+                Silakan buka tautan verifikasi pada kotak masuk email Anda atau
+                minta pengiriman ulang tautan di bawah ini.
+              </p>
+
+              {resendNotice && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className={styles.feedbackBannerSuccess}
+                >
+                  {resendNotice}
+                </div>
+              )}
+
+              {resendError && (
+                <div role="alert" className={styles.feedbackBannerError}>
+                  {resendError}
+                </div>
+              )}
+
+              <form
+                onSubmit={handleResendSubmit}
+                className={styles.resendForm}
+                noValidate
+              >
+                <div className={styles.fieldGroup}>
+                  <label htmlFor="verify-resend-email" className={styles.fieldLabel}>
+                    Alamat email akun
+                  </label>
+                  <input
+                    id="verify-resend-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={resendEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                    placeholder="nama@domain.com"
+                    disabled={resendLoading}
+                    className={styles.inputField}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={resendLoading}
+                  className={styles.primaryBtn}
+                >
+                  {resendLoading
+                    ? "Mengirim Tautan..."
+                    : "Kirim Ulang Tautan Verifikasi"}
+                </button>
+              </form>
+
+              <Link href="/login" className={styles.secondaryBtn}>
+                Kembali ke Halaman Masuk
+              </Link>
+            </div>
+          )}
+
           {state === "ready" && (
             <div className={styles.cardContent}>
               <div className={`${styles.iconWrap} ${styles.iconInfo}`}>
@@ -290,7 +426,7 @@ export default function VerifyEmailExperience() {
               <h1 className={styles.heading}>Email Berhasil Diverifikasi!</h1>
               <p className={styles.description}>
                 Alamat email Anda telah berhasil diverifikasi. Akun Anda kini
-                aktif dan siap digunakan untuk mengakses portal IntegriOne.
+                aktif dan siap digunakan di IntegriOne.
               </p>
               <Link href="/login" className={styles.primaryBtn}>
                 Masuk ke Akun Anda
@@ -310,7 +446,18 @@ export default function VerifyEmailExperience() {
                 halaman pendaftaran.
               </p>
               <div className={styles.btnRow}>
-                <Link href="/register" className={styles.primaryBtn}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResendError(null);
+                    setResendNotice(null);
+                    setState("needs_verification");
+                  }}
+                  className={styles.primaryBtn}
+                >
+                  Kirim Ulang Tautan Verifikasi
+                </button>
+                <Link href="/login?mode=register" className={styles.secondaryBtn}>
                   Daftar Ulang
                 </Link>
                 <Link href="/login" className={styles.secondaryBtn}>

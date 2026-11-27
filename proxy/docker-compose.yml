@@ -6,10 +6,6 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      gateway-1:
-        condition: service_healthy
-      gateway-2:
-        condition: service_healthy
       frontend-1:
         condition: service_healthy
       frontend-2:

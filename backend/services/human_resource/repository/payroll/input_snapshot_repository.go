@@ -78,3 +78,16 @@ func (r *InputSnapshotRepository) Capture(ctx context.Context, id, periodID, pri
 	}
 	return snapshot, nil
 }
+
+// SelectMetadata membaca referensi snapshot untuk rekonsiliasi tanpa memuat isi payroll.
+func (r *InputSnapshotRepository) SelectMetadata(ctx context.Context, id string) (entity.PayrollInputSnapshot, error) {
+	db, err := pgstore.DBFromContext(ctx, r.db)
+	if err != nil {
+		return entity.PayrollInputSnapshot{}, err
+	}
+	var snapshot entity.PayrollInputSnapshot
+	if err := db.Omit("Content").Where("id = ?", id).Take(&snapshot).Error; err != nil {
+		return entity.PayrollInputSnapshot{}, pgstore.MapError(err)
+	}
+	return snapshot, nil
+}

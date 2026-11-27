@@ -1,0 +1,11 @@
+# Working History Frontend #5: Pembaruan `/login` (`createUser` + `userLogin`), `proxy.ts`, dan Token `globals.css`
+
+**Tanggal:** 2026-11-16 18:44 WIB
+
+## Ringkasan Perubahan
+- **Modularisasi & Desain Editorial `/login`:** Memecah `login-experience.tsx` menjadi [`login-experience.tsx`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/login-experience.tsx), [`auth-forms.tsx`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/auth-forms.tsx), [`login-editorial-sections.tsx`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/login-editorial-sections.tsx), [`icons.tsx`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/icons.tsx), dan [`login.module.css`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/login/login.module.css) dengan animasi `useGSAP` + `ScrollTrigger`, Bento Grid *grid-flow-dense*, serta form terpadu `Masuk` (`userLogin`) dan `Daftar Akun` (`createUser`).
+- **Paritas API & Keamanan ([`iam-browser-auth.ts`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/lib/graphql/iam-browser-auth.ts), [`redirect-allowlist.ts`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/lib/auth/redirect-allowlist.ts)):** Menambah `fetchMyWorkspaceAccessBrowser`, menegakkan `validateIamPassword` **12–128 karakter** + kompleksitas pada `/login` & [`register-experience.tsx`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/register/register-experience.tsx), dan menyelaraskan allowlist redirect ke 13 rute portal resmi Gateway.
+- **Migrasi `proxy.ts` & [`globals.css`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/app/globals.css):** Mengganti `middleware.ts` ke [`proxy.ts`](file:///home/muriarfad/Documents/projects/erp-retail/frontend/src/proxy.ts) dan menyelaraskan token `:root` IntegriOne tanpa override `#0a0a0a`.
+
+## Verifikasi
+- `node --test` (`13/13` PASS), `npx next typegen`, `npm run lint`, `tsc --noEmit`, `next build` bersih, build container `frontend-1`/`frontend-2`/`caddy` sehat, Chrome headless (`1440px`/`320px`, dark-mode/reduced-motion), serta E2E live `/api/graphql` `PASS`.

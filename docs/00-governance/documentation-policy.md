@@ -7,7 +7,7 @@
 |---|---|
 | Aturan agent/Git/test/migrasi | [AGENTS.md](../../AGENTS.md) |
 | Keamanan dan D01–D12 | [agents/arsitektur.md](../../agents/arsitektur.md) |
-| Principal, grant, scopes | [agents/principals.md](../../agents/principals.md) |
+| User IAM, grant, scopes | [agents/users.md](../../agents/users.md) |
 | Ownership bisnis | [agents/boundary.md](../../agents/boundary.md) |
 | Cakupan dan fase produk | [product vision](../01-product/vision-and-scope.md) |
 | Status kode | Source Git dan [status berbukti](status-and-evidence.md) |

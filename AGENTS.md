@@ -1,12 +1,14 @@
 # Panduan Gemini untuk ERP Core & Schema
 
+ codex resume 01a1e0cd-bfc6-7f60-8760-337fe8a9c501
+
 Panduan operasional dan onboarding sesi bagi Gemini dalam repositori ERP (desain skema DBML dan backend Go microservices).
 
 ## 1. Protokol Masuk Sesi (Session Onboarding)
 
 **Perspektif Produk pada Fase Development (WAJIB untuk seluruh agen, khususnya Frontend, UI/UX, IAM & Gateway):** Sebelum merancang atau mengubah antarmuka pengguna, halaman `/login`, navigasi, mekanisme *post-login redirect*, maupun *copywriting*, **wajib membaca [docs/development-product-perspektif.md](docs/development-product-perspektif.md)**. Produk ini adalah codebase aplikasi terpadu (**Web Commerce + Retail ERP**) dengan model satu instalasi per perusahaan (*single-tenant*), **bukan** platform SaaS multitenant yang menjual langganan ERP. Selama fase *development*, sistem diposisikan seolah-olah perusahaan/brand ritel bernama **IntegriOne** sedang memakai aplikasi ini. Halaman `/login` adalah **satu pintu masuk umum (*unified login*)** untuk **calon pembeli Web Commerce, internal (employee), serta eksternal mitra (vendor/supplier)** — dilarang menggunakan redaksi eksklusif internal/admin ERP pada halaman login umum. **Fokus pengembangan saat ini adalah IAM Management dan Dashboard IAM (`/identity`)** beserta pemetaan redirect setelah autentikasi berhasil sesuai hak akses dari server IAM.
 
-**Konsep identitas dan akses lintas management (wajib):** Sebelum mengimplementasikan principal, login, provisioning, group, role, permission, scope atau pemeriksaan ABAC di management apa pun, baca [agents/principals.md](agents/principals.md). Dokumen ini menetapkan satu principal IAM untuk identitas human/workload, peran `principals.attributes` JSONB, autentikasi, RBAC–ABAC, sumber atribut bisnis, alur request → inbox Super Admin → keputusan → grant, serta batas kepemilikan HRM, Procurement, Enterprise Foundation dan Commerce. Role/permission bisnis hanya boleh diaktifkan sesuai katalog yang disetujui pemilik management; jangan menaruh grant di JSON attributes atau menulis tabel IAM langsung dari management lain.
+**Konsep identitas dan akses lintas management (wajib):** Sebelum mengimplementasikan user, login, provisioning, group, role, permission, scope atau pemeriksaan ABAC di management apa pun, baca [agents/users.md](agents/users.md). Dokumen ini menetapkan satu objek `users` IAM (`customer`, `employee`, `vendor`, `supplier`, `system`) tanpa kolom JSONB `attributes`, autentikasi `/api/graphql` bersesi opaque, evaluasi RBAC–ABAC berbasis `AccessSnapshot` & `ScopeType`, sumber atribut bisnis di service pemilik, serta batas kepemilikan HRM, Procurement, Enterprise Foundation dan Commerce. Role/permission bisnis hanya boleh diaktifkan sesuai katalog yang disetujui pemilik management; jangan menyimpan data bisnis/grant di `users` atau menulis tabel IAM langsung dari management lain.
 
 Sebelum menjalankan tugas atau setelah context compaction, wajib membaca file berikut:
 
@@ -83,7 +85,7 @@ Before any Go coding, review, debugging, troubleshooting, or setup task, load th
 
 - **Wajib Skill Golang Sesuai Konteks Tugas:** Saat mengerjakan backend Go (`backend/services/`, `backend/gateway/`, `backend/contracts/`, atau skrip/tooling Go), agen wajib membaca `SKILL.md` dari skill Golang yang sesuai sebelum menulis atau meninjau kode (misal `golang-database` + `golang-error-handling` untuk DB/migrasi, `golang-grpc` + `grpc-golang` untuk kontrak/transport gRPC, `golang-graphql` + `gqlgen-go` untuk GraphQL Gateway, `golang-testing` + `golang-safety` + `golang-security` untuk implementasi/pengujian, dan `go-reviewer`/`go-build-resolver` untuk review/perbaikan build). Daftar lengkap & matriks pemetaan tersedia di [`## Aturan Khusus Backend Engineers: Skill Golang & Superpowers`](#aturan-khusus-backend-engineers-skill-golang--superpowers).
 - **Gunakan Superpowers Skills Jika Diperlukan:** Untuk perancangan fitur baru (`brainstorming`), perencanaan bertahap (`writing-plans`, `executing-plans`), implementasi berbasis tes (`test-driven-development`), investigasi bug (`systematic-debugging`), review (`requesting-code-review`, `receiving-code-review`), eksekusi paralel (`dispatching-parallel-agents`, `subagent-driven-development`), maupun verifikasi akhir (`verification-before-completion`), muat dan ikuti skill di `plugins/superpowers/skills/` / `skills/`.
-- **Hirarki Aturan Normatif:** Aturan khusus repositori di `AGENTS.md`, `agents/boundary.md`, `agents/arsitektur.md`, dan `agents/principals.md` selalu mengungguli saran generik di dalam skill (termasuk aturan `main`-only Git, penamaan repository `Select`/`Insert`/`Create`/`Update`/`Delete`, GORM, `slog`, bahasa komentar/kode/error, dan baseline migrasi `000001`).
+- **Hirarki Aturan Normatif:** Aturan khusus repositori di `AGENTS.md`, `agents/boundary.md`, `agents/arsitektur.md`, dan `agents/users.md` selalu mengungguli saran generik di dalam skill (termasuk aturan `main`-only Git, penamaan repository `Select`/`Insert`/`Create`/`Update`/`Delete`, GORM, `slog`, bahasa komentar/kode/error, dan baseline migrasi `000001`).
 
 ## 4. Konvensi Pembaruan Memori & Handover
 
@@ -444,11 +446,11 @@ Karena seluruh agen bekerja langsung di branch `main`, setiap perubahan kode waj
    - **GraphQL** (bila menyentuh SDL/resolver/model di `backend/gateway/`): Jalankan generator resmi (`cd backend/gateway && go generate ./...` / `make -C backend gql` bila target Makefile tersedia). Dilarang mengedit file di `backend/gateway/graph/generated/` maupun `backend/gateway/graph/model/*_models_gen.go` secara manual.
    - **Frontend** (bila menyentuh `frontend/`): Pastikan `npm run lint`, `npx tsc --noEmit`, dan `npm run build` (serta `docker compose build frontend-1` bila dependencies hanya berada di stage Docker) lulus tanpa error atau warning yang memblokir.
 2. **Gate 2 — Service Layer Unit, Mock & Race Tests**:
-   - Jalankan `go test -race ./...` pada package domain service yang dimodifikasi menggunakan `mock_db` sesuai aturan pengujian service.
+   - Jalankan `go test -race ./...` pada package domain service yang dimodifikasi menggunakan `mock_db` sesuai aturan pengujian service. Jika menyentuh manifest RBAC (`backend/shared/rbac/catalogs/*.json`) atau izin modul, pastikan test validasi katalog RBAC dan test anti-*drift* kode permission modul tersebut ikut lulus.
 3. **Gate 3 — Real E2E & RBAC TestAB (`*_test` Database di Docker)**:
    - Jalankan pengujian E2E nyata ke `/api/graphql` dengan 3 skenario wajib (**Skenario A** Authorized User 1, **Skenario B** Unauthorized User 2, **Skenario C** Unauthenticated/Anonymous) menggunakan database disposable berakhiran `_test` pada container PostgreSQL Docker (`127.0.0.1:6543`) dan Redis TLS Docker (`127.0.0.1:6379`).
 4. **Gate 4 — *Build After Development* & Clean Build History**:
-   - Jalankan `docker compose build` dan `docker compose up -d --wait`. Pastikan seluruh container `Healthy` di `docker compose ps` dan riwayat `docker buildx history ls` bersih (hanya 1 build `Completed` per komponen, tanpa `Error` atau duplikat).
+   - Jalankan `docker compose build` (sertakan `iam` apabila ada perubahan pada `backend/shared/rbac/catalogs/*.json` agar image/binary IAM memuat katalog RBAC terbaru) dan `docker compose up -d --wait`. Pastikan seluruh container `Healthy` di `docker compose ps` dan riwayat `docker buildx history ls` bersih (hanya 1 build `Completed` per komponen, tanpa `Error` atau duplikat).
 5. **Gate 5 — Sinkronisasi `codebase-memory-mcp` & Git Hygiene**:
    - Jalankan `index_repository` pada `codebase-memory-mcp`, periksa `git diff --check` (bebas konflik marker, whitespace error, maupun file `.env`/secret), lakukan `git add <path-spesifik>` hanya pada file dalam scope tugas, buat commit detail, dan jalankan `git push origin main`.
 
@@ -701,7 +703,8 @@ Setiap developer backend management dalam cakupan aktif (`13 management` pada `a
      - `backend/gateway/graph/resolvers/{management}*.resolvers.go` (delegator terpecah per subdomain dan helper dispatch `Node` terpisah per management jika diperlukan, tanpa menumpuk logika di `schema.resolvers.go`)
      - `backend/gateway/graph/resolvers/{management}/...` (jika memakai subpackage resolver/mapper) serta `backend/gateway/internal/adapter/{management}/...` dan wrapper koneksi per management di `backend/gateway/internal/source_connections/{management}*.go`
      - `backend/gateway/test/{management}/...` (khusus IAM: `backend/gateway/test/iam/` atau `internal/e2e/`)
-     - *Aturan:* Developer Management A **dilarang** mengedit, memindah, atau menghapus file Zona 1 milik Management B.
+     - Manifest deklaratif RBAC eksklusif modul: `backend/shared/rbac/catalogs/{management}.json` (satu berkas per management; murni metadata katalog izin & template role tanpa logika bisnis/ABAC domain).
+     - *Aturan:* Developer Management A **dilarang** mengedit, memindah, atau menghapus file Zona 1 maupun manifest RBAC milik Management B.
    - **Zona 2 — File Wiring Bersama (*Minimal-Diff & Additive-Only*)**:
      - `backend/gateway/gqlgen.yml` (pola glob `graphql/**/*.graphql` bersama; hanya menambah entri `autobind:` atau `models:` untuk `{management}` sendiri bila dibutuhkan) dan `backend/gateway/generate.go` (entrypoint/plugin generator bersama; tidak diubah per domain tanpa koordinasi Gateway Core)
      - Berkas hasil generate inti bersama (`backend/gateway/graph/generated/root_.generated.go`, `backend/gateway/graph/generated/schema.generated.go`, dan `backend/gateway/graph/model/schema_models_gen.go`) — tidak pernah diedit manual; hasilkan ulang lewat generator resmi (`cd backend/gateway && go generate ./...`) lalu verifikasi `git diff` hanya mencerminkan `extend type Query/Mutation` atau field milik management sendiri
@@ -717,7 +720,7 @@ Setiap developer backend management dalam cakupan aktif (`13 management` pada `a
      - *Aturan:* Developer management **dilarang** mengubah konfigurasi HTTP, middleware autentikasi/CSRF, kebijakan cookie, atau mekanisme keamanan inti demi "meloloskan" wiring maupun pengujian domain. Jika wiring membutuhkan kemampuan baru pada Zona 3, eskalasikan ke pemilik IAM/Gateway Core.
 
 2. **Batas Arsitektur, Keamanan & `boundary.md` Saat Wiring**:
-   - **Murni Transport & Mapping Tipis**: Resolver/adapter Gateway hanya memvalidasi bentuk input GraphQL, menerjemahkan tipe protobuf ↔ model GraphQL, meneruskan `context.Context` beserta metadata sesi/principal/trace/deadline, serta mensanitasi pesan error internal agar detail SQL/infra tidak bocor. **Dilarang keras** menaruh logika bisnis, query database langsung (PostgreSQL/Redis domain), atau duplikasi katalog permission/ABAC di Gateway (`agents/principals.md`).
+   - **Murni Transport & Mapping Tipis**: Resolver/adapter Gateway hanya memvalidasi bentuk input GraphQL, menerjemahkan tipe protobuf ↔ model GraphQL, meneruskan `context.Context` beserta metadata sesi/principal/trace/deadline, serta mensanitasi pesan error internal agar detail SQL/infra tidak bocor. **Dilarang keras** menaruh logika bisnis, query database langsung (PostgreSQL/Redis domain), atau duplikasi katalog permission/ABAC di Gateway ([`agents/users.md`](agents/users.md)).
    - **Fail-Closed & Kesiapan Layanan**: Setiap getter di `source_connections.Registry` wajib *fail-closed* (mengembalikan gRPC `codes.Unavailable` atau error terstruktur bila koneksi `nil`/disabled), dan seluruh operasi wiring wajib melewati `/api/graphql` tanpa menambah route REST baru (`docs/00-governance/decisions.md`).
    - **Larangan Ekspos Scaffold/PAUSED**: Management yang masih berstatus scaffold atau *PAUSED* (misalnya `order_management`, `pricing_revenue_management`, `crm_sales_management`, `customer_service_management`, atau modul yang belum siap implementasi E2E) wajib tetap nonaktif di konfigurasi Gateway dan **tidak boleh** menaruh berkas `.graphql` aktif di bawah `backend/gateway/graphql/` (karena pola glob `graphql/**/*.graphql` akan otomatis memuatnya) maupun dibuatkan package/resolver placeholder kosong sebelum ada keputusan owner.
 
@@ -830,6 +833,7 @@ Apabila dalam pengembangan suatu management (`{from_management}`) terdapat **keb
      - **`## Action`**: Langkah implementasi (`Step 1` s.d. `Step 4`), tabel skenario pengujian (`TC-01` s.d. `TC-05`), perintah build/test aktual, `Acceptance Criteria`, dan `Required Final Report`.
      - **`## Context`**: Referensi arsitektur (`AGENTS.md`, `agents/arsitektur.md`, `agents/boundary.md`), kondisi implementasi `{to_management}` saat ini dari hasil inspeksi *read-only*, batasan D01–D12, serta dependensi dan risiko.
    - Catatan kebutuhan di `agents/notes/` ini berfungsi sebagai spesifikasi teknis siap-eksekusi (*executable-ready specification*) bagi agen `{to_management}` ketika ditugaskan oleh Leader/Owner, bukan izin bagi `{from_management}` untuk mengubah sendiri kode `{to_management}`.
+   - *Pengecualian pendaftaran permission & template role rutin:* begitu mekanisme manifest RBAC aktif, developer `{from_management}` cukup mendaftarkan izin dan role domainnya melalui `backend/shared/rbac/catalogs/{from_management}.json` tanpa membuat catatan permintaan edit `bootstrap.go` ke `iam`; catatan di `agents/notes/iam_management/` (atau `iam/`) hanya dibuat bila membutuhkan perubahan inti IAM seperti prefiks `default_redirect_path` baru, akun otomasi `auto_system_{mgmt}`, atau integrasi `ScopeOwnerVerifier`.
 
 ## Struktur Service Berdasarkan Domain
 
@@ -1001,29 +1005,40 @@ Apabila dalam pengembangan suatu management (`{from_management}`) terdapat **keb
 
 - Baseline riset dan matriks: `agents/research/4-2026-11-09-drm-standards-module-alignment.md`; inventaris mesin: `agents/audits/drm-module-inventory-2026-11-09.json`. Hitung ulang dari workspace/source saat berubah; angka baseline bukan konstanta arsitektur.
 
-## Akun development IAM dan tanggung jawab setiap management
+## Akun development IAM dan pendaftaran roles–permissions lintas management
 
-Selama development, operator menyiapkan satu akun IAM Super Admin per instalasi. Identitas login, password dan ID realm tercatat di `backend/services/iam_management/.env` lokal milik instalasi (di luar Git / gitignored) atau state privat mode `0600`. **Setiap developer management wajib membaca berkas `.env` lokal IAM (`backend/services/iam_management/.env`) untuk mengetahui username/email (`IAM_ROOT_USERNAME` / `IAM_ROOT_EMAIL`) dan password (`IAM_ROOT_PASSWORD`) Super Admin.** Dilarang keras men-hardcode atau meng-commit password ke dalam Git. Gunakan panduan IAM untuk membuat akun tersebut melalui bootstrap resmi dan memverifikasi login. [Panduan admin development](backend/services/iam_management/docs/development-admin.md)
+Selama development maupun rilis awal production, operator menyiapkan satu akun human **Super Admin** perdana per instalasi melalui bootstrap resmi IAM ([`backend/services/iam/services/bootstrap.go`](backend/services/iam/services/bootstrap.go)). Identitas login (`IAM_SUPERADMIN_USERNAME` / `IAM_SUPERADMIN_EMAIL`) dan sandi (`IAM_SUPERADMIN_PASSWORD`) tercatat di berkas lokal `backend/services/iam/.env` (di luar Git / *gitignored*, mode privat `0600`), **bukan** di-hardcode ke dalam Git. **Setiap developer management membaca kredensial akun Super Admin development dari `backend/services/iam/.env` saat menjalankan E2E lokal**, serta menjaga isolasi akun otomasi non-interaktif per management (`user_kind = system`, misalnya `auto_system_iam` dan `auto_system_ef` yang dilarang login interaktif). Lihat [pedoman user & akses IAM](agents/users.md).
 
-1. Developer management memakai akun Super Admin development untuk membuat pengguna, role, permission, group dan assignment **milik modulnya** melalui layanan IAM. Pemilik management menentukan arti izin, scope dan atribut bisnis. IAM memiliki principal, autentikasi dan otorisasi.
-2. Setiap penambahan role, permission atau group dicatat di `agents/roles-permissions/{management}/{id}-roles-permissions.md`. Gunakan ID numerik berikutnya dan dokumentasikan scope, operasi yang diizinkan, pemilik data, dan skenario penolakan. [Katalog IAM](agents/roles-permissions/iam_management/1-roles-permissions.md)
+**Aturan baku agar role & permission tiap management langsung tersimpan ke database IAM saat deploy production (tanpa edit manual DB atau `bootstrap.go`):**
+
+1. **Desain Katalog Domain (`agents/roles-permissions/{management}/1-roles-permissions.md`):** Pemilik management merancang dan mendokumentasikan daftar permission `<management>.<resource>.<action>`, penanda `is_sensitive`, daftar `scope_type` yang valid, *template role* operasional, *default redirect path*, serta aturan pemisahan tugas (SoD). Gunakan [katalog IAM](agents/roles-permissions/iam/1-roles-permissions.md) dan [katalog Enterprise Foundation](agents/roles-permissions/enterprise_foundation/1-roles-permissions.md) sebagai pola acuan.
+2. **Manifest Deklaratif Resmi per Management (`backend/shared/rbac/catalogs/{management}.json`):**
+   - Setiap management mendaftarkan katalog `permissions[]` dan template `roles[]` terverifikasi (hanya untuk kontrak/operasi domain yang sudah dibangun) ke manifest deklaratif milik modulnya sendiri di `backend/shared/rbac/catalogs/{management}.json` (satu berkas per management, hak edit eksklusif pemilik `{management}`).
+   - **Dilarang** mengakses atau menulis tabel database `iam` secara langsung lewat SQL lintas modul maupun membuat role/permission ad-hoc hanya lewat UI/DB lokal tanpa manifest (karena tidak akan ter-replikasi ke database production baru).
+   - **Sinkronisasi Otomatis & Aman oleh IAM:** Service `iam` adalah satu-satunya penulis ke tabel `permissions`, `roles`, dan `role_permissions` pada PostgreSQL `iam`, dijalankan secara idempoten saat startup menggunakan *PostgreSQL advisory lock* serta validasi *fail-closed*:
+     - **Isolasi Namespace:** manifest `{management}.json` hanya boleh mendefinisikan permission berawalan `{management}.*` dan role dengan `management_domain = "{management}"`, dan **dilarang** mengubah role `superadmin`, domain `iam.*`, atau role otomasi modul lain.
+     - **Tanpa Pewarisan Otomatis ke `superadmin`:** domain bisnis baru (`human_resource`, `finance_accounting`, `procurement_sourcing`, `inventory_warehouse_management`, `product_lifecycle_management`, `ecommerce_commerce`, dll.) tidak otomatis mewariskan izin ke role `superadmin` IAM (prinsip SoD), kecuali disetujui eksplisit oleh owner/IAM (baseline `iam.*` + `enterprise_foundation.*` tetap dipertahankan).
+     - **Perlindungan Upgrade Production:** permission baru di-*insert* idempoten; permission yang ditarik dari manifest **tidak di-auto-delete** agar role existing/audit tidak rusak; pengetatan `is_sensitive` (`false` -> `true`) memicu invalidasi revisi keamanan, sedangkan penurunan sensitivitas wajib ditolak/dibatasi ketat; *system role* (`is_system = true`, termasuk `{mgmt}_automation`) selalu disinkronkan otoritatif oleh IAM, sedangkan template role operasional manusia (`is_system = false`) memakai kebijakan **seed-once** (*create-if-missing*) agar kustomisasi izin oleh admin perusahaan di production via `/identity` tidak tertimpa saat rilis baru.
+     - **Test Anti-Drift:** tiap microservice & adapter Gateway wajib menjaga kecocokan 1:1 antara kode izin yang dipakai di handler/adapter dengan manifest `backend/shared/rbac/catalogs/{management}.json`.
+     - *(Status implementasi aktif 25 November 2026: engine pemuat manifest di [`backend/shared/rbac/`](backend/shared/rbac/catalog.go) & [`rbac_catalog_sync.go`](backend/services/iam/services/rbac_catalog_sync.go) sudah aktif untuk `iam.json` dan `enterprise_foundation.json`, disertai test anti-drift pada adapter Gateway IAM & Enterprise Foundation; daftar statis `defaultBootstrapPermissions`/`defaultBootstrapRoles` sudah dihapus.)*
+3. **Pemberian Akses Nyata ke User/Group:** Penugasan `user_roles`, `group_roles`, maupun `group_members` kepada akun manusia tetap dilakukan lewat API resmi IAM (`/api/graphql`), tidak lewat manifest statis, dan grant berscope objek eksternal (`legal_entity`, `organization_unit`, `facility`, `vendor_party`, `supplier_party`) tunduk pada validasi pemilik target (`RequireScopeOwnerVerification`).
 
 ### Prosedur Standar Wajib E2E Testing RBAC & Session TestAB Lintas Management
 
 Setiap pengujian E2E (End-to-End) untuk query dan mutation GraphQL di seluruh management wajib menjalankan verifikasi real code dengan server gRPC service dan HTTP GraphQL Gateway (`/api/graphql`) aktif menyala, mengikuti 4 tahapan protokol berikut:
 
 1. **Login dengan Super Admin**:
-   - Baca kredensial Super Admin dari `backend/services/iam_management/.env` (`IAM_ROOT_USERNAME` / `IAM_ROOT_EMAIL` dan `IAM_ROOT_PASSWORD`).
-   - Eksekusi mutasi `login` ke GraphQL API (`/api/graphql`) untuk mendapatkan cookie sesi opaque (`session`) dan token CSRF (`csrf_token` / header `x-csrf-token`) milik Super Admin.
+   - Baca kredensial Super Admin dari `backend/services/iam/.env` (`IAM_SUPERADMIN_USERNAME` / `IAM_SUPERADMIN_EMAIL` dan `IAM_SUPERADMIN_PASSWORD`).
+   - Eksekusi mutasi `userLogin` ke GraphQL API (`/api/graphql`) dengan pre-auth CSRF untuk mendapatkan cookie sesi opaque (`__Host-integrione_session`) dan token CSRF (`X-CSRF-Token`) milik Super Admin.
 
 2. **Membuat 2 Principals Uji (TestAB: Authorized vs Unauthorized)**:
-   - Menggunakan hak akses Super Admin, buat/provision 2 akun pengguna (principals) pada database IAM:
-     - **User 1 (Authorized / With Permissions):** Diberikan assignment role dan permissions yang sah sesuai domain/operasi yang sedang diuji.
+   - Menggunakan hak akses Super Admin melalui API resmi IAM (memakai katalog permission & role yang sudah tersinkron di DB `iam`), buat/provision 2 akun pengguna (principals) pada database `iam_test`:
+     - **User 1 (Authorized / With Permissions):** Diberikan assignment role/group dan permissions yang sah sesuai domain/operasi yang sedang diuji.
      - **User 2 (Unauthorized / Without Permissions):** Dibuat tanpa permissions (atau tanpa role yang berhak mengakses operasi target).
 
 3. **Login dengan Kedua Akun & Ekstraksi Cookie + CSRF**:
-   - Lakukan mutasi `login` terpisah untuk User 1 dan User 2 melalui GraphQL API (`/api/graphql`).
-   - Simpan cookie sesi opaque (`Set-Cookie`) dan token CSRF dari masing-masing akun untuk digunakan dalam sesi HTTP client terisolasi.
+   - Lakukan mutasi `userLogin` terpisah untuk User 1 dan User 2 melalui GraphQL API (`/api/graphql`).
+   - Simpan cookie sesi opaque (`__Host-integrione_session`) dan token CSRF (`X-CSRF-Token`) dari masing-masing akun untuk digunakan dalam sesi HTTP client terisolasi.
 
 4. **Eksekusi HTTP POST Request ke GraphQL API (`/api/graphql`) untuk Operasi yang Diuji**:
    - Kirimkan HTTP POST request GraphQL yang memuat query atau mutation target dengan 3 skenario wajib:

@@ -56,5 +56,6 @@ INSERT INTO hr_payroll_input_snapshots
 SELECT ?, id, payroll_group_id, employing_legal_entity_reference_id, jurisdiction_code, currency_code,
        content, sha256(content), ?, ?
 FROM snapshot
+ON CONFLICT (id) DO NOTHING
 RETURNING id, payroll_period_id, payroll_group_id, employing_legal_entity_reference_id, jurisdiction_code,
           currency_code, digest, created_by_principal_id, created_at

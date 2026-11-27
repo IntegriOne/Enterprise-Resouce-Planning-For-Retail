@@ -121,7 +121,7 @@ Dokumentasi management yang berlaku hanya mencakup **13 management** pada [peta 
 - [AGENTS.md](../AGENTS.md): aturan developer, commit ke `main`, instruksi per management dan pengujian.
 - [agents/arsitektur.md](../agents/arsitektur.md): keputusan keamanan D01–D12, sesi browser opaque, RBAC–ABAC, Redis/revocation.
 - [agents/boundary.md](../agents/boundary.md): ownership database/aggregate domain.
-- [agents/principals.md](../agents/principals.md): actor human/workload, group/role/grant dan scope.
+- [agents/users.md](../agents/users.md): objek `users` (`customer`, `employee`, `vendor`, `supplier`, `system`), identitas, sesi opaque, role/group/permission dan scope.
 - [agents/instructions/README.md](../agents/instructions/README.md): handoff tugas developer.
 - [Riwayat dokumen pra-rebuild](09-history/migration-map.md): hanya untuk audit historis, bukan implementasi.
 

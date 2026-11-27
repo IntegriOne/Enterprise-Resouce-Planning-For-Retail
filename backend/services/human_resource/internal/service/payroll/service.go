@@ -12,6 +12,7 @@ import (
 )
 
 type Dependencies struct {
+	InputSnapshots     InputSnapshotStore
 	PayrollSettlement  PayrollSettlementVerifier
 	PayrollPayment     PayrollPaymentVerifier
 	PayrollPosting     PayrollPostingVerifier
