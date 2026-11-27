@@ -15,24 +15,6 @@ import (
 //go:embed migrations/000001_hrm.up.sql
 var baselineSQL string
 
-//go:embed migrations/000002_hrm_requisition_provenance.up.sql
-var requisitionProvenanceSQL string
-
-//go:embed migrations/000003_hrm_job_posting_withdrawal.up.sql
-var jobPostingWithdrawalSQL string
-
-//go:embed migrations/000004_hrm_application_rejection.up.sql
-var applicationRejectionSQL string
-
-//go:embed migrations/000005_hrm_application_shortlisting.up.sql
-var applicationShortlistingSQL string
-
-//go:embed migrations/000006_hrm_requisition_rejection.up.sql
-var requisitionRejectionSQL string
-
-//go:embed migrations/000007_hrm_worker_assignment_provenance.up.sql
-var workerAssignmentProvenanceSQL string
-
 // Kunci transaksi advisory khusus HRM; lock dilepas otomatis saat commit/rollback.
 const migrationLockID int64 = 718291825
 
@@ -43,12 +25,6 @@ type migration struct {
 
 var migrations = []migration{
 	{version: 1, sql: baselineSQL},
-	{version: 2, sql: requisitionProvenanceSQL},
-	{version: 3, sql: jobPostingWithdrawalSQL},
-	{version: 4, sql: applicationRejectionSQL},
-	{version: 5, sql: applicationShortlistingSQL},
-	{version: 6, sql: requisitionRejectionSQL},
-	{version: 7, sql: workerAssignmentProvenanceSQL},
 }
 
 // RunMigrationsUp memasang migrasi berurutan secara atomik dan idempoten.
@@ -103,6 +79,12 @@ func RunMigrationsUp(ctx context.Context, pool *sql.DB) (resultErr error) {
 	}
 	if err := rows.Close(); err != nil {
 		return migrationError(ctx, "close migration tracker", err)
+	}
+	if len(installed) == len(legacyMigrationChecksums) && matchesLegacyBaseline(installed) {
+		if err := tx.Commit(); err != nil {
+			return migrationError(ctx, "commit HRM legacy baseline verification", err)
+		}
+		return nil
 	}
 	if len(installed) > len(migrations) {
 		return fmt.Errorf("%w: unsupported HRM migration version", hrerrors.ErrConflict)
@@ -159,4 +141,30 @@ func migrationError(ctx context.Context, stage string, _ error) error {
 		return err
 	}
 	return fmt.Errorf("%w: %s", hrerrors.ErrUnavailable, stage)
+}
+
+// Konsolidasi hanya menerima tujuh checksum historis yang lengkap dan baseline yang sudah terbukti setara.
+const consolidatedBaselineChecksum = "39aaa9acaf545cc9e8d8044e946dad21fcb0e1ca3555889741c192e53857486b"
+
+var legacyMigrationChecksums = [...]string{
+	"fb66aa622a64ad1005e24e874dcc41b49f30489a3a5f033812d3f4e6fdced42e",
+	"04a8bdfb0a48f1124097a6d250c293147674d69ce6aeb20a4dd4947d43339789",
+	"e7da65112aff0c3a18fb8fad4858b83a22cd398bdbf9881403ee9e5a422a48e7",
+	"d42c71d208e226c054b045bbc5e5f686f2f7ef7fc631183c4849a31815653bc4",
+	"4442e1c00aa87c7eaa54522ed5539e1d361ff5f0d545a49457c462c9c59d2808",
+	"54f517cddd8cfd2679f27424e319fd4641d0d2cd2bd16d479a08dcba29035a6c",
+	"404b9b6634a239bf69883c767b93636e7f5ddff73716bcd8357e03e58f033955",
+}
+
+func matchesLegacyBaseline(installed map[int64]string) bool {
+	digest := sha256.Sum256([]byte(baselineSQL))
+	if hex.EncodeToString(digest[:]) != consolidatedBaselineChecksum {
+		return false
+	}
+	for index, checksum := range legacyMigrationChecksums {
+		if installed[int64(index+1)] != checksum {
+			return false
+		}
+	}
+	return true
 }

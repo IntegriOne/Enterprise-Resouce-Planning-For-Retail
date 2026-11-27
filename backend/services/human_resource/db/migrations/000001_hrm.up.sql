@@ -1,3 +1,4 @@
+
 -- Dihasilkan oleh db/schema/generate.sh; jangan edit baseline secara manual.
 -- SQL dump generated using DBML (dbml.dbdiagram.io)
 -- Database: PostgreSQL
@@ -2513,3 +2514,92 @@ CREATE TRIGGER tr_hr_talent_dimension_guard BEFORE INSERT OR UPDATE OR DELETE ON
 ALTER TABLE hr_talent_pool_memberships ADD CONSTRAINT ex_hr_talent_pool_membership
   EXCLUDE USING gist (talent_pool_id WITH =, worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
   WHERE (status IN ('active','exited'));
+
+-- Simpan identitas pembuat dan pengusul tanpa mengubah baseline terpasang.
+ALTER TABLE hr_requisitions
+  ADD COLUMN created_by_principal_id uuid,
+  ADD COLUMN submitted_at timestamptz,
+  ADD COLUMN submitted_by_principal_id uuid,
+  ADD CONSTRAINT ck_hr_requisition_submission_pair
+    CHECK ((submitted_at IS NULL) = (submitted_by_principal_id IS NULL)),
+  ADD CONSTRAINT ck_hr_requisition_approval_separation
+    CHECK ((approved_by_principal_id IS NULL OR created_by_principal_id IS NULL OR
+      approved_by_principal_id <> created_by_principal_id) AND
+      (approved_by_principal_id IS NULL OR submitted_by_principal_id IS NULL OR
+      approved_by_principal_id <> submitted_by_principal_id));
+
+-- Simpan alasan, actor, dan waktu penarikan posting secara atomik.
+ALTER TABLE hr_job_postings
+  ADD COLUMN withdrawn_at timestamptz,
+  ADD COLUMN withdrawal_reason_code varchar(80),
+  ADD COLUMN withdrawn_by_principal_id uuid,
+  ADD CONSTRAINT ck_hr_posting_withdrawn
+    CHECK (status <> 'withdrawn' OR
+      (published_at IS NOT NULL AND withdrawn_at IS NOT NULL AND
+        withdrawn_at > published_at AND closes_at IS NULL AND
+        withdrawal_reason_code IS NOT NULL AND btrim(withdrawal_reason_code) <> '' AND
+        withdrawn_by_principal_id IS NOT NULL)),
+  ADD CONSTRAINT ck_hr_posting_withdrawn_only
+    CHECK (status = 'withdrawn' OR
+      (withdrawn_at IS NULL AND withdrawal_reason_code IS NULL AND withdrawn_by_principal_id IS NULL));
+
+-- Wajibkan alasan dan actor keputusan untuk lamaran yang ditolak.
+ALTER TABLE hr_applications
+  ADD CONSTRAINT ck_hr_application_rejected
+    CHECK (status <> 'rejected' OR
+      (current_stage_code = 'rejected' AND disposition_reason_code IS NOT NULL AND
+        btrim(disposition_reason_code) <> '' AND decision_at IS NOT NULL AND
+        decision_at >= applied_at AND decision_by_principal_id IS NOT NULL AND
+        hired_worker_id IS NULL));
+
+-- Pastikan shortlist manual memiliki recruiter dan tidak meniru skor terverifikasi.
+ALTER TABLE hr_applications DROP CONSTRAINT ck_hr_application_rejected;
+ALTER TABLE hr_applications
+  ADD CONSTRAINT ck_hr_application_rejected
+    CHECK (status <> 'rejected' OR
+      (current_stage_code IS NOT NULL AND current_stage_code = 'rejected' AND
+        disposition_reason_code IS NOT NULL AND btrim(disposition_reason_code) <> '' AND
+        decision_at IS NOT NULL AND decision_at >= applied_at AND
+        decision_by_principal_id IS NOT NULL AND hired_worker_id IS NULL));
+
+ALTER TABLE hr_applications
+  ADD CONSTRAINT ck_hr_application_shortlisted
+    CHECK (status <> 'shortlisted' OR
+      (current_stage_code IS NOT NULL AND current_stage_code = 'shortlisted' AND assigned_recruiter_principal_id IS NOT NULL AND
+        screening_score IS NULL AND scorecard_version IS NULL AND disposition_reason_code IS NULL AND
+        decision_at IS NULL AND decision_by_principal_id IS NULL AND hired_worker_id IS NULL));
+
+-- Simpan keputusan penolakan requisition yang telah diajukan.
+ALTER TABLE hr_requisitions
+  ADD COLUMN rejected_at timestamptz,
+  ADD COLUMN rejection_reason_code varchar(80),
+  ADD COLUMN rejected_by_principal_id uuid,
+  ADD CONSTRAINT ck_hr_requisition_rejected
+    CHECK (status <> 'rejected' OR
+      (created_by_principal_id IS NOT NULL AND submitted_at IS NOT NULL AND
+       submitted_by_principal_id IS NOT NULL AND rejected_at IS NOT NULL AND
+       rejected_at >= submitted_at AND rejection_reason_code IS NOT NULL AND
+       btrim(rejection_reason_code) <> '' AND rejected_by_principal_id IS NOT NULL AND
+       rejected_by_principal_id <> created_by_principal_id AND
+       rejected_by_principal_id <> submitted_by_principal_id AND
+       budget_reference_id IS NULL AND approved_at IS NULL AND
+       approved_by_principal_id IS NULL AND opened_at IS NULL AND closed_at IS NULL)),
+  ADD CONSTRAINT ck_hr_requisition_rejected_only
+    CHECK (status = 'rejected' OR
+      (rejected_at IS NULL AND rejection_reason_code IS NULL AND rejected_by_principal_id IS NULL));
+
+-- Simpan pengaju draf penempatan untuk pemisahan tugas saat persetujuan.
+ALTER TABLE hr_worker_assignments
+  ADD COLUMN requested_by_principal_id uuid,
+  ADD COLUMN requested_at timestamptz,
+  ADD CONSTRAINT ck_hr_assignment_request_pair
+    CHECK ((requested_by_principal_id IS NULL) = (requested_at IS NULL)),
+  ADD CONSTRAINT ck_hr_assignment_approval_pair
+    CHECK ((approved_by_principal_id IS NULL) = (approved_at IS NULL)),
+  ADD CONSTRAINT ck_hr_assignment_approval_provenance
+    CHECK (approved_at IS NULL OR
+      (requested_by_principal_id IS NOT NULL AND requested_at IS NOT NULL AND
+       approved_by_principal_id <> requested_by_principal_id AND approved_at >= requested_at));
+
+CREATE INDEX ix_hr_assignment_requester
+  ON hr_worker_assignments (requested_by_principal_id, requested_at);
