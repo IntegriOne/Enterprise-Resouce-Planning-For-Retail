@@ -287,6 +287,7 @@ const replacementPayrollInputFixture = "corrected payroll input fixture"
 const payrollRuleFixture = "approved payroll rule artifact fixture"
 
 type payrollCalculatorStub struct {
+	snapshotScope         service.CalculationSnapshot
 	replacementSnapshotID string
 	result                entity.PayrollResult
 	line                  entity.PayrollResultLine
@@ -299,14 +300,18 @@ type payrollCalculatorStub struct {
 	calls                 atomic.Int32
 }
 
-func (s *payrollCalculatorStub) ReadCalculationSnapshot(_ context.Context, snapshotID string) ([]byte, error) {
-	if s.changedInputBytes.Load() {
-		return []byte("changed input fixture"), nil
+func (s *payrollCalculatorStub) ReadCalculationSnapshot(_ context.Context, snapshotID string) (service.CalculationSnapshot, error) {
+	result := s.snapshotScope
+	result.ID = snapshotID
+	switch {
+	case s.changedInputBytes.Load():
+		result.Content = []byte("changed input fixture")
+	case snapshotID == s.replacementSnapshotID:
+		result.Content = []byte(replacementPayrollInputFixture)
+	default:
+		result.Content = []byte(payrollInputFixture)
 	}
-	if snapshotID == s.replacementSnapshotID {
-		return []byte(replacementPayrollInputFixture), nil
-	}
-	return []byte(payrollInputFixture), nil
+	return result, nil
 }
 
 func (s *payrollCalculatorStub) ReadRuleArtifactVersion(context.Context, string) ([]byte, error) {
@@ -655,6 +660,7 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 		t.Fatalf("create payroll period: %v", err)
 	}
 	periodID = perRes.GetItem().GetId()
+	calculator.snapshotScope = service.CalculationSnapshot{PeriodID: periodID, GroupID: groupID, EmployerID: legalID}
 	reschedule := &pb.UpdatePayrollPeriodRequest{
 		Id: periodID, Input: &pb.PayrollPeriodInput{PayDate: text("2026-11-28")},
 		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"pay_date"}},

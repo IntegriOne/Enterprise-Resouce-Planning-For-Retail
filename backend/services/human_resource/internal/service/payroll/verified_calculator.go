@@ -4,14 +4,21 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
+// CalculationSnapshot memuat isi immutable dan cakupan yang disimpan oleh penerbit snapshot.
+type CalculationSnapshot struct {
+	ID, PeriodID, GroupID, EmployerID string
+	Content                           []byte
+}
+
 type CalculationSnapshotReader interface {
-	ReadCalculationSnapshot(ctx context.Context, id string) ([]byte, error)
+	ReadCalculationSnapshot(ctx context.Context, id string) (CalculationSnapshot, error)
 }
 
 type RuleArtifactReader interface {
@@ -48,9 +55,15 @@ func (c verifiedCalculator) Calculate(ctx context.Context, request CalculationRe
 	if err != nil {
 		return CalculationResult{}, err
 	}
-	snapshot = bytes.Clone(snapshot)
-	inputDigest := sha256.Sum256(snapshot)
-	if len(snapshot) == 0 || !bytes.Equal(inputDigest[:], request.InputDigest) {
+	if !strings.EqualFold(snapshot.ID, request.InputSnapshotID) ||
+		entity.ValidateUUID("payroll_period_id", snapshot.PeriodID) != nil || !strings.EqualFold(snapshot.PeriodID, request.PeriodID) ||
+		entity.ValidateUUID("payroll_group_id", snapshot.GroupID) != nil || !strings.EqualFold(snapshot.GroupID, request.GroupID) ||
+		entity.ValidateUUID("employing_legal_entity_reference_id", snapshot.EmployerID) != nil || !strings.EqualFold(snapshot.EmployerID, request.EmployerID) {
+		return CalculationResult{}, hrerrors.ErrReferenceConflict
+	}
+	content := bytes.Clone(snapshot.Content)
+	inputDigest := sha256.Sum256(content)
+	if len(content) == 0 || !bytes.Equal(inputDigest[:], request.InputDigest) {
 		return CalculationResult{}, hrerrors.ErrReferenceConflict
 	}
 	artifact, err := c.rules.ReadRuleArtifactVersion(ctx, request.RuleArtifactVersionID)
@@ -67,5 +80,5 @@ func (c verifiedCalculator) Calculate(ctx context.Context, request CalculationRe
 	}
 	request.InputDigest = bytes.Clone(request.InputDigest)
 	request.RuleArtifactDigest = bytes.Clone(request.RuleArtifactDigest)
-	return c.engine.CalculateVerified(ctx, request, snapshot, artifact)
+	return c.engine.CalculateVerified(ctx, request, content, artifact)
 }

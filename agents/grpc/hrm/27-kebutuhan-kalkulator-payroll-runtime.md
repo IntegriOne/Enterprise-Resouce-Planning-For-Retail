@@ -40,3 +40,5 @@ Kalkulasi menolak hasil yang sudah membawa referensi penerbitan slip, dokumen sl
 Suite gRPC PostgreSQL juga memasang `NewVerifiedCalculator` dengan penyedia byte dan engine fixture. Snapshot atau aturan yang berubah ditolak sebelum engine dipanggil. Snapshot asli dan snapshot pengganti masing-masing lulus dengan digest byte aktual. Tes mempertahankan pemeriksaan atas korelasi digest pada event pengajuan posting.
 
 Sebelum membaca snapshot atau menjalankan mesin, `CalculatePayrollRun` memeriksa ulang integritas draf terhadap referensi aktif, termasuk rentang badan hukum EF. Regresi gRPC dengan PostgreSQL dan verifier EF fixture membuktikan bahwa perubahan keputusan EF setelah draf dibuat menghentikan kalkulasi sebelum mesin dipanggil.
+
+Pembaca snapshot harus mengembalikan ID snapshot, periode payroll, grup payroll, dan badan hukum dari metadata yang tersimpan bersama byte. Kalkulator memeriksa keempat referensi sebelum memeriksa digest dan membaca artefak aturan. Uji membuktikan byte dan digest yang sah dari grup lain tetap ditolak sebelum engine berjalan. Penyimpanan dan penerbitan snapshot oleh HRM masih perlu diimplementasikan.

@@ -12,12 +12,15 @@ import (
 
 type calculationContentFixture struct {
 	snapshot, artifact []byte
+	scope              CalculationSnapshot
 	artifactCalls      int
 	engineCalls        int
 }
 
-func (f *calculationContentFixture) ReadCalculationSnapshot(context.Context, string) ([]byte, error) {
-	return f.snapshot, nil
+func (f *calculationContentFixture) ReadCalculationSnapshot(context.Context, string) (CalculationSnapshot, error) {
+	result := f.scope
+	result.Content = f.snapshot
+	return result, nil
 }
 
 func (f *calculationContentFixture) ReadRuleArtifactVersion(context.Context, string) ([]byte, error) {
@@ -39,6 +42,9 @@ func TestVerifiedCalculatorRejectsMismatchedProviderBytes(t *testing.T) {
 	inputDigest, ruleDigest := sha256.Sum256(snapshot), sha256.Sum256(artifact)
 	request := CalculationRequest{
 		InputSnapshotID:       "00000000-0000-4000-8000-000000000001",
+		PeriodID:              "00000000-0000-4000-8000-000000000003",
+		GroupID:               "00000000-0000-4000-8000-000000000004",
+		EmployerID:            "00000000-0000-4000-8000-000000000005",
 		RuleArtifactVersionID: "00000000-0000-4000-8000-000000000002",
 		InputDigest:           inputDigest[:], RuleArtifactDigest: ruleDigest[:],
 	}
@@ -47,13 +53,20 @@ func TestVerifiedCalculatorRejectsMismatchedProviderBytes(t *testing.T) {
 		snapshot, artifact         []byte
 		artifactCalls, engineCalls int
 		want                       error
+		wrongGroup                 bool
 	}{
-		{"valid", snapshot, artifact, 1, 1, nil},
-		{"changed snapshot", []byte("changed input"), artifact, 0, 0, hrerrors.ErrReferenceConflict},
-		{"changed artifact", snapshot, []byte("changed artifact"), 1, 0, hrerrors.ErrReferenceConflict},
+		{"valid", snapshot, artifact, 1, 1, nil, false},
+		{"changed snapshot", []byte("changed input"), artifact, 0, 0, hrerrors.ErrReferenceConflict, false},
+		{"same bytes from another group", snapshot, artifact, 0, 0, hrerrors.ErrReferenceConflict, true},
+		{"changed artifact", snapshot, []byte("changed artifact"), 1, 0, hrerrors.ErrReferenceConflict, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := &calculationContentFixture{snapshot: tc.snapshot, artifact: tc.artifact}
+			f.scope = CalculationSnapshot{ID: request.InputSnapshotID, PeriodID: request.PeriodID,
+				GroupID: request.GroupID, EmployerID: request.EmployerID}
+			if tc.wrongGroup {
+				f.scope.GroupID = request.PeriodID
+			}
 			calculator, err := NewVerifiedCalculator(f, f, f)
 			if err != nil {
 				t.Fatal(err)
