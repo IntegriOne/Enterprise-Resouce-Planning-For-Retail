@@ -272,6 +272,16 @@ func specOffboardingTask() operation.Specification[entity.OffboardingTask, strin
 			}
 			return a
 		},
+		EventDetails: func(action string, task *entity.OffboardingTask) map[string]string {
+			if action != "complete" || task.OwnerConfirmationReferenceID == nil {
+				return nil
+			}
+			return map[string]string{
+				"offboarding_plan_id":             task.OffboardingPlanID,
+				"owner_management":                task.OwnerManagement,
+				"owner_confirmation_reference_id": *task.OwnerConfirmationReferenceID,
+			}
+		},
 		Guard: func(action string, old, next *entity.OffboardingTask) error {
 			if action == "update" && !reflect.DeepEqual(old.Status, next.Status) {
 				return hrerrors.ErrWorkflowRequired

@@ -393,6 +393,17 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 		completed.GetValue().GetOwnerConfirmationReferenceId() != completionTaskID {
 		t.Fatalf("complete task: %+v, %v", completed, err)
 	}
+	var completionEvents int64
+	if err := database.WithContext(ctx).Table("hr_outbox_events").
+		Where("aggregate_id = ? AND event_type = ?", completionTaskID, "hr_offboarding_tasks.complete").
+		Where("payload->>'actor_principal_id' = ?", approved.GetValue().GetApprovedByPrincipalId()).
+		Where("payload->'details'->>'offboarding_plan_id' = ?", planID).
+		Where("payload->'details'->>'owner_management' = ?", "human_resource").
+		Where("payload->'details'->>'owner_confirmation_reference_id' = ?", completed.GetValue().GetOwnerConfirmationReferenceId()).
+		Count(&completionEvents).Error; err != nil || completionEvents != 1 {
+		t.Fatalf("verified task completion events=%d error=%v", completionEvents, err)
+	}
+
 	if withPayroll {
 		if err := database.WithContext(ctx).Table("hr_workers").Where("id = ?", workerID).
 			Updates(map[string]any{"status": "active", "termination_date": nil}).Error; err != nil {
