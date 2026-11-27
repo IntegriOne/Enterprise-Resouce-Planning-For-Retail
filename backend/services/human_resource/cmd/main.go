@@ -10,6 +10,8 @@ import (
 	"syscall"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/config"
+	iamintegration "github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/integration/iam"
+	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/outbox"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	transportgrpc "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc"
 	"github.com/integrione/erp-retail/backend/shared/authsession"
@@ -52,7 +54,19 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("configure HRM security policy: %w", err)
 	}
-	dependencies, err := BuildDependencies(startup, cfg, policy, logger)
+	var terminationPublisher outbox.Publisher
+	if cfg.IAMMandateTarget != "" || cfg.IAMMandateTLS != (config.TLSConfig{}) {
+		tls := cfg.IAMMandateTLS
+		conn, client, err := iamintegration.DialRequisitionMandate(cfg.IAMMandateTarget, tls.ServerName, tls.CertFile, tls.KeyFile, tls.CAFile)
+		if err != nil {
+			return fmt.Errorf("initialize IAM workload client: %w", err)
+		}
+		defer conn.Close()
+		if cfg.TerminationAccessAddress != "" {
+			terminationPublisher = client
+		}
+	}
+	dependencies, err := buildDependencies(startup, cfg, policy, logger, terminationPublisher)
 	if err != nil {
 		return fmt.Errorf("initialize HRM dependencies: %w", err)
 	}

@@ -43,6 +43,8 @@ type OutboxConfig struct {
 
 // Config menyediakan dependency runtime yang sudah divalidasi sebelum listener dibuka.
 type Config struct {
+	IAMMandateTarget              string
+	IAMMandateTLS                 TLSConfig
 	TerminationAccessAddress      string
 	TerminationAccessTLS          TLSConfig
 	AppEnv, ServiceName, GRPCHost string
@@ -60,6 +62,11 @@ type Config struct {
 // Load membaca environment; nilai secret dapat dipasang sebagai berkas Docker secret.
 func Load() (Config, error) {
 	cfg := Config{
+		IAMMandateTarget: env("HRM_IAM_MANDATE_TARGET", ""),
+		IAMMandateTLS: TLSConfig{
+			CertFile: env("HRM_IAM_MANDATE_CERT_FILE", ""), KeyFile: env("HRM_IAM_MANDATE_KEY_FILE", ""),
+			CAFile: env("HRM_IAM_MANDATE_CA_FILE", ""), ServerName: env("HRM_IAM_MANDATE_SERVER_NAME", ""),
+		},
 		TerminationAccessAddress: env("HRM_TERMINATION_ACCESS_ADDR", ""),
 		TerminationAccessTLS: TLSConfig{
 			CertFile: env("HRM_TERMINATION_ACCESS_CERT_FILE", ""), KeyFile: env("HRM_TERMINATION_ACCESS_KEY_FILE", ""),
@@ -180,6 +187,11 @@ func (c Config) Validate() error {
 			portNumber == c.GRPCPort || tls.CertFile == "" || tls.KeyFile == "" || tls.CAFile == "" {
 			return errors.New("HRM termination access requires a separate port, certificate, key, and client CA")
 		}
+	}
+
+	// Relay memegang transaksi outbox saat IAM memanggil balik verifier HRM.
+	if c.TerminationAccessAddress != "" && c.IAMMandateTarget != "" && c.Database.MaxOpenConns < 2 {
+		return errors.New("HRM termination delivery requires HRM_DB_MAX_OPEN_CONNS to be at least 2")
 	}
 
 	if len(c.GatewayHMACSecret) < 32 {

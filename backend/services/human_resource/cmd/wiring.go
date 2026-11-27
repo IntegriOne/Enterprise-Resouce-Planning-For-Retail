@@ -36,6 +36,16 @@ func BuildDependencies(
 	policy operation.Policy,
 	logger *slog.Logger,
 ) (*Dependencies, error) {
+	return buildDependencies(ctx, cfg, policy, logger, nil)
+}
+
+func buildDependencies(
+	ctx context.Context,
+	cfg config.Config,
+	policy operation.Policy,
+	logger *slog.Logger,
+	termination outbox.Publisher,
+) (*Dependencies, error) {
 	if err := operation.RequireDependency(policy); err != nil {
 		return nil, fmt.Errorf("policy dependency: %w", err)
 	}
@@ -213,7 +223,8 @@ func BuildDependencies(
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM services: %w", err))
 	}
-	deliveryStore, err := outbox.NewStore(handle)
+	activeGeneral := cfg.Outbox.Mode != "" && cfg.Outbox.Mode != "standby"
+	deliveryStore, err := outbox.NewStoreForRoutes(handle, activeGeneral, termination != nil)
 	if err != nil {
 		return fail(fmt.Errorf("initialize HRM outbox store: %w", err))
 	}
@@ -230,8 +241,11 @@ func BuildDependencies(
 	default:
 		return fail(hrerrors.ErrInvalidInput)
 	}
+	if termination != nil {
+		publisher = outbox.RouteWorkerTermination(publisher, termination)
+	}
 	relay, err := outbox.NewRelay(repos.Transactor, deliveryStore, publisher, outbox.Config{
-		Standby:      cfg.Outbox.Mode == "" || cfg.Outbox.Mode == "standby",
+		Standby:      !activeGeneral && termination == nil,
 		PollInterval: cfg.Outbox.PollInterval, PublishTimeout: cfg.Outbox.PublishTimeout,
 		MaxAttempts: cfg.Outbox.MaxAttempts,
 	}, logger)

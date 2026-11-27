@@ -122,3 +122,26 @@ func TestSecretFileAndAmbiguousSecretSource(t *testing.T) {
 		t.Fatal("ambiguous secret sources accepted")
 	}
 }
+
+func TestTerminationRelayRequiresConnectionForIAMCallback(t *testing.T) {
+	validEnvironment(t)
+	t.Setenv("HRM_TERMINATION_ACCESS_ADDR", "127.0.0.1:9012")
+	t.Setenv("HRM_TERMINATION_ACCESS_CERT_FILE", "/fixture/termination.crt")
+	t.Setenv("HRM_TERMINATION_ACCESS_KEY_FILE", "/fixture/termination.key")
+	t.Setenv("HRM_TERMINATION_ACCESS_CLIENT_CA_FILE", "/fixture/termination-ca.crt")
+	t.Setenv("HRM_IAM_MANDATE_TARGET", "iam:9011")
+	t.Setenv("HRM_DB_MAX_IDLE_CONNS", "1")
+	t.Setenv("HRM_DB_MAX_OPEN_CONNS", "1")
+	if _, err := config.Load(); err == nil || !strings.Contains(err.Error(), "termination delivery requires HRM_DB_MAX_OPEN_CONNS") {
+		t.Fatalf("termination delivery did not reject a single-connection pool: %v", err)
+	}
+	t.Setenv("HRM_DB_MAX_OPEN_CONNS", "2")
+	if _, err := config.Load(); err != nil {
+		t.Fatalf("termination delivery rejected a two-connection pool: %v", err)
+	}
+	t.Setenv("HRM_IAM_MANDATE_TARGET", "")
+	t.Setenv("HRM_DB_MAX_OPEN_CONNS", "1")
+	if _, err := config.Load(); err != nil {
+		t.Fatalf("standalone verifier rejected a single-connection pool: %v", err)
+	}
+}
