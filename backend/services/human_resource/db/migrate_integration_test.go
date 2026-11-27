@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -169,4 +170,34 @@ func verifyPayrollInputSnapshots(t *testing.T, ctx context.Context, db *gorm.DB)
 			t.Fatalf("immutable snapshot allowed mutation: %q", query)
 		}
 	}
+	const worker = "10000000-0000-4000-8000-000000000006"
+	const profile = "10000000-0000-4000-8000-000000000007"
+	const captureID = "10000000-0000-4000-8000-000000000008"
+	if _, err := repo.Capture(ctx, captureID, period, creator, time.Now()); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("empty payroll scope: %v", err)
+	}
+	if err := db.WithContext(ctx).Exec(`INSERT INTO hr_workers
+		(id, worker_number, person_party_reference_id, worker_category, status, hire_date, primary_legal_entity_reference_id)
+		VALUES (?, 'SNAPSHOT-WORKER', ?, 'employee', 'active', CURRENT_DATE, ?)`, worker, worker, employer).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.WithContext(ctx).Exec(`INSERT INTO hr_payroll_profiles
+		(id, worker_id, payroll_country_code, payroll_jurisdiction_code, payroll_group_id, employing_legal_entity_reference_id,
+		 currency_code, bank_account_token_reference_id, effective_from)
+		VALUES (?, ?, 'ID', 'ID', ?, ?, 'IDR', ?, CURRENT_DATE)`, profile, worker, group, employer, creator).Error; err != nil {
+		t.Fatal(err)
+	}
+	captured, err := repo.Capture(ctx, captureID, period, creator, time.Now())
+	if err != nil || captured.ID != captureID || len(captured.Digest) != sha256.Size || len(captured.Content) != 0 {
+		t.Fatalf("capture payroll input metadata: %v", err)
+	}
+	got, err = repo.ReadCalculationSnapshot(ctx, captureID)
+	var frozen struct {
+		Profiles []struct{ ID string }
+	}
+	if err != nil || json.Unmarshal(got.Content, &frozen) != nil || len(frozen.Profiles) != 1 || frozen.Profiles[0].ID != profile ||
+		bytes.Contains(got.Content, []byte(creator)) {
+		t.Fatalf("captured content: profiles=%d error=%v", len(frozen.Profiles), err)
+	}
+
 }
