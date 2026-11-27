@@ -378,6 +378,39 @@ INSERT INTO iam_security_control (id, recovery_epoch)
 VALUES (1, 1)
 ON CONFLICT (id) DO NOTHING;
 
+-- BEGIN IAM employee provisioning
+-- Antrean provisioning menyimpan penerimaan permintaan HRM dan jejak pemrosesan IAM.
+CREATE TABLE IF NOT EXISTS employee_provisioning_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    hrm_request_id uuid NOT NULL UNIQUE,
+    worker_id uuid NOT NULL,
+    worker_number varchar(100) NOT NULL CHECK (btrim(worker_number) <> ''),
+    legal_entity_id uuid NOT NULL,
+    catalog_role_id uuid NOT NULL,
+    requested_by_principal_id uuid NOT NULL,
+    requested_at timestamptz NOT NULL,
+    received_at timestamptz NOT NULL DEFAULT now(),
+    status varchar(20) NOT NULL DEFAULT 'pending',
+    processed_by_user_id uuid REFERENCES users(id) ON DELETE RESTRICT,
+    claimed_at timestamptz,
+    account_user_id uuid UNIQUE REFERENCES users(id) ON DELETE RESTRICT,
+    resolved_at timestamptz,
+    CONSTRAINT ck_employee_provisioning_state CHECK (
+        (status = 'pending' AND processed_by_user_id IS NULL AND claimed_at IS NULL AND account_user_id IS NULL AND resolved_at IS NULL)
+        OR (status = 'processing' AND processed_by_user_id IS NOT NULL AND claimed_at IS NOT NULL AND resolved_at IS NULL)
+        OR (status = 'linked' AND processed_by_user_id IS NOT NULL AND claimed_at IS NOT NULL AND account_user_id IS NOT NULL AND resolved_at IS NOT NULL)
+        OR (status = 'rejected' AND processed_by_user_id IS NOT NULL AND claimed_at IS NOT NULL AND account_user_id IS NULL AND resolved_at IS NOT NULL)
+    )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_employee_provisioning_open_worker
+    ON employee_provisioning_requests (worker_id)
+    WHERE status IN ('pending', 'processing');
+
+CREATE INDEX IF NOT EXISTS ix_employee_provisioning_status_received
+    ON employee_provisioning_requests (status, received_at, id);
+-- END IAM employee provisioning
+
 CREATE TABLE IF NOT EXISTS iam_outbox_events (
     id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     event_type     varchar(80) NOT NULL,

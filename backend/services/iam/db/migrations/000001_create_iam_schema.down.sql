@@ -12,6 +12,7 @@ DROP TRIGGER IF EXISTS trg_user_credentials_updated_at ON user_credentials;
 DROP TRIGGER IF EXISTS trg_user_identities_updated_at ON user_identities;
 DROP TRIGGER IF EXISTS trg_users_updated_at ON users;
 
+DROP TABLE IF EXISTS employee_provisioning_requests;
 DROP TABLE IF EXISTS iam_outbox_events CASCADE;
 DROP TABLE IF EXISTS iam_security_control CASCADE;
 DROP TABLE IF EXISTS group_roles CASCADE;

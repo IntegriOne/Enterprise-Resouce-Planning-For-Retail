@@ -78,6 +78,11 @@ func RunMigrationsUp(ctx context.Context, db *sql.DB) (resultErr error) {
 
 	for _, item := range items {
 		if applied[item.version] {
+			if item.version == 1 {
+				if err := reconcileEmployeeProvisioning(ctx, conn, item.filename); err != nil {
+					return err
+				}
+			}
 			continue
 		}
 
@@ -114,6 +119,38 @@ func RunMigrationsUp(ctx context.Context, db *sql.DB) (resultErr error) {
 		slog.Info("database migration applied", slog.Int64("version", item.version))
 	}
 
+	return nil
+}
+
+// reconcileEmployeeProvisioning melengkapi baseline IAM terpasang tanpa menaikkan versi migrasi.
+func reconcileEmployeeProvisioning(ctx context.Context, conn *sql.Conn, filename string) error {
+	var exists bool
+	if err := conn.QueryRowContext(ctx, "SELECT to_regclass(format('%I.employee_provisioning_requests', current_schema())) IS NOT NULL").Scan(&exists); err != nil {
+		return fmt.Errorf("failed to inspect employee provisioning schema: %w", err)
+	}
+	if exists {
+		return nil
+	}
+	content, err := MigrationFiles.ReadFile("migrations/" + filename)
+	if err != nil {
+		return fmt.Errorf("failed to read employee provisioning baseline: %w", err)
+	}
+	_, rest, begin := strings.Cut(string(content), "-- BEGIN IAM employee provisioning\n")
+	statement, _, end := strings.Cut(rest, "-- END IAM employee provisioning")
+	if !begin || !end || strings.TrimSpace(statement) == "" {
+		return errors.New("employee provisioning baseline section is missing")
+	}
+	tx, err := conn.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to start employee provisioning baseline reconciliation: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+	if _, err := tx.ExecContext(ctx, statement); err != nil {
+		return fmt.Errorf("failed to reconcile employee provisioning baseline: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit employee provisioning baseline: %w", err)
+	}
 	return nil
 }
 

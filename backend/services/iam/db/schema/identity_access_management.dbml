@@ -355,6 +355,28 @@ Table iam_security_control {
   Note: 'Kontrol sinkronisasi gate Redis IAM lintas restart.'
 }
 
+Table employee_provisioning_requests {
+  id uuid [pk, default: `gen_random_uuid()`]
+  hrm_request_id uuid [not null, unique, note: 'ID pengajuan pada HRM; referensi lintas layanan']
+  worker_id uuid [not null]
+  worker_number varchar(100) [not null]
+  legal_entity_id uuid [not null]
+  catalog_role_id uuid [not null, note: 'Referensi historis katalog IAM yang divalidasi saat penerimaan']
+  requested_by_principal_id uuid [not null]
+  requested_at timestamptz [not null]
+  received_at timestamptz [not null, default: `now()`]
+  status varchar(20) [not null, default: 'pending']
+  processed_by_user_id uuid
+  claimed_at timestamptz
+  account_user_id uuid [unique]
+  resolved_at timestamptz
+
+  indexes {
+    (status, received_at, id) [name: 'ix_employee_provisioning_status_received']
+  }
+  Note: 'Constraint SQL memvalidasi state dan membatasi satu permintaan terbuka per pekerja.'
+}
+
 Table iam_outbox_events {
   id uuid [pk, default: `gen_random_uuid()`]
   event_type varchar(80) [not null]
@@ -409,3 +431,6 @@ Ref: user_roles.assigned_by > users.id [delete: set null]
 Ref: group_roles.group_id > groups.id [delete: cascade]
 Ref: group_roles.role_id > roles.id [delete: restrict]
 Ref: group_roles.assigned_by > users.id [delete: set null]
+
+Ref: employee_provisioning_requests.processed_by_user_id > users.id [delete: restrict]
+Ref: employee_provisioning_requests.account_user_id > users.id [delete: restrict]
