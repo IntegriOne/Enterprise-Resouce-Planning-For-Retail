@@ -15,7 +15,9 @@ import (
 	iamerrors "github.com/integrione/erp-retail/backend/services/iam/domain/errors"
 	"github.com/integrione/erp-retail/backend/services/iam/services/user"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 )
 
 type Client struct {
@@ -82,4 +84,35 @@ func (c *Client) Verify(ctx context.Context, workerID, planID, effectiveDate str
 		return user.TerminationAccessDecision{}, iamerrors.ErrUnavailable
 	}
 	return user.TerminationAccessDecision{PrincipalID: principal, EffectiveDate: result.GetTerminationEffectiveDate(), MayDisable: result.GetMayDisable()}, nil
+}
+
+// VerifyWorkerAccountLink meminta HRM mengonfirmasi identitas pekerja dan akun sebelum provisioning selesai.
+func (c *Client) VerifyWorkerAccountLink(ctx context.Context, workerID, principalID, legalEntityID string) error {
+	if c == nil || c.rpc == nil {
+		return iamerrors.ErrUnavailable
+	}
+	if !entity.IsValidUUID(workerID) || !entity.IsValidUUID(principalID) || !entity.IsValidUUID(legalEntityID) {
+		return iamerrors.ErrInvalidInput
+	}
+	callCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	result, err := c.rpc.VerifyWorkerAccountLink(callCtx, &pb.VerifyWorkerAccountLinkRequest{
+		WorkerId: workerID, PrincipalId: principalID, LegalEntityId: legalEntityID,
+	})
+	if err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		switch status.Code(err) {
+		case codes.NotFound, codes.FailedPrecondition:
+			return iamerrors.ErrConflict
+		default:
+			return iamerrors.ErrUnavailable
+		}
+	}
+	if !strings.EqualFold(result.GetWorkerId(), workerID) || !strings.EqualFold(result.GetPrincipalId(), principalID) ||
+		!strings.EqualFold(result.GetLegalEntityId(), legalEntityID) {
+		return iamerrors.ErrUnavailable
+	}
+	return nil
 }
