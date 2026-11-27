@@ -78,7 +78,7 @@ type CompleteOffboardingPlanPayload implements MutationResult {
 extend type Mutation {
   createOffboardingPlan(input: CreateOffboardingPlanInput!): CreateOffboardingPlanPayload!
   createOffboardingTask(input: CreateOffboardingTaskInput!): CreateOffboardingTaskPayload!
-  completeOffboardingTask(id: ID!, owner_confirmation_reference_id: ID!): CompleteOffboardingTaskPayload!
+  completeOffboardingTask(id: ID!, owner_confirmation_reference_id: ID): CompleteOffboardingTaskPayload!
   waiveOffboardingTask(id: ID!, reason: String!): WaiveOffboardingTaskPayload!
   approveOffboardingPlan(id: ID!): ApproveOffboardingPlanPayload!
   startOffboardingPlan(id: ID!): StartOffboardingPlanPayload!

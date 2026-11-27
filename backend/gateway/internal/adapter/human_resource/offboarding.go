@@ -299,18 +299,26 @@ func (a *Adapter) OffboardingTasks(ctx context.Context, rawPlanID string, limit,
 }
 
 // CompleteOffboardingTask meneruskan bukti penyelesaian untuk diverifikasi HRM.
-func (a *Adapter) CompleteOffboardingTask(ctx context.Context, id, rawConfirmationID string) (*model.OffboardingTask, error) {
+func (a *Adapter) CompleteOffboardingTask(ctx context.Context, id string, rawConfirmationID *string) (*model.OffboardingTask, error) {
 	return a.runOffboardingTaskCommand(ctx, id, "human_resource.offboarding_tasks.complete", "completed",
 		func(rpcCtx context.Context, taskID string) (*offboarding.OffboardingTaskResponse, error) {
-			confirmationID, err := uuid.Parse(rawConfirmationID)
-			if err != nil || confirmationID == uuid.Nil {
-				return nil, status.Error(codes.InvalidArgument, "invalid offboarding confirmation ID")
+			var confirmationID string
+			if rawConfirmationID != nil {
+				parsed, err := uuid.Parse(*rawConfirmationID)
+				if err != nil || parsed == uuid.Nil {
+					return nil, status.Error(codes.InvalidArgument, "invalid offboarding confirmation ID")
+				}
+				confirmationID = parsed.String()
 			}
 			response, err := a.offboarding.CompleteOffboardingTask(rpcCtx, &offboarding.CompleteOffboardingTaskRequest{
-				Id: taskID, OwnerConfirmationReferenceId: confirmationID.String(),
+				Id: taskID, OwnerConfirmationReferenceId: confirmationID,
 			})
-			if err == nil && response.GetValue().GetOwnerConfirmationReferenceId() != confirmationID.String() {
-				return nil, status.Error(codes.Internal, "invalid offboarding task confirmation response")
+			if err == nil {
+				returned := response.GetValue().GetOwnerConfirmationReferenceId()
+				parsed, parseErr := uuid.Parse(returned)
+				if parseErr != nil || parsed == uuid.Nil || (confirmationID != "" && parsed.String() != confirmationID) {
+					return nil, status.Error(codes.Internal, "invalid offboarding task confirmation response")
+				}
 			}
 			return response, err
 		})

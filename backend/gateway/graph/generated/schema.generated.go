@@ -82,7 +82,7 @@ type MutationResolver interface {
 	PostLeaveAdjustment(ctx context.Context, input model.PostLeaveAdjustmentInput) (*model.PostLeaveAdjustmentPayload, error)
 	CreateOffboardingPlan(ctx context.Context, input model.CreateOffboardingPlanInput) (*model.CreateOffboardingPlanPayload, error)
 	CreateOffboardingTask(ctx context.Context, input model.CreateOffboardingTaskInput) (*model.CreateOffboardingTaskPayload, error)
-	CompleteOffboardingTask(ctx context.Context, id string, ownerConfirmationReferenceID string) (*model.CompleteOffboardingTaskPayload, error)
+	CompleteOffboardingTask(ctx context.Context, id string, ownerConfirmationReferenceID *string) (*model.CompleteOffboardingTaskPayload, error)
 	WaiveOffboardingTask(ctx context.Context, id string, reason string) (*model.WaiveOffboardingTaskPayload, error)
 	ApproveOffboardingPlan(ctx context.Context, id string) (*model.ApproveOffboardingPlanPayload, error)
 	StartOffboardingPlan(ctx context.Context, id string) (*model.StartOffboardingPlanPayload, error)
@@ -889,8 +889,8 @@ func (ec *executionContext) field_Mutation_completeOffboardingTask_args(ctx cont
 	}
 	args["id"] = arg0
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "owner_confirmation_reference_id",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
+		func(ctx context.Context, v any) (*string, error) {
+			return ec.unmarshalOID2ᚖstring(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -10078,7 +10078,7 @@ func (ec *executionContext) _Mutation_completeOffboardingTask(ctx context.Contex
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().CompleteOffboardingTask(ctx, fc.Args["id"].(string), fc.Args["owner_confirmation_reference_id"].(string))
+			return ec.Resolvers.Mutation().CompleteOffboardingTask(ctx, fc.Args["id"].(string), fc.Args["owner_confirmation_reference_id"].(*string))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.CompleteOffboardingTaskPayload) graphql.Marshaler {

@@ -24,6 +24,7 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain offboarding.
 type Service struct {
+	ids             operation.IDGenerator
 	workers         domainrepo.RecordRepository[entity.Worker, string]
 	payrollRuns     domainrepo.RecordRepository[entity.PayrollRun, string]
 	clearance       ClearanceVerifier
@@ -35,7 +36,10 @@ type Service struct {
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{workers: deps.Workers, confirmation: deps.ConfirmationVerifier, clearance: deps.ClearanceVerifier, payrollResults: deps.PayrollResults, payrollRuns: deps.PayrollRuns}
+	if operation.RequireDependency(deps.Runtime.IDs) != nil {
+		deps.Runtime.IDs = operation.UUIDGenerator{}
+	}
+	s := &Service{ids: deps.Runtime.IDs, workers: deps.Workers, confirmation: deps.ConfirmationVerifier, clearance: deps.ClearanceVerifier, payrollResults: deps.PayrollResults, payrollRuns: deps.PayrollRuns}
 	var err error
 	s.offboardingPlan, err = operation.NewResource[entity.OffboardingPlan, string, *entity.OffboardingPlan](
 		deps.OffboardingPlan,

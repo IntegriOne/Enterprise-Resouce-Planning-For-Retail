@@ -120,6 +120,7 @@ message WaiveOffboardingTaskRequest {
 
 message CompleteOffboardingTaskRequest {
   string id = 1;
+  // Kosong untuk konfirmasi petugas pada tugas milik HRM.
   string owner_confirmation_reference_id = 2;
 }
 

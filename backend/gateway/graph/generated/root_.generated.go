@@ -1032,7 +1032,7 @@ type ComplexityRoot struct {
 		CloseLeaveEntitlement            func(childComplexity int, id string) int
 		CloseRequisition                 func(childComplexity int, id string) int
 		CompleteOffboardingPlan          func(childComplexity int, id string, finalPayrollRunID string, financeClearanceReferenceID string) int
-		CompleteOffboardingTask          func(childComplexity int, id string, ownerConfirmationReferenceID string) int
+		CompleteOffboardingTask          func(childComplexity int, id string, ownerConfirmationReferenceID *string) int
 		ConfirmMyTotp                    func(childComplexity int, input model.ConfirmTotpInput) int
 		CreateAddress                    func(childComplexity int, input model.CreateAddressInput) int
 		CreateCandidate                  func(childComplexity int, input model.CreateCandidateInput) int
@@ -6380,7 +6380,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.CompleteOffboardingTask(childComplexity, args["id"].(string), args["owner_confirmation_reference_id"].(string)), true
+		return e.ComplexityRoot.Mutation.CompleteOffboardingTask(childComplexity, args["id"].(string), args["owner_confirmation_reference_id"].(*string)), true
 	case "Mutation.confirmMyTotp":
 		if e.ComplexityRoot.Mutation.ConfirmMyTotp == nil {
 			break
@@ -15638,7 +15638,7 @@ type CompleteOffboardingPlanPayload implements MutationResult {
 extend type Mutation {
   createOffboardingPlan(input: CreateOffboardingPlanInput!): CreateOffboardingPlanPayload!
   createOffboardingTask(input: CreateOffboardingTaskInput!): CreateOffboardingTaskPayload!
-  completeOffboardingTask(id: ID!, owner_confirmation_reference_id: ID!): CompleteOffboardingTaskPayload!
+  completeOffboardingTask(id: ID!, owner_confirmation_reference_id: ID): CompleteOffboardingTaskPayload!
   waiveOffboardingTask(id: ID!, reason: String!): WaiveOffboardingTaskPayload!
   approveOffboardingPlan(id: ID!): ApproveOffboardingPlanPayload!
   startOffboardingPlan(id: ID!): StartOffboardingPlanPayload!

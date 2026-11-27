@@ -1384,12 +1384,16 @@ func TestHRMOffboardingTaskThroughGateway(t *testing.T) {
 }
 
 func (hrmOffboardingServer) CompleteOffboardingTask(_ context.Context, req *offboarding.CompleteOffboardingTaskRequest) (*offboarding.OffboardingTaskResponse, error) {
-	if req.GetOwnerConfirmationReferenceId() != fixturePeriodID {
+	reference := req.GetOwnerConfirmationReferenceId()
+	if reference == "" {
+		reference = fixturePeriodID
+	}
+	if reference != fixturePeriodID {
 		return nil, status.Error(codes.Unavailable, "confirmation verifier unavailable")
 	}
 	return &offboarding.OffboardingTaskResponse{Value: &offboarding.OffboardingTask{
 		Id: req.GetId(), OffboardingPlanId: fixtureWorkforcePlanID, Status: "completed",
-		OwnerConfirmationReferenceId: &req.OwnerConfirmationReferenceId,
+		OwnerConfirmationReferenceId: &reference,
 	}}, nil
 }
 
@@ -1405,12 +1409,15 @@ func (hrmOffboardingServer) WaiveOffboardingTask(_ context.Context, req *offboar
 func TestHRMOffboardingTaskCommandsThroughGateway(t *testing.T) {
 	conn := newHRMPayrollFixture(t)
 	complete := `mutation($value: ID!) { completeOffboardingTask(id:"` + hrmFixtureID + `",owner_confirmation_reference_id:$value) { was_successful errors { type } offboarding_task { status } } }`
+	localComplete := `mutation { completeOffboardingTask(id:"` + hrmFixtureID + `") { was_successful errors { type } offboarding_task { status } } }`
 	waive := `mutation($value: String!) { waiveOffboardingTask(id:"` + hrmFixtureID + `",reason:$value) { was_successful errors { type } offboarding_task { status } } }`
 	for _, tc := range []struct {
 		name, grant, query, value, want string
 		mfa                             bool
 	}{
 		{"complete", "complete", complete, fixturePeriodID, `"status":"completed"`, true},
+		{"local confirmation", "complete", localComplete, "", `"status":"completed"`, true},
+		{"local confirmation without MFA", "complete", localComplete, "", "AUTHORIZATION", false},
 		{"invalid confirmation ID", "complete", complete, "invalid", "ARGUMENT", true},
 		{"waive", "waive", waive, "fixture reason", `"status":"waived"`, true},
 		{"missing reason", "waive", waive, "", "ARGUMENT", true},

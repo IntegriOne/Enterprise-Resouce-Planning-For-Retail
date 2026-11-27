@@ -52,12 +52,14 @@ func (*integrationPolicy) ReadScope(context.Context, operation.Access) (operatio
 	return operation.Scope{All: true}, nil
 }
 
-type confirmationStub struct{ calls atomic.Int32 }
+type confirmationStub struct {
+	calls    atomic.Int32
+	expected atomic.Pointer[service.ConfirmationRequest]
+}
 
 func (s *confirmationStub) VerifyOffboardingConfirmation(_ context.Context, request service.ConfirmationRequest) error {
 	s.calls.Add(1)
-	if request.ReferenceID != request.TaskID || request.PlanID == "" ||
-		request.OwnerManagement != "human_resource" || request.PrincipalID == "" {
+	if expected := s.expected.Load(); expected == nil || request != *expected {
 		return hrerrors.ErrReferenceConflict
 	}
 	return nil
@@ -176,13 +178,15 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var planID, taskID, completionTaskID string
+	var planID, taskID, completionTaskID, localTaskID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
 		for _, statement := range []struct{ query, value string }{
 			{"DELETE FROM hr_offboarding_tasks WHERE id = ?", taskID},
 			{"DELETE FROM hr_offboarding_tasks WHERE id = ?", completionTaskID},
+			{"DELETE FROM hr_offboarding_tasks WHERE id = ?", localTaskID},
+			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", localTaskID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", completionTaskID},
 			{"DELETE FROM hr_worker_assignment_transfers WHERE id = ?", completionTaskID},
 			{"DELETE FROM hr_outbox_events WHERE aggregate_id = ?", taskID},
@@ -313,6 +317,18 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("create completion task: %v", err)
 	}
 	completionTaskID = completionTask.GetValue().GetId()
+	localTaskCode := "LOCAL-CONFIRMATION"
+	localTask, err := client.CreateOffboardingTask(ctx, &pb.CreateOffboardingTaskRequest{Input: &pb.OffboardingTaskInput{
+		OffboardingPlanId: &planID, TaskCode: &localTaskCode, TaskName: &localTaskCode, OwnerManagement: &owner,
+	}})
+	if err != nil {
+		t.Fatalf("create local confirmation task: %v", err)
+	}
+	localTaskID = localTask.GetValue().GetId()
+	if _, err := client.CompleteOffboardingTask(ctx, &pb.CompleteOffboardingTaskRequest{Id: localTaskID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("local confirmation before plan start: %v", err)
+	}
+
 	if _, err := client.CompleteOffboardingTask(ctx, &pb.CompleteOffboardingTaskRequest{
 		Id: completionTaskID, OwnerConfirmationReferenceId: completionTaskID,
 	}); status.Code(err) != codes.FailedPrecondition {
@@ -359,11 +375,19 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.DeleteOffboardingTask(ctx, &common.IDRequest{Id: taskID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete task after start = %v", err)
 	}
-	completeRequest := &pb.CompleteOffboardingTaskRequest{Id: completionTaskID, OwnerConfirmationReferenceId: taskID}
+	confirmationID, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	confirmation.expected.Store(&service.ConfirmationRequest{
+		ReferenceID: confirmationID, TaskID: completionTaskID, PlanID: planID,
+		OwnerManagement: "human_resource", PrincipalID: independentPrincipalID,
+	})
+	completeRequest := &pb.CompleteOffboardingTaskRequest{Id: completionTaskID, OwnerConfirmationReferenceId: completionTaskID}
 	if _, err := client.CompleteOffboardingTask(ctx, completeRequest); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("unverified confirmation = %v", err)
 	}
-	completeRequest.OwnerConfirmationReferenceId = completionTaskID
+	completeRequest.OwnerConfirmationReferenceId = confirmationID
 	if err := database.WithContext(ctx).Table("hr_offboarding_plans").Where("id = ?", planID).
 		Update("approved_at", time.Now().Add(time.Hour)).Error; err != nil {
 		t.Fatalf("set future plan approval fixture: %v", err)
@@ -390,9 +414,20 @@ func TestOffboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	completed, err := client.CompleteOffboardingTask(ctx, completeRequest)
 	if err != nil || completed.GetValue().GetStatus() != "completed" || completed.GetValue().GetCompletedAt() == nil ||
-		completed.GetValue().GetOwnerConfirmationReferenceId() != completionTaskID {
+		completed.GetValue().GetOwnerConfirmationReferenceId() != confirmationID {
 		t.Fatalf("complete task: %+v, %v", completed, err)
 	}
+	verifierCalls := confirmation.calls.Load()
+	localComplete, err := client.CompleteOffboardingTask(ctx, &pb.CompleteOffboardingTaskRequest{Id: localTaskID})
+	localReference := localComplete.GetValue().GetOwnerConfirmationReferenceId()
+	if err != nil || localComplete.GetValue().GetStatus() != "completed" || localReference == "" ||
+		localReference == localTaskID || confirmation.calls.Load() != verifierCalls {
+		t.Fatalf("local completion: %v, %v", localComplete, err)
+	}
+	if _, err := client.CompleteOffboardingTask(ctx, &pb.CompleteOffboardingTaskRequest{Id: localTaskID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("duplicate local completion: %v", err)
+	}
+
 	var completionEvents int64
 	if err := database.WithContext(ctx).Table("hr_outbox_events").
 		Where("aggregate_id = ? AND event_type = ?", completionTaskID, "hr_offboarding_tasks.complete").

@@ -33,7 +33,7 @@ func (r *mutationResolver) CreateOffboardingTask(ctx context.Context, input mode
 }
 
 // CompleteOffboardingTask menyelesaikan tugas dengan bukti pemilik.
-func (r *mutationResolver) CompleteOffboardingTask(ctx context.Context, id string, ownerConfirmationReferenceID string) (*model.CompleteOffboardingTaskPayload, error) {
+func (r *mutationResolver) CompleteOffboardingTask(ctx context.Context, id string, ownerConfirmationReferenceID *string) (*model.CompleteOffboardingTaskPayload, error) {
 	result, err := r.HRMAdapter.CompleteOffboardingTask(ctx, id, ownerConfirmationReferenceID)
 	return &model.CompleteOffboardingTaskPayload{
 		OffboardingTask: result,

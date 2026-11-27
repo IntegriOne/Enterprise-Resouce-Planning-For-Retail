@@ -1077,9 +1077,10 @@ func (x *WaiveOffboardingTaskRequest) GetReason() string {
 }
 
 type CompleteOffboardingTaskRequest struct {
-	state                        protoimpl.MessageState `protogen:"open.v1"`
-	Id                           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	OwnerConfirmationReferenceId string                 `protobuf:"bytes,2,opt,name=owner_confirmation_reference_id,json=ownerConfirmationReferenceId,proto3" json:"owner_confirmation_reference_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Kosong untuk konfirmasi petugas pada tugas milik HRM.
+	OwnerConfirmationReferenceId string `protobuf:"bytes,2,opt,name=owner_confirmation_reference_id,json=ownerConfirmationReferenceId,proto3" json:"owner_confirmation_reference_id,omitempty"`
 	unknownFields                protoimpl.UnknownFields
 	sizeCache                    protoimpl.SizeCache
 }
