@@ -25,3 +25,9 @@ Pengujian memakai akun superadmin dan MFA. Pengikatan role, permission, dan scop
 - Finance memverifikasi anggaran requisition dan workforce, menerbitkan payroll, menangani transfer dan settlement, serta memberi clearance offboarding. HRM mencatat rincian dan hasil otorisasi. [Handoff Finance](25-kebutuhan-integrasi-finance-payroll.md)
 - DRM menyimpan versi PDF privat dan immutable, memeriksa akses versi, serta menyediakan bukti kontrak bertanda tangan dan artefak aturan payroll. [Handoff DRM](24-kebutuhan-integrasi-drm.md) · [Cetak ulang slip](39-cetak-ulang-slip-gaji-mantan-karyawan.md)
 - Kalkulator runtime memerlukan sumber snapshot immutable dan artefak aturan. Penyelesaian tugas offboarding lintas owner memerlukan konfirmasi pemilik tugas. [Kalkulator](27-kebutuhan-kalkulator-payroll-runtime.md) · [Offboarding](13-operasi-offboarding.md)
+
+## Verifikasi setelah pekerjaan HRM dilanjutkan
+
+Snapshot `4c9396d` lolos pemeriksaan inventaris terhadap proto, handler, dan izin. Seluruh 1.015 RPC bisnis tercatat tanpa selisih. Ulang uji HTTPS dengan `--termination --guards` lulus untuk 52 Query, 61 Mutation, provisioning idempoten, aktivasi dan terminasi, serta clearance mTLS. Uji gRPC offboarding dan validator pada PostgreSQL disposable juga lulus.
+
+Provider Finance dan DRM ditunda sampai kedua management dibangun. Pekerjaan HRM yang masih terbuka adalah penerbitan bukti penyelesaian untuk tugas offboarding milik HRM serta pembekuan snapshot input payroll. Jalur positif untuk tahap yang membutuhkan provider tetap tercatat sebagai uji fixture. [Bukti tugas offboarding](13-operasi-offboarding.md#sumber-konfirmasi-penyelesaian-tugas) · [Snapshot payroll](27-kebutuhan-kalkulator-payroll-runtime.md#penyelarasan-snapshot-dengan-pembuatan-run)
