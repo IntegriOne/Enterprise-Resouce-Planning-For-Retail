@@ -33,12 +33,14 @@ const (
 	PermSessionsReadSelf   = "iam.sessions.readself"
 	PermSessionsRevoke     = "iam.sessions.revoke"
 	PermSessionsDeleteSelf = "iam.sessions.deleteself"
+	PermPayslipsReadSelf   = "human_resource.payslips.read_self"
 )
 
 // IsSelfServicePermissionCode memeriksa apakah kode izin merupakan aksi mandiri (*self) yang terikat kepemilikan principal sendiri.
 func IsSelfServicePermissionCode(permCode string) bool {
 	norm := normalizeCode(permCode)
-	return strings.HasSuffix(norm, ".readself") ||
+	return norm == PermPayslipsReadSelf ||
+		strings.HasSuffix(norm, ".readself") ||
 		strings.HasSuffix(norm, ".updateself") ||
 		strings.HasSuffix(norm, ".deleteself")
 }
@@ -164,6 +166,9 @@ func (s *AccessSnapshot) HasScopedPermission(permCode string, required ScopeGran
 	if target == "" {
 		return PermissionGrant{}, false
 	}
+	if target == PermPayslipsReadSelf && strings.TrimSpace(s.PrincipalID) == "" {
+		return PermissionGrant{}, false
+	}
 	if IsSelfServicePermissionCode(target) {
 		// Izin self-service tidak pernah boleh lolos pada evaluasi global atau scope self milik principal lain.
 		if normalizeCode(required.Type) != ScopeSelf || strings.TrimSpace(required.ID) == "" {
@@ -174,6 +179,9 @@ func (s *AccessSnapshot) HasScopedPermission(permCode string, required ScopeGran
 		}
 	}
 	for _, p := range s.Permissions {
+		if target == PermPayslipsReadSelf && normalizeCode(p.Scope.Type) != ScopeSelf {
+			continue
+		}
 		if normalizeCode(p.Code) == target && p.Scope.Matches(required) {
 			return p, true
 		}

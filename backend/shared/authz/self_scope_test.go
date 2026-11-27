@@ -15,6 +15,7 @@ func TestIsSelfServicePermissionCodeAndScopeMatching(t *testing.T) {
 		authz.PermUsersDeleteSelf,
 		authz.PermSessionsReadSelf,
 		authz.PermSessionsDeleteSelf,
+		"human_resource.payslips.read_self",
 		" IAM.Users.ReadSelf ",
 	}
 	for _, code := range selfCodes {
@@ -53,6 +54,39 @@ func TestIsSelfServicePermissionCodeAndScopeMatching(t *testing.T) {
 	}
 	if !global.Matches(selfA) {
 		t.Fatal("global grant must still satisfy scoped check unless blocked by self-service rule")
+	}
+}
+
+func TestPayslipPermissionRequiresOwnSelfScope(t *testing.T) {
+	t.Parallel()
+
+	const permission = authz.PermPayslipsReadSelf
+	owner := "11111111-1111-4111-8111-111111111111"
+	other := "22222222-2222-4222-8222-222222222222"
+	snapshot := &authz.AccessSnapshot{
+		PrincipalID: owner,
+		Status:      authz.StatusActive,
+		Permissions: []authz.PermissionGrant{
+			{Code: permission, Scope: authz.ScopeGrant{Type: authz.ScopeGlobal}},
+		},
+	}
+	if _, ok := snapshot.HasPermission(permission); ok {
+		t.Fatal("payslip permission must not authorize global access")
+	}
+	if _, ok := snapshot.HasScopedPermission(permission, authz.ScopeGrant{Type: authz.ScopeSelf, ID: other}); ok {
+		t.Fatal("payslip permission must not authorize access to another principal")
+	}
+	ownScope := authz.ScopeGrant{Type: authz.ScopeSelf, ID: owner}
+	if _, ok := snapshot.HasScopedPermission(permission, ownScope); ok {
+		t.Fatal("global grant must not authorize the owner's payslip")
+	}
+	snapshot.Permissions = append(snapshot.Permissions, authz.PermissionGrant{Code: permission, Scope: ownScope})
+	if grant, ok := snapshot.HasScopedPermission(permission, ownScope); !ok || grant.Scope != ownScope {
+		t.Fatal("payslip permission must authorize the owner")
+	}
+	snapshot.PrincipalID = ""
+	if _, ok := snapshot.HasScopedPermission(permission, ownScope); ok {
+		t.Fatal("payslip permission must require a snapshot principal")
 	}
 }
 
