@@ -47,6 +47,7 @@ const (
 	LeaveService_FindLeaveAdjustmentByRequestedByPrincipalID_FullMethodName              = "/human_resource.leave.v1.LeaveService/FindLeaveAdjustmentByRequestedByPrincipalID"
 	LeaveService_FindLeaveAdjustmentByApprovedByPrincipalID_FullMethodName               = "/human_resource.leave.v1.LeaveService/FindLeaveAdjustmentByApprovedByPrincipalID"
 	LeaveService_FindLeaveAdjustmentByIdempotencyKey_FullMethodName                      = "/human_resource.leave.v1.LeaveService/FindLeaveAdjustmentByIdempotencyKey"
+	LeaveService_RejectLeaveAdjustment_FullMethodName                                    = "/human_resource.leave.v1.LeaveService/RejectLeaveAdjustment"
 	LeaveService_ApproveLeaveAdjustment_FullMethodName                                   = "/human_resource.leave.v1.LeaveService/ApproveLeaveAdjustment"
 	LeaveService_CreateLeaveLedgerEntry_FullMethodName                                   = "/human_resource.leave.v1.LeaveService/CreateLeaveLedgerEntry"
 	LeaveService_UpdateLeaveLedgerEntry_FullMethodName                                   = "/human_resource.leave.v1.LeaveService/UpdateLeaveLedgerEntry"
@@ -61,6 +62,7 @@ const (
 	LeaveService_FindLeaveLedgerEntryBySourceEventID_FullMethodName                      = "/human_resource.leave.v1.LeaveService/FindLeaveLedgerEntryBySourceEventID"
 	LeaveService_FindLeaveLedgerEntryByReasonCode_FullMethodName                         = "/human_resource.leave.v1.LeaveService/FindLeaveLedgerEntryByReasonCode"
 	LeaveService_FindLeaveLedgerEntryByActorPrincipalID_FullMethodName                   = "/human_resource.leave.v1.LeaveService/FindLeaveLedgerEntryByActorPrincipalID"
+	LeaveService_CloseLeaveEntitlement_FullMethodName                                    = "/human_resource.leave.v1.LeaveService/CloseLeaveEntitlement"
 	LeaveService_PostLedgerEntry_FullMethodName                                          = "/human_resource.leave.v1.LeaveService/PostLedgerEntry"
 )
 
@@ -95,6 +97,7 @@ type LeaveServiceClient interface {
 	FindLeaveAdjustmentByRequestedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LeaveAdjustmentsResponse, error)
 	FindLeaveAdjustmentByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LeaveAdjustmentsResponse, error)
 	FindLeaveAdjustmentByIdempotencyKey(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LeaveAdjustmentsResponse, error)
+	RejectLeaveAdjustment(ctx context.Context, in *RejectLeaveAdjustmentRequest, opts ...grpc.CallOption) (*LeaveAdjustmentResponse, error)
 	ApproveLeaveAdjustment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LeaveAdjustmentResponse, error)
 	CreateLeaveLedgerEntry(ctx context.Context, in *CreateLeaveLedgerEntryRequest, opts ...grpc.CallOption) (*LeaveLedgerEntryResponse, error)
 	UpdateLeaveLedgerEntry(ctx context.Context, in *UpdateLeaveLedgerEntryRequest, opts ...grpc.CallOption) (*LeaveLedgerEntryResponse, error)
@@ -109,6 +112,7 @@ type LeaveServiceClient interface {
 	FindLeaveLedgerEntryBySourceEventID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LeaveLedgerEntriesResponse, error)
 	FindLeaveLedgerEntryByReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LeaveLedgerEntriesResponse, error)
 	FindLeaveLedgerEntryByActorPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LeaveLedgerEntriesResponse, error)
+	CloseLeaveEntitlement(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LeaveEntitlementResponse, error)
 	PostLedgerEntry(ctx context.Context, in *PostLedgerEntryRequest, opts ...grpc.CallOption) (*LeaveEntitlementResponse, error)
 }
 
@@ -390,6 +394,16 @@ func (c *leaveServiceClient) FindLeaveAdjustmentByIdempotencyKey(ctx context.Con
 	return out, nil
 }
 
+func (c *leaveServiceClient) RejectLeaveAdjustment(ctx context.Context, in *RejectLeaveAdjustmentRequest, opts ...grpc.CallOption) (*LeaveAdjustmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LeaveAdjustmentResponse)
+	err := c.cc.Invoke(ctx, LeaveService_RejectLeaveAdjustment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *leaveServiceClient) ApproveLeaveAdjustment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LeaveAdjustmentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LeaveAdjustmentResponse)
@@ -530,6 +544,16 @@ func (c *leaveServiceClient) FindLeaveLedgerEntryByActorPrincipalID(ctx context.
 	return out, nil
 }
 
+func (c *leaveServiceClient) CloseLeaveEntitlement(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LeaveEntitlementResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LeaveEntitlementResponse)
+	err := c.cc.Invoke(ctx, LeaveService_CloseLeaveEntitlement_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *leaveServiceClient) PostLedgerEntry(ctx context.Context, in *PostLedgerEntryRequest, opts ...grpc.CallOption) (*LeaveEntitlementResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LeaveEntitlementResponse)
@@ -571,6 +595,7 @@ type LeaveServiceServer interface {
 	FindLeaveAdjustmentByRequestedByPrincipalID(context.Context, *v1.StringFinderRequest) (*LeaveAdjustmentsResponse, error)
 	FindLeaveAdjustmentByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*LeaveAdjustmentsResponse, error)
 	FindLeaveAdjustmentByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*LeaveAdjustmentsResponse, error)
+	RejectLeaveAdjustment(context.Context, *RejectLeaveAdjustmentRequest) (*LeaveAdjustmentResponse, error)
 	ApproveLeaveAdjustment(context.Context, *v1.IDRequest) (*LeaveAdjustmentResponse, error)
 	CreateLeaveLedgerEntry(context.Context, *CreateLeaveLedgerEntryRequest) (*LeaveLedgerEntryResponse, error)
 	UpdateLeaveLedgerEntry(context.Context, *UpdateLeaveLedgerEntryRequest) (*LeaveLedgerEntryResponse, error)
@@ -585,6 +610,7 @@ type LeaveServiceServer interface {
 	FindLeaveLedgerEntryBySourceEventID(context.Context, *v1.StringFinderRequest) (*LeaveLedgerEntriesResponse, error)
 	FindLeaveLedgerEntryByReasonCode(context.Context, *v1.StringFinderRequest) (*LeaveLedgerEntriesResponse, error)
 	FindLeaveLedgerEntryByActorPrincipalID(context.Context, *v1.StringFinderRequest) (*LeaveLedgerEntriesResponse, error)
+	CloseLeaveEntitlement(context.Context, *v1.IDRequest) (*LeaveEntitlementResponse, error)
 	PostLedgerEntry(context.Context, *PostLedgerEntryRequest) (*LeaveEntitlementResponse, error)
 	mustEmbedUnimplementedLeaveServiceServer()
 }
@@ -677,6 +703,9 @@ func (UnimplementedLeaveServiceServer) FindLeaveAdjustmentByApprovedByPrincipalI
 func (UnimplementedLeaveServiceServer) FindLeaveAdjustmentByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*LeaveAdjustmentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindLeaveAdjustmentByIdempotencyKey not implemented")
 }
+func (UnimplementedLeaveServiceServer) RejectLeaveAdjustment(context.Context, *RejectLeaveAdjustmentRequest) (*LeaveAdjustmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RejectLeaveAdjustment not implemented")
+}
 func (UnimplementedLeaveServiceServer) ApproveLeaveAdjustment(context.Context, *v1.IDRequest) (*LeaveAdjustmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ApproveLeaveAdjustment not implemented")
 }
@@ -718,6 +747,9 @@ func (UnimplementedLeaveServiceServer) FindLeaveLedgerEntryByReasonCode(context.
 }
 func (UnimplementedLeaveServiceServer) FindLeaveLedgerEntryByActorPrincipalID(context.Context, *v1.StringFinderRequest) (*LeaveLedgerEntriesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindLeaveLedgerEntryByActorPrincipalID not implemented")
+}
+func (UnimplementedLeaveServiceServer) CloseLeaveEntitlement(context.Context, *v1.IDRequest) (*LeaveEntitlementResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CloseLeaveEntitlement not implemented")
 }
 func (UnimplementedLeaveServiceServer) PostLedgerEntry(context.Context, *PostLedgerEntryRequest) (*LeaveEntitlementResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PostLedgerEntry not implemented")
@@ -1229,6 +1261,24 @@ func _LeaveService_FindLeaveAdjustmentByIdempotencyKey_Handler(srv interface{}, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LeaveService_RejectLeaveAdjustment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RejectLeaveAdjustmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LeaveServiceServer).RejectLeaveAdjustment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LeaveService_RejectLeaveAdjustment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LeaveServiceServer).RejectLeaveAdjustment(ctx, req.(*RejectLeaveAdjustmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LeaveService_ApproveLeaveAdjustment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(v1.IDRequest)
 	if err := dec(in); err != nil {
@@ -1481,6 +1531,24 @@ func _LeaveService_FindLeaveLedgerEntryByActorPrincipalID_Handler(srv interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LeaveService_CloseLeaveEntitlement_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LeaveServiceServer).CloseLeaveEntitlement(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LeaveService_CloseLeaveEntitlement_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LeaveServiceServer).CloseLeaveEntitlement(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LeaveService_PostLedgerEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PostLedgerEntryRequest)
 	if err := dec(in); err != nil {
@@ -1615,6 +1683,10 @@ var LeaveService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _LeaveService_FindLeaveAdjustmentByIdempotencyKey_Handler,
 		},
 		{
+			MethodName: "RejectLeaveAdjustment",
+			Handler:    _LeaveService_RejectLeaveAdjustment_Handler,
+		},
+		{
 			MethodName: "ApproveLeaveAdjustment",
 			Handler:    _LeaveService_ApproveLeaveAdjustment_Handler,
 		},
@@ -1669,6 +1741,10 @@ var LeaveService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindLeaveLedgerEntryByActorPrincipalID",
 			Handler:    _LeaveService_FindLeaveLedgerEntryByActorPrincipalID_Handler,
+		},
+		{
+			MethodName: "CloseLeaveEntitlement",
+			Handler:    _LeaveService_CloseLeaveEntitlement_Handler,
 		},
 		{
 			MethodName: "PostLedgerEntry",

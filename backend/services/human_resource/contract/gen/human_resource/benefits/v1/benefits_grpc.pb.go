@@ -20,6 +20,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	BenefitsService_EndBenefitEnrollment_FullMethodName                                 = "/human_resource.benefits.v1.BenefitsService/EndBenefitEnrollment"
+	BenefitsService_ApproveBenefitEnrollment_FullMethodName                             = "/human_resource.benefits.v1.BenefitsService/ApproveBenefitEnrollment"
 	BenefitsService_CreateBenefitPlan_FullMethodName                                    = "/human_resource.benefits.v1.BenefitsService/CreateBenefitPlan"
 	BenefitsService_UpdateBenefitPlan_FullMethodName                                    = "/human_resource.benefits.v1.BenefitsService/UpdateBenefitPlan"
 	BenefitsService_DeleteBenefitPlan_FullMethodName                                    = "/human_resource.benefits.v1.BenefitsService/DeleteBenefitPlan"
@@ -46,6 +48,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BenefitsServiceClient interface {
+	EndBenefitEnrollment(ctx context.Context, in *EndBenefitEnrollmentRequest, opts ...grpc.CallOption) (*BenefitEnrollmentResponse, error)
+	ApproveBenefitEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*BenefitEnrollmentResponse, error)
 	CreateBenefitPlan(ctx context.Context, in *CreateBenefitPlanRequest, opts ...grpc.CallOption) (*BenefitPlanResponse, error)
 	UpdateBenefitPlan(ctx context.Context, in *UpdateBenefitPlanRequest, opts ...grpc.CallOption) (*BenefitPlanResponse, error)
 	DeleteBenefitPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -74,6 +78,26 @@ type benefitsServiceClient struct {
 
 func NewBenefitsServiceClient(cc grpc.ClientConnInterface) BenefitsServiceClient {
 	return &benefitsServiceClient{cc}
+}
+
+func (c *benefitsServiceClient) EndBenefitEnrollment(ctx context.Context, in *EndBenefitEnrollmentRequest, opts ...grpc.CallOption) (*BenefitEnrollmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BenefitEnrollmentResponse)
+	err := c.cc.Invoke(ctx, BenefitsService_EndBenefitEnrollment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *benefitsServiceClient) ApproveBenefitEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*BenefitEnrollmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BenefitEnrollmentResponse)
+	err := c.cc.Invoke(ctx, BenefitsService_ApproveBenefitEnrollment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *benefitsServiceClient) CreateBenefitPlan(ctx context.Context, in *CreateBenefitPlanRequest, opts ...grpc.CallOption) (*BenefitPlanResponse, error) {
@@ -280,6 +304,8 @@ func (c *benefitsServiceClient) FindBenefitEnrollmentByCurrencyCode(ctx context.
 // All implementations must embed UnimplementedBenefitsServiceServer
 // for forward compatibility.
 type BenefitsServiceServer interface {
+	EndBenefitEnrollment(context.Context, *EndBenefitEnrollmentRequest) (*BenefitEnrollmentResponse, error)
+	ApproveBenefitEnrollment(context.Context, *v1.IDRequest) (*BenefitEnrollmentResponse, error)
 	CreateBenefitPlan(context.Context, *CreateBenefitPlanRequest) (*BenefitPlanResponse, error)
 	UpdateBenefitPlan(context.Context, *UpdateBenefitPlanRequest) (*BenefitPlanResponse, error)
 	DeleteBenefitPlan(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -310,6 +336,12 @@ type BenefitsServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedBenefitsServiceServer struct{}
 
+func (UnimplementedBenefitsServiceServer) EndBenefitEnrollment(context.Context, *EndBenefitEnrollmentRequest) (*BenefitEnrollmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method EndBenefitEnrollment not implemented")
+}
+func (UnimplementedBenefitsServiceServer) ApproveBenefitEnrollment(context.Context, *v1.IDRequest) (*BenefitEnrollmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveBenefitEnrollment not implemented")
+}
 func (UnimplementedBenefitsServiceServer) CreateBenefitPlan(context.Context, *CreateBenefitPlanRequest) (*BenefitPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateBenefitPlan not implemented")
 }
@@ -389,6 +421,42 @@ func RegisterBenefitsServiceServer(s grpc.ServiceRegistrar, srv BenefitsServiceS
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&BenefitsService_ServiceDesc, srv)
+}
+
+func _BenefitsService_EndBenefitEnrollment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EndBenefitEnrollmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BenefitsServiceServer).EndBenefitEnrollment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BenefitsService_EndBenefitEnrollment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BenefitsServiceServer).EndBenefitEnrollment(ctx, req.(*EndBenefitEnrollmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BenefitsService_ApproveBenefitEnrollment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BenefitsServiceServer).ApproveBenefitEnrollment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BenefitsService_ApproveBenefitEnrollment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BenefitsServiceServer).ApproveBenefitEnrollment(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _BenefitsService_CreateBenefitPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -758,6 +826,14 @@ var BenefitsService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "human_resource.benefits.v1.BenefitsService",
 	HandlerType: (*BenefitsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "EndBenefitEnrollment",
+			Handler:    _BenefitsService_EndBenefitEnrollment_Handler,
+		},
+		{
+			MethodName: "ApproveBenefitEnrollment",
+			Handler:    _BenefitsService_ApproveBenefitEnrollment_Handler,
+		},
 		{
 			MethodName: "CreateBenefitPlan",
 			Handler:    _BenefitsService_CreateBenefitPlan_Handler,

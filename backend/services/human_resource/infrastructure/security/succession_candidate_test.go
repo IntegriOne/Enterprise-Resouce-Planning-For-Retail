@@ -43,14 +43,17 @@ func (s *successionCandidateRowsStub) SelectWhere(context.Context, []domainrepo.
 
 func TestSuccessionCandidateValidatorKeepsNominationInDraftPlan(t *testing.T) {
 	t.Parallel()
-	now := time.Now()
-	reviewDate := now.AddDate(0, 0, -1)
+	now := time.Now().UTC()
+	reviewDate := now.Truncate(24*time.Hour).AddDate(0, 0, -1)
+	wib := time.FixedZone("WIB", 7*60*60)
+	evidenceTime := reviewDate.Add(23 * time.Hour).In(wib)
 	legalID := "00000000-0000-4000-8000-000000000001"
 	workerID := "00000000-0000-4000-8000-000000000002"
 	plan := &lockedSuccessionPlanStub{plan: &entity.SuccessionPlan{
 		ID:                   "00000000-0000-4000-8000-000000000003",
 		PositionID:           "00000000-0000-4000-8000-000000000004",
 		ConfidentialityClass: "highly_restricted",
+		ReviewDate:           now.AddDate(0, 0, 1),
 	}}
 	position := &successionPositionStub{position: &entity.Position{
 		ID: plan.plan.PositionID, PositionStatus: "active", LegalEntityReferenceID: legalID,
@@ -73,6 +76,47 @@ func TestSuccessionCandidateValidatorKeepsNominationInDraftPlan(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); err != nil {
 		t.Fatalf("create draft nomination: %v", err)
 	}
+	earlierReview := reviewDate.AddDate(0, 0, -1)
+	originalReview := plan.plan.ReviewDate
+	plan.plan.ReviewDate = earlierReview
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("readiness assessment after succession review: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", candidate, nil); err != nil {
+		t.Fatalf("delete draft nomination assessed after review: %v", err)
+	}
+	plan.plan.ReviewDate = originalReview
+	position.position.ValidTo = &reviewDate
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("position expires before succession plan review: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", candidate, nil); err != nil {
+		t.Fatalf("delete draft nomination for position ending before review: %v", err)
+	}
+	position.position.ValidTo = nil
+	hireDate := now
+	worker.worker.HireDate = &hireDate
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("readiness assessment before hire: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", candidate, nil); err != nil {
+		t.Fatalf("delete outdated nomination: %v", err)
+	}
+	worker.worker.HireDate = nil
+	terminationDate := reviewDate.AddDate(0, 0, -1)
+	worker.worker.TerminationDate = &terminationDate
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("readiness assessment after termination: %v", err)
+	}
+	worker.worker.TerminationDate = &now
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("employment ends before succession review: %v", err)
+	}
+	worker.worker.TerminationDate = &plan.plan.ReviewDate
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); err != nil {
+		t.Fatalf("employment ends on succession review: %v", err)
+	}
+	worker.worker.TerminationDate = nil
 	updated := *candidate
 	updated.ReadinessAssessedAt = now
 	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", candidate, &updated); err != nil {
@@ -95,7 +139,7 @@ func TestSuccessionCandidateValidatorKeepsNominationInDraftPlan(t *testing.T) {
 	actorID := "00000000-0000-4000-8000-000000000008"
 	ready.TalentAssessmentID = &assessmentID
 	assessment.assessment = &entity.TalentAssessment{ID: assessmentID, WorkerID: workerID,
-		Status: "finalized", FinalizedAt: &reviewDate, FinalizedByPrincipalID: &actorID}
+		Status: "finalized", FinalizedAt: &evidenceTime, FinalizedByPrincipalID: &actorID}
 	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, &ready); err != nil {
 		t.Fatalf("readiness with finalized assessment: %v", err)
 	}
@@ -107,7 +151,7 @@ func TestSuccessionCandidateValidatorKeepsNominationInDraftPlan(t *testing.T) {
 	developmentID := "00000000-0000-4000-8000-000000000009"
 	ready.DevelopmentPlanID = &developmentID
 	development.plan = &entity.DevelopmentPlan{ID: developmentID, WorkerID: workerID,
-		Status: "active", ApprovedAt: &reviewDate, ApprovedByPrincipalID: &actorID}
+		Status: "active", ApprovedAt: &evidenceTime, ApprovedByPrincipalID: &actorID}
 	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, &ready); err != nil {
 		t.Fatalf("nomination with approved development plan: %v", err)
 	}
@@ -116,6 +160,11 @@ func TestSuccessionCandidateValidatorKeepsNominationInDraftPlan(t *testing.T) {
 		t.Fatalf("nomination after plan approval: %v", err)
 	}
 	plan.plan.ApprovedAt = nil
+	plan.plan.SuccessionRisk = &rationale
+	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", candidate, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("delete nomination from plan with recorded succession risk: %v", err)
+	}
+	plan.plan.SuccessionRisk = nil
 	worker.worker.Status = entity.WorkerStatusTerminated
 	if err := v.ValidateMutation(t.Context(), "hr_succession_candidates", nil, candidate); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("inactive worker nomination: %v", err)

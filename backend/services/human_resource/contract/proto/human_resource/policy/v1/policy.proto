@@ -25,6 +25,7 @@ service PolicyService {
   rpc FindPolicyAcknowledgementByWorkerID(human_resource.common.v1.StringFinderRequest) returns (PolicyAcknowledgementsResponse);
   rpc FindPolicyAcknowledgementByAcknowledgedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PolicyAcknowledgementsResponse);
   rpc FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (PolicyAcknowledgementsResponse);
+  rpc AcknowledgePolicy(AcknowledgePolicyRequest) returns (PolicyAcknowledgementResponse);
 }
 
 message Policy {
@@ -89,3 +90,7 @@ message UpdatePolicyAcknowledgementRequest {
 }
 message PolicyAcknowledgementResponse { PolicyAcknowledgement value = 1; }
 message PolicyAcknowledgementsResponse { repeated PolicyAcknowledgement items = 1; human_resource.common.v1.PageInfo page = 2; }
+message AcknowledgePolicyRequest {
+  string id = 1;
+  optional string evidence_document_version_reference_id = 2;
+}

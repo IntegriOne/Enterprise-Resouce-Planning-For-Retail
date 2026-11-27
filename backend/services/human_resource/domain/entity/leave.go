@@ -28,21 +28,23 @@ func (LeavePolicy) TableName() string { return "hr_leave_policies" }
 
 // LeaveEntitlement memetakan baris hr_leave_entitlements.
 type LeaveEntitlement struct {
-	ID                                 string    `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
-	WorkerID                           string    `gorm:"column:worker_id;type:uuid" json:"worker_id"`
-	LeavePolicyID                      string    `gorm:"column:leave_policy_id;type:uuid" json:"leave_policy_id"`
-	LeaveTypeCodeSnapshot              string    `gorm:"column:leave_type_code_snapshot;type:varchar(80)" json:"leave_type_code_snapshot"`
-	EntitlementPeriodStart             time.Time `gorm:"column:entitlement_period_start;type:date" json:"entitlement_period_start"`
-	EntitlementPeriodEnd               time.Time `gorm:"column:entitlement_period_end;type:date" json:"entitlement_period_end"`
-	OpeningBalance                     Decimal   `gorm:"column:opening_balance;type:numeric(12,4)" json:"opening_balance"`
-	AccruedQuantity                    Decimal   `gorm:"column:accrued_quantity;type:numeric(12,4)" json:"accrued_quantity"`
-	UsedQuantitySnapshot               Decimal   `gorm:"column:used_quantity_snapshot;type:numeric(12,4)" json:"used_quantity_snapshot"`
-	AdjustedQuantity                   Decimal   `gorm:"column:adjusted_quantity;type:numeric(12,4)" json:"adjusted_quantity"`
-	ClosingBalanceSnapshot             Decimal   `gorm:"column:closing_balance_snapshot;type:numeric(12,4)" json:"closing_balance_snapshot"`
-	UOMCode                            string    `gorm:"column:uom_code;type:varchar(30)" json:"uom_code"`
-	Revision                           int64     `gorm:"column:revision;type:bigint" json:"revision"`
-	CalculatedAt                       time.Time `gorm:"column:calculated_at;type:timestamptz" json:"calculated_at"`
-	SourceWorkforceSnapshotReferenceID *string   `gorm:"column:source_workforce_snapshot_reference_id;type:uuid" json:"source_workforce_snapshot_reference_id"`
+	ID                                 string     `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
+	WorkerID                           string     `gorm:"column:worker_id;type:uuid" json:"worker_id"`
+	LeavePolicyID                      string     `gorm:"column:leave_policy_id;type:uuid" json:"leave_policy_id"`
+	LeaveTypeCodeSnapshot              string     `gorm:"column:leave_type_code_snapshot;type:varchar(80)" json:"leave_type_code_snapshot"`
+	EntitlementPeriodStart             time.Time  `gorm:"column:entitlement_period_start;type:date" json:"entitlement_period_start"`
+	EntitlementPeriodEnd               time.Time  `gorm:"column:entitlement_period_end;type:date" json:"entitlement_period_end"`
+	OpeningBalance                     Decimal    `gorm:"column:opening_balance;type:numeric(12,4)" json:"opening_balance"`
+	AccruedQuantity                    Decimal    `gorm:"column:accrued_quantity;type:numeric(12,4)" json:"accrued_quantity"`
+	UsedQuantitySnapshot               Decimal    `gorm:"column:used_quantity_snapshot;type:numeric(12,4)" json:"used_quantity_snapshot"`
+	AdjustedQuantity                   Decimal    `gorm:"column:adjusted_quantity;type:numeric(12,4)" json:"adjusted_quantity"`
+	ClosingBalanceSnapshot             Decimal    `gorm:"column:closing_balance_snapshot;type:numeric(12,4)" json:"closing_balance_snapshot"`
+	UOMCode                            string     `gorm:"column:uom_code;type:varchar(30)" json:"uom_code"`
+	Revision                           int64      `gorm:"column:revision;type:bigint" json:"revision"`
+	CalculatedAt                       time.Time  `gorm:"column:calculated_at;type:timestamptz" json:"calculated_at"`
+	SourceWorkforceSnapshotReferenceID *string    `gorm:"column:source_workforce_snapshot_reference_id;type:uuid" json:"source_workforce_snapshot_reference_id"`
+	ClosedAt                           *time.Time `gorm:"column:closed_at;type:timestamptz" json:"closed_at"`
+	ClosedByPrincipalID                *string    `gorm:"column:closed_by_principal_id;type:uuid" json:"closed_by_principal_id"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.
@@ -58,6 +60,9 @@ type LeaveAdjustment struct {
 	RequestedByPrincipalID string     `gorm:"column:requested_by_principal_id;type:uuid" json:"requested_by_principal_id"`
 	ApprovedByPrincipalID  *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
 	ApprovedAt             *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
+	RejectedAt             *time.Time `gorm:"column:rejected_at;type:timestamptz" json:"rejected_at"`
+	RejectedByPrincipalID  *string    `gorm:"column:rejected_by_principal_id;type:uuid" json:"rejected_by_principal_id"`
+	RejectionReasonCode    *string    `gorm:"column:rejection_reason_code;type:varchar(80)" json:"rejection_reason_code"`
 	CreatedAt              time.Time  `gorm:"column:created_at;type:timestamptz;autoCreateTime:false;autoUpdateTime:false" json:"created_at"`
 	IdempotencyKey         string     `gorm:"column:idempotency_key;type:varchar(160)" json:"idempotency_key"`
 }

@@ -244,7 +244,12 @@ func (x *WorkerAssignment) Validate() error {
 			return hrerrors.Invalid("approved_at", "has invalid value")
 		}
 	}
-	if x.CancelledAt != nil && (x.CancelledAt.IsZero() || x.ApprovedAt == nil || x.CancelledAt.Before(*x.ApprovedAt)) {
+	if x.CancelledAt != nil {
+		if err := validateTime("cancelled_at", (*x.CancelledAt)); err != nil {
+			return hrerrors.Invalid("cancelled_at", "has invalid value")
+		}
+	}
+	if ruleOr(ruleKnown(x.CancelledAt == nil), ruleAnd(ruleKnown(x.ApprovedAt != nil), rulePresent(x.ApprovedAt != nil && x.CancelledAt != nil, func() bool { return ruleCompareResult((*x.CancelledAt).Compare((*x.ApprovedAt)), ">=") }))) == ruleFalse {
 		return hrerrors.Invalid("hr_worker_assignments", "ck_hr_assignment_cancellation")
 	}
 	if ruleOr(ruleKnown(x.ManagerWorkerID == nil), rulePresent(x.ManagerWorkerID != nil, func() bool { return !strings.EqualFold((*x.ManagerWorkerID), x.WorkerID) })) == ruleFalse {
@@ -274,6 +279,72 @@ func NewWorkerAssignment(value WorkerAssignment) (*WorkerAssignment, error) {
 }
 
 var _ Validatable = (*WorkerAssignment)(nil)
+
+// Validate memeriksa snapshot hr_worker_assignment_transfers sebelum dipakai domain.
+func (x *WorkerAssignmentTransfer) Validate() error {
+	if x == nil {
+		return hrerrors.Invalid("hr_worker_assignment_transfers", "must not be nil")
+	}
+	if err := ValidateUUID("id", x.ID); err != nil {
+		return hrerrors.Invalid("id", "has invalid value")
+	}
+	if err := ValidateUUID("worker_id", x.WorkerID); err != nil {
+		return hrerrors.Invalid("worker_id", "has invalid value")
+	}
+	if err := ValidateUUID("source_assignment_id", x.SourceAssignmentID); err != nil {
+		return hrerrors.Invalid("source_assignment_id", "has invalid value")
+	}
+	if err := ValidateUUID("target_position_id", x.TargetPositionID); err != nil {
+		return hrerrors.Invalid("target_position_id", "has invalid value")
+	}
+	if err := validateTime("effective_date", x.EffectiveDate); err != nil {
+		return hrerrors.Invalid("effective_date", "has invalid value")
+	}
+	if err := validateText("reason_code", string(x.ReasonCode), true, 80, 0); err != nil {
+		return hrerrors.Invalid("reason_code", "has invalid value")
+	}
+	if err := validateText("idempotency_key", string(x.IdempotencyKey), true, 160, 0); err != nil {
+		return hrerrors.Invalid("idempotency_key", "has invalid value")
+	}
+	if err := validateText("status", string(x.Status), true, 30, 0); err != nil {
+		return hrerrors.Invalid("status", "has invalid value")
+	}
+	if err := ValidateUUID("requested_by_principal_id", x.RequestedByPrincipalID); err != nil {
+		return hrerrors.Invalid("requested_by_principal_id", "has invalid value")
+	}
+	if err := validateTime("requested_at", x.RequestedAt); err != nil {
+		return hrerrors.Invalid("requested_at", "has invalid value")
+	}
+	if x.DecidedByPrincipalID != nil {
+		if err := ValidateUUID("decided_by_principal_id", (*x.DecidedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("decided_by_principal_id", "has invalid value")
+		}
+	}
+	if x.DecidedAt != nil {
+		if err := validateTime("decided_at", (*x.DecidedAt)); err != nil {
+			return hrerrors.Invalid("decided_at", "has invalid value")
+		}
+	}
+	if x.AppliedAssignmentID != nil {
+		if err := ValidateUUID("applied_assignment_id", (*x.AppliedAssignmentID)); err != nil {
+			return hrerrors.Invalid("applied_assignment_id", "has invalid value")
+		}
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("submitted")), ruleKnown(x.DecidedAt == nil)), ruleKnown(x.DecidedByPrincipalID == nil)), ruleKnown(x.AppliedAssignmentID == nil)), ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleOr(ruleKnown(string(x.Status) == string("applied")), ruleKnown(string(x.Status) == string("rejected"))), ruleKnown(x.DecidedAt != nil)), ruleKnown(x.DecidedByPrincipalID != nil)), rulePresent(x.DecidedByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.DecidedByPrincipalID), x.RequestedByPrincipalID) })), rulePresent(x.DecidedAt != nil, func() bool { return ruleCompareResult((*x.DecidedAt).Compare(x.RequestedAt), ">=") })), ruleOr(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("applied")), ruleKnown(x.AppliedAssignmentID != nil)), rulePresent(x.AppliedAssignmentID != nil, func() bool { return !strings.EqualFold((*x.AppliedAssignmentID), x.SourceAssignmentID) })), ruleAnd(ruleKnown(string(x.Status) == string("rejected")), ruleKnown(x.AppliedAssignmentID == nil))))) == ruleFalse {
+		return hrerrors.Invalid("hr_worker_assignment_transfers", "ck_hr_worker_assignment_transfer_decision")
+	}
+	return nil
+}
+
+// NewWorkerAssignmentTransfer memvalidasi snapshot tanpa membuat UUID, default bisnis atau grant.
+func NewWorkerAssignmentTransfer(value WorkerAssignmentTransfer) (*WorkerAssignmentTransfer, error) {
+	if err := value.Validate(); err != nil {
+		return nil, err
+	}
+	return &value, nil
+}
+
+var _ Validatable = (*WorkerAssignmentTransfer)(nil)
 
 // Validate memeriksa snapshot hr_worker_lifecycle_events sebelum dipakai domain.
 func (x *WorkerLifecycleEvent) Validate() error {

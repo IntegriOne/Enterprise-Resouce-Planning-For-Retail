@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"reflect"
+	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -38,13 +39,16 @@ func (v *performanceGoalValidator) ValidateMutation(ctx context.Context, table s
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.PerformanceGoal)
-		if !ok || previous == nil || previous.GoalStatus != "draft" {
+		if !ok || previous == nil || (previous.GoalStatus != "draft" && previous.GoalStatus != "submitted") {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
 	if after == nil {
 		if previous == nil {
 			return hrerrors.ErrInvalidInput
+		}
+		if previous.GoalStatus != "draft" {
+			return hrerrors.ErrWorkflowRequired
 		}
 		if err := v.lockParents(ctx, previous); err != nil {
 			return err
@@ -55,17 +59,53 @@ func (v *performanceGoalValidator) ValidateMutation(ctx context.Context, table s
 	if !ok || goal == nil || (previous != nil && previous.ID != goal.ID) {
 		return hrerrors.ErrInvalidInput
 	}
-	if goal.GoalStatus != "draft" || goal.ApprovedByPrincipalID != nil || goal.ApprovedAt != nil || goal.ActualValue != nil {
-		return hrerrors.ErrWorkflowRequired
-	}
-	if previous != nil && (previous.WorkerID != goal.WorkerID || previous.PerformanceCycleID != goal.PerformanceCycleID ||
-		!reflect.DeepEqual(previous.ParentGoalID, goal.ParentGoalID)) {
-		return hrerrors.ErrWorkflowRequired
+	submitting := previous != nil && previous.GoalStatus == "draft" && goal.GoalStatus == "submitted"
+	approving := previous != nil && (previous.GoalStatus == "draft" || previous.GoalStatus == "submitted") && goal.GoalStatus == "approved"
+	rejecting := previous != nil && previous.GoalStatus == "submitted" && goal.GoalStatus == "rejected"
+	if submitting {
+		unchanged := *goal
+		unchanged.GoalStatus = previous.GoalStatus
+		if goal.WeightPercent == nil || goal.ApprovedByPrincipalID != nil || goal.ApprovedAt != nil || !reflect.DeepEqual(previous, &unchanged) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else if approving {
+		unchanged := *goal
+		unchanged.GoalStatus = previous.GoalStatus
+		unchanged.ApprovedByPrincipalID = previous.ApprovedByPrincipalID
+		unchanged.ApprovedAt = previous.ApprovedAt
+		if goal.WeightPercent == nil || goal.ApprovedByPrincipalID == nil || goal.ApprovedAt == nil || !reflect.DeepEqual(previous, &unchanged) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else if rejecting {
+		unchanged := *goal
+		unchanged.GoalStatus = previous.GoalStatus
+		if goal.ApprovedByPrincipalID != nil || goal.ApprovedAt != nil || !reflect.DeepEqual(previous, &unchanged) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else {
+		if (previous != nil && previous.GoalStatus != "draft") ||
+			goal.GoalStatus != "draft" || goal.ApprovedByPrincipalID != nil || goal.ApprovedAt != nil || goal.ActualValue != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		if previous != nil && (previous.WorkerID != goal.WorkerID || previous.PerformanceCycleID != goal.PerformanceCycleID ||
+			!reflect.DeepEqual(previous.ParentGoalID, goal.ParentGoalID)) {
+			return hrerrors.ErrWorkflowRequired
+		}
 	}
 	if err := v.lockParents(ctx, goal); err != nil {
 		return err
 	}
-	if goal.GoalCode != nil {
+	if approving && goal.ApprovedByPrincipalID != nil {
+		worker, err := v.workers.FindByIDForUpdate(ctx, goal.WorkerID)
+		if err != nil {
+			return err
+		}
+		if worker != nil && worker.IAMPrincipalReferenceID != nil &&
+			strings.EqualFold(*worker.IAMPrincipalReferenceID, *goal.ApprovedByPrincipalID) {
+			return hrerrors.ErrForbidden
+		}
+	}
+	if goal.GoalCode != nil && !submitting && !approving && !rejecting {
 		matches, err := v.goals.SelectWhere(ctx, []domainrepo.Filter{
 			{Column: "worker_id", Values: []any{goal.WorkerID}},
 			{Column: "performance_cycle_id", Values: []any{goal.PerformanceCycleID}},
@@ -80,7 +120,7 @@ func (v *performanceGoalValidator) ValidateMutation(ctx context.Context, table s
 			}
 		}
 	}
-	if previous != nil && !reflect.DeepEqual(previous, goal) {
+	if previous != nil && !submitting && !approving && !rejecting && !reflect.DeepEqual(previous, goal) {
 		return v.rejectIfReferenced(ctx, goal.ID)
 	}
 	return nil
@@ -117,7 +157,7 @@ func (v *performanceGoalValidator) lockParents(ctx context.Context, goal *entity
 		return err
 	}
 	if parent == nil || parent.WorkerID != goal.WorkerID || parent.PerformanceCycleID != goal.PerformanceCycleID ||
-		parent.GoalStatus != "draft" {
+		(parent.GoalStatus != "draft" && parent.GoalStatus != "submitted" && parent.GoalStatus != "approved") {
 		return hrerrors.ErrReferenceConflict
 	}
 	return nil

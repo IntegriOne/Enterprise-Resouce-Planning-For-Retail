@@ -219,6 +219,19 @@ func (x *WorkforcePlan) Validate() error {
 			return hrerrors.Invalid("approved_at", "has invalid value")
 		}
 	}
+	if x.SupersededByPlanID != nil {
+		if err := ValidateUUID("superseded_by_plan_id", (*x.SupersededByPlanID)); err != nil {
+			return hrerrors.Invalid("superseded_by_plan_id", "has invalid value")
+		}
+	}
+	if x.SupersessionReasonCode != nil {
+		if err := validateText("supersession_reason_code", string((*x.SupersessionReasonCode)), false, 80, 0); err != nil {
+			return hrerrors.Invalid("supersession_reason_code", "has invalid value")
+		}
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("superseded")), ruleKnown(x.SupersededByPlanID != nil)), rulePresent(x.SupersededByPlanID != nil, func() bool { return !strings.EqualFold((*x.SupersededByPlanID), x.ID) })), ruleKnown(x.SupersessionReasonCode != nil)), rulePresent(x.SupersessionReasonCode != nil, func() bool { return string(strings.Trim(string((*x.SupersessionReasonCode)), " ")) != string("") })), ruleAnd(ruleAnd(ruleKnown(string(x.Status) != string("superseded")), ruleKnown(x.SupersededByPlanID == nil)), ruleKnown(x.SupersessionReasonCode == nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_workforce_plans", "ck_hr_workforce_plan_supersession")
+	}
 	if ruleAnd(ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.PlanVersion)), ruleNumber("0"), ">")), ruleKnown(ruleCompareResult(CompareDates(x.PeriodEnd, x.PeriodStart), ">="))) == ruleFalse {
 		return hrerrors.Invalid("hr_workforce_plans", "ck_hr_workforce_plan_period")
 	}

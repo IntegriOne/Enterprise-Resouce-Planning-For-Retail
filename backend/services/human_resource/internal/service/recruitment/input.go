@@ -17,6 +17,7 @@ type CreateRequisitionInput struct {
 	JobID                       string
 	OrganizationUnitReferenceID string
 	HiringManagerPrincipalID    string
+	HiringManagerWorkerID       *string
 	RecruiterPrincipalID        *string
 	RequisitionType             string
 	Status                      *string
@@ -42,6 +43,7 @@ type UpdateRequisitionInput struct {
 	JobID                       operation.Field[string]
 	OrganizationUnitReferenceID operation.Field[string]
 	HiringManagerPrincipalID    operation.Field[string]
+	HiringManagerWorkerID       *string
 	RecruiterPrincipalID        operation.Field[string]
 	RequisitionType             operation.Field[string]
 	Status                      operation.Field[string]

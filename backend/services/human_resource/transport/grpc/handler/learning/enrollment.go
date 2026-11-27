@@ -159,3 +159,24 @@ func (h *Handler) FindLearningEnrollmentByIdempotencyKey(ctx context.Context, re
 	}
 	return enrollments(h.service.FindLearningEnrollmentByIdempotencyKey(ctx, *request.Value, int(request.Limit), int(request.Offset)))
 }
+
+func (h *Handler) StartLearningEnrollment(ctx context.Context, request *common.IDRequest) (*pb.LearningEnrollmentResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return enrollmentResponse(h.service.StartLearningEnrollment(ctx, request.Id))
+}
+
+func (h *Handler) CompleteLearningEnrollment(ctx context.Context, request *common.IDRequest) (*pb.LearningEnrollmentResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return enrollmentResponse(h.service.CompleteLearningEnrollment(ctx, request.Id))
+}
+
+func (h *Handler) WithdrawLearningEnrollment(ctx context.Context, request *common.IDRequest) (*pb.LearningEnrollmentResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return enrollmentResponse(h.service.WithdrawLearningEnrollment(ctx, request.Id))
+}

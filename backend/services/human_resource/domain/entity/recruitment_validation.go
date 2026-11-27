@@ -621,6 +621,52 @@ func (x *Offer) Validate() error {
 			return hrerrors.Invalid("responded_at", "has invalid value")
 		}
 	}
+	if (x.CreatedByPrincipalID == nil) != (x.CreatedAt == nil) {
+		return hrerrors.Invalid("created_by_principal_id", "creator and creation time must be set together")
+	}
+	if x.OfferStatus == "withdrawn" {
+		if x.WithdrawnAt == nil || x.WithdrawnByPrincipalID == nil || x.WithdrawalReasonCode == nil ||
+			x.IssuedAt == nil || x.WithdrawnAt.Before(*x.IssuedAt) || x.CandidateResponse != nil || x.RespondedAt != nil {
+			return hrerrors.Invalid("withdrawn_at", "withdrawal requires recorded issue and no candidate response")
+		}
+		if err := ValidateUUID("withdrawn_by_principal_id", *x.WithdrawnByPrincipalID); err != nil {
+			return err
+		}
+		if err := validateText("withdrawal_reason_code", *x.WithdrawalReasonCode, true, 80, 0); err != nil {
+			return err
+		}
+	} else if x.WithdrawnAt != nil || x.WithdrawnByPrincipalID != nil || x.WithdrawalReasonCode != nil {
+		return hrerrors.Invalid("withdrawn_at", "withdrawal requires withdrawn status")
+	}
+	switch x.OfferStatus {
+	case "accepted", "declined":
+		if x.CandidateResponse == nil || *x.CandidateResponse != x.OfferStatus ||
+			x.CandidateResponseEvidenceID == nil || x.RespondedAt == nil ||
+			x.IssuedAt == nil || x.ExpiresAt == nil || x.RespondedAt.Before(*x.IssuedAt) ||
+			!x.RespondedAt.Before(*x.ExpiresAt) {
+			return hrerrors.Invalid("candidate_response", "response must have matching evidence and be within the offer window")
+		}
+		if err := ValidateUUID("candidate_response_evidence_id", *x.CandidateResponseEvidenceID); err != nil {
+			return err
+		}
+	default:
+		if x.CandidateResponse != nil || x.RespondedAt != nil || x.CandidateResponseEvidenceID != nil {
+			return hrerrors.Invalid("candidate_response", "response requires accepted or declined status")
+		}
+	}
+	if x.CreatedByPrincipalID != nil {
+		if err := ValidateUUID("created_by_principal_id", *x.CreatedByPrincipalID); err != nil {
+			return err
+		}
+		if err := validateTime("created_at", *x.CreatedAt); err != nil {
+			return err
+		}
+		if x.ApprovedByPrincipalID != nil &&
+			(strings.EqualFold(*x.CreatedByPrincipalID, *x.ApprovedByPrincipalID) ||
+				x.ApprovedAt == nil || x.ApprovedAt.Before(*x.CreatedAt)) {
+			return hrerrors.Invalid("approved_by_principal_id", "approval must be independent and follow creation")
+		}
+	}
 	if x.ApprovedByPrincipalID != nil {
 		if err := ValidateUUID("approved_by_principal_id", (*x.ApprovedByPrincipalID)); err != nil {
 			return hrerrors.Invalid("approved_by_principal_id", "has invalid value")

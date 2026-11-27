@@ -243,6 +243,18 @@ message CreateTalentPoolMembershipRequest { TalentPoolMembershipInput input = 1;
 message UpdateTalentPoolMembershipRequest { string id = 1; TalentPoolMembershipInput input = 2; google.protobuf.FieldMask update_mask = 3; }
 message TalentPoolMembershipResponse { TalentPoolMembership value = 1; }
 message TalentPoolMembershipsResponse { repeated TalentPoolMembership items = 1; human_resource.common.v1.PageInfo page = 2; }
+message TalentReasonActionRequest {
+ string id = 1;
+ string reason_code = 2;
+}
+message RecordTalentCalibrationDecisionRequest {
+ string session_id = 1;
+ string assessment_id = 2;
+ string dimension_id = 3;
+ int32 calibrated_score = 4;
+ string rationale_document_version_reference_id = 5;
+ bytes rationale_digest = 6;
+}
 service TalentService {
  rpc CreateTalentFramework(CreateTalentFrameworkRequest) returns (TalentFrameworkResponse);
  rpc UpdateTalentFramework(UpdateTalentFrameworkRequest) returns (TalentFrameworkResponse);
@@ -270,6 +282,9 @@ service TalentService {
  rpc FindTalentReviewCycleByOrganizationUnitReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
  rpc FindTalentReviewCycleByStatus(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
  rpc FindTalentReviewCycleByOwnerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentReviewCyclesResponse);
+ rpc LaunchTalentReviewCycle(human_resource.common.v1.IDRequest) returns (TalentReviewCycleResponse);
+ rpc StartTalentReviewCycleCalibration(human_resource.common.v1.IDRequest) returns (TalentReviewCycleResponse);
+ rpc CloseTalentReviewCycle(human_resource.common.v1.IDRequest) returns (TalentReviewCycleResponse);
  rpc CreateTalentAssessment(CreateTalentAssessmentRequest) returns (TalentAssessmentResponse);
  rpc UpdateTalentAssessment(UpdateTalentAssessmentRequest) returns (TalentAssessmentResponse);
  rpc DeleteTalentAssessment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -284,6 +299,8 @@ service TalentService {
  rpc FindTalentAssessmentByEvidenceDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
  rpc FindTalentAssessmentBySegmentCode(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
  rpc FindTalentAssessmentByFinalizedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentAssessmentsResponse);
+ rpc SubmitTalentAssessment(human_resource.common.v1.IDRequest) returns (TalentAssessmentResponse);
+ rpc WithdrawTalentAssessment(human_resource.common.v1.IDRequest) returns (TalentAssessmentResponse);
  rpc FinalizeTalentAssessment(human_resource.common.v1.IDRequest) returns (TalentAssessmentResponse);
  rpc CreateTalentAssessmentScore(CreateTalentAssessmentScoreRequest) returns (TalentAssessmentScoreResponse);
  rpc UpdateTalentAssessmentScore(UpdateTalentAssessmentScoreRequest) returns (TalentAssessmentScoreResponse);
@@ -303,6 +320,8 @@ service TalentService {
  rpc FindTalentCalibrationSessionByChairPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
  rpc FindTalentCalibrationSessionByStatus(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
  rpc FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID(human_resource.common.v1.StringFinderRequest) returns (TalentCalibrationSessionsResponse);
+ rpc OpenTalentCalibrationSession(human_resource.common.v1.IDRequest) returns (TalentCalibrationSessionResponse);
+ rpc RecordTalentCalibrationDecision(RecordTalentCalibrationDecisionRequest) returns (TalentCalibrationDecisionResponse);
  rpc CreateTalentCalibrationDecision(CreateTalentCalibrationDecisionRequest) returns (TalentCalibrationDecisionResponse);
  rpc UpdateTalentCalibrationDecision(UpdateTalentCalibrationDecisionRequest) returns (TalentCalibrationDecisionResponse);
  rpc DeleteTalentCalibrationDecision(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -336,4 +355,7 @@ service TalentService {
  rpc FindTalentPoolMembershipByStatus(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
  rpc FindTalentPoolMembershipByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
  rpc FindTalentPoolMembershipByExitReasonCode(human_resource.common.v1.StringFinderRequest) returns (TalentPoolMembershipsResponse);
+ rpc ApproveTalentPoolMembership(human_resource.common.v1.IDRequest) returns (TalentPoolMembershipResponse);
+ rpc RejectTalentPoolMembership(TalentReasonActionRequest) returns (TalentPoolMembershipResponse);
+ rpc ExitTalentPoolMembership(TalentReasonActionRequest) returns (TalentPoolMembershipResponse);
 }

@@ -2,8 +2,10 @@ package security
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"reflect"
+	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -14,13 +16,19 @@ import (
 
 // WorkerReferenceCheck memuat referensi identitas dan badan hukum yang dimiliki Foundation.
 type WorkerReferenceCheck struct {
-	PersonPartyID string
-	LegalEntityID string
+	PersonPartyID              string
+	LegalEntityID              string
+	HireDate, ServiceStartDate *time.Time
 }
 
 // WorkerReferenceVerifier membuktikan bahwa party adalah orang dan badan hukum aktif.
 type WorkerReferenceVerifier interface {
 	VerifyWorkerReferences(context.Context, WorkerReferenceCheck) error
+}
+
+type workerPlacementVerifier interface {
+	WorkerReferenceVerifier
+	PositionReferenceVerifier
 }
 
 type workerNumberReader interface {
@@ -40,7 +48,7 @@ type workerAssignmentLookup interface {
 }
 
 type workerPositionLookup interface {
-	FindByID(context.Context, string) (*entity.Position, error)
+	FindByIDForUpdate(context.Context, string) (*entity.Position, error)
 }
 
 type workerValidator struct {
@@ -49,13 +57,14 @@ type workerValidator struct {
 	contractLookup   workerContractLookup
 	assignments      workerReferenceCounter
 	assignmentLookup workerAssignmentLookup
+	managerLookup    assignmentWorkerReader
 	positions        workerPositionLookup
 	onboarding       workerReferenceCounter
-	owner            WorkerReferenceVerifier
+	owner            workerPlacementVerifier
 }
 
 // WorkerValidators mendaftarkan aturan worker preboarding tanpa mengambil alih identitas IAM.
-func WorkerValidators(repos *repository.Registry, owner WorkerReferenceVerifier) (map[string]MutationValidator, error) {
+func WorkerValidators(repos *repository.Registry, owner workerPlacementVerifier) (map[string]MutationValidator, error) {
 	if repos == nil || operation.RequireDependency(repos.Worker) != nil ||
 		operation.RequireDependency(repos.EmploymentContract) != nil ||
 		operation.RequireDependency(repos.WorkerAssignment) != nil ||
@@ -66,7 +75,7 @@ func WorkerValidators(repos *repository.Registry, owner WorkerReferenceVerifier)
 	return map[string]MutationValidator{
 		"hr_workers": &workerValidator{
 			workers: repos.Worker, contracts: repos.EmploymentContract, contractLookup: repos.EmploymentContract,
-			assignments: repos.WorkerAssignment, assignmentLookup: repos.WorkerAssignment,
+			assignments: repos.WorkerAssignment, assignmentLookup: repos.WorkerAssignment, managerLookup: repos.Worker,
 			positions: repos.Position, onboarding: repos.OnboardingPlan, owner: owner,
 		},
 	}, nil
@@ -109,10 +118,10 @@ func (v *workerValidator) ValidateMutation(ctx context.Context, table string, be
 	}
 	if previous != nil && previous.Status == entity.WorkerStatusActive && worker.Status == previous.Status &&
 		previous.IAMPrincipalReferenceID == nil && worker.IAMPrincipalReferenceID != nil {
-		expected := *previous
-		expected.IAMPrincipalReferenceID = worker.IAMPrincipalReferenceID
-		expected.UpdatedAt = worker.UpdatedAt
-		if worker.UpdatedAt.Before(previous.UpdatedAt) || !reflect.DeepEqual(&expected, worker) {
+		expected := *worker
+		expected.IAMPrincipalReferenceID = nil
+		expected.UpdatedAt = previous.UpdatedAt
+		if worker.UpdatedAt.Before(previous.UpdatedAt) || !reflect.DeepEqual(previous, &expected) {
 			return hrerrors.ErrWorkflowRequired
 		}
 		return nil
@@ -213,8 +222,8 @@ func (v *workerValidator) validateActivation(ctx context.Context, previous, work
 				contract.EmployingLegalEntityReferenceID != worker.PrimaryLegalEntityReferenceID ||
 				contract.SignedAt == nil || contract.SignedAt.After(worker.UpdatedAt) ||
 				contract.SignedDocumentReferenceID == nil || contract.SignedDocumentVersionReferenceID == nil ||
-				len(contract.SignedContentDigest) == 0 ||
-				entity.CompareDates(contract.EffectiveFrom, worker.UpdatedAt) > 0 ||
+				len(contract.SignedContentDigest) != sha256.Size ||
+				entity.CompareDates(contract.EffectiveFrom, *worker.HireDate) > 0 ||
 				(contract.EffectiveTo != nil && entity.CompareDates(*contract.EffectiveTo, worker.UpdatedAt) < 0) {
 				continue
 			}
@@ -240,16 +249,6 @@ func (v *workerValidator) validatePrimaryAssignment(ctx context.Context, previou
 	if !reflect.DeepEqual(previous, &unchanged) {
 		return hrerrors.ErrWorkflowRequired
 	}
-	if previous.PrimaryAssignmentID != nil {
-		prior, err := v.assignmentLookup.FindByID(ctx, *previous.PrimaryAssignmentID)
-		if err != nil {
-			return workerAssessmentReferenceError(err)
-		}
-		if prior == nil || prior.WorkerID != worker.ID || prior.AssignmentType != "primary" ||
-			prior.ApprovedAt == nil || prior.ValidTo == nil || entity.CompareDates(*prior.ValidTo, worker.UpdatedAt) >= 0 {
-			return hrerrors.ErrReferenceConflict
-		}
-	}
 	assignment, err := v.assignmentLookup.FindByID(ctx, *worker.PrimaryAssignmentID)
 	if err != nil {
 		return workerAssessmentReferenceError(err)
@@ -258,20 +257,57 @@ func (v *workerValidator) validatePrimaryAssignment(ctx context.Context, previou
 		assignment.ApprovedByPrincipalID == nil || assignment.ApprovedAt == nil ||
 		assignment.EmploymentStatusSnapshot == nil || *assignment.EmploymentStatusSnapshot != string(entity.WorkerStatusActive) ||
 		worker.UpdatedAt.Before(*assignment.ApprovedAt) ||
+		(worker.ServiceStartDate != nil && entity.CompareDates(assignment.ValidFrom, *worker.ServiceStartDate) < 0) ||
 		!assignmentContainsDate(assignment, worker.UpdatedAt) {
 		return hrerrors.ErrReferenceConflict
 	}
-	position, err := v.positions.FindByID(ctx, assignment.PositionID)
+	if previous.PrimaryAssignmentID != nil {
+		prior, err := v.assignmentLookup.FindByID(ctx, *previous.PrimaryAssignmentID)
+		if err != nil {
+			return workerAssessmentReferenceError(err)
+		}
+		if prior == nil || prior.WorkerID != worker.ID || prior.AssignmentType != "primary" ||
+			prior.ApprovedAt == nil || prior.ValidTo == nil || entity.CompareDates(*prior.ValidTo, assignment.ValidFrom) >= 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
+	position, err := v.positions.FindByIDForUpdate(ctx, assignment.PositionID)
 	if err != nil {
 		return workerAssessmentReferenceError(err)
 	}
 	if position == nil || position.PositionStatus != "active" ||
 		position.LegalEntityReferenceID != worker.PrimaryLegalEntityReferenceID ||
-		entity.CompareDates(worker.UpdatedAt, position.ValidFrom) < 0 ||
-		(position.ValidTo != nil && entity.CompareDates(worker.UpdatedAt, *position.ValidTo) > 0) {
+		!assignmentPeriodWithin(assignment.ValidFrom, assignment.ValidTo, position.ValidFrom, position.ValidTo) {
 		return hrerrors.ErrReferenceConflict
 	}
-	return v.verifyWorkerReferences(ctx, worker)
+	if err := verifyAssignmentManager(ctx, v.managerLookup, worker, assignment); err != nil {
+		return err
+	}
+	if err := v.verifyWorkerReferences(ctx, worker); err != nil {
+		return err
+	}
+	return verifyPlacementPosition(ctx, v.owner, position, assignment)
+}
+
+func verifyPlacementPosition(ctx context.Context, owner PositionReferenceVerifier, position *entity.Position, assignment *entity.WorkerAssignment) error {
+	if operation.RequireDependency(owner) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	if err := owner.VerifyPositionReferences(ctx, PositionReferenceCheck{
+		OrganizationUnitID: position.OrganizationUnitReferenceID,
+		LegalEntityID:      position.LegalEntityReferenceID,
+		WorkLocationID:     position.WorkLocationReferenceID,
+		ValidFrom:          assignment.ValidFrom, ValidTo: assignment.ValidTo,
+	}); err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if errors.Is(err, hrerrors.ErrReferenceConflict) {
+			return hrerrors.ErrReferenceConflict
+		}
+		return hrerrors.ErrUnavailable
+	}
+	return nil
 }
 
 func (v *workerValidator) verifyWorkerReferences(ctx context.Context, worker *entity.Worker) error {
@@ -281,6 +317,7 @@ func (v *workerValidator) verifyWorkerReferences(ctx context.Context, worker *en
 	if err := v.owner.VerifyWorkerReferences(ctx, WorkerReferenceCheck{
 		PersonPartyID: worker.PersonPartyReferenceID,
 		LegalEntityID: worker.PrimaryLegalEntityReferenceID,
+		HireDate:      worker.HireDate, ServiceStartDate: worker.ServiceStartDate,
 	}); err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()

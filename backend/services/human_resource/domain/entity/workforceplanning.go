@@ -70,6 +70,8 @@ type WorkforcePlan struct {
 	CreatedAt                time.Time  `gorm:"column:created_at;type:timestamptz;autoCreateTime:false;autoUpdateTime:false" json:"created_at"`
 	ApprovedByPrincipalID    *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
 	ApprovedAt               *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
+	SupersededByPlanID       *string    `gorm:"column:superseded_by_plan_id;type:uuid" json:"superseded_by_plan_id"`
+	SupersessionReasonCode   *string    `gorm:"column:supersession_reason_code;type:varchar(80)" json:"supersession_reason_code"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.
@@ -92,6 +94,7 @@ type WorkforcePlanLine struct {
 	NeededUntil                 *time.Time     `gorm:"column:needed_until;type:date" json:"needed_until"`
 	ActionCode                  string         `gorm:"column:action_code;type:varchar(40)" json:"action_code"`
 	Rationale                   string         `gorm:"column:rationale;type:text" json:"rationale"`
+	PlanLegalEntityReferenceID  *string        `gorm:"column:plan_legal_entity_reference_id;->;-:migration" json:"-"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.

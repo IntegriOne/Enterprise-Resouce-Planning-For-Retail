@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,8 +14,10 @@ import (
 	iamintegration "github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/integration/iam"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/outbox"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
+	appservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service"
 	transportgrpc "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc"
 	"github.com/integrione/erp-retail/backend/shared/authsession"
+	stdgrpc "google.golang.org/grpc"
 )
 
 func main() {
@@ -54,19 +57,23 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("configure HRM security policy: %w", err)
 	}
+	serviceOptions := []appservice.RegistryOption{
+		appservice.WithPrincipalLinkVerifier(workerLinkVerifier{key: cfg.GatewayHMACSecret}),
+	}
 	var terminationPublisher outbox.Publisher
 	if cfg.IAMMandateTarget != "" || cfg.IAMMandateTLS != (config.TLSConfig{}) {
 		tls := cfg.IAMMandateTLS
-		conn, client, err := iamintegration.DialRequisitionMandate(cfg.IAMMandateTarget, tls.ServerName, tls.CertFile, tls.KeyFile, tls.CAFile)
+		conn, mandate, err := iamintegration.DialRequisitionMandate(cfg.IAMMandateTarget, tls.ServerName, tls.CertFile, tls.KeyFile, tls.CAFile)
 		if err != nil {
-			return fmt.Errorf("initialize IAM workload client: %w", err)
+			return fmt.Errorf("initialize IAM requisition mandate client: %w", err)
 		}
 		defer conn.Close()
+		serviceOptions = append(serviceOptions, appservice.WithRequisitionMandateVerifier(mandate))
 		if cfg.TerminationAccessAddress != "" {
-			terminationPublisher = client
+			terminationPublisher = mandate
 		}
 	}
-	dependencies, err := buildDependencies(startup, cfg, policy, logger, terminationPublisher)
+	dependencies, err := buildDependencies(startup, cfg, policy, logger, terminationPublisher, serviceOptions...)
 	if err != nil {
 		return fmt.Errorf("initialize HRM dependencies: %w", err)
 	}
@@ -86,17 +93,48 @@ func run(logger *slog.Logger) error {
 	if err := startup.Err(); err != nil {
 		return err
 	}
-	terminationFailed := make(chan error, 1)
+	workloadFailed := make(chan error, 2)
 	terminationTLS := cfg.TerminationAccessTLS
 	stopTermination, err := transportgrpc.StartTerminationAccess(cfg.TerminationAccessAddress,
-		terminationTLS.CertFile, terminationTLS.KeyFile, terminationTLS.CAFile, dependencies.Services.Personnel, logger, terminationFailed)
+		terminationTLS.CertFile, terminationTLS.KeyFile, terminationTLS.CAFile, dependencies.Services.Personnel, logger, workloadFailed)
 	if err != nil {
 		return fmt.Errorf("configure HRM termination access: %w", err)
 	}
 	defer stopTermination()
 
+	var payrollServer *stdgrpc.Server
+	if cfg.PayrollEventsAddress != "" {
+		if !dependencies.Services.Payroll.PayrollEventsReady() {
+			return errors.New("HRM payroll events requires a configured payroll event provider")
+		}
+		tls := cfg.PayrollEventsTLS
+		payrollServer, err = transportgrpc.NewPayrollEventServer(tls.CertFile, tls.KeyFile, tls.CAFile, dependencies.Services.Payroll)
+		if err != nil {
+			return fmt.Errorf("configure HRM payroll events: %w", err)
+		}
+		listener, err := net.Listen("tcp", cfg.PayrollEventsAddress)
+		if err != nil {
+			return fmt.Errorf("listen HRM payroll events: %w", err)
+		}
+		defer payrollServer.Stop()
+		logger.Info("starting HRM payroll events listener", "address", listener.Addr().String())
+		go func() {
+			if err := payrollServer.Serve(listener); err != nil && !errors.Is(err, stdgrpc.ErrServerStopped) {
+				workloadFailed <- fmt.Errorf("serve HRM payroll events: %w", err)
+			}
+		}()
+	}
+	stopRPC := func(shutdown context.Context) error {
+		if payrollServer == nil {
+			return server.Stop(shutdown)
+		}
+		payrollStopped := make(chan error, 1)
+		go func() { payrollStopped <- transportgrpc.DrainServer(shutdown, payrollServer) }()
+		return errors.Join(server.Stop(shutdown), <-payrollStopped)
+	}
+
 	cancel()
-	logger.Warn("HRM mutation validators are limited to selected local catalog resources; other mutations remain unavailable")
+	logger.Info("HRM mutation validators registered for all catalog resources")
 	logger.Info("starting private HRM gRPC listener", "address", cfg.GRPCAddress())
 	served := make(chan error, 1)
 	relayed := make(chan error, 1)
@@ -105,17 +143,23 @@ func run(logger *slog.Logger) error {
 	select {
 	case err := <-served:
 		stop()
+		var payrollErr error
+		if payrollServer != nil {
+			shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+			payrollErr = transportgrpc.DrainServer(shutdown, payrollServer)
+			finish()
+		}
 		if relayErr := <-relayed; relayErr != nil {
-			return errors.Join(err, relayErr)
+			return errors.Join(err, relayErr, payrollErr)
 		}
 		if err == nil {
-			return errors.New("HRM gRPC server stopped unexpectedly")
+			err = errors.New("HRM gRPC server stopped unexpectedly")
 		}
-		return err
+		return errors.Join(err, payrollErr)
 	case err := <-relayed:
 		shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 		defer finish()
-		stopErr := server.Stop(shutdown)
+		stopErr := stopRPC(shutdown)
 		serveErr := <-served
 		if err == nil && ctx.Err() != nil {
 			return errors.Join(stopErr, serveErr)
@@ -124,15 +168,16 @@ func run(logger *slog.Logger) error {
 			err = errors.New("HRM outbox relay stopped unexpectedly")
 		}
 		return errors.Join(err, stopErr, serveErr)
-	case err := <-terminationFailed:
+	case err := <-workloadFailed:
 		stop()
 		shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 		defer finish()
-		return errors.Join(err, server.Stop(shutdown), <-served, <-relayed)
+		return errors.Join(err, stopRPC(shutdown), <-served, <-relayed)
+
 	case <-ctx.Done():
 		shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 		defer finish()
-		stopErr := server.Stop(shutdown)
+		stopErr := stopRPC(shutdown)
 		serveErr := <-served
 		relayErr := <-relayed
 		return errors.Join(stopErr, serveErr, relayErr)

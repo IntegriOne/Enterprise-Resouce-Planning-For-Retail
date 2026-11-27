@@ -86,6 +86,8 @@ type Specification[T any, K any] struct {
 	Touch         func(*T, Actor, time.Time)
 	Attributes    func(*T) map[string]string
 	Guard         func(string, *T, *T) error
+	CheckActor    func(string, *T, Actor) error
+	EventDetails  func(string, *T) map[string]string
 }
 
 // Page tidak menjanjikan snapshot count/list atomik pada isolasi READ COMMITTED.

@@ -256,3 +256,42 @@ func TestRequisitionValidatorKeepsDraftReferencesAndChildren(t *testing.T) {
 		t.Fatalf("cancelled validation: %v", err)
 	}
 }
+
+type requisitionPlanLineStub struct{ line *entity.WorkforcePlanLine }
+
+func (s requisitionPlanLineStub) FindByID(context.Context, string) (*entity.WorkforcePlanLine, error) {
+	return s.line, nil
+}
+
+func TestRequisitionWorkforceLineRequiresCurrentApprovedPlan(t *testing.T) {
+	t.Parallel()
+	today := time.Date(2026, 11, 25, 0, 0, 0, 0, time.UTC)
+	budgetID := "budget"
+	approver := "approver"
+	line := &entity.WorkforcePlanLine{
+		ID: "line", WorkforcePlanID: "plan", JobID: "job", OrganizationUnitReferenceID: "unit",
+		WorkerCategory: entity.WorkerCategoryEmployee, ActionCode: "recruit", NeededFrom: today,
+	}
+	plan := &entity.WorkforcePlan{
+		ID: "plan", LegalEntityReferenceID: "legal", Status: "approved", PeriodStart: today, PeriodEnd: today.AddDate(0, 1, 0),
+		ApprovedAt: &today, ApprovedByPrincipalID: &approver, FinanceBudgetReferenceID: &budgetID,
+	}
+	value := &entity.Requisition{
+		WorkforcePlanLineID: &line.ID, JobID: line.JobID, OrganizationUnitReferenceID: line.OrganizationUnitReferenceID,
+		EmploymentCategory: line.WorkerCategory,
+	}
+	v := &requisitionValidator{plans: &workforcePlanStub{plan: plan}, planLines: requisitionPlanLineStub{line}}
+	if err := v.verifyWorkforceLine(t.Context(), value, "legal", today); err != nil {
+		t.Fatalf("approved workforce line: %v", err)
+	}
+	if err := v.verifyWorkforceLine(t.Context(), value, "other", today); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("workforce line from another legal entity: %v", err)
+	}
+	if err := v.verifyWorkforceLine(t.Context(), value, "legal", plan.PeriodEnd.AddDate(0, 0, 1)); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("workforce line after plan period: %v", err)
+	}
+	plan.Status = "superseded"
+	if err := v.verifyWorkforceLine(t.Context(), value, "legal", today); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("superseded workforce line: %v", err)
+	}
+}

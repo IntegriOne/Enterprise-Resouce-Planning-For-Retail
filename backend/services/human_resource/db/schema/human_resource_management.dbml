@@ -231,7 +231,30 @@ Table hr_worker_assignments {
     `(approved_by_principal_id IS NULL AND approved_at IS NULL) OR (approved_by_principal_id IS NOT NULL AND approved_at IS NOT NULL)` [name: 'ck_hr_assignment_approval_pair']
     `approved_at IS NULL OR (requested_by_principal_id IS NOT NULL AND requested_at IS NOT NULL AND approved_by_principal_id <> requested_by_principal_id AND approved_at >= requested_at)` [name: 'ck_hr_assignment_approval_provenance']
   }
-  Note: 'Penempatan paralel diperbolehkan; satu penempatan maksimal 100% FTE. Service memeriksa kapasitas posisi dan jumlah FTE lintas penempatan sebelum persetujuan. Baris tanpa approval adalah permintaan, bukan penempatan resmi. Baseline mencegah periode primary yang bertumpuk. Roster/jam aktual tetap di batas Workforce.'
+  Note: 'Penempatan paralel diperbolehkan; satu penempatan maksimal 100% FTE. Service memeriksa kapasitas posisi dan jumlah FTE lintas penempatan sebelum persetujuan. Baris tanpa approval adalah permintaan, bukan penempatan resmi. Baseline mencegah periode primary yang bertumpuk dan duplikasi jadwal yang belum dibatalkan. Roster/jam aktual tetap di batas Workforce.'
+}
+
+Table hr_worker_assignment_transfers {
+  id uuid [pk]
+  worker_id uuid [not null]
+  source_assignment_id uuid [not null]
+  target_position_id uuid [not null]
+  effective_date date [not null]
+  reason_code varchar(80) [not null]
+  idempotency_key varchar(160) [not null, unique]
+  status varchar(30) [not null, default: 'submitted']
+  requested_by_principal_id uuid [not null]
+  requested_at timestamptz [not null]
+  decided_by_principal_id uuid
+  decided_at timestamptz
+  applied_assignment_id uuid [unique]
+  indexes {
+    (worker_id, status, requested_at) [name: 'ix_hr_worker_assignment_transfer_history']
+  }
+  checks {
+    `btrim(reason_code) <> '' AND btrim(idempotency_key) <> ''` [name: 'ck_hr_worker_assignment_transfer_input']
+    `(status = 'submitted' AND decided_at IS NULL AND decided_by_principal_id IS NULL AND applied_assignment_id IS NULL) OR (status IN ('applied', 'rejected') AND decided_at IS NOT NULL AND decided_by_principal_id IS NOT NULL AND decided_by_principal_id <> requested_by_principal_id AND decided_at >= requested_at AND ((status = 'applied' AND applied_assignment_id IS NOT NULL AND applied_assignment_id <> source_assignment_id) OR (status = 'rejected' AND applied_assignment_id IS NULL)))` [name: 'ck_hr_worker_assignment_transfer_decision']
+  }
 }
 
 Table hr_worker_lifecycle_events {
@@ -446,12 +469,23 @@ Table hr_offers {
   expires_at timestamptz
   candidate_response varchar(30)
   responded_at timestamptz
+  candidate_response_evidence_id uuid [unique]
+  created_by_principal_id uuid
+  created_at timestamptz
   approved_by_principal_id uuid
   approved_at timestamptz
+  withdrawn_at timestamptz
+  withdrawn_by_principal_id uuid
+  withdrawal_reason_code varchar(80)
   indexes { (application_id, offer_version) [unique, name: 'uq_hr_application_offer_version'] }
   checks {
+    `(created_by_principal_id IS NULL AND created_at IS NULL) OR (created_by_principal_id IS NOT NULL AND created_at IS NOT NULL)` [name: 'ck_hr_offer_creator_pair']
+    `created_by_principal_id IS NULL OR approved_by_principal_id IS NULL OR (approved_by_principal_id <> created_by_principal_id AND approved_at IS NOT NULL AND approved_at >= created_at)` [name: 'ck_hr_offer_independent_approval']
+    `(offer_status <> 'withdrawn' AND withdrawn_at IS NULL AND withdrawn_by_principal_id IS NULL AND withdrawal_reason_code IS NULL) OR (offer_status = 'withdrawn' AND withdrawn_at IS NOT NULL AND withdrawn_by_principal_id IS NOT NULL AND withdrawal_reason_code IS NOT NULL AND issued_at IS NOT NULL AND withdrawn_at >= issued_at AND candidate_response IS NULL AND responded_at IS NULL)` [name: 'ck_hr_offer_withdrawal']
+    `(offer_status NOT IN ('accepted', 'declined') AND candidate_response IS NULL AND responded_at IS NULL AND candidate_response_evidence_id IS NULL) OR (offer_status IN ('accepted', 'declined') AND candidate_response IS NOT NULL AND candidate_response = offer_status AND responded_at IS NOT NULL AND candidate_response_evidence_id IS NOT NULL AND issued_at IS NOT NULL AND expires_at IS NOT NULL AND responded_at >= issued_at AND responded_at < expires_at)` [name: 'ck_hr_offer_candidate_response_evidence']
     `issued_at IS NULL OR (offer_document_version_reference_id IS NOT NULL AND offer_content_digest IS NOT NULL AND approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)` [name: 'ck_hr_offer_issued_evidence']
     `offer_version > 0 AND (expires_at IS NULL OR issued_at IS NULL OR expires_at > issued_at)` [name: 'ck_hr_offer_validity'] }
+  Note: 'PostgreSQL membatasi satu penawaran issued atau accepted per lamaran dengan indeks unik parsial.'
 }
 
 Table hr_onboarding_plans {
@@ -664,6 +698,11 @@ Table hr_payroll_runs {
   calculated_at timestamptz
   approved_by_principal_id uuid
   approved_at timestamptz
+  posting_requested_by_principal_id uuid
+  posting_requested_at timestamptz
+  cancelled_at timestamptz
+  cancelled_by_principal_id uuid
+  cancellation_reason varchar(300)
   finance_journal_reference_id uuid
   payment_batch_reference_id uuid
   finance_settlement_event_reference_id uuid
@@ -684,6 +723,9 @@ Table hr_payroll_runs {
     `run_number > 0` [name: 'ck_hr_payroll_run_number']
     `(status NOT IN ('calculated','review','approved','posted','paid') OR (calculated_at IS NOT NULL AND output_digest IS NOT NULL))` [name: 'ck_hr_payroll_run_calculation_state']
     `(status NOT IN ('approved','posted','paid') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL))` [name: 'ck_hr_payroll_run_approval_state']
+    `(status = 'cancelled' AND cancelled_at IS NOT NULL AND cancelled_by_principal_id IS NOT NULL AND coalesce(btrim(cancellation_reason), '') <> '') OR (status <> 'cancelled' AND cancelled_at IS NULL AND cancelled_by_principal_id IS NULL AND cancellation_reason IS NULL)` [name: 'ck_hr_payroll_cancel_evidence']
+    `status <> 'cancelled' OR (calculated_at IS NOT NULL AND cancelled_at >= calculated_at AND approved_at IS NULL AND approved_by_principal_id IS NULL AND cancelled_by_principal_id <> started_by_principal_id)` [name: 'ck_hr_payroll_cancel_independent']
+    `(posting_requested_at IS NULL AND posting_requested_by_principal_id IS NULL) OR (posting_requested_at IS NOT NULL AND posting_requested_by_principal_id IS NOT NULL AND status IN ('approved','posted','paid') AND approved_at IS NOT NULL AND posting_requested_at >= approved_at)` [name: 'ck_hr_payroll_posting_request']
     `(status NOT IN ('posted','paid') OR finance_journal_reference_id IS NOT NULL)` [name: 'ck_hr_payroll_run_posting_state']
   }
   Note: 'Calculation outputs are immutable snapshots by run/version. Approved payroll posts through Finance; payment execution and bank reconciliation belong to Finance.'
@@ -703,12 +745,17 @@ Table hr_payroll_results {
   net_pay_amount numeric(20,6) [not null]
   result_status varchar(30) [not null, default: 'calculated']
   payment_reference_id uuid
-  payslip_document_reference_id uuid
+  payslip_document_reference_id uuid [note: 'Referensi dokumen hanya dapat ditautkan setelah run posted atau paid; bukti yang sudah ditautkan tidak dapat diganti.']
+  payslip_publication_reference_id uuid [note: 'ID penerbitan Finance yang terikat pada versi slip.']
   calculation_digest bytea [not null]
   created_at timestamptz [not null, default: `now()`]
-  indexes { (payroll_run_id, worker_id) [unique, name: 'uq_hr_payroll_worker_result'] }
+  indexes {
+    (payroll_run_id, worker_id) [unique, name: 'uq_hr_payroll_worker_result']
+    (payslip_document_reference_id) [unique, name: 'uq_hr_payroll_result_payslip']
+  }
   Note: 'Net = gross + reimbursement - deductions (termasuk pajak pekerja). Recovery/reversal memakai magnitudo positif dan settlement_direction pada run. Baseline merekonsiliasi jumlah baris saat approval dan membekukan hasil setelah approval.'
   checks {
+    `payslip_publication_reference_id IS NULL OR payslip_document_reference_id IS NOT NULL` [name: 'ck_hr_payslip_publication_document']
     `reimbursement_amount >= 0 AND gross_amount >= 0 AND total_deductions >= 0 AND employer_cost_amount >= 0 AND net_pay_amount >= 0` [name: 'ck_hr_payroll_result_nonnegative']
     `net_pay_amount = gross_amount + reimbursement_amount - total_deductions` [name: 'ck_hr_payroll_net_equation']
   }
@@ -794,8 +841,11 @@ Table hr_leave_entitlements {
   revision bigint [not null, default: 1]
   calculated_at timestamptz [not null, default: `now()`]
   source_workforce_snapshot_reference_id uuid
+  closed_at timestamptz
+  closed_by_principal_id uuid
   indexes { (worker_id, leave_policy_id, entitlement_period_start) [unique, name: 'uq_hr_leave_entitlement_period'] }
   checks {
+    `(closed_at IS NULL AND closed_by_principal_id IS NULL) OR (closed_at IS NOT NULL AND closed_by_principal_id IS NOT NULL AND closing_balance_snapshot = 0 AND (closed_at AT TIME ZONE 'UTC')::date > entitlement_period_end)` [name: 'ck_hr_leave_entitlement_close']
     `revision > 0 AND closing_balance_snapshot = opening_balance + accrued_quantity + adjusted_quantity - used_quantity_snapshot` [name: 'ck_hr_leave_balance_equation']
     `entitlement_period_end >= entitlement_period_start` [name: 'ck_hr_leave_entitlement_dates']
     `opening_balance >= 0 AND accrued_quantity >= 0 AND used_quantity_snapshot >= 0 AND closing_balance_snapshot >= 0` [name: 'ck_hr_leave_entitlement_values']
@@ -812,12 +862,16 @@ Table hr_leave_adjustments {
   requested_by_principal_id uuid [not null]
   approved_by_principal_id uuid
   approved_at timestamptz
+  rejected_at timestamptz
+  rejected_by_principal_id uuid
+  rejection_reason_code varchar(80)
   created_at timestamptz [not null, default: `now()`]
   idempotency_key varchar(160) [not null, unique]
   indexes { (id, entitlement_id) [unique, name: 'uq_hr_leave_adjustment_account'] }
   checks {
     `quantity_delta <> 0` [name: 'ck_hr_leave_adjustment_nonzero']
     `(approved_at IS NULL) = (approved_by_principal_id IS NULL)` [name: 'ck_hr_leave_adjustment_approval']
+    `(rejected_at IS NULL AND rejected_by_principal_id IS NULL AND rejection_reason_code IS NULL) OR (rejected_at IS NOT NULL AND rejected_by_principal_id IS NOT NULL AND rejection_reason_code IS NOT NULL AND btrim(rejection_reason_code) <> '' AND approved_at IS NULL AND rejected_at >= created_at AND rejected_by_principal_id <> requested_by_principal_id)` [name: 'ck_hr_leave_adjustment_rejection']
   }
 }
 
@@ -947,11 +1001,19 @@ Table hr_succession_plans {
   plan_version integer [not null]
   review_date date [not null]
   confidentiality_class varchar(30) [not null, default: 'highly_restricted']
+  created_by_principal_id uuid
+  created_at timestamptz
   approved_by_principal_id uuid
   approved_at timestamptz
+  approval_mandate_reference_id uuid
   succession_risk varchar(30)
   indexes { (position_id, plan_code, plan_version) [unique, name: 'uq_hr_succession_plan_version'] }
-  checks { `plan_version > 0` [name: 'ck_hr_succession_plan_version'] }
+  checks {
+    `plan_version > 0` [name: 'ck_hr_succession_plan_version']
+    `(created_by_principal_id IS NULL AND created_at IS NULL) OR (created_by_principal_id IS NOT NULL AND created_at IS NOT NULL)` [name: 'ck_hr_succession_creator_pair']
+    `approved_at IS NULL OR (created_by_principal_id IS NOT NULL AND created_at IS NOT NULL AND approved_by_principal_id <> created_by_principal_id AND approved_at >= created_at)` [name: 'ck_hr_succession_independent_approval']
+    `(approved_at IS NULL AND approved_by_principal_id IS NULL AND approval_mandate_reference_id IS NULL) OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL AND approval_mandate_reference_id IS NOT NULL)` [name: 'ck_hr_succession_approval_evidence']
+  }
 }
 
 Table hr_succession_candidates {
@@ -1043,6 +1105,9 @@ Ref: hr_employment_contracts.worker_id > hr_workers.id [delete: restrict]
 Ref: hr_worker_assignments.worker_id > hr_workers.id [delete: restrict]
 Ref: hr_worker_assignments.position_id > hr_positions.id [delete: restrict]
 Ref: hr_worker_assignments.manager_worker_id >? hr_workers.id [delete: restrict]
+Ref: hr_worker_assignment_transfers.(source_assignment_id, worker_id) > hr_worker_assignments.(id, worker_id) [delete: restrict]
+Ref: hr_worker_assignment_transfers.target_position_id > hr_positions.id [delete: restrict]
+Ref: hr_worker_assignment_transfers.(applied_assignment_id, worker_id, target_position_id) >? hr_worker_assignments.(id, worker_id, position_id) [delete: restrict]
 Ref: hr_worker_lifecycle_events.worker_id > hr_workers.id [delete: restrict]
 Ref: hr_worker_documents.worker_id > hr_workers.id [delete: restrict]
 Ref: hr_emergency_contacts.worker_id > hr_workers.id [delete: restrict]
@@ -1107,8 +1172,11 @@ Table hr_workforce_plans {
   created_at timestamptz [not null, default: `now()`]
   approved_by_principal_id uuid
   approved_at timestamptz
+  superseded_by_plan_id uuid
+  supersession_reason_code varchar(80)
   indexes { (legal_entity_reference_id, plan_code, plan_version) [unique] }
   checks {
+    `(status = 'superseded' AND superseded_by_plan_id IS NOT NULL AND superseded_by_plan_id <> id AND supersession_reason_code IS NOT NULL AND btrim(supersession_reason_code) <> '') OR (status <> 'superseded' AND superseded_by_plan_id IS NULL AND supersession_reason_code IS NULL)` [name: 'ck_hr_workforce_plan_supersession']
     `plan_version > 0 AND period_end >= period_start` [name: 'ck_hr_workforce_plan_period']
     `status IN ('draft','review','approved','superseded','cancelled')` [name: 'ck_hr_workforce_plan_status']
     `status NOT IN ('approved','superseded') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)` [name: 'ck_hr_workforce_plan_approval']
@@ -1255,6 +1323,9 @@ Table hr_offboarding_plans {
   approved_by_principal_id uuid
   approved_at timestamptz
   completed_at timestamptz
+  cancelled_at timestamptz
+  cancelled_by_principal_id uuid
+  cancellation_reason varchar(300)
   created_by_principal_id uuid [not null]
   created_at timestamptz [not null, default: `now()`]
   indexes { (worker_id, termination_effective_date) }
@@ -1263,6 +1334,7 @@ Table hr_offboarding_plans {
     `status IN ('draft','approved','in_progress','completed','cancelled')` [name: 'ck_hr_offboarding_status']
     `status NOT IN ('approved','in_progress','completed') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)` [name: 'ck_hr_offboarding_approval']
     `status <> 'completed' OR completed_at IS NOT NULL` [name: 'ck_hr_offboarding_completed']
+    `(status = 'cancelled' AND approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL AND cancelled_at IS NOT NULL AND cancelled_at >= approved_at AND cancelled_by_principal_id IS NOT NULL AND cancellation_reason IS NOT NULL AND btrim(cancellation_reason) <> '') OR (status <> 'cancelled' AND cancelled_at IS NULL AND cancelled_by_principal_id IS NULL AND cancellation_reason IS NULL)` [name: 'ck_hr_offboarding_cancellation']
   }
   Note: 'Service memeriksa seluruh tugas wajib, pekerja dalam payroll final, bukti clearance dan keputusan IAM. Rencana selesai tidak otomatis menandai pembayaran atau revoke; masing-masing harus dibuktikan owner.'
 }
@@ -2014,6 +2086,7 @@ TableGroup personnel_administration {
   hr_workers
   hr_employment_contracts
   hr_worker_assignments
+  hr_worker_assignment_transfers
   hr_worker_lifecycle_events
   hr_worker_documents
   hr_emergency_contacts
@@ -2124,3 +2197,5 @@ TableGroup integration_delivery {
   hr_outbox_events
   hr_inbox_events
 }
+
+Ref: hr_workforce_plans.superseded_by_plan_id >? hr_workforce_plans.id [delete: restrict]

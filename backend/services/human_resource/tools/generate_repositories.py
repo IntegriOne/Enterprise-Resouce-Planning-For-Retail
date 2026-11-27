@@ -67,6 +67,9 @@ for dom,ts in bydomain.items():
    if c['pk']:tag+=';primaryKey;autoIncrement:'+str(c['serial']).lower()
    if c['column'] in ('created_at','updated_at'):tag+=';autoCreateTime:false;autoUpdateTime:false'
    out+=f' {c["field"]} {c["type"]} `gorm:"{tag}" json:"{c["column"]}"`\n'
+  if t['table']=='hr_workforce_plan_lines':
+   # Kolom ini diisi oleh JOIN repository untuk evaluasi scope badan hukum.
+   out+=' PlanLegalEntityReferenceID *string `gorm:"column:plan_legal_entity_reference_id;->;-:migration" json:"-"`\n'
   out+='}\n'+f'\n// TableName menetapkan tabel HRM secara eksplisit.\nfunc ({t["name"]}) TableName() string {{ return "{t["table"]}" }}\n'
  # Model rekrutmen berisi aturan manual dari migrasi aditif dan dipelihara langsung.
  if dom!='recruitment':write(Path('domain/entity')/(dom+'.go'),out)

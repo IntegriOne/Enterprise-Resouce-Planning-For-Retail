@@ -74,6 +74,9 @@ service RecruitmentService {
   rpc FindApplicationStageHistoryByStageCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
   rpc FindApplicationStageHistoryByChangedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
   rpc FindApplicationStageHistoryByReasonCode(human_resource.common.v1.StringFinderRequest) returns (ApplicationStageHistoriesResponse);
+  rpc StartInterview(human_resource.common.v1.IDRequest) returns (InterviewResponse);
+  rpc CompleteInterview(human_resource.common.v1.IDRequest) returns (InterviewResponse);
+  rpc CancelInterview(human_resource.common.v1.IDRequest) returns (InterviewResponse);
   rpc CreateInterview(CreateInterviewRequest) returns (InterviewResponse);
   rpc UpdateInterview(UpdateInterviewRequest) returns (InterviewResponse);
   rpc DeleteInterview(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -100,6 +103,11 @@ service RecruitmentService {
   rpc GetAllInterviewFeedbacks(human_resource.common.v1.PageRequest) returns (InterviewFeedbacksResponse);
   rpc FindInterviewFeedbackByInterviewID(human_resource.common.v1.StringFinderRequest) returns (InterviewFeedbacksResponse);
   rpc FindInterviewFeedbackByInterviewerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (InterviewFeedbacksResponse);
+  rpc ApproveOffer(ApproveOfferRequest) returns (OfferResponse);
+  rpc IssueOffer(IssueOfferRequest) returns (OfferResponse);
+  rpc AcceptOffer(AcceptOfferRequest) returns (OfferResponse);
+  rpc DeclineOffer(DeclineOfferRequest) returns (OfferResponse);
+  rpc WithdrawOffer(WithdrawOfferRequest) returns (OfferResponse);
   rpc CreateOffer(CreateOfferRequest) returns (OfferResponse);
   rpc UpdateOffer(UpdateOfferRequest) returns (OfferResponse);
   rpc DeleteOffer(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -132,6 +140,7 @@ service RecruitmentService {
   rpc FindJobPostingByWithdrawalReasonCode(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
   rpc FindJobPostingByWithdrawnByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (JobPostingsResponse);
   rpc CreateApplicationAssessment(CreateApplicationAssessmentRequest) returns (ApplicationAssessmentResponse);
+  rpc CompleteApplicationAssessment(CompleteApplicationAssessmentRequest) returns (ApplicationAssessmentResponse);
   rpc UpdateApplicationAssessment(UpdateApplicationAssessmentRequest) returns (ApplicationAssessmentResponse);
   rpc DeleteApplicationAssessment(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetApplicationAssessmentByID(human_resource.common.v1.IDRequest) returns (ApplicationAssessmentResponse);
@@ -175,6 +184,7 @@ message Requisition {
   google.protobuf.Timestamp rejected_at = 26;
   optional string rejection_reason_code = 27;
   optional string rejected_by_principal_id = 28;
+  optional string hiring_manager_worker_id = 29;
 }
 message RequisitionInput {
   optional string requisition_number = 1;
@@ -201,11 +211,13 @@ message RequisitionInput {
 }
 message CreateRequisitionRequest {
   RequisitionInput input = 1;
+  optional string hiring_manager_worker_id = 2;
 }
 message UpdateRequisitionRequest {
   string id = 1;
   RequisitionInput input = 2;
   google.protobuf.FieldMask update_mask = 3;
+  optional string hiring_manager_worker_id = 4;
 }
 message RequisitionResponse {
   Requisition item = 1;
@@ -459,6 +471,33 @@ message InterviewFeedbacksResponse {
   human_resource.common.v1.PageInfo page = 2;
 }
 
+message ApproveOfferRequest {
+  string id = 1;
+  string compensation_document_version_id = 2;
+}
+
+message IssueOfferRequest {
+  string id = 1;
+  string document_id = 2;
+  string document_version_id = 3;
+  bytes content_digest = 4;
+}
+
+message AcceptOfferRequest {
+  string id = 1;
+  string response_evidence_id = 2;
+}
+
+message DeclineOfferRequest {
+  string id = 1;
+  string response_evidence_id = 2;
+}
+
+message WithdrawOfferRequest {
+  string id = 1;
+  string reason_code = 2;
+}
+
 message Offer {
   string id = 1;
   string application_id = 2;
@@ -480,6 +519,11 @@ message Offer {
   google.protobuf.Timestamp responded_at = 18;
   optional string approved_by_principal_id = 19;
   google.protobuf.Timestamp approved_at = 20;
+  optional string created_by_principal_id = 21;
+  google.protobuf.Timestamp created_at = 22;
+  google.protobuf.Timestamp withdrawn_at = 23;
+  optional string withdrawn_by_principal_id = 24;
+  optional string withdrawal_reason_code = 25;
 }
 message OfferInput {
   optional string application_id = 1;
@@ -615,4 +659,12 @@ message ApplicationAssessmentsResponse {
 message RejectRequisitionRequest {
   string id = 1;
   string reason_code = 2;
+}
+
+message CompleteApplicationAssessmentRequest {
+  string id = 1;
+  optional string normalized_score = 2;
+  optional string recommendation_code = 3;
+  optional string evidence_document_version_reference_id = 4;
+  optional bytes evidence_digest = 5;
 }

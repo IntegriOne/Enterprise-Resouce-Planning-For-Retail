@@ -2627,10 +2627,11 @@ const file_human_resource_performance_v1_performance_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v29.human_resource.performance.v1.PerformanceReviewGoalScoreR\x04item\"\xae\x01\n" +
 	"#PerformanceReviewGoalScoresResponse\x12O\n" +
 	"\x05items\x18\x01 \x03(\v29.human_resource.performance.v1.PerformanceReviewGoalScoreR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xf9<\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xc9B\n" +
 	"\x12PerformanceService\x12\x8f\x01\n" +
 	"\x16CreatePerformanceCycle\x12<.human_resource.performance.v1.CreatePerformanceCycleRequest\x1a7.human_resource.performance.v1.PerformanceCycleResponse\x12v\n" +
-	"\x16LaunchPerformanceCycle\x12#.human_resource.common.v1.IDRequest\x1a7.human_resource.performance.v1.PerformanceCycleResponse\x12\x8f\x01\n" +
+	"\x16LaunchPerformanceCycle\x12#.human_resource.common.v1.IDRequest\x1a7.human_resource.performance.v1.PerformanceCycleResponse\x12u\n" +
+	"\x15ClosePerformanceCycle\x12#.human_resource.common.v1.IDRequest\x1a7.human_resource.performance.v1.PerformanceCycleResponse\x12\x8f\x01\n" +
 	"\x16UpdatePerformanceCycle\x12<.human_resource.performance.v1.UpdatePerformanceCycleRequest\x1a7.human_resource.performance.v1.PerformanceCycleResponse\x12f\n" +
 	"\x16DeletePerformanceCycle\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12w\n" +
 	"\x17GetPerformanceCycleByID\x12#.human_resource.common.v1.IDRequest\x1a7.human_resource.performance.v1.PerformanceCycleResponse\x12z\n" +
@@ -2651,7 +2652,10 @@ const file_human_resource_performance_v1_performance_proto_rawDesc = "" +
 	"\x1dFindPerformanceGoalByGoalType\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.performance.v1.PerformanceGoalsResponse\x12\x87\x01\n" +
 	"\x1dFindPerformanceGoalByUnitCode\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.performance.v1.PerformanceGoalsResponse\x12\x89\x01\n" +
 	"\x1fFindPerformanceGoalByGoalStatus\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.performance.v1.PerformanceGoalsResponse\x12\x94\x01\n" +
-	"*FindPerformanceGoalByApprovedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.performance.v1.PerformanceGoalsResponse\x12\x92\x01\n" +
+	"*FindPerformanceGoalByApprovedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.performance.v1.PerformanceGoalsResponse\x12t\n" +
+	"\x15SubmitPerformanceGoal\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.performance.v1.PerformanceGoalResponse\x12u\n" +
+	"\x16ApprovePerformanceGoal\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.performance.v1.PerformanceGoalResponse\x12t\n" +
+	"\x15RejectPerformanceGoal\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.performance.v1.PerformanceGoalResponse\x12\x92\x01\n" +
 	"\x17CreatePerformanceReview\x12=.human_resource.performance.v1.CreatePerformanceReviewRequest\x1a8.human_resource.performance.v1.PerformanceReviewResponse\x12\x92\x01\n" +
 	"\x17UpdatePerformanceReview\x12=.human_resource.performance.v1.UpdatePerformanceReviewRequest\x1a8.human_resource.performance.v1.PerformanceReviewResponse\x12g\n" +
 	"\x17DeletePerformanceReview\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12y\n" +
@@ -2661,7 +2665,9 @@ const file_human_resource_performance_v1_performance_proto_rawDesc = "" +
 	")FindPerformanceReviewByPerformanceCycleID\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.performance.v1.PerformanceReviewsResponse\x12\x96\x01\n" +
 	"*FindPerformanceReviewByReviewerPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.performance.v1.PerformanceReviewsResponse\x12\x94\x01\n" +
 	"(FindPerformanceReviewByOverallRatingCode\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.performance.v1.PerformanceReviewsResponse\x12\x94\x01\n" +
-	"(FindPerformanceReviewByDevelopmentPlanID\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.performance.v1.PerformanceReviewsResponse\x12\x9e\x01\n" +
+	"(FindPerformanceReviewByDevelopmentPlanID\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.performance.v1.PerformanceReviewsResponse\x12x\n" +
+	"\x17SubmitPerformanceReview\x12#.human_resource.common.v1.IDRequest\x1a8.human_resource.performance.v1.PerformanceReviewResponse\x12z\n" +
+	"\x19FinalizePerformanceReview\x12#.human_resource.common.v1.IDRequest\x1a8.human_resource.performance.v1.PerformanceReviewResponse\x12\x9e\x01\n" +
 	"\x1bCreatePerformanceGoalUpdate\x12A.human_resource.performance.v1.CreatePerformanceGoalUpdateRequest\x1a<.human_resource.performance.v1.PerformanceGoalUpdateResponse\x12\x9e\x01\n" +
 	"\x1bUpdatePerformanceGoalUpdate\x12A.human_resource.performance.v1.UpdatePerformanceGoalUpdateRequest\x1a<.human_resource.performance.v1.PerformanceGoalUpdateResponse\x12k\n" +
 	"\x1bDeletePerformanceGoalUpdate\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12\x81\x01\n" +
@@ -2793,114 +2799,126 @@ var file_human_resource_performance_v1_performance_proto_depIdxs = []int32{
 	33,  // 52: human_resource.performance.v1.PerformanceReviewGoalScoresResponse.page:type_name -> human_resource.common.v1.PageInfo
 	2,   // 53: human_resource.performance.v1.PerformanceService.CreatePerformanceCycle:input_type -> human_resource.performance.v1.CreatePerformanceCycleRequest
 	34,  // 54: human_resource.performance.v1.PerformanceService.LaunchPerformanceCycle:input_type -> human_resource.common.v1.IDRequest
-	3,   // 55: human_resource.performance.v1.PerformanceService.UpdatePerformanceCycle:input_type -> human_resource.performance.v1.UpdatePerformanceCycleRequest
-	34,  // 56: human_resource.performance.v1.PerformanceService.DeletePerformanceCycle:input_type -> human_resource.common.v1.IDRequest
-	34,  // 57: human_resource.performance.v1.PerformanceService.GetPerformanceCycleByID:input_type -> human_resource.common.v1.IDRequest
-	35,  // 58: human_resource.performance.v1.PerformanceService.GetAllPerformanceCycles:input_type -> human_resource.common.v1.PageRequest
-	36,  // 59: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 60: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleType:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 61: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 62: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByLaunchedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,   // 63: human_resource.performance.v1.PerformanceService.CreatePerformanceGoal:input_type -> human_resource.performance.v1.CreatePerformanceGoalRequest
-	9,   // 64: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoal:input_type -> human_resource.performance.v1.UpdatePerformanceGoalRequest
-	34,  // 65: human_resource.performance.v1.PerformanceService.DeletePerformanceGoal:input_type -> human_resource.common.v1.IDRequest
-	34,  // 66: human_resource.performance.v1.PerformanceService.GetPerformanceGoalByID:input_type -> human_resource.common.v1.IDRequest
-	35,  // 67: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoals:input_type -> human_resource.common.v1.PageRequest
-	36,  // 68: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 69: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByPerformanceCycleID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 70: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByParentGoalID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 71: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 72: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalType:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 73: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByUnitCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 74: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 75: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	14,  // 76: human_resource.performance.v1.PerformanceService.CreatePerformanceReview:input_type -> human_resource.performance.v1.CreatePerformanceReviewRequest
-	15,  // 77: human_resource.performance.v1.PerformanceService.UpdatePerformanceReview:input_type -> human_resource.performance.v1.UpdatePerformanceReviewRequest
-	34,  // 78: human_resource.performance.v1.PerformanceService.DeletePerformanceReview:input_type -> human_resource.common.v1.IDRequest
-	34,  // 79: human_resource.performance.v1.PerformanceService.GetPerformanceReviewByID:input_type -> human_resource.common.v1.IDRequest
-	35,  // 80: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviews:input_type -> human_resource.common.v1.PageRequest
-	36,  // 81: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 82: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByPerformanceCycleID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 83: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByReviewerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 84: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByOverallRatingCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 85: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByDevelopmentPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	20,  // 86: human_resource.performance.v1.PerformanceService.CreatePerformanceGoalUpdate:input_type -> human_resource.performance.v1.CreatePerformanceGoalUpdateRequest
-	21,  // 87: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoalUpdate:input_type -> human_resource.performance.v1.UpdatePerformanceGoalUpdateRequest
-	34,  // 88: human_resource.performance.v1.PerformanceService.DeletePerformanceGoalUpdate:input_type -> human_resource.common.v1.IDRequest
-	34,  // 89: human_resource.performance.v1.PerformanceService.GetPerformanceGoalUpdateByID:input_type -> human_resource.common.v1.IDRequest
-	35,  // 90: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoalUpdates:input_type -> human_resource.common.v1.PageRequest
-	36,  // 91: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByGoalID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 92: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 93: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByRecordedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 94: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateBySupersedesUpdateID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 95: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	26,  // 96: human_resource.performance.v1.PerformanceService.CreatePerformanceReviewGoalScore:input_type -> human_resource.performance.v1.CreatePerformanceReviewGoalScoreRequest
-	27,  // 97: human_resource.performance.v1.PerformanceService.UpdatePerformanceReviewGoalScore:input_type -> human_resource.performance.v1.UpdatePerformanceReviewGoalScoreRequest
-	34,  // 98: human_resource.performance.v1.PerformanceService.DeletePerformanceReviewGoalScore:input_type -> human_resource.common.v1.IDRequest
-	34,  // 99: human_resource.performance.v1.PerformanceService.GetPerformanceReviewGoalScoreByID:input_type -> human_resource.common.v1.IDRequest
-	35,  // 100: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviewGoalScores:input_type -> human_resource.common.v1.PageRequest
-	36,  // 101: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceReviewID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 102: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByGoalID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 103: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 104: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceCycleID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 105: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByRubricDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36,  // 106: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,   // 107: human_resource.performance.v1.PerformanceService.CreatePerformanceCycle:output_type -> human_resource.performance.v1.PerformanceCycleResponse
-	4,   // 108: human_resource.performance.v1.PerformanceService.LaunchPerformanceCycle:output_type -> human_resource.performance.v1.PerformanceCycleResponse
-	4,   // 109: human_resource.performance.v1.PerformanceService.UpdatePerformanceCycle:output_type -> human_resource.performance.v1.PerformanceCycleResponse
-	37,  // 110: human_resource.performance.v1.PerformanceService.DeletePerformanceCycle:output_type -> human_resource.common.v1.EmptyResponse
-	4,   // 111: human_resource.performance.v1.PerformanceService.GetPerformanceCycleByID:output_type -> human_resource.performance.v1.PerformanceCycleResponse
-	5,   // 112: human_resource.performance.v1.PerformanceService.GetAllPerformanceCycles:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
-	5,   // 113: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleCode:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
-	5,   // 114: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleType:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
-	5,   // 115: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByStatus:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
-	5,   // 116: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByLaunchedByPrincipalID:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
-	10,  // 117: human_resource.performance.v1.PerformanceService.CreatePerformanceGoal:output_type -> human_resource.performance.v1.PerformanceGoalResponse
-	10,  // 118: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoal:output_type -> human_resource.performance.v1.PerformanceGoalResponse
-	37,  // 119: human_resource.performance.v1.PerformanceService.DeletePerformanceGoal:output_type -> human_resource.common.v1.EmptyResponse
-	10,  // 120: human_resource.performance.v1.PerformanceService.GetPerformanceGoalByID:output_type -> human_resource.performance.v1.PerformanceGoalResponse
-	11,  // 121: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoals:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 122: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByWorkerID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 123: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByPerformanceCycleID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 124: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByParentGoalID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 125: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalCode:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 126: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalType:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 127: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByUnitCode:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 128: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalStatus:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	11,  // 129: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByApprovedByPrincipalID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
-	16,  // 130: human_resource.performance.v1.PerformanceService.CreatePerformanceReview:output_type -> human_resource.performance.v1.PerformanceReviewResponse
-	16,  // 131: human_resource.performance.v1.PerformanceService.UpdatePerformanceReview:output_type -> human_resource.performance.v1.PerformanceReviewResponse
-	37,  // 132: human_resource.performance.v1.PerformanceService.DeletePerformanceReview:output_type -> human_resource.common.v1.EmptyResponse
-	16,  // 133: human_resource.performance.v1.PerformanceService.GetPerformanceReviewByID:output_type -> human_resource.performance.v1.PerformanceReviewResponse
-	17,  // 134: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviews:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
-	17,  // 135: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByWorkerID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
-	17,  // 136: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByPerformanceCycleID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
-	17,  // 137: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByReviewerPrincipalID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
-	17,  // 138: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByOverallRatingCode:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
-	17,  // 139: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByDevelopmentPlanID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
-	22,  // 140: human_resource.performance.v1.PerformanceService.CreatePerformanceGoalUpdate:output_type -> human_resource.performance.v1.PerformanceGoalUpdateResponse
-	22,  // 141: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoalUpdate:output_type -> human_resource.performance.v1.PerformanceGoalUpdateResponse
-	37,  // 142: human_resource.performance.v1.PerformanceService.DeletePerformanceGoalUpdate:output_type -> human_resource.common.v1.EmptyResponse
-	22,  // 143: human_resource.performance.v1.PerformanceService.GetPerformanceGoalUpdateByID:output_type -> human_resource.performance.v1.PerformanceGoalUpdateResponse
-	23,  // 144: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoalUpdates:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
-	23,  // 145: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByGoalID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
-	23,  // 146: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByEvidenceDocumentVersionReferenceID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
-	23,  // 147: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByRecordedByPrincipalID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
-	23,  // 148: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateBySupersedesUpdateID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
-	23,  // 149: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByIdempotencyKey:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
-	28,  // 150: human_resource.performance.v1.PerformanceService.CreatePerformanceReviewGoalScore:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoreResponse
-	28,  // 151: human_resource.performance.v1.PerformanceService.UpdatePerformanceReviewGoalScore:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoreResponse
-	37,  // 152: human_resource.performance.v1.PerformanceService.DeletePerformanceReviewGoalScore:output_type -> human_resource.common.v1.EmptyResponse
-	28,  // 153: human_resource.performance.v1.PerformanceService.GetPerformanceReviewGoalScoreByID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoreResponse
-	29,  // 154: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviewGoalScores:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
-	29,  // 155: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceReviewID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
-	29,  // 156: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByGoalID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
-	29,  // 157: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByWorkerID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
-	29,  // 158: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceCycleID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
-	29,  // 159: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByRubricDocumentVersionReferenceID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
-	29,  // 160: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByEvidenceDocumentVersionReferenceID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
-	107, // [107:161] is the sub-list for method output_type
-	53,  // [53:107] is the sub-list for method input_type
+	34,  // 55: human_resource.performance.v1.PerformanceService.ClosePerformanceCycle:input_type -> human_resource.common.v1.IDRequest
+	3,   // 56: human_resource.performance.v1.PerformanceService.UpdatePerformanceCycle:input_type -> human_resource.performance.v1.UpdatePerformanceCycleRequest
+	34,  // 57: human_resource.performance.v1.PerformanceService.DeletePerformanceCycle:input_type -> human_resource.common.v1.IDRequest
+	34,  // 58: human_resource.performance.v1.PerformanceService.GetPerformanceCycleByID:input_type -> human_resource.common.v1.IDRequest
+	35,  // 59: human_resource.performance.v1.PerformanceService.GetAllPerformanceCycles:input_type -> human_resource.common.v1.PageRequest
+	36,  // 60: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 61: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleType:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 62: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 63: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByLaunchedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	8,   // 64: human_resource.performance.v1.PerformanceService.CreatePerformanceGoal:input_type -> human_resource.performance.v1.CreatePerformanceGoalRequest
+	9,   // 65: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoal:input_type -> human_resource.performance.v1.UpdatePerformanceGoalRequest
+	34,  // 66: human_resource.performance.v1.PerformanceService.DeletePerformanceGoal:input_type -> human_resource.common.v1.IDRequest
+	34,  // 67: human_resource.performance.v1.PerformanceService.GetPerformanceGoalByID:input_type -> human_resource.common.v1.IDRequest
+	35,  // 68: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoals:input_type -> human_resource.common.v1.PageRequest
+	36,  // 69: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 70: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByPerformanceCycleID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 71: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByParentGoalID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 72: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 73: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalType:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 74: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByUnitCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 75: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 76: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	34,  // 77: human_resource.performance.v1.PerformanceService.SubmitPerformanceGoal:input_type -> human_resource.common.v1.IDRequest
+	34,  // 78: human_resource.performance.v1.PerformanceService.ApprovePerformanceGoal:input_type -> human_resource.common.v1.IDRequest
+	34,  // 79: human_resource.performance.v1.PerformanceService.RejectPerformanceGoal:input_type -> human_resource.common.v1.IDRequest
+	14,  // 80: human_resource.performance.v1.PerformanceService.CreatePerformanceReview:input_type -> human_resource.performance.v1.CreatePerformanceReviewRequest
+	15,  // 81: human_resource.performance.v1.PerformanceService.UpdatePerformanceReview:input_type -> human_resource.performance.v1.UpdatePerformanceReviewRequest
+	34,  // 82: human_resource.performance.v1.PerformanceService.DeletePerformanceReview:input_type -> human_resource.common.v1.IDRequest
+	34,  // 83: human_resource.performance.v1.PerformanceService.GetPerformanceReviewByID:input_type -> human_resource.common.v1.IDRequest
+	35,  // 84: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviews:input_type -> human_resource.common.v1.PageRequest
+	36,  // 85: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 86: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByPerformanceCycleID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 87: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByReviewerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 88: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByOverallRatingCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 89: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByDevelopmentPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	34,  // 90: human_resource.performance.v1.PerformanceService.SubmitPerformanceReview:input_type -> human_resource.common.v1.IDRequest
+	34,  // 91: human_resource.performance.v1.PerformanceService.FinalizePerformanceReview:input_type -> human_resource.common.v1.IDRequest
+	20,  // 92: human_resource.performance.v1.PerformanceService.CreatePerformanceGoalUpdate:input_type -> human_resource.performance.v1.CreatePerformanceGoalUpdateRequest
+	21,  // 93: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoalUpdate:input_type -> human_resource.performance.v1.UpdatePerformanceGoalUpdateRequest
+	34,  // 94: human_resource.performance.v1.PerformanceService.DeletePerformanceGoalUpdate:input_type -> human_resource.common.v1.IDRequest
+	34,  // 95: human_resource.performance.v1.PerformanceService.GetPerformanceGoalUpdateByID:input_type -> human_resource.common.v1.IDRequest
+	35,  // 96: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoalUpdates:input_type -> human_resource.common.v1.PageRequest
+	36,  // 97: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByGoalID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 98: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 99: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByRecordedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 100: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateBySupersedesUpdateID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 101: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	26,  // 102: human_resource.performance.v1.PerformanceService.CreatePerformanceReviewGoalScore:input_type -> human_resource.performance.v1.CreatePerformanceReviewGoalScoreRequest
+	27,  // 103: human_resource.performance.v1.PerformanceService.UpdatePerformanceReviewGoalScore:input_type -> human_resource.performance.v1.UpdatePerformanceReviewGoalScoreRequest
+	34,  // 104: human_resource.performance.v1.PerformanceService.DeletePerformanceReviewGoalScore:input_type -> human_resource.common.v1.IDRequest
+	34,  // 105: human_resource.performance.v1.PerformanceService.GetPerformanceReviewGoalScoreByID:input_type -> human_resource.common.v1.IDRequest
+	35,  // 106: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviewGoalScores:input_type -> human_resource.common.v1.PageRequest
+	36,  // 107: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceReviewID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 108: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByGoalID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 109: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 110: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceCycleID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 111: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByRubricDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 112: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,   // 113: human_resource.performance.v1.PerformanceService.CreatePerformanceCycle:output_type -> human_resource.performance.v1.PerformanceCycleResponse
+	4,   // 114: human_resource.performance.v1.PerformanceService.LaunchPerformanceCycle:output_type -> human_resource.performance.v1.PerformanceCycleResponse
+	4,   // 115: human_resource.performance.v1.PerformanceService.ClosePerformanceCycle:output_type -> human_resource.performance.v1.PerformanceCycleResponse
+	4,   // 116: human_resource.performance.v1.PerformanceService.UpdatePerformanceCycle:output_type -> human_resource.performance.v1.PerformanceCycleResponse
+	37,  // 117: human_resource.performance.v1.PerformanceService.DeletePerformanceCycle:output_type -> human_resource.common.v1.EmptyResponse
+	4,   // 118: human_resource.performance.v1.PerformanceService.GetPerformanceCycleByID:output_type -> human_resource.performance.v1.PerformanceCycleResponse
+	5,   // 119: human_resource.performance.v1.PerformanceService.GetAllPerformanceCycles:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
+	5,   // 120: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleCode:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
+	5,   // 121: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByCycleType:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
+	5,   // 122: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByStatus:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
+	5,   // 123: human_resource.performance.v1.PerformanceService.FindPerformanceCycleByLaunchedByPrincipalID:output_type -> human_resource.performance.v1.PerformanceCyclesResponse
+	10,  // 124: human_resource.performance.v1.PerformanceService.CreatePerformanceGoal:output_type -> human_resource.performance.v1.PerformanceGoalResponse
+	10,  // 125: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoal:output_type -> human_resource.performance.v1.PerformanceGoalResponse
+	37,  // 126: human_resource.performance.v1.PerformanceService.DeletePerformanceGoal:output_type -> human_resource.common.v1.EmptyResponse
+	10,  // 127: human_resource.performance.v1.PerformanceService.GetPerformanceGoalByID:output_type -> human_resource.performance.v1.PerformanceGoalResponse
+	11,  // 128: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoals:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 129: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByWorkerID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 130: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByPerformanceCycleID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 131: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByParentGoalID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 132: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalCode:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 133: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalType:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 134: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByUnitCode:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 135: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByGoalStatus:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	11,  // 136: human_resource.performance.v1.PerformanceService.FindPerformanceGoalByApprovedByPrincipalID:output_type -> human_resource.performance.v1.PerformanceGoalsResponse
+	10,  // 137: human_resource.performance.v1.PerformanceService.SubmitPerformanceGoal:output_type -> human_resource.performance.v1.PerformanceGoalResponse
+	10,  // 138: human_resource.performance.v1.PerformanceService.ApprovePerformanceGoal:output_type -> human_resource.performance.v1.PerformanceGoalResponse
+	10,  // 139: human_resource.performance.v1.PerformanceService.RejectPerformanceGoal:output_type -> human_resource.performance.v1.PerformanceGoalResponse
+	16,  // 140: human_resource.performance.v1.PerformanceService.CreatePerformanceReview:output_type -> human_resource.performance.v1.PerformanceReviewResponse
+	16,  // 141: human_resource.performance.v1.PerformanceService.UpdatePerformanceReview:output_type -> human_resource.performance.v1.PerformanceReviewResponse
+	37,  // 142: human_resource.performance.v1.PerformanceService.DeletePerformanceReview:output_type -> human_resource.common.v1.EmptyResponse
+	16,  // 143: human_resource.performance.v1.PerformanceService.GetPerformanceReviewByID:output_type -> human_resource.performance.v1.PerformanceReviewResponse
+	17,  // 144: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviews:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
+	17,  // 145: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByWorkerID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
+	17,  // 146: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByPerformanceCycleID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
+	17,  // 147: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByReviewerPrincipalID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
+	17,  // 148: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByOverallRatingCode:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
+	17,  // 149: human_resource.performance.v1.PerformanceService.FindPerformanceReviewByDevelopmentPlanID:output_type -> human_resource.performance.v1.PerformanceReviewsResponse
+	16,  // 150: human_resource.performance.v1.PerformanceService.SubmitPerformanceReview:output_type -> human_resource.performance.v1.PerformanceReviewResponse
+	16,  // 151: human_resource.performance.v1.PerformanceService.FinalizePerformanceReview:output_type -> human_resource.performance.v1.PerformanceReviewResponse
+	22,  // 152: human_resource.performance.v1.PerformanceService.CreatePerformanceGoalUpdate:output_type -> human_resource.performance.v1.PerformanceGoalUpdateResponse
+	22,  // 153: human_resource.performance.v1.PerformanceService.UpdatePerformanceGoalUpdate:output_type -> human_resource.performance.v1.PerformanceGoalUpdateResponse
+	37,  // 154: human_resource.performance.v1.PerformanceService.DeletePerformanceGoalUpdate:output_type -> human_resource.common.v1.EmptyResponse
+	22,  // 155: human_resource.performance.v1.PerformanceService.GetPerformanceGoalUpdateByID:output_type -> human_resource.performance.v1.PerformanceGoalUpdateResponse
+	23,  // 156: human_resource.performance.v1.PerformanceService.GetAllPerformanceGoalUpdates:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
+	23,  // 157: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByGoalID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
+	23,  // 158: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByEvidenceDocumentVersionReferenceID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
+	23,  // 159: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByRecordedByPrincipalID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
+	23,  // 160: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateBySupersedesUpdateID:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
+	23,  // 161: human_resource.performance.v1.PerformanceService.FindPerformanceGoalUpdateByIdempotencyKey:output_type -> human_resource.performance.v1.PerformanceGoalUpdatesResponse
+	28,  // 162: human_resource.performance.v1.PerformanceService.CreatePerformanceReviewGoalScore:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoreResponse
+	28,  // 163: human_resource.performance.v1.PerformanceService.UpdatePerformanceReviewGoalScore:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoreResponse
+	37,  // 164: human_resource.performance.v1.PerformanceService.DeletePerformanceReviewGoalScore:output_type -> human_resource.common.v1.EmptyResponse
+	28,  // 165: human_resource.performance.v1.PerformanceService.GetPerformanceReviewGoalScoreByID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoreResponse
+	29,  // 166: human_resource.performance.v1.PerformanceService.GetAllPerformanceReviewGoalScores:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
+	29,  // 167: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceReviewID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
+	29,  // 168: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByGoalID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
+	29,  // 169: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByWorkerID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
+	29,  // 170: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByPerformanceCycleID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
+	29,  // 171: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByRubricDocumentVersionReferenceID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
+	29,  // 172: human_resource.performance.v1.PerformanceService.FindPerformanceReviewGoalScoreByEvidenceDocumentVersionReferenceID:output_type -> human_resource.performance.v1.PerformanceReviewGoalScoresResponse
+	113, // [113:173] is the sub-list for method output_type
+	53,  // [53:113] is the sub-list for method input_type
 	53,  // [53:53] is the sub-list for extension type_name
 	53,  // [53:53] is the sub-list for extension extendee
 	0,   // [0:53] is the sub-list for field type_name

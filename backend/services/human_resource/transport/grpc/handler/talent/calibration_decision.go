@@ -102,6 +102,23 @@ func (s *server) GetTalentCalibrationDecisionByID(ctx context.Context, r *common
 	}
 	return decisionResult(s.service.GetTalentCalibrationDecisionByID(ctx, r.Id))
 }
+func (s *server) RecordTalentCalibrationDecision(ctx context.Context, r *pb.RecordTalentCalibrationDecisionRequest) (*pb.TalentCalibrationDecisionResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	calibrated, err := score(&r.CalibratedScore)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return decisionResult(s.service.RecordTalentCalibrationDecision(ctx, service.RecordTalentCalibrationDecisionInput{
+		SessionID:                           r.SessionId,
+		AssessmentID:                        r.AssessmentId,
+		DimensionID:                         r.DimensionId,
+		CalibratedScore:                     *calibrated,
+		RationaleDocumentVersionReferenceID: r.RationaleDocumentVersionReferenceId,
+		RationaleDigest:                     append([]byte(nil), r.RationaleDigest...),
+	}))
+}
 func (s *server) GetAllTalentCalibrationDecisions(ctx context.Context, r *commonv1.PageRequest) (*pb.TalentCalibrationDecisionsResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

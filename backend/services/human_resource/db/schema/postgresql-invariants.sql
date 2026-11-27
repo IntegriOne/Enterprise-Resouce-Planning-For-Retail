@@ -1,6 +1,16 @@
 -- Invariant PostgreSQL yang tidak dapat dinyatakan penuh dalam DBML.
 -- Tanggal efektif inklusif; periode berikutnya dimulai sehari setelah akhir.
 CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE UNIQUE INDEX uq_hr_offboarding_open_worker ON hr_offboarding_plans (worker_id)
+  WHERE status IN ('draft', 'approved', 'in_progress');
+CREATE INDEX ix_hr_worker_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_hr_worker_current_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL AND status IN ('active', 'leave_of_absence', 'suspended', 'notice_period');
+
+-- Satu penawaran terbit atau diterima per lamaran, terlepas dari revisinya.
+CREATE UNIQUE INDEX uq_hr_offer_active_application ON hr_offers (application_id)
+  WHERE offer_status IN ('issued', 'accepted');
 
 CREATE UNIQUE INDEX uq_hr_worker_assignment_period
   ON hr_worker_assignments (worker_id, position_id, assignment_type, valid_from)
@@ -50,15 +60,28 @@ BEGIN
         WHERE id = (row_data->>'payroll_result_id')::uuid;
     END IF;
     SELECT status INTO run_status FROM hr_payroll_runs WHERE id = run_id FOR UPDATE;
+    IF TG_TABLE_NAME = 'hr_payroll_results' AND TG_OP IN ('INSERT','UPDATE')
+      AND to_jsonb(NEW)->>'payslip_document_reference_id' IS NOT NULL
+      AND (TG_OP = 'INSERT' OR to_jsonb(NEW)->>'payslip_document_reference_id'
+        IS DISTINCT FROM to_jsonb(OLD)->>'payslip_document_reference_id')
+      AND (run_status IS NULL OR run_status NOT IN ('posted','paid')) THEN
+      RAISE EXCEPTION 'Payroll must be posted before attaching a payslip' USING ERRCODE = '23514';
+    END IF;
+    IF run_status IN ('review','cancelled') THEN
+      RAISE EXCEPTION 'Payroll results under review are immutable' USING ERRCODE = '23514';
+    END IF;
     IF run_status IN ('approved','posted','paid') THEN
       -- Metadata bukti boleh dilengkapi; nilai perhitungan tetap immutable.
       IF TG_TABLE_NAME = 'hr_payroll_results' AND TG_OP = 'UPDATE'
-        AND (to_jsonb(NEW) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id'])
-          = (to_jsonb(OLD) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id'])
+        AND (to_jsonb(NEW) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id','payslip_publication_reference_id'])
+          = (to_jsonb(OLD) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id','payslip_publication_reference_id'])
         AND (to_jsonb(OLD)->>'payment_reference_id' IS NULL
           OR to_jsonb(NEW)->>'payment_reference_id' IS NOT DISTINCT FROM to_jsonb(OLD)->>'payment_reference_id')
         AND (to_jsonb(OLD)->>'payslip_document_reference_id' IS NULL
-          OR to_jsonb(NEW)->>'payslip_document_reference_id' IS NOT DISTINCT FROM to_jsonb(OLD)->>'payslip_document_reference_id') THEN
+          OR to_jsonb(NEW)->>'payslip_document_reference_id' IS NOT DISTINCT FROM to_jsonb(OLD)->>'payslip_document_reference_id')
+        AND (to_jsonb(NEW)->>'payslip_publication_reference_id'
+          IS NOT DISTINCT FROM to_jsonb(OLD)->>'payslip_publication_reference_id'
+          OR to_jsonb(OLD)->>'payslip_document_reference_id' IS NULL) THEN
         CONTINUE;
       END IF;
       RAISE EXCEPTION 'Approved payroll result is immutable' USING ERRCODE = '23514';
@@ -76,13 +99,48 @@ CREATE TRIGGER tr_hr_payroll_line_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_
 CREATE FUNCTION hr_guard_payroll_run() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   editable_fields text[] := ARRAY['status','finance_journal_reference_id',
-    'payment_batch_reference_id','finance_settlement_event_reference_id','finance_settled_at'];
+    'payment_batch_reference_id','finance_settlement_event_reference_id','finance_settled_at',
+    'posting_requested_at','posting_requested_by_principal_id'];
 BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NEW.status <> 'draft' THEN
       RAISE EXCEPTION 'Payroll run must start as draft' USING ERRCODE = '23514';
     END IF;
     RETURN NEW;
+  END IF;
+  IF OLD.status = 'cancelled' THEN
+    IF TG_OP = 'DELETE' OR NEW IS DISTINCT FROM OLD THEN
+      RAISE EXCEPTION 'Cancelled payroll run is immutable' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'UPDATE' AND NEW.status = 'cancelled' THEN
+    IF OLD.status <> 'review' OR NEW.cancelled_at IS NULL OR NEW.cancelled_by_principal_id IS NULL
+      OR NEW.cancelled_by_principal_id = OLD.started_by_principal_id
+      OR NEW.cancelled_at < OLD.calculated_at OR coalesce(btrim(NEW.cancellation_reason), '') = ''
+      OR (to_jsonb(NEW) - ARRAY['status','cancelled_at','cancelled_by_principal_id','cancellation_reason'])
+        IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['status','cancelled_at','cancelled_by_principal_id','cancellation_reason']) THEN
+      RAISE EXCEPTION 'Payroll cancellation requires an unchanged review snapshot and independent reviewer' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'UPDATE' AND (NEW.cancelled_at IS NOT NULL OR NEW.cancelled_by_principal_id IS NOT NULL OR NEW.cancellation_reason IS NOT NULL) THEN
+    RAISE EXCEPTION 'Payroll cancellation evidence requires cancelled status' USING ERRCODE = '23514';
+  END IF;
+  IF OLD.status = 'review' THEN
+    IF TG_OP = 'DELETE' THEN
+      RAISE EXCEPTION 'Payroll run under review cannot be deleted' USING ERRCODE = '23514';
+    END IF;
+    IF (NEW.status = 'review' AND NEW IS DISTINCT FROM OLD)
+      OR (NEW.status NOT IN ('review','approved'))
+      OR (to_jsonb(NEW) - ARRAY['status','approved_at','approved_by_principal_id'])
+        IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['status','approved_at','approved_by_principal_id']) THEN
+      RAISE EXCEPTION 'Payroll snapshot under review cannot be overwritten' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF TG_OP = 'UPDATE' AND NEW.status = 'review' AND OLD.status <> 'review'
+    AND (OLD.status <> 'calculated' OR (to_jsonb(NEW) - 'status') IS DISTINCT FROM (to_jsonb(OLD) - 'status')) THEN
+    RAISE EXCEPTION 'Payroll review requires an unchanged calculated snapshot' USING ERRCODE = '23514';
   END IF;
   IF OLD.status IN ('approved','posted','paid') THEN
     IF TG_OP = 'DELETE' THEN
@@ -91,6 +149,9 @@ BEGIN
     IF (to_jsonb(NEW) - editable_fields) IS DISTINCT FROM (to_jsonb(OLD) - editable_fields)
       OR NOT (NEW.status = OLD.status OR (OLD.status = 'approved' AND NEW.status = 'posted')
         OR (OLD.status = 'posted' AND NEW.status = 'paid'))
+      OR ((OLD.status <> 'approved' OR NEW.status <> 'approved' OR OLD.posting_requested_at IS NOT NULL)
+        AND (NEW.posting_requested_at IS DISTINCT FROM OLD.posting_requested_at
+          OR NEW.posting_requested_by_principal_id IS DISTINCT FROM OLD.posting_requested_by_principal_id))
       OR (OLD.finance_journal_reference_id IS NOT NULL AND NEW.finance_journal_reference_id IS DISTINCT FROM OLD.finance_journal_reference_id)
       OR (OLD.payment_batch_reference_id IS NOT NULL AND NEW.payment_batch_reference_id IS DISTINCT FROM OLD.payment_batch_reference_id)
       OR (OLD.finance_settlement_event_reference_id IS NOT NULL AND NEW.finance_settlement_event_reference_id IS DISTINCT FROM OLD.finance_settlement_event_reference_id)
@@ -98,10 +159,13 @@ BEGIN
       RAISE EXCEPTION 'Approved payroll snapshot or settlement evidence cannot be overwritten' USING ERRCODE = '23514';
     END IF;
   ELSIF TG_OP = 'UPDATE' THEN
-    IF NEW.status IN ('posted','paid') THEN
+    IF NEW.status IN ('posted','paid') OR NEW.posting_requested_at IS NOT NULL THEN
       RAISE EXCEPTION 'Payroll must be approved before posting' USING ERRCODE = '23514';
     END IF;
     IF NEW.status = 'approved' THEN
+      IF OLD.status <> 'review' THEN
+        RAISE EXCEPTION 'Payroll approval requires review' USING ERRCODE = '23514';
+      END IF;
       IF NOT EXISTS (SELECT 1 FROM hr_payroll_results WHERE payroll_run_id = NEW.id) THEN
         RAISE EXCEPTION 'Payroll approval requires results' USING ERRCODE = '23514';
       END IF;
@@ -303,9 +367,3 @@ CREATE TRIGGER tr_hr_talent_dimension_guard BEFORE INSERT OR UPDATE OR DELETE ON
 ALTER TABLE hr_talent_pool_memberships ADD CONSTRAINT ex_hr_talent_pool_membership
   EXCLUDE USING gist (talent_pool_id WITH =, worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
   WHERE (status IN ('active','exited'));
--- HRM worker principal uniqueness
-CREATE INDEX ix_hr_worker_iam_principal ON hr_workers (iam_principal_reference_id)
-  WHERE iam_principal_reference_id IS NOT NULL;
-CREATE UNIQUE INDEX uq_hr_worker_current_iam_principal ON hr_workers (iam_principal_reference_id)
-  WHERE iam_principal_reference_id IS NOT NULL
-    AND status IN ('active', 'leave_of_absence', 'suspended', 'notice_period');

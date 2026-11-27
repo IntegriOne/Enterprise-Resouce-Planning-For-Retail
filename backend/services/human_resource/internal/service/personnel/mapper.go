@@ -5,6 +5,7 @@ package service
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -14,6 +15,9 @@ import (
 )
 
 func createWorker(in CreateWorkerInput) (*entity.Worker, error) {
+	if in.IAMPrincipalReferenceID != nil {
+		return nil, hrerrors.ErrWorkflowRequired
+	}
 	v := &entity.Worker{}
 	v.WorkerNumber = in.WorkerNumber
 	v.PersonPartyReferenceID = in.PersonPartyReferenceID
@@ -29,10 +33,12 @@ func createWorker(in CreateWorkerInput) (*entity.Worker, error) {
 	v.TerminationReasonCode = in.TerminationReasonCode
 	v.PrimaryLegalEntityReferenceID = in.PrimaryLegalEntityReferenceID
 	v.PrimaryAssignmentID = in.PrimaryAssignmentID
-	v.IAMPrincipalReferenceID = in.IAMPrincipalReferenceID
 	return v, nil
 }
 func patchWorker(v *entity.Worker, in UpdateWorkerInput) error {
+	if in.IAMPrincipalReferenceID.Set {
+		return hrerrors.ErrWorkflowRequired
+	}
 	if in.WorkerNumber.Set {
 		if in.WorkerNumber.Value == nil {
 			return hrerrors.Invalid("worker_number", "must not be null")
@@ -77,9 +83,6 @@ func patchWorker(v *entity.Worker, in UpdateWorkerInput) error {
 	}
 	if in.PrimaryAssignmentID.Set {
 		v.PrimaryAssignmentID = in.PrimaryAssignmentID.Value
-	}
-	if in.IAMPrincipalReferenceID.Set {
-		v.IAMPrincipalReferenceID = in.IAMPrincipalReferenceID.Value
 	}
 	return nil
 }
@@ -561,6 +564,8 @@ func createWorkerDocument(in CreateWorkerDocumentInput) (*entity.WorkerDocument,
 	return v, nil
 }
 func patchWorkerDocument(v *entity.WorkerDocument, in UpdateWorkerDocumentInput) error {
+	previousDocumentID := v.DocumentReferenceID
+	previousVersionID := v.DocumentVersionReferenceID
 	if in.WorkerID.Set {
 		if in.WorkerID.Value == nil {
 			return hrerrors.Invalid("worker_id", "must not be null")
@@ -584,6 +589,14 @@ func patchWorkerDocument(v *entity.WorkerDocument, in UpdateWorkerDocumentInput)
 			return hrerrors.Invalid("document_version_reference_id", "must not be null")
 		}
 		v.DocumentVersionReferenceID = *in.DocumentVersionReferenceID.Value
+	}
+	documentChanged := !strings.EqualFold(previousDocumentID, v.DocumentReferenceID)
+	versionChanged := !strings.EqualFold(previousVersionID, v.DocumentVersionReferenceID)
+	if documentChanged && !versionChanged {
+		return hrerrors.Invalid("document_version_reference_id", "a new version is required when replacing the document")
+	}
+	if versionChanged && !in.ContentDigest.Set {
+		return hrerrors.Invalid("content_digest", "must be supplied when replacing the document version")
 	}
 	if in.ContentDigest.Set {
 		if in.ContentDigest.Value == nil {
@@ -705,6 +718,9 @@ func patchEmergencyContact(v *entity.EmergencyContact, in UpdateEmergencyContact
 	if in.ContactPartyReferenceID.Set {
 		if in.ContactPartyReferenceID.Value == nil {
 			return hrerrors.Invalid("contact_party_reference_id", "must not be null")
+		}
+		if !in.AuthorizationConfirmedAt.Set && !strings.EqualFold(v.ContactPartyReferenceID, *in.ContactPartyReferenceID.Value) {
+			v.AuthorizationConfirmedAt = nil
 		}
 		v.ContactPartyReferenceID = *in.ContactPartyReferenceID.Value
 	}

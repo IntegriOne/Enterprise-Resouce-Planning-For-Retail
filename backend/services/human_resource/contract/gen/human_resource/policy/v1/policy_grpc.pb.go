@@ -39,6 +39,7 @@ const (
 	PolicyService_FindPolicyAcknowledgementByWorkerID_FullMethodName                           = "/human_resource.policy.v1.PolicyService/FindPolicyAcknowledgementByWorkerID"
 	PolicyService_FindPolicyAcknowledgementByAcknowledgedByPrincipalID_FullMethodName          = "/human_resource.policy.v1.PolicyService/FindPolicyAcknowledgementByAcknowledgedByPrincipalID"
 	PolicyService_FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID_FullMethodName = "/human_resource.policy.v1.PolicyService/FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID"
+	PolicyService_AcknowledgePolicy_FullMethodName                                             = "/human_resource.policy.v1.PolicyService/AcknowledgePolicy"
 )
 
 // PolicyServiceClient is the client API for PolicyService service.
@@ -64,6 +65,7 @@ type PolicyServiceClient interface {
 	FindPolicyAcknowledgementByWorkerID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PolicyAcknowledgementsResponse, error)
 	FindPolicyAcknowledgementByAcknowledgedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PolicyAcknowledgementsResponse, error)
 	FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PolicyAcknowledgementsResponse, error)
+	AcknowledgePolicy(ctx context.Context, in *AcknowledgePolicyRequest, opts ...grpc.CallOption) (*PolicyAcknowledgementResponse, error)
 }
 
 type policyServiceClient struct {
@@ -264,6 +266,16 @@ func (c *policyServiceClient) FindPolicyAcknowledgementByEvidenceDocumentVersion
 	return out, nil
 }
 
+func (c *policyServiceClient) AcknowledgePolicy(ctx context.Context, in *AcknowledgePolicyRequest, opts ...grpc.CallOption) (*PolicyAcknowledgementResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PolicyAcknowledgementResponse)
+	err := c.cc.Invoke(ctx, PolicyService_AcknowledgePolicy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PolicyServiceServer is the server API for PolicyService service.
 // All implementations must embed UnimplementedPolicyServiceServer
 // for forward compatibility.
@@ -287,6 +299,7 @@ type PolicyServiceServer interface {
 	FindPolicyAcknowledgementByWorkerID(context.Context, *v1.StringFinderRequest) (*PolicyAcknowledgementsResponse, error)
 	FindPolicyAcknowledgementByAcknowledgedByPrincipalID(context.Context, *v1.StringFinderRequest) (*PolicyAcknowledgementsResponse, error)
 	FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID(context.Context, *v1.StringFinderRequest) (*PolicyAcknowledgementsResponse, error)
+	AcknowledgePolicy(context.Context, *AcknowledgePolicyRequest) (*PolicyAcknowledgementResponse, error)
 	mustEmbedUnimplementedPolicyServiceServer()
 }
 
@@ -353,6 +366,9 @@ func (UnimplementedPolicyServiceServer) FindPolicyAcknowledgementByAcknowledgedB
 }
 func (UnimplementedPolicyServiceServer) FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID(context.Context, *v1.StringFinderRequest) (*PolicyAcknowledgementsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID not implemented")
+}
+func (UnimplementedPolicyServiceServer) AcknowledgePolicy(context.Context, *AcknowledgePolicyRequest) (*PolicyAcknowledgementResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AcknowledgePolicy not implemented")
 }
 func (UnimplementedPolicyServiceServer) mustEmbedUnimplementedPolicyServiceServer() {}
 func (UnimplementedPolicyServiceServer) testEmbeddedByValue()                       {}
@@ -717,6 +733,24 @@ func _PolicyService_FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceI
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PolicyService_AcknowledgePolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AcknowledgePolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PolicyServiceServer).AcknowledgePolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PolicyService_AcknowledgePolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PolicyServiceServer).AcknowledgePolicy(ctx, req.(*AcknowledgePolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PolicyService_ServiceDesc is the grpc.ServiceDesc for PolicyService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -799,6 +833,10 @@ var PolicyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID",
 			Handler:    _PolicyService_FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID_Handler,
+		},
+		{
+			MethodName: "AcknowledgePolicy",
+			Handler:    _PolicyService_AcknowledgePolicy_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

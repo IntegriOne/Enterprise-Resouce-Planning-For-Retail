@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -177,9 +178,9 @@ func TestPlannedPositionRPCWithPostgreSQL(t *testing.T) {
 		OrganizationUnitReferenceId: &unitID, LegalEntityReferenceId: &legalID,
 		ValidFrom: stringPointer("2026-11-17"),
 	}
-	active := *input
+	active := proto.CloneOf(input)
 	active.PositionStatus = stringPointer("active")
-	if _, err := client.CreatePosition(ctx, &pb.CreatePositionRequest{Input: &active}); status.Code(err) != codes.FailedPrecondition {
+	if _, err := client.CreatePosition(ctx, &pb.CreatePositionRequest{Input: active}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("active position through CRUD = %v", err)
 	}
 	created, err := client.CreatePosition(ctx, &pb.CreatePositionRequest{Input: input})
@@ -219,9 +220,9 @@ func TestPlannedPositionRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("position outbox events = %d, %v", events, err)
 	}
 	activeCode := "ACTIVE-SEAT-" + jobID
-	activeInput := *input
+	activeInput := proto.CloneOf(input)
 	activeInput.PositionCode = &activeCode
-	planned, err := client.CreatePosition(ctx, &pb.CreatePositionRequest{Input: &activeInput})
+	planned, err := client.CreatePosition(ctx, &pb.CreatePositionRequest{Input: activeInput})
 	if err != nil {
 		t.Fatalf("create position for activation: %v", err)
 	}

@@ -4,7 +4,6 @@ package service
 
 import (
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -103,6 +102,8 @@ func specPolicy() operation.Specification[entity.Policy, string] {
 		AggregateID: func(v *entity.Policy) string { return v.ID },
 		Initialize: func(v *entity.Policy, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
+			v.ApprovedByPrincipalID = actor.PrincipalID
+			v.ApprovedAt = now
 		},
 		Touch: func(v *entity.Policy, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.Policy) map[string]string {
@@ -114,18 +115,6 @@ func specPolicy() operation.Specification[entity.Policy, string] {
 			return a
 		},
 		Guard: func(action string, old, next *entity.Policy) error {
-			if action == "create" && !reflect.ValueOf(next.ApprovedByPrincipalID).IsZero() {
-				return hrerrors.ErrWorkflowRequired
-			}
-			if action == "update" && !reflect.DeepEqual(old.ApprovedByPrincipalID, next.ApprovedByPrincipalID) {
-				return hrerrors.ErrWorkflowRequired
-			}
-			if action == "create" && !reflect.ValueOf(next.ApprovedAt).IsZero() {
-				return hrerrors.ErrWorkflowRequired
-			}
-			if action == "update" && !reflect.DeepEqual(old.ApprovedAt, next.ApprovedAt) {
-				return hrerrors.ErrWorkflowRequired
-			}
 			if action != "create" {
 				return hrerrors.ErrWorkflowRequired
 			}

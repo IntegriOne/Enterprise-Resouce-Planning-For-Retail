@@ -16,6 +16,9 @@ import (
 //go:embed migrations/000001_hrm.up.sql
 var baselineSQL string
 
+//go:embed baseline_reconciliation.sql
+var baselineReconciliationSQL string
+
 // Kunci transaksi advisory khusus HRM; lock dilepas otomatis saat commit/rollback.
 const migrationLockID int64 = 718291825
 
@@ -175,36 +178,38 @@ func matchesLegacyBaseline(installed map[int64]string) bool {
 
 const assignmentCancellationBaselineChecksum = "bc4570a9506e1accfe10ff513f5003c60cea9d58493959c31b47d4441f484952"
 
-// reconcileKnownBaseline menerapkan perubahan terkendali setelah riwayat sebelumnya terverifikasi.
+const workerLinkBaselineChecksum = "39b7b89da9e5c9f2efa5b1bf8dc6c0207984b0457b00dde3c7e8a906cf631898"
+const runtimeBaselineChecksum = "c0ad8ee18cb67fb2fd29be226bb326168c7107c821181df43be4dd71f9c305d4"
+
+// reconcileKnownBaseline menerapkan perubahan skema lewat jalur yang cocok dengan checksum ledger.
 func reconcileKnownBaseline(ctx context.Context, tx *sql.Tx, installed map[int64]string) (bool, error) {
-	var delta string
+	var marker string
 	switch {
+	case len(installed) == 1 && installed[1] == workerLinkBaselineChecksum:
+		marker = "-- HRM runtime\n"
 	case len(installed) == 1 && installed[1] == assignmentCancellationBaselineChecksum:
-		delta = baselineDelta("-- HRM worker principal uniqueness\n", assignmentCancellationBaselineChecksum)
+		marker = "-- Worker principal uniqueness\n"
 	case len(installed) == 1 && installed[1] == consolidatedBaselineChecksum, matchesLegacyBaseline(installed):
-		delta = baselineDelta("-- HRM assignment cancellation\n", consolidatedBaselineChecksum)
-	}
-	if delta == "" {
+		marker = "-- Assignment cancellation\n"
+	default:
 		return false, nil
+	}
+	digest := sha256.Sum256([]byte(baselineSQL))
+	if hex.EncodeToString(digest[:]) != runtimeBaselineChecksum {
+		return false, fmt.Errorf("%w: unsupported HRM reconciliation baseline", hrerrors.ErrConflict)
+	}
+	_, delta, ok := strings.Cut(baselineReconciliationSQL, marker)
+	if !ok || delta == "" {
+		return false, fmt.Errorf("%w: HRM baseline reconciliation section missing", hrerrors.ErrConflict)
 	}
 	if _, err := tx.ExecContext(ctx, delta); err != nil {
 		return false, migrationError(ctx, "apply HRM baseline changes", err)
 	}
-	digest := sha256.Sum256([]byte(baselineSQL))
-	if _, err := tx.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = $1 WHERE version = 1", hex.EncodeToString(digest[:])); err != nil {
+	if _, err := tx.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = $1 WHERE version = 1", runtimeBaselineChecksum); err != nil {
 		return false, migrationError(ctx, "record HRM baseline checksum", err)
 	}
 	if _, err := tx.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version BETWEEN 2 AND 7"); err != nil {
 		return false, migrationError(ctx, "consolidate HRM migration history", err)
 	}
 	return true, nil
-}
-
-func baselineDelta(marker, checksum string) string {
-	previous, delta, found := strings.Cut(baselineSQL, marker)
-	digest := sha256.Sum256([]byte(previous))
-	if !found || hex.EncodeToString(digest[:]) != checksum {
-		return ""
-	}
-	return delta
 }

@@ -1189,7 +1189,7 @@ const file_human_resource_compensation_v1_compensation_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v22.human_resource.compensation.v1.CompensationRecordR\x04item\"\x9f\x01\n" +
 	"\x1bCompensationRecordsResponse\x12H\n" +
 	"\x05items\x18\x01 \x03(\v22.human_resource.compensation.v1.CompensationRecordR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xf8\x1b\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xf6\x1c\n" +
 	"\x13CompensationService\x12\x91\x01\n" +
 	"\x16CreateCompensationBand\x12=.human_resource.compensation.v1.CreateCompensationBandRequest\x1a8.human_resource.compensation.v1.CompensationBandResponse\x12\x91\x01\n" +
 	"\x16UpdateCompensationBand\x12=.human_resource.compensation.v1.UpdateCompensationBandRequest\x1a8.human_resource.compensation.v1.CompensationBandResponse\x12f\n" +
@@ -1200,7 +1200,8 @@ const file_human_resource_compensation_v1_compensation_proto_rawDesc = "" +
 	"\"FindCompensationBandByJobLevelCode\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.compensation.v1.CompensationBandsResponse\x12\x92\x01\n" +
 	"&FindCompensationBandByJurisdictionCode\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.compensation.v1.CompensationBandsResponse\x12\x8e\x01\n" +
 	"\"FindCompensationBandByCurrencyCode\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.compensation.v1.CompensationBandsResponse\x12\x95\x01\n" +
-	")FindCompensationBandByApprovalReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.compensation.v1.CompensationBandsResponse\x12\x97\x01\n" +
+	")FindCompensationBandByApprovalReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a9.human_resource.compensation.v1.CompensationBandsResponse\x12|\n" +
+	"\x19ApproveCompensationRecord\x12#.human_resource.common.v1.IDRequest\x1a:.human_resource.compensation.v1.CompensationRecordResponse\x12\x97\x01\n" +
 	"\x18CreateCompensationRecord\x12?.human_resource.compensation.v1.CreateCompensationRecordRequest\x1a:.human_resource.compensation.v1.CompensationRecordResponse\x12\x97\x01\n" +
 	"\x18UpdateCompensationRecord\x12?.human_resource.compensation.v1.UpdateCompensationRecordRequest\x1a:.human_resource.compensation.v1.CompensationRecordResponse\x12h\n" +
 	"\x18DeleteCompensationRecord\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12|\n" +
@@ -1276,48 +1277,50 @@ var file_human_resource_compensation_v1_compensation_proto_depIdxs = []int32{
 	17, // 21: human_resource.compensation.v1.CompensationService.FindCompensationBandByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
 	17, // 22: human_resource.compensation.v1.CompensationService.FindCompensationBandByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
 	17, // 23: human_resource.compensation.v1.CompensationService.FindCompensationBandByApprovalReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 24: human_resource.compensation.v1.CompensationService.CreateCompensationRecord:input_type -> human_resource.compensation.v1.CreateCompensationRecordRequest
-	9,  // 25: human_resource.compensation.v1.CompensationService.UpdateCompensationRecord:input_type -> human_resource.compensation.v1.UpdateCompensationRecordRequest
-	15, // 26: human_resource.compensation.v1.CompensationService.DeleteCompensationRecord:input_type -> human_resource.common.v1.IDRequest
-	15, // 27: human_resource.compensation.v1.CompensationService.GetCompensationRecordByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 28: human_resource.compensation.v1.CompensationService.GetAllCompensationRecords:input_type -> human_resource.common.v1.PageRequest
-	17, // 29: human_resource.compensation.v1.CompensationService.FindCompensationRecordByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 30: human_resource.compensation.v1.CompensationService.FindCompensationRecordByAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 31: human_resource.compensation.v1.CompensationService.FindCompensationRecordByComponentID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 32: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationBandID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 33: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationType:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 34: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 35: human_resource.compensation.v1.CompensationService.FindCompensationRecordByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 36: human_resource.compensation.v1.CompensationService.FindCompensationRecordByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 37: human_resource.compensation.v1.CompensationService.FindCompensationRecordByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 38: human_resource.compensation.v1.CompensationService.FindCompensationRecordBySourceChangeReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 39: human_resource.compensation.v1.CompensationService.CreateCompensationBand:output_type -> human_resource.compensation.v1.CompensationBandResponse
-	4,  // 40: human_resource.compensation.v1.CompensationService.UpdateCompensationBand:output_type -> human_resource.compensation.v1.CompensationBandResponse
-	18, // 41: human_resource.compensation.v1.CompensationService.DeleteCompensationBand:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 42: human_resource.compensation.v1.CompensationService.GetCompensationBandByID:output_type -> human_resource.compensation.v1.CompensationBandResponse
-	5,  // 43: human_resource.compensation.v1.CompensationService.GetAllCompensationBands:output_type -> human_resource.compensation.v1.CompensationBandsResponse
-	5,  // 44: human_resource.compensation.v1.CompensationService.FindCompensationBandByBandCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
-	5,  // 45: human_resource.compensation.v1.CompensationService.FindCompensationBandByJobLevelCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
-	5,  // 46: human_resource.compensation.v1.CompensationService.FindCompensationBandByJurisdictionCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
-	5,  // 47: human_resource.compensation.v1.CompensationService.FindCompensationBandByCurrencyCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
-	5,  // 48: human_resource.compensation.v1.CompensationService.FindCompensationBandByApprovalReferenceID:output_type -> human_resource.compensation.v1.CompensationBandsResponse
-	10, // 49: human_resource.compensation.v1.CompensationService.CreateCompensationRecord:output_type -> human_resource.compensation.v1.CompensationRecordResponse
-	10, // 50: human_resource.compensation.v1.CompensationService.UpdateCompensationRecord:output_type -> human_resource.compensation.v1.CompensationRecordResponse
-	18, // 51: human_resource.compensation.v1.CompensationService.DeleteCompensationRecord:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 52: human_resource.compensation.v1.CompensationService.GetCompensationRecordByID:output_type -> human_resource.compensation.v1.CompensationRecordResponse
-	11, // 53: human_resource.compensation.v1.CompensationService.GetAllCompensationRecords:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 54: human_resource.compensation.v1.CompensationService.FindCompensationRecordByWorkerID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 55: human_resource.compensation.v1.CompensationService.FindCompensationRecordByAssignmentID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 56: human_resource.compensation.v1.CompensationService.FindCompensationRecordByComponentID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 57: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationBandID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 58: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationType:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 59: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCurrencyCode:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 60: human_resource.compensation.v1.CompensationService.FindCompensationRecordByStatus:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 61: human_resource.compensation.v1.CompensationService.FindCompensationRecordByReasonCode:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 62: human_resource.compensation.v1.CompensationService.FindCompensationRecordByApprovedByPrincipalID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	11, // 63: human_resource.compensation.v1.CompensationService.FindCompensationRecordBySourceChangeReferenceID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
-	39, // [39:64] is the sub-list for method output_type
-	14, // [14:39] is the sub-list for method input_type
+	15, // 24: human_resource.compensation.v1.CompensationService.ApproveCompensationRecord:input_type -> human_resource.common.v1.IDRequest
+	8,  // 25: human_resource.compensation.v1.CompensationService.CreateCompensationRecord:input_type -> human_resource.compensation.v1.CreateCompensationRecordRequest
+	9,  // 26: human_resource.compensation.v1.CompensationService.UpdateCompensationRecord:input_type -> human_resource.compensation.v1.UpdateCompensationRecordRequest
+	15, // 27: human_resource.compensation.v1.CompensationService.DeleteCompensationRecord:input_type -> human_resource.common.v1.IDRequest
+	15, // 28: human_resource.compensation.v1.CompensationService.GetCompensationRecordByID:input_type -> human_resource.common.v1.IDRequest
+	16, // 29: human_resource.compensation.v1.CompensationService.GetAllCompensationRecords:input_type -> human_resource.common.v1.PageRequest
+	17, // 30: human_resource.compensation.v1.CompensationService.FindCompensationRecordByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 31: human_resource.compensation.v1.CompensationService.FindCompensationRecordByAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 32: human_resource.compensation.v1.CompensationService.FindCompensationRecordByComponentID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 33: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationBandID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 34: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationType:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 35: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 36: human_resource.compensation.v1.CompensationService.FindCompensationRecordByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 37: human_resource.compensation.v1.CompensationService.FindCompensationRecordByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 38: human_resource.compensation.v1.CompensationService.FindCompensationRecordByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 39: human_resource.compensation.v1.CompensationService.FindCompensationRecordBySourceChangeReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 40: human_resource.compensation.v1.CompensationService.CreateCompensationBand:output_type -> human_resource.compensation.v1.CompensationBandResponse
+	4,  // 41: human_resource.compensation.v1.CompensationService.UpdateCompensationBand:output_type -> human_resource.compensation.v1.CompensationBandResponse
+	18, // 42: human_resource.compensation.v1.CompensationService.DeleteCompensationBand:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 43: human_resource.compensation.v1.CompensationService.GetCompensationBandByID:output_type -> human_resource.compensation.v1.CompensationBandResponse
+	5,  // 44: human_resource.compensation.v1.CompensationService.GetAllCompensationBands:output_type -> human_resource.compensation.v1.CompensationBandsResponse
+	5,  // 45: human_resource.compensation.v1.CompensationService.FindCompensationBandByBandCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
+	5,  // 46: human_resource.compensation.v1.CompensationService.FindCompensationBandByJobLevelCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
+	5,  // 47: human_resource.compensation.v1.CompensationService.FindCompensationBandByJurisdictionCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
+	5,  // 48: human_resource.compensation.v1.CompensationService.FindCompensationBandByCurrencyCode:output_type -> human_resource.compensation.v1.CompensationBandsResponse
+	5,  // 49: human_resource.compensation.v1.CompensationService.FindCompensationBandByApprovalReferenceID:output_type -> human_resource.compensation.v1.CompensationBandsResponse
+	10, // 50: human_resource.compensation.v1.CompensationService.ApproveCompensationRecord:output_type -> human_resource.compensation.v1.CompensationRecordResponse
+	10, // 51: human_resource.compensation.v1.CompensationService.CreateCompensationRecord:output_type -> human_resource.compensation.v1.CompensationRecordResponse
+	10, // 52: human_resource.compensation.v1.CompensationService.UpdateCompensationRecord:output_type -> human_resource.compensation.v1.CompensationRecordResponse
+	18, // 53: human_resource.compensation.v1.CompensationService.DeleteCompensationRecord:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 54: human_resource.compensation.v1.CompensationService.GetCompensationRecordByID:output_type -> human_resource.compensation.v1.CompensationRecordResponse
+	11, // 55: human_resource.compensation.v1.CompensationService.GetAllCompensationRecords:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 56: human_resource.compensation.v1.CompensationService.FindCompensationRecordByWorkerID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 57: human_resource.compensation.v1.CompensationService.FindCompensationRecordByAssignmentID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 58: human_resource.compensation.v1.CompensationService.FindCompensationRecordByComponentID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 59: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationBandID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 60: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCompensationType:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 61: human_resource.compensation.v1.CompensationService.FindCompensationRecordByCurrencyCode:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 62: human_resource.compensation.v1.CompensationService.FindCompensationRecordByStatus:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 63: human_resource.compensation.v1.CompensationService.FindCompensationRecordByReasonCode:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 64: human_resource.compensation.v1.CompensationService.FindCompensationRecordByApprovedByPrincipalID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	11, // 65: human_resource.compensation.v1.CompensationService.FindCompensationRecordBySourceChangeReferenceID:output_type -> human_resource.compensation.v1.CompensationRecordsResponse
+	40, // [40:66] is the sub-list for method output_type
+	14, // [14:40] is the sub-list for method input_type
 	14, // [14:14] is the sub-list for extension type_name
 	14, // [14:14] is the sub-list for extension extendee
 	0,  // [0:14] is the sub-list for field type_name

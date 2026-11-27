@@ -11,11 +11,11 @@ import (
 )
 
 func setup(tb testing.TB) (*mockdb.Harness, *service.Service, *mockdb.Store[entity.PayrollProfile, string]) {
-	h, svc, profile, _, _, _ := setupPayroll(tb)
+	h, svc, profile, _, _, _ := setupPayroll(tb, 6)
 	return h, svc, profile
 }
 
-func setupPayroll(tb testing.TB) (
+func setupPayroll(tb testing.TB, scale int16) (
 	*mockdb.Harness, *service.Service, *mockdb.Store[entity.PayrollProfile, string],
 	*mockdb.Store[entity.PayrollRun, string], *mockdb.Store[entity.PayrollResult, string],
 	*mockdb.Store[entity.PayrollResultLine, string],
@@ -30,6 +30,8 @@ func setupPayroll(tb testing.TB) (
 	pPayrollResultLine := mockdb.NewStore[entity.PayrollResultLine, string](h, func(v *entity.PayrollResultLine) string { return v.ID })
 	pPayrollAdjustment := mockdb.NewStore[entity.PayrollAdjustment, string](h, func(v *entity.PayrollAdjustment) string { return v.ID })
 	pPayrollGroup := mockdb.NewStore[entity.PayrollGroup, string](h, func(v *entity.PayrollGroup) string { return v.ID })
+	run := calculatedRun()
+	pPayrollGroup.Rows[run.PayrollGroupID] = entity.PayrollGroup{ID: run.PayrollGroupID, CurrencyCode: run.CurrencyCode, CurrencyScale: scale}
 	pPayrollRuleSet := mockdb.NewStore[entity.PayrollRuleSet, string](h, func(v *entity.PayrollRuleSet) string { return v.ID })
 	svc, err := service.NewService(service.Dependencies{Runtime: h.Runtime(), PayrollProfile: pPayrollProfile, PayComponent: pPayComponent, PayrollPeriod: pPayrollPeriod, PayrollRun: pPayrollRun, PayrollResult: pPayrollResult, PayrollResultLine: pPayrollResultLine, PayrollAdjustment: pPayrollAdjustment, PayrollGroup: pPayrollGroup, PayrollRuleSet: pPayrollRuleSet})
 	if err != nil {

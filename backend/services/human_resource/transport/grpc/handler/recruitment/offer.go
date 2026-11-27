@@ -19,6 +19,8 @@ func offer(v *entity.Offer) *pb.Offer {
 		ProposedContractType: v.ProposedContractType, ProposedCompensationDocumentVersionReferenceId: v.ProposedCompensationDocumentVersionReferenceID,
 		CurrencyCode: v.CurrencyCode, OfferDocumentReferenceId: v.OfferDocumentReferenceID, OfferDocumentVersionReferenceId: v.OfferDocumentVersionReferenceID,
 		OfferContentDigest: append([]byte(nil), v.OfferContentDigest...), IssuedAt: timestamp(v.IssuedAt), ExpiresAt: timestamp(v.ExpiresAt),
+		CreatedByPrincipalId: v.CreatedByPrincipalID, CreatedAt: timestamp(v.CreatedAt),
+		WithdrawnAt: timestamp(v.WithdrawnAt), WithdrawnByPrincipalId: v.WithdrawnByPrincipalID, WithdrawalReasonCode: v.WithdrawalReasonCode,
 		CandidateResponse: v.CandidateResponse, RespondedAt: timestamp(v.RespondedAt), ApprovedByPrincipalId: v.ApprovedByPrincipalID, ApprovedAt: timestamp(v.ApprovedAt),
 	}
 }
@@ -38,6 +40,47 @@ func offers(page operation.Page[entity.Offer], err error) (*pb.OffersResponse, e
 	}
 	return &pb.OffersResponse{Items: items, Page: pageInfo(page)}, nil
 }
+
+// ApproveOffer meneruskan persetujuan penawaran ke service.
+func (h *Handler) ApproveOffer(ctx context.Context, request *pb.ApproveOfferRequest) (*pb.OfferResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return offerResponse(h.service.ApproveOffer(ctx, request.Id, request.CompensationDocumentVersionId))
+}
+
+// IssueOffer meneruskan penerbitan penawaran ke service.
+func (h *Handler) IssueOffer(ctx context.Context, request *pb.IssueOfferRequest) (*pb.OfferResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return offerResponse(h.service.IssueOffer(ctx, request.Id, request.DocumentId, request.DocumentVersionId, request.ContentDigest))
+}
+
+// AcceptOffer mencatat penerimaan penawaran yang telah dikonfirmasi kandidat.
+func (h *Handler) AcceptOffer(ctx context.Context, request *pb.AcceptOfferRequest) (*pb.OfferResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return offerResponse(h.service.AcceptOffer(ctx, request.Id, request.ResponseEvidenceId))
+}
+
+// DeclineOffer mencatat penolakan penawaran yang telah dikonfirmasi kandidat.
+func (h *Handler) DeclineOffer(ctx context.Context, request *pb.DeclineOfferRequest) (*pb.OfferResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return offerResponse(h.service.DeclineOffer(ctx, request.Id, request.ResponseEvidenceId))
+}
+
+// WithdrawOffer meneruskan penarikan penawaran ke service.
+func (h *Handler) WithdrawOffer(ctx context.Context, request *pb.WithdrawOfferRequest) (*pb.OfferResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return offerResponse(h.service.WithdrawOffer(ctx, request.Id, request.ReasonCode))
+}
+
 func (h *Handler) CreateOffer(ctx context.Context, r *pb.CreateOfferRequest) (*pb.OfferResponse, error) {
 	if r == nil || r.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

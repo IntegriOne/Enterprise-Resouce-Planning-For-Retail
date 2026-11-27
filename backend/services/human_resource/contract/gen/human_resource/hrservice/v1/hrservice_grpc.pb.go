@@ -20,6 +20,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	HRService_ResolveServiceRequest_FullMethodName                                           = "/human_resource.hrservice.v1.HRService/ResolveServiceRequest"
+	HRService_CloseServiceRequest_FullMethodName                                             = "/human_resource.hrservice.v1.HRService/CloseServiceRequest"
+	HRService_CancelServiceRequest_FullMethodName                                            = "/human_resource.hrservice.v1.HRService/CancelServiceRequest"
+	HRService_AssignServiceRequest_FullMethodName                                            = "/human_resource.hrservice.v1.HRService/AssignServiceRequest"
 	HRService_CreateServiceRequest_FullMethodName                                            = "/human_resource.hrservice.v1.HRService/CreateServiceRequest"
 	HRService_UpdateServiceRequest_FullMethodName                                            = "/human_resource.hrservice.v1.HRService/UpdateServiceRequest"
 	HRService_DeleteServiceRequest_FullMethodName                                            = "/human_resource.hrservice.v1.HRService/DeleteServiceRequest"
@@ -50,6 +54,10 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HRServiceClient interface {
+	ResolveServiceRequest(ctx context.Context, in *ResolveServiceRequestRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error)
+	CloseServiceRequest(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error)
+	CancelServiceRequest(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error)
+	AssignServiceRequest(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error)
 	CreateServiceRequest(ctx context.Context, in *CreateServiceRequestRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error)
 	UpdateServiceRequest(ctx context.Context, in *UpdateServiceRequestRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error)
 	DeleteServiceRequest(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -82,6 +90,46 @@ type hRServiceClient struct {
 
 func NewHRServiceClient(cc grpc.ClientConnInterface) HRServiceClient {
 	return &hRServiceClient{cc}
+}
+
+func (c *hRServiceClient) ResolveServiceRequest(ctx context.Context, in *ResolveServiceRequestRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ServiceRequestResponse)
+	err := c.cc.Invoke(ctx, HRService_ResolveServiceRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hRServiceClient) CloseServiceRequest(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ServiceRequestResponse)
+	err := c.cc.Invoke(ctx, HRService_CloseServiceRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hRServiceClient) CancelServiceRequest(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ServiceRequestResponse)
+	err := c.cc.Invoke(ctx, HRService_CancelServiceRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hRServiceClient) AssignServiceRequest(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ServiceRequestResponse)
+	err := c.cc.Invoke(ctx, HRService_AssignServiceRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *hRServiceClient) CreateServiceRequest(ctx context.Context, in *CreateServiceRequestRequest, opts ...grpc.CallOption) (*ServiceRequestResponse, error) {
@@ -328,6 +376,10 @@ func (c *hRServiceClient) FindServiceRequestEventByIdempotencyKey(ctx context.Co
 // All implementations must embed UnimplementedHRServiceServer
 // for forward compatibility.
 type HRServiceServer interface {
+	ResolveServiceRequest(context.Context, *ResolveServiceRequestRequest) (*ServiceRequestResponse, error)
+	CloseServiceRequest(context.Context, *v1.IDRequest) (*ServiceRequestResponse, error)
+	CancelServiceRequest(context.Context, *v1.IDRequest) (*ServiceRequestResponse, error)
+	AssignServiceRequest(context.Context, *v1.IDRequest) (*ServiceRequestResponse, error)
 	CreateServiceRequest(context.Context, *CreateServiceRequestRequest) (*ServiceRequestResponse, error)
 	UpdateServiceRequest(context.Context, *UpdateServiceRequestRequest) (*ServiceRequestResponse, error)
 	DeleteServiceRequest(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -362,6 +414,18 @@ type HRServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedHRServiceServer struct{}
 
+func (UnimplementedHRServiceServer) ResolveServiceRequest(context.Context, *ResolveServiceRequestRequest) (*ServiceRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResolveServiceRequest not implemented")
+}
+func (UnimplementedHRServiceServer) CloseServiceRequest(context.Context, *v1.IDRequest) (*ServiceRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CloseServiceRequest not implemented")
+}
+func (UnimplementedHRServiceServer) CancelServiceRequest(context.Context, *v1.IDRequest) (*ServiceRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelServiceRequest not implemented")
+}
+func (UnimplementedHRServiceServer) AssignServiceRequest(context.Context, *v1.IDRequest) (*ServiceRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AssignServiceRequest not implemented")
+}
 func (UnimplementedHRServiceServer) CreateServiceRequest(context.Context, *CreateServiceRequestRequest) (*ServiceRequestResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateServiceRequest not implemented")
 }
@@ -453,6 +517,78 @@ func RegisterHRServiceServer(s grpc.ServiceRegistrar, srv HRServiceServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&HRService_ServiceDesc, srv)
+}
+
+func _HRService_ResolveServiceRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveServiceRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HRServiceServer).ResolveServiceRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HRService_ResolveServiceRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HRServiceServer).ResolveServiceRequest(ctx, req.(*ResolveServiceRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HRService_CloseServiceRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HRServiceServer).CloseServiceRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HRService_CloseServiceRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HRServiceServer).CloseServiceRequest(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HRService_CancelServiceRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HRServiceServer).CancelServiceRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HRService_CancelServiceRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HRServiceServer).CancelServiceRequest(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HRService_AssignServiceRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HRServiceServer).AssignServiceRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HRService_AssignServiceRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HRServiceServer).AssignServiceRequest(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _HRService_CreateServiceRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -894,6 +1030,22 @@ var HRService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "human_resource.hrservice.v1.HRService",
 	HandlerType: (*HRServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ResolveServiceRequest",
+			Handler:    _HRService_ResolveServiceRequest_Handler,
+		},
+		{
+			MethodName: "CloseServiceRequest",
+			Handler:    _HRService_CloseServiceRequest_Handler,
+		},
+		{
+			MethodName: "CancelServiceRequest",
+			Handler:    _HRService_CancelServiceRequest_Handler,
+		},
+		{
+			MethodName: "AssignServiceRequest",
+			Handler:    _HRService_AssignServiceRequest_Handler,
+		},
 		{
 			MethodName: "CreateServiceRequest",
 			Handler:    _HRService_CreateServiceRequest_Handler,

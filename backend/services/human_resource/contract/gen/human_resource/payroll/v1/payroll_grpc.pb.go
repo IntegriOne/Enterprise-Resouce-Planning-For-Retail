@@ -81,10 +81,17 @@ const (
 	PayrollService_FindPayrollRunByFinanceSettlementEventReferenceID_FullMethodName        = "/human_resource.payroll.v1.PayrollService/FindPayrollRunByFinanceSettlementEventReferenceID"
 	PayrollService_FindPayrollRunByStartedByPrincipalID_FullMethodName                     = "/human_resource.payroll.v1.PayrollService/FindPayrollRunByStartedByPrincipalID"
 	PayrollService_FindPayrollRunByIdempotencyKey_FullMethodName                           = "/human_resource.payroll.v1.PayrollService/FindPayrollRunByIdempotencyKey"
+	PayrollService_CalculatePayrollRun_FullMethodName                                      = "/human_resource.payroll.v1.PayrollService/CalculatePayrollRun"
+	PayrollService_CancelPayrollRun_FullMethodName                                         = "/human_resource.payroll.v1.PayrollService/CancelPayrollRun"
+	PayrollService_SubmitPayrollRunForReview_FullMethodName                                = "/human_resource.payroll.v1.PayrollService/SubmitPayrollRunForReview"
+	PayrollService_RequestPayrollPosting_FullMethodName                                    = "/human_resource.payroll.v1.PayrollService/RequestPayrollPosting"
 	PayrollService_ApprovePayrollRun_FullMethodName                                        = "/human_resource.payroll.v1.PayrollService/ApprovePayrollRun"
 	PayrollService_CreatePayrollResult_FullMethodName                                      = "/human_resource.payroll.v1.PayrollService/CreatePayrollResult"
 	PayrollService_UpdatePayrollResult_FullMethodName                                      = "/human_resource.payroll.v1.PayrollService/UpdatePayrollResult"
 	PayrollService_DeletePayrollResult_FullMethodName                                      = "/human_resource.payroll.v1.PayrollService/DeletePayrollResult"
+	PayrollService_GetMyPayslip_FullMethodName                                             = "/human_resource.payroll.v1.PayrollService/GetMyPayslip"
+	PayrollService_ListMyPayslips_FullMethodName                                           = "/human_resource.payroll.v1.PayrollService/ListMyPayslips"
+	PayrollService_ReissueEmployeePayslip_FullMethodName                                   = "/human_resource.payroll.v1.PayrollService/ReissueEmployeePayslip"
 	PayrollService_GetPayrollResultByID_FullMethodName                                     = "/human_resource.payroll.v1.PayrollService/GetPayrollResultByID"
 	PayrollService_GetAllPayrollResults_FullMethodName                                     = "/human_resource.payroll.v1.PayrollService/GetAllPayrollResults"
 	PayrollService_FindPayrollResultByPayrollRunID_FullMethodName                          = "/human_resource.payroll.v1.PayrollService/FindPayrollResultByPayrollRunID"
@@ -201,10 +208,17 @@ type PayrollServiceClient interface {
 	FindPayrollRunByFinanceSettlementEventReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PayrollRunsResponse, error)
 	FindPayrollRunByStartedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PayrollRunsResponse, error)
 	FindPayrollRunByIdempotencyKey(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PayrollRunsResponse, error)
+	CalculatePayrollRun(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
+	CancelPayrollRun(ctx context.Context, in *CancelPayrollRunRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
+	SubmitPayrollRunForReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
+	RequestPayrollPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
 	ApprovePayrollRun(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
 	CreatePayrollResult(ctx context.Context, in *CreatePayrollResultRequest, opts ...grpc.CallOption) (*PayrollResultResponse, error)
 	UpdatePayrollResult(ctx context.Context, in *UpdatePayrollResultRequest, opts ...grpc.CallOption) (*PayrollResultResponse, error)
 	DeletePayrollResult(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
+	GetMyPayslip(ctx context.Context, in *GetMyPayslipRequest, opts ...grpc.CallOption) (*GetMyPayslipResponse, error)
+	ListMyPayslips(ctx context.Context, in *ListMyPayslipsRequest, opts ...grpc.CallOption) (*ListMyPayslipsResponse, error)
+	ReissueEmployeePayslip(ctx context.Context, in *ReissueEmployeePayslipRequest, opts ...grpc.CallOption) (*ReissueEmployeePayslipResponse, error)
 	GetPayrollResultByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollResultResponse, error)
 	GetAllPayrollResults(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*PayrollResultsResponse, error)
 	FindPayrollResultByPayrollRunID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PayrollResultsResponse, error)
@@ -874,6 +888,46 @@ func (c *payrollServiceClient) FindPayrollRunByIdempotencyKey(ctx context.Contex
 	return out, nil
 }
 
+func (c *payrollServiceClient) CalculatePayrollRun(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayrollRunResponse)
+	err := c.cc.Invoke(ctx, PayrollService_CalculatePayrollRun_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) CancelPayrollRun(ctx context.Context, in *CancelPayrollRunRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayrollRunResponse)
+	err := c.cc.Invoke(ctx, PayrollService_CancelPayrollRun_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) SubmitPayrollRunForReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayrollRunResponse)
+	err := c.cc.Invoke(ctx, PayrollService_SubmitPayrollRunForReview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) RequestPayrollPosting(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayrollRunResponse)
+	err := c.cc.Invoke(ctx, PayrollService_RequestPayrollPosting_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *payrollServiceClient) ApprovePayrollRun(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PayrollRunResponse)
@@ -908,6 +962,36 @@ func (c *payrollServiceClient) DeletePayrollResult(ctx context.Context, in *v1.I
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(v1.EmptyResponse)
 	err := c.cc.Invoke(ctx, PayrollService_DeletePayrollResult_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) GetMyPayslip(ctx context.Context, in *GetMyPayslipRequest, opts ...grpc.CallOption) (*GetMyPayslipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMyPayslipResponse)
+	err := c.cc.Invoke(ctx, PayrollService_GetMyPayslip_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) ListMyPayslips(ctx context.Context, in *ListMyPayslipsRequest, opts ...grpc.CallOption) (*ListMyPayslipsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMyPayslipsResponse)
+	err := c.cc.Invoke(ctx, PayrollService_ListMyPayslips_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) ReissueEmployeePayslip(ctx context.Context, in *ReissueEmployeePayslipRequest, opts ...grpc.CallOption) (*ReissueEmployeePayslipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReissueEmployeePayslipResponse)
+	err := c.cc.Invoke(ctx, PayrollService_ReissueEmployeePayslip_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1469,10 +1553,17 @@ type PayrollServiceServer interface {
 	FindPayrollRunByFinanceSettlementEventReferenceID(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error)
 	FindPayrollRunByStartedByPrincipalID(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error)
 	FindPayrollRunByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error)
+	CalculatePayrollRun(context.Context, *v1.IDRequest) (*PayrollRunResponse, error)
+	CancelPayrollRun(context.Context, *CancelPayrollRunRequest) (*PayrollRunResponse, error)
+	SubmitPayrollRunForReview(context.Context, *v1.IDRequest) (*PayrollRunResponse, error)
+	RequestPayrollPosting(context.Context, *v1.IDRequest) (*PayrollRunResponse, error)
 	ApprovePayrollRun(context.Context, *v1.IDRequest) (*PayrollRunResponse, error)
 	CreatePayrollResult(context.Context, *CreatePayrollResultRequest) (*PayrollResultResponse, error)
 	UpdatePayrollResult(context.Context, *UpdatePayrollResultRequest) (*PayrollResultResponse, error)
 	DeletePayrollResult(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
+	GetMyPayslip(context.Context, *GetMyPayslipRequest) (*GetMyPayslipResponse, error)
+	ListMyPayslips(context.Context, *ListMyPayslipsRequest) (*ListMyPayslipsResponse, error)
+	ReissueEmployeePayslip(context.Context, *ReissueEmployeePayslipRequest) (*ReissueEmployeePayslipResponse, error)
 	GetPayrollResultByID(context.Context, *v1.IDRequest) (*PayrollResultResponse, error)
 	GetAllPayrollResults(context.Context, *v1.PageRequest) (*PayrollResultsResponse, error)
 	FindPayrollResultByPayrollRunID(context.Context, *v1.StringFinderRequest) (*PayrollResultsResponse, error)
@@ -1715,6 +1806,18 @@ func (UnimplementedPayrollServiceServer) FindPayrollRunByStartedByPrincipalID(co
 func (UnimplementedPayrollServiceServer) FindPayrollRunByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindPayrollRunByIdempotencyKey not implemented")
 }
+func (UnimplementedPayrollServiceServer) CalculatePayrollRun(context.Context, *v1.IDRequest) (*PayrollRunResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CalculatePayrollRun not implemented")
+}
+func (UnimplementedPayrollServiceServer) CancelPayrollRun(context.Context, *CancelPayrollRunRequest) (*PayrollRunResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelPayrollRun not implemented")
+}
+func (UnimplementedPayrollServiceServer) SubmitPayrollRunForReview(context.Context, *v1.IDRequest) (*PayrollRunResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitPayrollRunForReview not implemented")
+}
+func (UnimplementedPayrollServiceServer) RequestPayrollPosting(context.Context, *v1.IDRequest) (*PayrollRunResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RequestPayrollPosting not implemented")
+}
 func (UnimplementedPayrollServiceServer) ApprovePayrollRun(context.Context, *v1.IDRequest) (*PayrollRunResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ApprovePayrollRun not implemented")
 }
@@ -1726,6 +1829,15 @@ func (UnimplementedPayrollServiceServer) UpdatePayrollResult(context.Context, *U
 }
 func (UnimplementedPayrollServiceServer) DeletePayrollResult(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeletePayrollResult not implemented")
+}
+func (UnimplementedPayrollServiceServer) GetMyPayslip(context.Context, *GetMyPayslipRequest) (*GetMyPayslipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMyPayslip not implemented")
+}
+func (UnimplementedPayrollServiceServer) ListMyPayslips(context.Context, *ListMyPayslipsRequest) (*ListMyPayslipsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMyPayslips not implemented")
+}
+func (UnimplementedPayrollServiceServer) ReissueEmployeePayslip(context.Context, *ReissueEmployeePayslipRequest) (*ReissueEmployeePayslipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReissueEmployeePayslip not implemented")
 }
 func (UnimplementedPayrollServiceServer) GetPayrollResultByID(context.Context, *v1.IDRequest) (*PayrollResultResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPayrollResultByID not implemented")
@@ -2993,6 +3105,78 @@ func _PayrollService_FindPayrollRunByIdempotencyKey_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PayrollService_CalculatePayrollRun_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).CalculatePayrollRun(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_CalculatePayrollRun_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).CalculatePayrollRun(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_CancelPayrollRun_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelPayrollRunRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).CancelPayrollRun(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_CancelPayrollRun_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).CancelPayrollRun(ctx, req.(*CancelPayrollRunRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_SubmitPayrollRunForReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).SubmitPayrollRunForReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_SubmitPayrollRunForReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).SubmitPayrollRunForReview(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_RequestPayrollPosting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).RequestPayrollPosting(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_RequestPayrollPosting_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).RequestPayrollPosting(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PayrollService_ApprovePayrollRun_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(v1.IDRequest)
 	if err := dec(in); err != nil {
@@ -3061,6 +3245,60 @@ func _PayrollService_DeletePayrollResult_Handler(srv interface{}, ctx context.Co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PayrollServiceServer).DeletePayrollResult(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_GetMyPayslip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyPayslipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).GetMyPayslip(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_GetMyPayslip_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).GetMyPayslip(ctx, req.(*GetMyPayslipRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_ListMyPayslips_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMyPayslipsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).ListMyPayslips(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_ListMyPayslips_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).ListMyPayslips(ctx, req.(*ListMyPayslipsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_ReissueEmployeePayslip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReissueEmployeePayslipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).ReissueEmployeePayslip(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_ReissueEmployeePayslip_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).ReissueEmployeePayslip(ctx, req.(*ReissueEmployeePayslipRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4199,6 +4437,22 @@ var PayrollService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PayrollService_FindPayrollRunByIdempotencyKey_Handler,
 		},
 		{
+			MethodName: "CalculatePayrollRun",
+			Handler:    _PayrollService_CalculatePayrollRun_Handler,
+		},
+		{
+			MethodName: "CancelPayrollRun",
+			Handler:    _PayrollService_CancelPayrollRun_Handler,
+		},
+		{
+			MethodName: "SubmitPayrollRunForReview",
+			Handler:    _PayrollService_SubmitPayrollRunForReview_Handler,
+		},
+		{
+			MethodName: "RequestPayrollPosting",
+			Handler:    _PayrollService_RequestPayrollPosting_Handler,
+		},
+		{
 			MethodName: "ApprovePayrollRun",
 			Handler:    _PayrollService_ApprovePayrollRun_Handler,
 		},
@@ -4213,6 +4467,18 @@ var PayrollService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePayrollResult",
 			Handler:    _PayrollService_DeletePayrollResult_Handler,
+		},
+		{
+			MethodName: "GetMyPayslip",
+			Handler:    _PayrollService_GetMyPayslip_Handler,
+		},
+		{
+			MethodName: "ListMyPayslips",
+			Handler:    _PayrollService_ListMyPayslips_Handler,
+		},
+		{
+			MethodName: "ReissueEmployeePayslip",
+			Handler:    _PayrollService_ReissueEmployeePayslip_Handler,
 		},
 		{
 			MethodName: "GetPayrollResultByID",

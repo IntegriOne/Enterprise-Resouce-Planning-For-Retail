@@ -15,9 +15,11 @@ import (
 )
 
 type evidenceVerifier struct {
+	err       error
 	verified  bool
 	immutable bool
 	versionID string
+	taskID    string
 	request   service.EvidenceRequest
 }
 
@@ -27,7 +29,11 @@ func (v *evidenceVerifier) VerifyOnboardingEvidence(_ context.Context, request s
 	if v.versionID != "" {
 		versionID = v.versionID
 	}
-	return service.EvidenceResult{VersionID: versionID, Verified: v.verified, Immutable: v.immutable}, nil
+	taskID := request.TaskID
+	if v.taskID != "" {
+		taskID = v.taskID
+	}
+	return service.EvidenceResult{VersionID: versionID, TaskID: taskID, PlanID: request.PlanID, Verified: v.verified, Immutable: v.immutable}, v.err
 }
 
 func TestCompleteOnboardingTaskRequiresVerifiedEvidenceAndAssignedWorker(t *testing.T) {
@@ -63,6 +69,15 @@ func TestCompleteOnboardingTaskRequiresVerifiedEvidenceAndAssignedWorker(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
+	verifier.err = errors.New("owner transport disconnected")
+	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrUnavailable) {
+		t.Fatalf("unavailable evidence verifier: %v", err)
+	}
+	verifier.err = hrerrors.ErrForbidden
+	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrForbidden) {
+		t.Fatalf("evidence access denied: %v", err)
+	}
+	verifier.err = nil
 	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("unverified evidence: %v", err)
 	}
@@ -79,6 +94,11 @@ func TestCompleteOnboardingTaskRequiresVerifiedEvidenceAndAssignedWorker(t *test
 		t.Fatalf("mismatched evidence version: %v", err)
 	}
 	verifier.versionID = ""
+	verifier.taskID = mockdb.ID(32)
+	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("evidence bound to another task: %v", err)
+	}
+	verifier.taskID = ""
 	completed, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID)
 	if err != nil {
 		t.Fatal(err)
@@ -87,7 +107,7 @@ func TestCompleteOnboardingTaskRequiresVerifiedEvidenceAndAssignedWorker(t *test
 		completed.CompletionEvidenceReferenceID == nil || *completed.CompletionEvidenceReferenceID != evidenceID {
 		t.Fatalf("completion audit fields: %+v", completed)
 	}
-	if verifier.request.TaskID != task.ID || verifier.request.PrincipalID != assignee || len(h.Events) != 4 {
+	if verifier.request.TaskID != task.ID || verifier.request.PlanID != plan.ID || verifier.request.PrincipalID != assignee || len(h.Events) != 4 {
 		t.Fatal("evidence request or outbox mismatch")
 	}
 	if _, err := svc.CompleteOnboardingTask(ctx, task.ID, evidenceID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {

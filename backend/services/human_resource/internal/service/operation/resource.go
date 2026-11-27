@@ -137,6 +137,11 @@ func (r *Resource[T, K, P]) authorize(ctx context.Context, action string, value 
 			return Actor{}, hrerrors.ErrForbidden
 		}
 	}
+	if value != nil && r.spec.CheckActor != nil {
+		if err := r.spec.CheckActor(action, value, actor); err != nil {
+			return Actor{}, err
+		}
+	}
 	return actor, nil
 }
 func sameActor(first, second Actor) error {
@@ -215,7 +220,8 @@ func (r *Resource[T, K, P]) List(ctx context.Context, filters []domainrepo.Filte
 	if limit > domainrepo.MaxLimit {
 		limit = domainrepo.MaxLimit
 	}
-	scope, err := r.deps.Policy.ReadScope(ctx, Access{Domain: r.spec.Domain, Resource: r.spec.Table, Action: "list"})
+	listAccess := Access{Domain: r.spec.Domain, Resource: r.spec.Table, Action: "list"}
+	scope, err := r.deps.Policy.ReadScope(ctx, listAccess)
 	if err != nil {
 		return empty, err
 	}
@@ -254,6 +260,14 @@ func (r *Resource[T, K, P]) List(ctx context.Context, filters []domainrepo.Filte
 	total, err := r.repo.CountWhere(ctx, combined)
 	if err != nil {
 		return empty, err
+	}
+	// Halaman kosong juga membawa total yang perlu dilindungi oleh scope semula.
+	currentScope, err := r.deps.Policy.ReadScope(ctx, listAccess)
+	if err != nil {
+		return empty, err
+	}
+	if !reflect.DeepEqual(scope, currentScope) {
+		return empty, hrerrors.ErrForbidden
 	}
 	if err := r.finish(ctx, "list", nil, actor); err != nil {
 		return empty, err

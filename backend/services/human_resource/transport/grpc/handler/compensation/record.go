@@ -174,3 +174,10 @@ func (h *Handler) FindCompensationRecordBySourceChangeReferenceID(ctx context.Co
 	}
 	return records(h.service.FindCompensationRecordBySourceChangeReferenceID(ctx, request.Value, int(request.Limit), int(request.Offset)))
 }
+
+func (h *Handler) ApproveCompensationRecord(ctx context.Context, request *common.IDRequest) (*pb.CompensationRecordResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recordResponse(h.service.ApproveCompensationRecord(ctx, request.Id))
+}

@@ -42,6 +42,9 @@ type OffboardingPlan struct {
 	CompletedAt                             *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	CreatedByPrincipalId                    string                 `protobuf:"bytes,15,opt,name=created_by_principal_id,json=createdByPrincipalId,proto3" json:"created_by_principal_id,omitempty"`
 	CreatedAt                               *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CancelledAt                             *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
+	CancelledByPrincipalId                  *string                `protobuf:"bytes,18,opt,name=cancelled_by_principal_id,json=cancelledByPrincipalId,proto3,oneof" json:"cancelled_by_principal_id,omitempty"`
+	CancellationReason                      *string                `protobuf:"bytes,19,opt,name=cancellation_reason,json=cancellationReason,proto3,oneof" json:"cancellation_reason,omitempty"`
 	unknownFields                           protoimpl.UnknownFields
 	sizeCache                               protoimpl.SizeCache
 }
@@ -186,6 +189,27 @@ func (x *OffboardingPlan) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *OffboardingPlan) GetCancelledAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CancelledAt
+	}
+	return nil
+}
+
+func (x *OffboardingPlan) GetCancelledByPrincipalId() string {
+	if x != nil && x.CancelledByPrincipalId != nil {
+		return *x.CancelledByPrincipalId
+	}
+	return ""
+}
+
+func (x *OffboardingPlan) GetCancellationReason() string {
+	if x != nil && x.CancellationReason != nil {
+		return *x.CancellationReason
+	}
+	return ""
 }
 
 type OffboardingPlanInput struct {
@@ -1000,11 +1024,227 @@ func (x *OffboardingTasksResponse) GetPage() *v1.PageInfo {
 	return nil
 }
 
+type WaiveOffboardingTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WaiveOffboardingTaskRequest) Reset() {
+	*x = WaiveOffboardingTaskRequest{}
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WaiveOffboardingTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WaiveOffboardingTaskRequest) ProtoMessage() {}
+
+func (x *WaiveOffboardingTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WaiveOffboardingTaskRequest.ProtoReflect.Descriptor instead.
+func (*WaiveOffboardingTaskRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_offboarding_v1_offboarding_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *WaiveOffboardingTaskRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *WaiveOffboardingTaskRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type CompleteOffboardingTaskRequest struct {
+	state                        protoimpl.MessageState `protogen:"open.v1"`
+	Id                           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OwnerConfirmationReferenceId string                 `protobuf:"bytes,2,opt,name=owner_confirmation_reference_id,json=ownerConfirmationReferenceId,proto3" json:"owner_confirmation_reference_id,omitempty"`
+	unknownFields                protoimpl.UnknownFields
+	sizeCache                    protoimpl.SizeCache
+}
+
+func (x *CompleteOffboardingTaskRequest) Reset() {
+	*x = CompleteOffboardingTaskRequest{}
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteOffboardingTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteOffboardingTaskRequest) ProtoMessage() {}
+
+func (x *CompleteOffboardingTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteOffboardingTaskRequest.ProtoReflect.Descriptor instead.
+func (*CompleteOffboardingTaskRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_offboarding_v1_offboarding_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CompleteOffboardingTaskRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CompleteOffboardingTaskRequest) GetOwnerConfirmationReferenceId() string {
+	if x != nil {
+		return x.OwnerConfirmationReferenceId
+	}
+	return ""
+}
+
+type CompleteOffboardingPlanRequest struct {
+	state                       protoimpl.MessageState `protogen:"open.v1"`
+	Id                          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	FinalPayrollRunId           string                 `protobuf:"bytes,2,opt,name=final_payroll_run_id,json=finalPayrollRunId,proto3" json:"final_payroll_run_id,omitempty"`
+	FinanceClearanceReferenceId string                 `protobuf:"bytes,3,opt,name=finance_clearance_reference_id,json=financeClearanceReferenceId,proto3" json:"finance_clearance_reference_id,omitempty"`
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
+}
+
+func (x *CompleteOffboardingPlanRequest) Reset() {
+	*x = CompleteOffboardingPlanRequest{}
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteOffboardingPlanRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteOffboardingPlanRequest) ProtoMessage() {}
+
+func (x *CompleteOffboardingPlanRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteOffboardingPlanRequest.ProtoReflect.Descriptor instead.
+func (*CompleteOffboardingPlanRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_offboarding_v1_offboarding_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CompleteOffboardingPlanRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CompleteOffboardingPlanRequest) GetFinalPayrollRunId() string {
+	if x != nil {
+		return x.FinalPayrollRunId
+	}
+	return ""
+}
+
+func (x *CompleteOffboardingPlanRequest) GetFinanceClearanceReferenceId() string {
+	if x != nil {
+		return x.FinanceClearanceReferenceId
+	}
+	return ""
+}
+
+type CancelOffboardingPlanRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelOffboardingPlanRequest) Reset() {
+	*x = CancelOffboardingPlanRequest{}
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelOffboardingPlanRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelOffboardingPlanRequest) ProtoMessage() {}
+
+func (x *CancelOffboardingPlanRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_offboarding_v1_offboarding_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelOffboardingPlanRequest.ProtoReflect.Descriptor instead.
+func (*CancelOffboardingPlanRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_offboarding_v1_offboarding_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CancelOffboardingPlanRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CancelOffboardingPlanRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
 var File_human_resource_offboarding_v1_offboarding_proto protoreflect.FileDescriptor
 
 const file_human_resource_offboarding_v1_offboarding_proto_rawDesc = "" +
 	"\n" +
-	"/human_resource/offboarding/v1/offboarding.proto\x12\x1dhuman_resource.offboarding.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"\x91\b\n" +
+	"/human_resource/offboarding/v1/offboarding.proto\x12\x1dhuman_resource.offboarding.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"\xfc\t\n" +
 	"\x0fOffboardingPlan\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tworker_id\x18\x02 \x01(\tR\bworkerId\x12\x1f\n" +
@@ -1027,11 +1267,16 @@ const file_human_resource_offboarding_v1_offboarding_proto_rawDesc = "" +
 	"\fcompleted_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x125\n" +
 	"\x17created_by_principal_id\x18\x0f \x01(\tR\x14createdByPrincipalId\x129\n" +
 	"\n" +
-	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB/\n" +
+	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12=\n" +
+	"\fcancelled_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\x12>\n" +
+	"\x19cancelled_by_principal_id\x18\x12 \x01(\tH\x04R\x16cancelledByPrincipalId\x88\x01\x01\x124\n" +
+	"\x13cancellation_reason\x18\x13 \x01(\tH\x05R\x12cancellationReason\x88\x01\x01B/\n" +
 	"-_exit_interview_document_version_reference_idB\x17\n" +
 	"\x15_final_payroll_run_idB!\n" +
 	"\x1f_finance_clearance_reference_idB\x1b\n" +
-	"\x19_approved_by_principal_id\"\xe1\a\n" +
+	"\x19_approved_by_principal_idB\x1c\n" +
+	"\x1a_cancelled_by_principal_idB\x16\n" +
+	"\x14_cancellation_reason\"\xe1\a\n" +
 	"\x14OffboardingPlanInput\x12 \n" +
 	"\tworker_id\x18\x01 \x01(\tH\x00R\bworkerId\x88\x01\x01\x12$\n" +
 	"\vplan_number\x18\x02 \x01(\tH\x01R\n" +
@@ -1128,11 +1373,26 @@ const file_human_resource_offboarding_v1_offboarding_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v2..human_resource.offboarding.v1.OffboardingTaskR\x05value\"\x98\x01\n" +
 	"\x18OffboardingTasksResponse\x12D\n" +
 	"\x05items\x18\x01 \x03(\v2..human_resource.offboarding.v1.OffboardingTaskR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x89\x1d\n" +
-	"\x12OffboardingService\x12\x8c\x01\n" +
-	"\x15CreateOffboardingPlan\x12;.human_resource.offboarding.v1.CreateOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12u\n" +
-	"\x16ApproveOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12s\n" +
-	"\x14StartOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12\x8c\x01\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"E\n" +
+	"\x1bWaiveOffboardingTaskRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"w\n" +
+	"\x1eCompleteOffboardingTaskRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12E\n" +
+	"\x1fowner_confirmation_reference_id\x18\x02 \x01(\tR\x1cownerConfirmationReferenceId\"\xa6\x01\n" +
+	"\x1eCompleteOffboardingPlanRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12/\n" +
+	"\x14final_payroll_run_id\x18\x02 \x01(\tR\x11finalPayrollRunId\x12C\n" +
+	"\x1efinance_clearance_reference_id\x18\x03 \x01(\tR\x1bfinanceClearanceReferenceId\"F\n" +
+	"\x1cCancelOffboardingPlanRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason2\xcb!\n" +
+	"\x12OffboardingService\x12\x90\x01\n" +
+	"\x17CompleteOffboardingPlan\x12=.human_resource.offboarding.v1.CompleteOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12\x8c\x01\n" +
+	"\x15CancelOffboardingPlan\x12;.human_resource.offboarding.v1.CancelOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12s\n" +
+	"\x14StartOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12u\n" +
+	"\x16ApproveOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12\x8c\x01\n" +
+	"\x15CreateOffboardingPlan\x12;.human_resource.offboarding.v1.CreateOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12\x8c\x01\n" +
 	"\x15UpdateOffboardingPlan\x12;.human_resource.offboarding.v1.UpdateOffboardingPlanRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12e\n" +
 	"\x15DeleteOffboardingPlan\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12u\n" +
 	"\x16GetOffboardingPlanByID\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.offboarding.v1.OffboardingPlanResponse\x12x\n" +
@@ -1145,7 +1405,9 @@ const file_human_resource_offboarding_v1_offboarding_proto_rawDesc = "" +
 	"&FindOffboardingPlanByFinalPayrollRunID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.offboarding.v1.OffboardingPlansResponse\x12\x9a\x01\n" +
 	"0FindOffboardingPlanByFinanceClearanceReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.offboarding.v1.OffboardingPlansResponse\x12\x94\x01\n" +
 	"*FindOffboardingPlanByApprovedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.offboarding.v1.OffboardingPlansResponse\x12\x93\x01\n" +
-	")FindOffboardingPlanByCreatedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.offboarding.v1.OffboardingPlansResponse\x12\x8c\x01\n" +
+	")FindOffboardingPlanByCreatedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.offboarding.v1.OffboardingPlansResponse\x12\x90\x01\n" +
+	"\x17CompleteOffboardingTask\x12=.human_resource.offboarding.v1.CompleteOffboardingTaskRequest\x1a6.human_resource.offboarding.v1.OffboardingTaskResponse\x12\x8a\x01\n" +
+	"\x14WaiveOffboardingTask\x12:.human_resource.offboarding.v1.WaiveOffboardingTaskRequest\x1a6.human_resource.offboarding.v1.OffboardingTaskResponse\x12\x8c\x01\n" +
 	"\x15CreateOffboardingTask\x12;.human_resource.offboarding.v1.CreateOffboardingTaskRequest\x1a6.human_resource.offboarding.v1.OffboardingTaskResponse\x12\x8c\x01\n" +
 	"\x15UpdateOffboardingTask\x12;.human_resource.offboarding.v1.UpdateOffboardingTaskRequest\x1a6.human_resource.offboarding.v1.OffboardingTaskResponse\x12e\n" +
 	"\x15DeleteOffboardingTask\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12u\n" +
@@ -1170,115 +1432,128 @@ func file_human_resource_offboarding_v1_offboarding_proto_rawDescGZIP() []byte {
 	return file_human_resource_offboarding_v1_offboarding_proto_rawDescData
 }
 
-var file_human_resource_offboarding_v1_offboarding_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_human_resource_offboarding_v1_offboarding_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_human_resource_offboarding_v1_offboarding_proto_goTypes = []any{
-	(*OffboardingPlan)(nil),              // 0: human_resource.offboarding.v1.OffboardingPlan
-	(*OffboardingPlanInput)(nil),         // 1: human_resource.offboarding.v1.OffboardingPlanInput
-	(*CreateOffboardingPlanRequest)(nil), // 2: human_resource.offboarding.v1.CreateOffboardingPlanRequest
-	(*UpdateOffboardingPlanRequest)(nil), // 3: human_resource.offboarding.v1.UpdateOffboardingPlanRequest
-	(*OffboardingPlanResponse)(nil),      // 4: human_resource.offboarding.v1.OffboardingPlanResponse
-	(*OffboardingPlansResponse)(nil),     // 5: human_resource.offboarding.v1.OffboardingPlansResponse
-	(*OffboardingTask)(nil),              // 6: human_resource.offboarding.v1.OffboardingTask
-	(*OffboardingTaskInput)(nil),         // 7: human_resource.offboarding.v1.OffboardingTaskInput
-	(*CreateOffboardingTaskRequest)(nil), // 8: human_resource.offboarding.v1.CreateOffboardingTaskRequest
-	(*UpdateOffboardingTaskRequest)(nil), // 9: human_resource.offboarding.v1.UpdateOffboardingTaskRequest
-	(*OffboardingTaskResponse)(nil),      // 10: human_resource.offboarding.v1.OffboardingTaskResponse
-	(*OffboardingTasksResponse)(nil),     // 11: human_resource.offboarding.v1.OffboardingTasksResponse
-	(*timestamppb.Timestamp)(nil),        // 12: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),        // 13: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                  // 14: human_resource.common.v1.PageInfo
-	(*v1.IDRequest)(nil),                 // 15: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),               // 16: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),       // 17: human_resource.common.v1.StringFinderRequest
-	(*v1.EmptyResponse)(nil),             // 18: human_resource.common.v1.EmptyResponse
+	(*OffboardingPlan)(nil),                // 0: human_resource.offboarding.v1.OffboardingPlan
+	(*OffboardingPlanInput)(nil),           // 1: human_resource.offboarding.v1.OffboardingPlanInput
+	(*CreateOffboardingPlanRequest)(nil),   // 2: human_resource.offboarding.v1.CreateOffboardingPlanRequest
+	(*UpdateOffboardingPlanRequest)(nil),   // 3: human_resource.offboarding.v1.UpdateOffboardingPlanRequest
+	(*OffboardingPlanResponse)(nil),        // 4: human_resource.offboarding.v1.OffboardingPlanResponse
+	(*OffboardingPlansResponse)(nil),       // 5: human_resource.offboarding.v1.OffboardingPlansResponse
+	(*OffboardingTask)(nil),                // 6: human_resource.offboarding.v1.OffboardingTask
+	(*OffboardingTaskInput)(nil),           // 7: human_resource.offboarding.v1.OffboardingTaskInput
+	(*CreateOffboardingTaskRequest)(nil),   // 8: human_resource.offboarding.v1.CreateOffboardingTaskRequest
+	(*UpdateOffboardingTaskRequest)(nil),   // 9: human_resource.offboarding.v1.UpdateOffboardingTaskRequest
+	(*OffboardingTaskResponse)(nil),        // 10: human_resource.offboarding.v1.OffboardingTaskResponse
+	(*OffboardingTasksResponse)(nil),       // 11: human_resource.offboarding.v1.OffboardingTasksResponse
+	(*WaiveOffboardingTaskRequest)(nil),    // 12: human_resource.offboarding.v1.WaiveOffboardingTaskRequest
+	(*CompleteOffboardingTaskRequest)(nil), // 13: human_resource.offboarding.v1.CompleteOffboardingTaskRequest
+	(*CompleteOffboardingPlanRequest)(nil), // 14: human_resource.offboarding.v1.CompleteOffboardingPlanRequest
+	(*CancelOffboardingPlanRequest)(nil),   // 15: human_resource.offboarding.v1.CancelOffboardingPlanRequest
+	(*timestamppb.Timestamp)(nil),          // 16: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),          // 17: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                    // 18: human_resource.common.v1.PageInfo
+	(*v1.IDRequest)(nil),                   // 19: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                 // 20: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),         // 21: human_resource.common.v1.StringFinderRequest
+	(*v1.EmptyResponse)(nil),               // 22: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_offboarding_v1_offboarding_proto_depIdxs = []int32{
-	12, // 0: human_resource.offboarding.v1.OffboardingPlan.notice_date:type_name -> google.protobuf.Timestamp
-	12, // 1: human_resource.offboarding.v1.OffboardingPlan.last_working_date:type_name -> google.protobuf.Timestamp
-	12, // 2: human_resource.offboarding.v1.OffboardingPlan.termination_effective_date:type_name -> google.protobuf.Timestamp
-	12, // 3: human_resource.offboarding.v1.OffboardingPlan.approved_at:type_name -> google.protobuf.Timestamp
-	12, // 4: human_resource.offboarding.v1.OffboardingPlan.completed_at:type_name -> google.protobuf.Timestamp
-	12, // 5: human_resource.offboarding.v1.OffboardingPlan.created_at:type_name -> google.protobuf.Timestamp
-	12, // 6: human_resource.offboarding.v1.OffboardingPlanInput.notice_date:type_name -> google.protobuf.Timestamp
-	12, // 7: human_resource.offboarding.v1.OffboardingPlanInput.last_working_date:type_name -> google.protobuf.Timestamp
-	12, // 8: human_resource.offboarding.v1.OffboardingPlanInput.termination_effective_date:type_name -> google.protobuf.Timestamp
-	12, // 9: human_resource.offboarding.v1.OffboardingPlanInput.approved_at:type_name -> google.protobuf.Timestamp
-	12, // 10: human_resource.offboarding.v1.OffboardingPlanInput.completed_at:type_name -> google.protobuf.Timestamp
-	1,  // 11: human_resource.offboarding.v1.CreateOffboardingPlanRequest.input:type_name -> human_resource.offboarding.v1.OffboardingPlanInput
-	1,  // 12: human_resource.offboarding.v1.UpdateOffboardingPlanRequest.input:type_name -> human_resource.offboarding.v1.OffboardingPlanInput
-	13, // 13: human_resource.offboarding.v1.UpdateOffboardingPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
-	0,  // 14: human_resource.offboarding.v1.OffboardingPlanResponse.value:type_name -> human_resource.offboarding.v1.OffboardingPlan
-	0,  // 15: human_resource.offboarding.v1.OffboardingPlansResponse.items:type_name -> human_resource.offboarding.v1.OffboardingPlan
-	14, // 16: human_resource.offboarding.v1.OffboardingPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
-	12, // 17: human_resource.offboarding.v1.OffboardingTask.due_at:type_name -> google.protobuf.Timestamp
-	12, // 18: human_resource.offboarding.v1.OffboardingTask.completed_at:type_name -> google.protobuf.Timestamp
-	12, // 19: human_resource.offboarding.v1.OffboardingTaskInput.due_at:type_name -> google.protobuf.Timestamp
-	12, // 20: human_resource.offboarding.v1.OffboardingTaskInput.completed_at:type_name -> google.protobuf.Timestamp
-	7,  // 21: human_resource.offboarding.v1.CreateOffboardingTaskRequest.input:type_name -> human_resource.offboarding.v1.OffboardingTaskInput
-	7,  // 22: human_resource.offboarding.v1.UpdateOffboardingTaskRequest.input:type_name -> human_resource.offboarding.v1.OffboardingTaskInput
-	13, // 23: human_resource.offboarding.v1.UpdateOffboardingTaskRequest.update_mask:type_name -> google.protobuf.FieldMask
-	6,  // 24: human_resource.offboarding.v1.OffboardingTaskResponse.value:type_name -> human_resource.offboarding.v1.OffboardingTask
-	6,  // 25: human_resource.offboarding.v1.OffboardingTasksResponse.items:type_name -> human_resource.offboarding.v1.OffboardingTask
-	14, // 26: human_resource.offboarding.v1.OffboardingTasksResponse.page:type_name -> human_resource.common.v1.PageInfo
-	2,  // 27: human_resource.offboarding.v1.OffboardingService.CreateOffboardingPlan:input_type -> human_resource.offboarding.v1.CreateOffboardingPlanRequest
-	15, // 28: human_resource.offboarding.v1.OffboardingService.ApproveOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 29: human_resource.offboarding.v1.OffboardingService.StartOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	3,  // 30: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:input_type -> human_resource.offboarding.v1.UpdateOffboardingPlanRequest
-	15, // 31: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 32: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 33: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:input_type -> human_resource.common.v1.PageRequest
-	17, // 34: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 35: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 36: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 37: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 38: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 39: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 40: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 41: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 42: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 43: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:input_type -> human_resource.offboarding.v1.CreateOffboardingTaskRequest
-	9,  // 44: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:input_type -> human_resource.offboarding.v1.UpdateOffboardingTaskRequest
-	15, // 45: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:input_type -> human_resource.common.v1.IDRequest
-	15, // 46: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 47: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:input_type -> human_resource.common.v1.PageRequest
-	17, // 48: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 49: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 50: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 51: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 52: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 53: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 54: human_resource.offboarding.v1.OffboardingService.CreateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	4,  // 55: human_resource.offboarding.v1.OffboardingService.ApproveOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	4,  // 56: human_resource.offboarding.v1.OffboardingService.StartOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	4,  // 57: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	18, // 58: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 59: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
-	5,  // 60: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 61: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 62: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 63: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 64: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 65: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 66: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 67: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 68: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	5,  // 69: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
-	10, // 70: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
-	10, // 71: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
-	18, // 72: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 73: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
-	11, // 74: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 75: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 76: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 77: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 78: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 79: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	11, // 80: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
-	54, // [54:81] is the sub-list for method output_type
-	27, // [27:54] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	16, // 0: human_resource.offboarding.v1.OffboardingPlan.notice_date:type_name -> google.protobuf.Timestamp
+	16, // 1: human_resource.offboarding.v1.OffboardingPlan.last_working_date:type_name -> google.protobuf.Timestamp
+	16, // 2: human_resource.offboarding.v1.OffboardingPlan.termination_effective_date:type_name -> google.protobuf.Timestamp
+	16, // 3: human_resource.offboarding.v1.OffboardingPlan.approved_at:type_name -> google.protobuf.Timestamp
+	16, // 4: human_resource.offboarding.v1.OffboardingPlan.completed_at:type_name -> google.protobuf.Timestamp
+	16, // 5: human_resource.offboarding.v1.OffboardingPlan.created_at:type_name -> google.protobuf.Timestamp
+	16, // 6: human_resource.offboarding.v1.OffboardingPlan.cancelled_at:type_name -> google.protobuf.Timestamp
+	16, // 7: human_resource.offboarding.v1.OffboardingPlanInput.notice_date:type_name -> google.protobuf.Timestamp
+	16, // 8: human_resource.offboarding.v1.OffboardingPlanInput.last_working_date:type_name -> google.protobuf.Timestamp
+	16, // 9: human_resource.offboarding.v1.OffboardingPlanInput.termination_effective_date:type_name -> google.protobuf.Timestamp
+	16, // 10: human_resource.offboarding.v1.OffboardingPlanInput.approved_at:type_name -> google.protobuf.Timestamp
+	16, // 11: human_resource.offboarding.v1.OffboardingPlanInput.completed_at:type_name -> google.protobuf.Timestamp
+	1,  // 12: human_resource.offboarding.v1.CreateOffboardingPlanRequest.input:type_name -> human_resource.offboarding.v1.OffboardingPlanInput
+	1,  // 13: human_resource.offboarding.v1.UpdateOffboardingPlanRequest.input:type_name -> human_resource.offboarding.v1.OffboardingPlanInput
+	17, // 14: human_resource.offboarding.v1.UpdateOffboardingPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
+	0,  // 15: human_resource.offboarding.v1.OffboardingPlanResponse.value:type_name -> human_resource.offboarding.v1.OffboardingPlan
+	0,  // 16: human_resource.offboarding.v1.OffboardingPlansResponse.items:type_name -> human_resource.offboarding.v1.OffboardingPlan
+	18, // 17: human_resource.offboarding.v1.OffboardingPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
+	16, // 18: human_resource.offboarding.v1.OffboardingTask.due_at:type_name -> google.protobuf.Timestamp
+	16, // 19: human_resource.offboarding.v1.OffboardingTask.completed_at:type_name -> google.protobuf.Timestamp
+	16, // 20: human_resource.offboarding.v1.OffboardingTaskInput.due_at:type_name -> google.protobuf.Timestamp
+	16, // 21: human_resource.offboarding.v1.OffboardingTaskInput.completed_at:type_name -> google.protobuf.Timestamp
+	7,  // 22: human_resource.offboarding.v1.CreateOffboardingTaskRequest.input:type_name -> human_resource.offboarding.v1.OffboardingTaskInput
+	7,  // 23: human_resource.offboarding.v1.UpdateOffboardingTaskRequest.input:type_name -> human_resource.offboarding.v1.OffboardingTaskInput
+	17, // 24: human_resource.offboarding.v1.UpdateOffboardingTaskRequest.update_mask:type_name -> google.protobuf.FieldMask
+	6,  // 25: human_resource.offboarding.v1.OffboardingTaskResponse.value:type_name -> human_resource.offboarding.v1.OffboardingTask
+	6,  // 26: human_resource.offboarding.v1.OffboardingTasksResponse.items:type_name -> human_resource.offboarding.v1.OffboardingTask
+	18, // 27: human_resource.offboarding.v1.OffboardingTasksResponse.page:type_name -> human_resource.common.v1.PageInfo
+	14, // 28: human_resource.offboarding.v1.OffboardingService.CompleteOffboardingPlan:input_type -> human_resource.offboarding.v1.CompleteOffboardingPlanRequest
+	15, // 29: human_resource.offboarding.v1.OffboardingService.CancelOffboardingPlan:input_type -> human_resource.offboarding.v1.CancelOffboardingPlanRequest
+	19, // 30: human_resource.offboarding.v1.OffboardingService.StartOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	19, // 31: human_resource.offboarding.v1.OffboardingService.ApproveOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	2,  // 32: human_resource.offboarding.v1.OffboardingService.CreateOffboardingPlan:input_type -> human_resource.offboarding.v1.CreateOffboardingPlanRequest
+	3,  // 33: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:input_type -> human_resource.offboarding.v1.UpdateOffboardingPlanRequest
+	19, // 34: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:input_type -> human_resource.common.v1.IDRequest
+	19, // 35: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:input_type -> human_resource.common.v1.IDRequest
+	20, // 36: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:input_type -> human_resource.common.v1.PageRequest
+	21, // 37: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 38: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 39: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 40: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 41: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 42: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 43: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 44: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 45: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	13, // 46: human_resource.offboarding.v1.OffboardingService.CompleteOffboardingTask:input_type -> human_resource.offboarding.v1.CompleteOffboardingTaskRequest
+	12, // 47: human_resource.offboarding.v1.OffboardingService.WaiveOffboardingTask:input_type -> human_resource.offboarding.v1.WaiveOffboardingTaskRequest
+	8,  // 48: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:input_type -> human_resource.offboarding.v1.CreateOffboardingTaskRequest
+	9,  // 49: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:input_type -> human_resource.offboarding.v1.UpdateOffboardingTaskRequest
+	19, // 50: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:input_type -> human_resource.common.v1.IDRequest
+	19, // 51: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:input_type -> human_resource.common.v1.IDRequest
+	20, // 52: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:input_type -> human_resource.common.v1.PageRequest
+	21, // 53: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 54: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 55: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 56: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 57: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	21, // 58: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 59: human_resource.offboarding.v1.OffboardingService.CompleteOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 60: human_resource.offboarding.v1.OffboardingService.CancelOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 61: human_resource.offboarding.v1.OffboardingService.StartOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 62: human_resource.offboarding.v1.OffboardingService.ApproveOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 63: human_resource.offboarding.v1.OffboardingService.CreateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	4,  // 64: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingPlan:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	22, // 65: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingPlan:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 66: human_resource.offboarding.v1.OffboardingService.GetOffboardingPlanByID:output_type -> human_resource.offboarding.v1.OffboardingPlanResponse
+	5,  // 67: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingPlans:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 68: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByWorkerID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 69: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByPlanNumber:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 70: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByReasonCode:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 71: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByStatus:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 72: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByExitInterviewDocumentVersionReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 73: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinalPayrollRunID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 74: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByFinanceClearanceReferenceID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 75: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByApprovedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	5,  // 76: human_resource.offboarding.v1.OffboardingService.FindOffboardingPlanByCreatedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingPlansResponse
+	10, // 77: human_resource.offboarding.v1.OffboardingService.CompleteOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	10, // 78: human_resource.offboarding.v1.OffboardingService.WaiveOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	10, // 79: human_resource.offboarding.v1.OffboardingService.CreateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	10, // 80: human_resource.offboarding.v1.OffboardingService.UpdateOffboardingTask:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	22, // 81: human_resource.offboarding.v1.OffboardingService.DeleteOffboardingTask:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 82: human_resource.offboarding.v1.OffboardingService.GetOffboardingTaskByID:output_type -> human_resource.offboarding.v1.OffboardingTaskResponse
+	11, // 83: human_resource.offboarding.v1.OffboardingService.GetAllOffboardingTasks:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 84: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOffboardingPlanID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 85: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByTaskCode:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 86: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByAssignedPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 87: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByStatus:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 88: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByOwnerConfirmationReferenceID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	11, // 89: human_resource.offboarding.v1.OffboardingService.FindOffboardingTaskByWaivedByPrincipalID:output_type -> human_resource.offboarding.v1.OffboardingTasksResponse
+	59, // [59:90] is the sub-list for method output_type
+	28, // [28:59] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_human_resource_offboarding_v1_offboarding_proto_init() }
@@ -1296,7 +1571,7 @@ func file_human_resource_offboarding_v1_offboarding_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_offboarding_v1_offboarding_proto_rawDesc), len(file_human_resource_offboarding_v1_offboarding_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -12,20 +12,30 @@ import (
 )
 
 type Dependencies struct {
-	Runtime         operation.Dependencies
-	OffboardingPlan domainrepo.RecordRepository[entity.OffboardingPlan, string]
-	OffboardingTask domainrepo.RecordRepository[entity.OffboardingTask, string]
+	Workers              domainrepo.RecordRepository[entity.Worker, string]
+	PayrollRuns          domainrepo.RecordRepository[entity.PayrollRun, string]
+	ClearanceVerifier    ClearanceVerifier
+	PayrollResults       domainrepo.RecordRepository[entity.PayrollResult, string]
+	ConfirmationVerifier ConfirmationVerifier
+	Runtime              operation.Dependencies
+	OffboardingPlan      domainrepo.RecordRepository[entity.OffboardingPlan, string]
+	OffboardingTask      domainrepo.RecordRepository[entity.OffboardingTask, string]
 }
 
 // Service mengoordinasikan operasi domain offboarding.
 type Service struct {
+	workers         domainrepo.RecordRepository[entity.Worker, string]
+	payrollRuns     domainrepo.RecordRepository[entity.PayrollRun, string]
+	clearance       ClearanceVerifier
+	payrollResults  domainrepo.RecordRepository[entity.PayrollResult, string]
+	confirmation    ConfirmationVerifier
 	offboardingPlan *operation.Resource[entity.OffboardingPlan, string, *entity.OffboardingPlan]
 	offboardingTask *operation.Resource[entity.OffboardingTask, string, *entity.OffboardingTask]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{workers: deps.Workers, confirmation: deps.ConfirmationVerifier, clearance: deps.ClearanceVerifier, payrollResults: deps.PayrollResults, payrollRuns: deps.PayrollRuns}
 	var err error
 	s.offboardingPlan, err = operation.NewResource[entity.OffboardingPlan, string, *entity.OffboardingPlan](
 		deps.OffboardingPlan,

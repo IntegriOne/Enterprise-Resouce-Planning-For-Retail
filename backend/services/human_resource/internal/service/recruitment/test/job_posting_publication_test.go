@@ -39,6 +39,8 @@ func TestPublishJobPostingRequiresImmutableOwnerProof(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	verifier.proof.PostingID = created.ID
+	verifier.proof.RequisitionID = created.RequisitionID
 	verifier.err = errors.New("drm unavailable")
 	if _, err := svc.PublishJobPosting(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrUnavailable) {
 		t.Fatalf("DRM outage: %v", err)
@@ -58,10 +60,20 @@ func TestPublishJobPostingRequiresImmutableOwnerProof(t *testing.T) {
 	if _, err := svc.PublishJobPosting(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("mismatched digest: %v", err)
 	}
+	verifier.proof.Digest[0]--
+	verifier.proof.PostingID = versionID
+	if _, err := svc.PublishJobPosting(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("evidence belongs to another posting: %v", err)
+	}
+	verifier.proof.PostingID = created.ID
+	verifier.proof.RequisitionID = versionID
+	if _, err := svc.PublishJobPosting(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("evidence belongs to another requisition: %v", err)
+	}
 	if postings.Rows[created.ID].Status != "draft" || len(h.Events) != 1 {
 		t.Fatal("rejected publication changed posting or outbox")
 	}
-	verifier.proof.Digest[0]--
+	verifier.proof.RequisitionID = created.RequisitionID
 	published, err := svc.PublishJobPosting(t.Context(), created.ID)
 	if err != nil || published.Status != "published" || published.PublishedAt == nil || len(h.Events) != 2 {
 		t.Fatalf("publication = %+v, error = %v", published, err)

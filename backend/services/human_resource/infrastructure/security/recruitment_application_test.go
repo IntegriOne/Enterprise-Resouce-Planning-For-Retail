@@ -141,3 +141,45 @@ func TestApplicationValidatorReceivedOnly(t *testing.T) {
 		t.Fatalf("unopened requisition: %v", err)
 	}
 }
+
+type applicationPostingStub struct {
+	posting *entity.JobPosting
+}
+
+func (s applicationPostingStub) FindByIDForUpdate(_ context.Context, id string) (*entity.JobPosting, error) {
+	if s.posting.ID != id {
+		return nil, hrerrors.ErrNotFound
+	}
+	return s.posting, nil
+}
+
+func TestApplicationSourcePostingLifecycle(t *testing.T) {
+	t.Parallel()
+	applied := time.Date(2026, 11, 17, 8, 0, 0, 0, time.UTC)
+	published := applied.Add(-time.Hour)
+	ended := applied.Add(time.Hour)
+	posting := entity.JobPosting{ID: "posting", RequisitionID: "req", PublishedAt: &published, Status: "published"}
+	application := entity.Application{SourcePostingID: &posting.ID, RequisitionID: "req", AppliedAt: applied}
+	validator := applicationValidator{postings: applicationPostingStub{&posting}}
+	for _, tc := range []struct {
+		name, status, requisition string
+		closed, withdrawn         *time.Time
+		mutating                  bool
+		want                      error
+	}{
+		{"published", "published", "req", nil, nil, false, nil},
+		{"wrong requisition", "published", "other", nil, nil, false, hrerrors.ErrReferenceConflict},
+		{"closed to new applications", "closed", "req", &ended, nil, false, hrerrors.ErrReferenceConflict},
+		{"closed after receipt", "closed", "req", &ended, nil, true, nil},
+		{"withdrawn at receipt", "withdrawn", "req", nil, &applied, true, hrerrors.ErrReferenceConflict},
+		{"withdrawn after receipt", "withdrawn", "req", nil, &ended, true, nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			posting.Status, posting.RequisitionID = tc.status, tc.requisition
+			posting.ClosesAt, posting.WithdrawnAt = tc.closed, tc.withdrawn
+			if err := validator.validateSourcePosting(t.Context(), &application, tc.mutating); !errors.Is(err, tc.want) {
+				t.Fatalf("source posting error = %v, want %v", err, tc.want)
+			}
+		})
+	}
+}

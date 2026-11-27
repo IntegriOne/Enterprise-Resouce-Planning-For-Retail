@@ -88,6 +88,18 @@ func (h *Handler) UpdatePerformanceReview(ctx context.Context, req *pb.UpdatePer
 func (h *Handler) DeletePerformanceReview(ctx context.Context, req *common.IDRequest) (*common.EmptyResponse, error) {
 	return remove(ctx, req, h.service.DeletePerformanceReview)
 }
+func (h *Handler) SubmitPerformanceReview(ctx context.Context, req *common.IDRequest) (*pb.PerformanceReviewResponse, error) {
+	if req == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return reviewResponse(h.service.SubmitPerformanceReview(ctx, req.Id))
+}
+func (h *Handler) FinalizePerformanceReview(ctx context.Context, req *common.IDRequest) (*pb.PerformanceReviewResponse, error) {
+	if req == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return reviewResponse(h.service.FinalizePerformanceReview(ctx, req.Id))
+}
 func (h *Handler) GetPerformanceReviewByID(ctx context.Context, req *common.IDRequest) (*pb.PerformanceReviewResponse, error) {
 	if req == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

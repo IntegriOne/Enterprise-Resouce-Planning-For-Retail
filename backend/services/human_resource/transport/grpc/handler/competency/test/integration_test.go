@@ -101,7 +101,7 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 		Policy: policy, Integrity: security.NewIntegrity(validators),
 	}
 	svc, err := competencyservice.NewService(competencyservice.Dependencies{
-		Runtime: runtime,
+		Runtime:             runtime,
 		WorkerQualification: repos.WorkerQualification, Competency: repos.Competency,
 		JobCompetency: repos.JobCompetency, WorkerCompetencyAssessment: repos.WorkerCompetencyAssessment,
 	})
@@ -471,8 +471,8 @@ func TestCompetencyAndLearningRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("delete planned learning enrollment: %v", err)
 	}
 	if _, err := client.UpdateCompetency(ctx, &pb.UpdateCompetencyRequest{
-		Id: competencyID,
-		Input: &pb.CompetencyInput{ProficiencyScale: &common.JsonDocument{Utf8: []byte(`{"1":"changed"}`)}},
+		Id:         competencyID,
+		Input:      &pb.CompetencyInput{ProficiencyScale: &common.JsonDocument{Utf8: []byte(`{"1":"changed"}`)}},
 		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"proficiency_scale"}},
 	}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("referenced rubric change: %v", err)

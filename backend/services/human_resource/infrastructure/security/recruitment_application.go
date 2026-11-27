@@ -20,7 +20,12 @@ type applicationRequisitionReader interface {
 	FindByIDForUpdate(context.Context, string) (*entity.Requisition, error)
 }
 
+type applicationPostingReader interface {
+	FindByIDForUpdate(context.Context, string) (*entity.JobPosting, error)
+}
+
 type applicationValidator struct {
+	postings     applicationPostingReader
 	candidates   applicationCandidateReader
 	requisitions applicationRequisitionReader
 }
@@ -28,11 +33,11 @@ type applicationValidator struct {
 // RecruitmentApplicationValidators membuka penerimaan lamaran tanpa mengaktifkan keputusan seleksi.
 func RecruitmentApplicationValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
 	if repos == nil || operation.RequireDependency(repos.Candidate) != nil ||
-		operation.RequireDependency(repos.Requisition) != nil {
+		operation.RequireDependency(repos.Requisition) != nil || operation.RequireDependency(repos.JobPosting) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
-		"hr_applications": &applicationValidator{candidates: repos.Candidate, requisitions: repos.Requisition},
+		"hr_applications": &applicationValidator{candidates: repos.Candidate, requisitions: repos.Requisition, postings: repos.JobPosting},
 	}, nil
 }
 
@@ -108,6 +113,26 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 			if !reflect.DeepEqual(&expected, application) {
 				return hrerrors.ErrWorkflowRequired
 			}
+		case previous.Status == entity.ApplicationStatusShortlisted && application.Status == entity.ApplicationStatusInterview:
+			if previous.CurrentStageCode == nil || *previous.CurrentStageCode != "shortlisted" ||
+				previous.AssignedRecruiterPrincipalID == nil || application.CurrentStageCode == nil ||
+				*application.CurrentStageCode != "interview" {
+				return hrerrors.ErrWorkflowRequired
+			}
+			expected := *previous
+			expected.Status, expected.CurrentStageCode = application.Status, application.CurrentStageCode
+			if !reflect.DeepEqual(&expected, application) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		case (previous.Status == entity.ApplicationStatusInterview || previous.Status == entity.ApplicationStatusAssessment) && application.Status == entity.ApplicationStatusOffer:
+			if previous.AssignedRecruiterPrincipalID == nil || application.CurrentStageCode == nil || *application.CurrentStageCode != "offer" {
+				return hrerrors.ErrWorkflowRequired
+			}
+			expected := *previous
+			expected.Status, expected.CurrentStageCode = application.Status, application.CurrentStageCode
+			if !reflect.DeepEqual(&expected, application) {
+				return hrerrors.ErrWorkflowRequired
+			}
 		case shortlisting:
 			if previous.CurrentStageCode == nil || *previous.CurrentStageCode != "screening" ||
 				previous.AssignedRecruiterPrincipalID == nil || application.CurrentStageCode == nil ||
@@ -132,9 +157,6 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 		application.HiredWorkerID != nil {
 		return hrerrors.ErrWorkflowRequired
 	}
-	if application.SourcePostingID != nil {
-		return hrerrors.ErrUnavailable
-	}
 	candidate, err := v.candidates.FindByIDForUpdate(ctx, application.CandidateID)
 	if err != nil {
 		return err
@@ -147,6 +169,9 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 		entity.CompareDates(*candidate.DataRetentionUntil, application.AppliedAt) <= 0 ||
 		(mutating && entity.CompareDates(*candidate.DataRetentionUntil, time.Now()) <= 0) {
 		return hrerrors.ErrWorkflowRequired
+	}
+	if err := v.validateSourcePosting(ctx, application, mutating); err != nil {
+		return err
 	}
 	requisition, err := v.requisitions.FindByIDForUpdate(ctx, application.RequisitionID)
 	if err != nil {
@@ -161,4 +186,37 @@ func (v *applicationValidator) ValidateMutation(ctx context.Context, table strin
 		return hrerrors.ErrWorkflowRequired
 	}
 	return nil
+}
+
+// validateSourcePosting mengunci posting sebelum requisition, mengikuti urutan transisi posting.
+func (v *applicationValidator) validateSourcePosting(ctx context.Context, application *entity.Application, mutating bool) error {
+	if application.SourcePostingID == nil {
+		return nil
+	}
+	if operation.RequireDependency(v.postings) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	posting, err := v.postings.FindByIDForUpdate(ctx, *application.SourcePostingID)
+	if err != nil {
+		return workerAssessmentReferenceError(err)
+	}
+	if posting == nil || posting.RequisitionID != application.RequisitionID ||
+		posting.PublishedAt == nil || posting.PublishedAt.After(application.AppliedAt) {
+		return hrerrors.ErrReferenceConflict
+	}
+	switch posting.Status {
+	case "published":
+		if posting.ClosesAt == nil && posting.WithdrawnAt == nil {
+			return nil
+		}
+	case "closed":
+		if mutating && posting.ClosesAt != nil && application.AppliedAt.Before(*posting.ClosesAt) {
+			return nil
+		}
+	case "withdrawn":
+		if mutating && posting.WithdrawnAt != nil && application.AppliedAt.Before(*posting.WithdrawnAt) {
+			return nil
+		}
+	}
+	return hrerrors.ErrReferenceConflict
 }

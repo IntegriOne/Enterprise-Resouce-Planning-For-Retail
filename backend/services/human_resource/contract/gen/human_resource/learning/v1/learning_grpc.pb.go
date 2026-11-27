@@ -28,6 +28,9 @@ const (
 	LearningService_FindLearningCourseByCourseCode_FullMethodName                = "/human_resource.learning.v1.LearningService/FindLearningCourseByCourseCode"
 	LearningService_FindLearningCourseByCourseType_FullMethodName                = "/human_resource.learning.v1.LearningService/FindLearningCourseByCourseType"
 	LearningService_FindLearningCourseByProviderPartyReferenceID_FullMethodName  = "/human_resource.learning.v1.LearningService/FindLearningCourseByProviderPartyReferenceID"
+	LearningService_StartLearningEnrollment_FullMethodName                       = "/human_resource.learning.v1.LearningService/StartLearningEnrollment"
+	LearningService_CompleteLearningEnrollment_FullMethodName                    = "/human_resource.learning.v1.LearningService/CompleteLearningEnrollment"
+	LearningService_WithdrawLearningEnrollment_FullMethodName                    = "/human_resource.learning.v1.LearningService/WithdrawLearningEnrollment"
 	LearningService_CreateLearningEnrollment_FullMethodName                      = "/human_resource.learning.v1.LearningService/CreateLearningEnrollment"
 	LearningService_UpdateLearningEnrollment_FullMethodName                      = "/human_resource.learning.v1.LearningService/UpdateLearningEnrollment"
 	LearningService_DeleteLearningEnrollment_FullMethodName                      = "/human_resource.learning.v1.LearningService/DeleteLearningEnrollment"
@@ -61,6 +64,9 @@ type LearningServiceClient interface {
 	FindLearningCourseByCourseCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LearningCoursesResponse, error)
 	FindLearningCourseByCourseType(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LearningCoursesResponse, error)
 	FindLearningCourseByProviderPartyReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*LearningCoursesResponse, error)
+	StartLearningEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error)
+	CompleteLearningEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error)
+	WithdrawLearningEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error)
 	CreateLearningEnrollment(ctx context.Context, in *CreateLearningEnrollmentRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error)
 	UpdateLearningEnrollment(ctx context.Context, in *UpdateLearningEnrollmentRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error)
 	DeleteLearningEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -164,6 +170,36 @@ func (c *learningServiceClient) FindLearningCourseByProviderPartyReferenceID(ctx
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LearningCoursesResponse)
 	err := c.cc.Invoke(ctx, LearningService_FindLearningCourseByProviderPartyReferenceID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *learningServiceClient) StartLearningEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LearningEnrollmentResponse)
+	err := c.cc.Invoke(ctx, LearningService_StartLearningEnrollment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *learningServiceClient) CompleteLearningEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LearningEnrollmentResponse)
+	err := c.cc.Invoke(ctx, LearningService_CompleteLearningEnrollment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *learningServiceClient) WithdrawLearningEnrollment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*LearningEnrollmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LearningEnrollmentResponse)
+	err := c.cc.Invoke(ctx, LearningService_WithdrawLearningEnrollment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -372,6 +408,9 @@ type LearningServiceServer interface {
 	FindLearningCourseByCourseCode(context.Context, *v1.StringFinderRequest) (*LearningCoursesResponse, error)
 	FindLearningCourseByCourseType(context.Context, *v1.StringFinderRequest) (*LearningCoursesResponse, error)
 	FindLearningCourseByProviderPartyReferenceID(context.Context, *v1.StringFinderRequest) (*LearningCoursesResponse, error)
+	StartLearningEnrollment(context.Context, *v1.IDRequest) (*LearningEnrollmentResponse, error)
+	CompleteLearningEnrollment(context.Context, *v1.IDRequest) (*LearningEnrollmentResponse, error)
+	WithdrawLearningEnrollment(context.Context, *v1.IDRequest) (*LearningEnrollmentResponse, error)
 	CreateLearningEnrollment(context.Context, *CreateLearningEnrollmentRequest) (*LearningEnrollmentResponse, error)
 	UpdateLearningEnrollment(context.Context, *UpdateLearningEnrollmentRequest) (*LearningEnrollmentResponse, error)
 	DeleteLearningEnrollment(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -424,6 +463,15 @@ func (UnimplementedLearningServiceServer) FindLearningCourseByCourseType(context
 }
 func (UnimplementedLearningServiceServer) FindLearningCourseByProviderPartyReferenceID(context.Context, *v1.StringFinderRequest) (*LearningCoursesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindLearningCourseByProviderPartyReferenceID not implemented")
+}
+func (UnimplementedLearningServiceServer) StartLearningEnrollment(context.Context, *v1.IDRequest) (*LearningEnrollmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartLearningEnrollment not implemented")
+}
+func (UnimplementedLearningServiceServer) CompleteLearningEnrollment(context.Context, *v1.IDRequest) (*LearningEnrollmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteLearningEnrollment not implemented")
+}
+func (UnimplementedLearningServiceServer) WithdrawLearningEnrollment(context.Context, *v1.IDRequest) (*LearningEnrollmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WithdrawLearningEnrollment not implemented")
 }
 func (UnimplementedLearningServiceServer) CreateLearningEnrollment(context.Context, *CreateLearningEnrollmentRequest) (*LearningEnrollmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateLearningEnrollment not implemented")
@@ -643,6 +691,60 @@ func _LearningService_FindLearningCourseByProviderPartyReferenceID_Handler(srv i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(LearningServiceServer).FindLearningCourseByProviderPartyReferenceID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LearningService_StartLearningEnrollment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LearningServiceServer).StartLearningEnrollment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LearningService_StartLearningEnrollment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LearningServiceServer).StartLearningEnrollment(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LearningService_CompleteLearningEnrollment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LearningServiceServer).CompleteLearningEnrollment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LearningService_CompleteLearningEnrollment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LearningServiceServer).CompleteLearningEnrollment(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LearningService_WithdrawLearningEnrollment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LearningServiceServer).WithdrawLearningEnrollment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LearningService_WithdrawLearningEnrollment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LearningServiceServer).WithdrawLearningEnrollment(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1027,6 +1129,18 @@ var LearningService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindLearningCourseByProviderPartyReferenceID",
 			Handler:    _LearningService_FindLearningCourseByProviderPartyReferenceID_Handler,
+		},
+		{
+			MethodName: "StartLearningEnrollment",
+			Handler:    _LearningService_StartLearningEnrollment_Handler,
+		},
+		{
+			MethodName: "CompleteLearningEnrollment",
+			Handler:    _LearningService_CompleteLearningEnrollment_Handler,
+		},
+		{
+			MethodName: "WithdrawLearningEnrollment",
+			Handler:    _LearningService_WithdrawLearningEnrollment_Handler,
 		},
 		{
 			MethodName: "CreateLearningEnrollment",

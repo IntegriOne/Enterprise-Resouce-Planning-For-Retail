@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"crypto/sha256"
 	"errors"
 	"testing"
 
@@ -18,10 +19,16 @@ func calculatedRun() entity.PayrollRun {
 		EmployingLegalEntityReferenceID: fixture.ID(91), CurrencyCode: "IDR", RuleSetID: fixture.ID(61),
 		SettlementDirection: "payable", RunNumber: 1, RunType: "regular",
 		Status: entity.PayrollRunStatusCalculated, JurisdictionCode: "ID", RuleEngineName: "fixture",
-		RuleEngineVersion: "1", InputSnapshotReferenceID: fixture.ID(62), InputDigest: []byte{1},
-		OutputDigest: []byte{2}, CalculatedAt: &now, StartedByPrincipalID: fixture.ID(99),
+		RuleEngineVersion: "1", InputSnapshotReferenceID: fixture.ID(62), InputDigest: make([]byte, sha256.Size),
+		OutputDigest: make([]byte, sha256.Size), CalculatedAt: &now, StartedByPrincipalID: fixture.ID(99),
 		CreatedAt: now, IdempotencyKey: "approval-fixture",
 	}
+}
+
+func calculatedResult() entity.PayrollResult {
+	result := fixture.PayrollResult()
+	result.CalculationDigest = make([]byte, sha256.Size)
+	return result
 }
 
 func calculatedLines() []entity.PayrollResultLine {
@@ -35,16 +42,38 @@ func calculatedLines() []entity.PayrollResultLine {
 
 func TestApprovePayrollRun(t *testing.T) {
 	sentinel := errors.New("outbox unavailable")
-	for _, name := range []string{"approved", "self_approval", "invalid_totals", "hidden_results", "outbox_rollback"} {
+	for _, name := range []string{"approved", "approved_multiple_batches", "workload_approval", "self_approval", "invalid_totals", "excess_settlement_precision", "invalid_output_digest", "invalid_result_digest", "cancelled_result", "paid_result", "hidden_results", "outbox_rollback"} {
 		t.Run(name, func(t *testing.T) {
-			h, svc, _, runs, results, lines := setupPayroll(t)
+			scale := int16(6)
+			if name == "excess_settlement_precision" {
+				scale = 2
+			}
+			h, svc, _, runs, results, lines := setupPayroll(t, scale)
 			run := calculatedRun()
-			result := fixture.PayrollResult()
+			run.Status = entity.PayrollRunStatusReview
+			result := calculatedResult()
 			var want error
 			switch name {
+			case "workload_approval":
+				h.Actor.Kind = "workload"
+				want = hrerrors.ErrForbidden
 			case "self_approval":
 				run.StartedByPrincipalID = h.Actor.PrincipalID
 				want = hrerrors.ErrForbidden
+			case "excess_settlement_precision":
+				want = hrerrors.ErrReferenceConflict
+			case "invalid_output_digest":
+				run.OutputDigest = []byte{2}
+				want = hrerrors.ErrReferenceConflict
+			case "cancelled_result":
+				result.ResultStatus = "cancelled"
+				want = hrerrors.ErrReferenceConflict
+			case "paid_result":
+				result.ResultStatus = "paid"
+				want = hrerrors.ErrReferenceConflict
+			case "invalid_result_digest":
+				result.CalculationDigest = []byte{1}
+				want = hrerrors.ErrReferenceConflict
 			case "invalid_totals":
 				result.GrossAmount = "101.123456"
 				result.EmployerCostAmount = "106.123456"
@@ -61,6 +90,19 @@ func TestApprovePayrollRun(t *testing.T) {
 			results.Rows[result.ID] = result
 			for _, line := range calculatedLines() {
 				lines.Rows[line.ID] = line
+			}
+			if name == "approved_multiple_batches" {
+				for batchIndex := range domainrepo.MaxLimit {
+					additional := calculatedResult()
+					additional.ID = fixture.ID(1000 + batchIndex)
+					additional.WorkerID = fixture.ID(2000 + batchIndex)
+					results.Rows[additional.ID] = additional
+					for lineIndex, line := range calculatedLines() {
+						line.ID = fixture.ID(3000 + 10*batchIndex + lineIndex)
+						line.PayrollResultID = additional.ID
+						lines.Rows[line.ID] = line
+					}
+				}
 			}
 			got, err := svc.ApprovePayrollRun(t.Context(), run.ID)
 			if !errors.Is(err, want) {
@@ -81,5 +123,28 @@ func TestApprovePayrollRun(t *testing.T) {
 				t.Fatalf("repeated approval = %v", err)
 			}
 		})
+	}
+}
+
+func TestRequestPayrollPostingRejectsLegacySettlementPrecision(t *testing.T) {
+	h, svc, _, runs, results, lines := setupPayroll(t, 2)
+	run := calculatedRun()
+	run.Status = entity.PayrollRunStatusApproved
+	run.ApprovedAt = run.CalculatedAt
+	run.ApprovedByPrincipalID = new(string(h.Actor.PrincipalID))
+	runs.Rows[run.ID] = run
+	result := calculatedResult()
+	results.Rows[result.ID] = result
+	for _, line := range calculatedLines() {
+		lines.Rows[line.ID] = line
+	}
+
+	got, err := svc.RequestPayrollPosting(t.Context(), run.ID)
+	if got != nil || !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("posting legacy result with excess settlement precision: %v, %v", got, err)
+	}
+	stored := runs.Rows[run.ID]
+	if stored.PostingRequestedAt != nil || stored.PostingRequestedByPrincipalID != nil || len(h.Events) != 0 {
+		t.Fatal("rejected posting persisted state or an outbox event")
 	}
 }

@@ -58,14 +58,6 @@ func (h *Handler) CreateWorker(ctx context.Context, request *pb.CreateWorkerRequ
 		TerminationReasonCode: in.TerminationReasonCode, PrimaryLegalEntityReferenceID: in.GetPrimaryLegalEntityReferenceId(), PrimaryAssignmentID: in.PrimaryAssignmentId, IAMPrincipalReferenceID: in.IamPrincipalReferenceId}))
 }
 
-// ActivateWorker meneruskan aktivasi hubungan kerja ke command HRM.
-func (h *Handler) ActivateWorker(ctx context.Context, request *common.IDRequest) (*pb.WorkerResponse, error) {
-	if request == nil {
-		return nil, response.Error(hrerrors.ErrInvalidInput)
-	}
-	return workerResponse(h.service.ActivateWorker(ctx, request.Id))
-}
-
 // LinkWorkerPrincipal meneruskan bukti pengaitan akun employee ke Personnel.
 func (h *Handler) LinkWorkerPrincipal(ctx context.Context, request *pb.LinkWorkerPrincipalRequest) (*pb.WorkerResponse, error) {
 	return workerResponse(h.service.LinkWorkerPrincipal(ctx, request.GetWorkerId(), request.GetPrincipalId(), request.GetEvidenceId()))
@@ -74,6 +66,14 @@ func (h *Handler) LinkWorkerPrincipal(ctx context.Context, request *pb.LinkWorke
 // TerminateWorker mencatat terminasi dari rencana offboarding yang disetujui.
 func (h *Handler) TerminateWorker(ctx context.Context, request *pb.TerminateWorkerRequest) (*pb.WorkerResponse, error) {
 	return workerResponse(h.service.TerminateWorker(ctx, request.GetWorkerId(), request.GetOffboardingPlanId()))
+}
+
+// ActivateWorker meneruskan aktivasi hubungan kerja ke command HRM.
+func (h *Handler) ActivateWorker(ctx context.Context, request *common.IDRequest) (*pb.WorkerResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return workerResponse(h.service.ActivateWorker(ctx, request.Id))
 }
 
 // ApplyPrimaryAssignment meneruskan penetapan assignment primer ke command HRM.

@@ -3,6 +3,7 @@
 package service
 
 import (
+	"encoding/hex"
 	"fmt"
 	"reflect"
 	"time"
@@ -545,6 +546,21 @@ func specPayrollRun() operation.Specification[entity.PayrollRun, string] {
 			v.CreatedAt = now
 		},
 		Touch: func(v *entity.PayrollRun, actor operation.Actor, now time.Time) {},
+		EventDetails: func(action string, run *entity.PayrollRun) map[string]string {
+			if action != "request_posting" {
+				return nil
+			}
+			return map[string]string{
+				"payroll_period_id":                   run.PayrollPeriodID,
+				"payroll_group_id":                    run.PayrollGroupID,
+				"employing_legal_entity_reference_id": run.EmployingLegalEntityReferenceID,
+				"currency_code":                       run.CurrencyCode,
+				"settlement_direction":                run.SettlementDirection,
+				"input_snapshot_reference_id":         run.InputSnapshotReferenceID,
+				"input_digest_sha256":                 hex.EncodeToString(run.InputDigest),
+				"output_digest_sha256":                hex.EncodeToString(run.OutputDigest),
+			}
+		},
 		Attributes: func(v *entity.PayrollRun) map[string]string {
 			a := map[string]string{}
 			a["id"] = fmt.Sprint(v.ID)

@@ -4,6 +4,7 @@ package entity
 
 import (
 	"fmt"
+	"strings"
 
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 )
@@ -28,6 +29,16 @@ func (x *SuccessionPlan) Validate() error {
 	if err := validateText("confidentiality_class", string(x.ConfidentialityClass), true, 30, 0); err != nil {
 		return hrerrors.Invalid("confidentiality_class", "has invalid value")
 	}
+	if x.CreatedByPrincipalID != nil {
+		if err := ValidateUUID("created_by_principal_id", (*x.CreatedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("created_by_principal_id", "has invalid value")
+		}
+	}
+	if x.CreatedAt != nil {
+		if err := validateTime("created_at", (*x.CreatedAt)); err != nil {
+			return hrerrors.Invalid("created_at", "has invalid value")
+		}
+	}
 	if x.ApprovedByPrincipalID != nil {
 		if err := ValidateUUID("approved_by_principal_id", (*x.ApprovedByPrincipalID)); err != nil {
 			return hrerrors.Invalid("approved_by_principal_id", "has invalid value")
@@ -38,6 +49,11 @@ func (x *SuccessionPlan) Validate() error {
 			return hrerrors.Invalid("approved_at", "has invalid value")
 		}
 	}
+	if x.ApprovalMandateReferenceID != nil {
+		if err := ValidateUUID("approval_mandate_reference_id", (*x.ApprovalMandateReferenceID)); err != nil {
+			return hrerrors.Invalid("approval_mandate_reference_id", "has invalid value")
+		}
+	}
 	if x.SuccessionRisk != nil {
 		if err := validateText("succession_risk", string((*x.SuccessionRisk)), false, 30, 0); err != nil {
 			return hrerrors.Invalid("succession_risk", "has invalid value")
@@ -45,6 +61,15 @@ func (x *SuccessionPlan) Validate() error {
 	}
 	if ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.PlanVersion)), ruleNumber("0"), ">")) == ruleFalse {
 		return hrerrors.Invalid("hr_succession_plans", "ck_hr_succession_plan_version")
+	}
+	if ruleOr(ruleAnd(ruleKnown(x.CreatedByPrincipalID == nil), ruleKnown(x.CreatedAt == nil)), ruleAnd(ruleKnown(x.CreatedByPrincipalID != nil), ruleKnown(x.CreatedAt != nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_succession_plans", "ck_hr_succession_creator_pair")
+	}
+	if ruleOr(ruleKnown(x.ApprovedAt == nil), ruleAnd(ruleAnd(ruleAnd(ruleKnown(x.CreatedByPrincipalID != nil), ruleKnown(x.CreatedAt != nil)), rulePresent(x.ApprovedByPrincipalID != nil && x.CreatedByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.ApprovedByPrincipalID), (*x.CreatedByPrincipalID)) })), rulePresent(x.ApprovedAt != nil && x.CreatedAt != nil, func() bool { return ruleCompareResult((*x.ApprovedAt).Compare((*x.CreatedAt)), ">=") }))) == ruleFalse {
+		return hrerrors.Invalid("hr_succession_plans", "ck_hr_succession_independent_approval")
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleKnown(x.ApprovedAt == nil), ruleKnown(x.ApprovedByPrincipalID == nil)), ruleKnown(x.ApprovalMandateReferenceID == nil)), ruleAnd(ruleAnd(ruleKnown(x.ApprovedAt != nil), ruleKnown(x.ApprovedByPrincipalID != nil)), ruleKnown(x.ApprovalMandateReferenceID != nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_succession_plans", "ck_hr_succession_approval_evidence")
 	}
 	return nil
 }

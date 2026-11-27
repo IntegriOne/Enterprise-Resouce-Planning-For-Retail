@@ -3,6 +3,8 @@
 package entity
 
 import (
+	"strings"
+
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 )
 
@@ -65,6 +67,21 @@ func (x *OffboardingPlan) Validate() error {
 			return hrerrors.Invalid("completed_at", "has invalid value")
 		}
 	}
+	if x.CancelledAt != nil {
+		if err := validateTime("cancelled_at", (*x.CancelledAt)); err != nil {
+			return hrerrors.Invalid("cancelled_at", "has invalid value")
+		}
+	}
+	if x.CancelledByPrincipalID != nil {
+		if err := ValidateUUID("cancelled_by_principal_id", (*x.CancelledByPrincipalID)); err != nil {
+			return hrerrors.Invalid("cancelled_by_principal_id", "has invalid value")
+		}
+	}
+	if x.CancellationReason != nil {
+		if err := validateText("cancellation_reason", string((*x.CancellationReason)), false, 300, 0); err != nil {
+			return hrerrors.Invalid("cancellation_reason", "has invalid value")
+		}
+	}
 	if err := ValidateUUID("created_by_principal_id", x.CreatedByPrincipalID); err != nil {
 		return hrerrors.Invalid("created_by_principal_id", "has invalid value")
 	}
@@ -82,6 +99,9 @@ func (x *OffboardingPlan) Validate() error {
 	}
 	if ruleOr(ruleKnown(string(x.Status) != string("completed")), ruleKnown(x.CompletedAt != nil)) == ruleFalse {
 		return hrerrors.Invalid("hr_offboarding_plans", "ck_hr_offboarding_completed")
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("cancelled")), ruleKnown(x.ApprovedAt != nil)), ruleKnown(x.ApprovedByPrincipalID != nil)), ruleKnown(x.CancelledAt != nil)), rulePresent(x.ApprovedAt != nil && x.CancelledAt != nil, func() bool { return ruleCompareResult((*x.CancelledAt).Compare((*x.ApprovedAt)), ">=") })), ruleKnown(x.CancelledByPrincipalID != nil)), ruleKnown(x.CancellationReason != nil)), rulePresent(x.CancellationReason != nil, func() bool { return string(strings.Trim(string((*x.CancellationReason)), " ")) != string("") })), ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) != string("cancelled")), ruleKnown(x.CancelledAt == nil)), ruleKnown(x.CancelledByPrincipalID == nil)), ruleKnown(x.CancellationReason == nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_offboarding_plans", "ck_hr_offboarding_cancellation")
 	}
 	return nil
 }

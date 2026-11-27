@@ -9,6 +9,7 @@ import "google/protobuf/timestamp.proto";
 import "human_resource/common/v1/common.proto";
 
 service SuccessionService {
+  rpc ApproveSuccessionPlan(human_resource.common.v1.IDRequest) returns (SuccessionPlanResponse);
   rpc CreateSuccessionPlan(CreateSuccessionPlanRequest) returns (SuccessionPlanResponse);
   rpc UpdateSuccessionPlan(UpdateSuccessionPlanRequest) returns (SuccessionPlanResponse);
   rpc DeleteSuccessionPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -39,6 +40,9 @@ message SuccessionPlan {
   optional string approved_by_principal_id = 7;
   google.protobuf.Timestamp approved_at = 8;
   optional string succession_risk = 9;
+  optional string approval_mandate_reference_id = 10;
+  optional string created_by_principal_id = 11;
+  google.protobuf.Timestamp created_at = 12;
 }
 
 // FieldMask pada update membedakan absen dengan NULL; nilai create mengikuti default service.

@@ -141,6 +141,8 @@ message UpdateWorkerCareerAspirationRequest { string id = 1; WorkerCareerAspirat
 message WorkerCareerAspirationResponse { WorkerCareerAspiration value = 1; }
 message WorkerCareerAspirationsResponse { repeated WorkerCareerAspiration items = 1; human_resource.common.v1.PageInfo page = 2; }
 service CareerService {
+ rpc CompleteDevelopmentPlan(human_resource.common.v1.IDRequest) returns (DevelopmentPlanResponse);
+ rpc ApproveDevelopmentPlan(human_resource.common.v1.IDRequest) returns (DevelopmentPlanResponse);
  rpc CreateDevelopmentPlan(CreateDevelopmentPlanRequest) returns (DevelopmentPlanResponse);
  rpc UpdateDevelopmentPlan(UpdateDevelopmentPlanRequest) returns (DevelopmentPlanResponse);
  rpc DeleteDevelopmentPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -152,6 +154,7 @@ service CareerService {
  rpc FindDevelopmentPlanByStatus(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
  rpc FindDevelopmentPlanByMentorWorkerID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
  rpc FindDevelopmentPlanByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (DevelopmentPlansResponse);
+ rpc CompleteDevelopmentAction(human_resource.common.v1.IDRequest) returns (DevelopmentActionResponse);
  rpc CreateDevelopmentAction(CreateDevelopmentActionRequest) returns (DevelopmentActionResponse);
  rpc UpdateDevelopmentAction(UpdateDevelopmentActionRequest) returns (DevelopmentActionResponse);
  rpc DeleteDevelopmentAction(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);

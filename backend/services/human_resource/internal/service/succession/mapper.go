@@ -79,6 +79,7 @@ func specSuccessionPlan() operation.Specification[entity.SuccessionPlan, string]
 		AggregateID: func(v *entity.SuccessionPlan) string { return v.ID },
 		Initialize: func(v *entity.SuccessionPlan, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
+			v.CreatedByPrincipalID, v.CreatedAt = &actor.PrincipalID, &now
 		},
 		Touch: func(v *entity.SuccessionPlan, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.SuccessionPlan) map[string]string {

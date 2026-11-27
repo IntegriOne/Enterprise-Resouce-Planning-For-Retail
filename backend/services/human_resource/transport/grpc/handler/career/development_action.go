@@ -145,3 +145,10 @@ func (s *server) FindDevelopmentActionByEvidenceDocumentVersionReferenceID(ctx c
 	}
 	return actions(s.service.FindDevelopmentActionByEvidenceDocumentVersionReferenceID(ctx, r.Value, int(r.Limit), int(r.Offset)))
 }
+
+func (s *server) CompleteDevelopmentAction(ctx context.Context, request *commonv1.IDRequest) (*pb.DevelopmentActionResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return actionResult(s.service.CompleteDevelopmentAction(ctx, request.Id))
+}

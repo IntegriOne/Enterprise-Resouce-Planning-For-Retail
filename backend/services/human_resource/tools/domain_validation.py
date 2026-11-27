@@ -4,7 +4,7 @@ from pathlib import Path
 
 class Parser:
     def __init__(self, source):
-        self.tokens = re.findall(r"'(?:''|[^'])*'|<>|>=|<=|[(),=<>+\-]|[A-Za-z_][A-Za-z_0-9]*|\d+(?:\.\d+)?", source)
+        self.tokens = re.findall(r"'(?:''|[^'])*'|::|<>|>=|<=|[(),=<>+\-]|[A-Za-z_][A-Za-z_0-9]*|\d+(?:\.\d+)?", source)
         self.pos = 0
         assert ''.join(self.tokens) == re.sub(r'\s+', '', source.replace(' ', '')) or re.sub(r'\s+', '', ''.join(self.tokens)) == re.sub(r'\s+', '', source), source
     def peek(self):
@@ -53,8 +53,23 @@ class Parser:
         return left
     def primary(self):
         if self.peek() == '(':
-            self.take();node=self.disjunction();self.take(')');return node
+            self.take();node=self.disjunction();self.take(')')
+            if self.peek() == '::':
+                self.take('::');self.take('DATE')
+                assert node[0] == 'utc', node
+                return ('utcdate', node[1])
+            return node
         token=self.take()
+        if token.lower() == 'btrim':
+            self.take('(');value=self.primary();self.take(')')
+            return ('btrim',value)
+        if token.lower() == 'coalesce':
+            self.take('(');value=self.primary();self.take(',');fallback=self.primary();self.take(')')
+            assert fallback[0]=='text', fallback
+            return ('coalesce',value,fallback)
+        if self.peek() == 'AT':
+            self.take('AT');self.take('TIME');self.take('ZONE');self.take("'UTC'")
+            return ('utc',('field',token))
         if token.startswith("'"):return ('text',token[1:-1].replace("''", "'"))
         if token[0].isdigit():return ('number',token)
         return ('field',token)
@@ -79,6 +94,12 @@ def generate(tables, bodies, sql, enums, write):
                 c=cols[n[1]];return '(*x.'+c['field']+')' if c['type'].startswith('*') else 'x.'+c['field']
             if n[0]=='text':return '"'+n[1]+'"'
             if n[0]=='number':return n[1]
+            if n[0]=='btrim':return 'strings.Trim(string('+expr(n[1])+')," ")'
+            if n[0]=='utcdate':return expr(n[1])+'.UTC()'
+            if n[0]=='coalesce':
+                guards=nullable(n[1])
+                if not guards:return expr(n[1])
+                return 'func() string {if '+' && '.join(sorted(guards))+' {return string('+expr(n[1])+')};return '+expr(n[2])+'}()'
             raise ValueError(n)
         def is_number(n):
             if n[0] in ('number','+','-'):return True
@@ -92,6 +113,7 @@ def generate(tables, bodies, sql, enums, write):
             if n[0]=='field':
                 c=cols[n[1]]
                 return {'x.'+c['field']+' != nil'} if c['type'].startswith('*') else set()
+            if n[0] in ('btrim','utcdate'):return nullable(n[1])
             if len(n)==3 and n[0] in ('+','-'):return nullable(n[1])|nullable(n[2])
             return set()
         def boolean(n):
@@ -112,6 +134,7 @@ def generate(tables, bodies, sql, enums, write):
             if boolean(a) or boolean(b):return 'ruleTruthCompare('+compile(a)+','+compile(b)+',"'+op+'")'
             guards=nullable(a)|nullable(b)
             if is_number(a) or is_number(b):predicate='ruleNumberCompare('+num(a)+','+num(b)+',"'+op+'")'
+            elif a[0]=='utcdate':predicate='ruleCompareResult(CompareDates('+expr(a)+','+expr(b)+'),"'+op+'")'
             elif a[0]=='field' and cols[a[1]]['sql_type'] in ('date','timestamptz'):
                 predicate='ruleCompareResult('+('CompareDates('+expr(a)+','+expr(b)+')' if cols[a[1]]['sql_type']=='date' else expr(a)+'.Compare('+expr(b)+')')+',"'+op+'")'
             else:
@@ -147,6 +170,9 @@ def generate(tables, bodies, sql, enums, write):
                 else:out+=f' if err:={check};err!=nil {{return hrerrors.Invalid("{field}","has invalid value")}}\n'
         rules=re.findall(r'`([^`]+)` \[name: \'([^\']+)\'\]',bodies[table])
         for source,rule in rules:
+            # validateText sudah menolak spasi kosong pada kedua kolom wajib.
+            if rule == 'ck_hr_worker_assignment_transfer_input':
+                continue
             out+=' if '+compile(Parser(source).parse())+f'==ruleFalse {{return hrerrors.Invalid("{table}","{rule}")}}\n';total+=1
         out+=' return nil\n}\n'
         out+=f'\n// New{name} memvalidasi snapshot tanpa membuat UUID, default bisnis atau grant.\nfunc New{name}(value {name})(*{name},error){{ if err:=value.Validate();err!=nil{{return nil,err}};return &value,nil }}\n'

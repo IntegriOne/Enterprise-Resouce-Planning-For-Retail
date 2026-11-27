@@ -15,6 +15,7 @@ import (
 	pb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/onboarding/v1"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
+	appservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/onboarding"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
@@ -36,7 +37,7 @@ type integrationPolicy struct{}
 type integrationEvidenceVerifier struct{}
 
 func (integrationEvidenceVerifier) VerifyOnboardingEvidence(_ context.Context, request service.EvidenceRequest) (service.EvidenceResult, error) {
-	return service.EvidenceResult{VersionID: request.VersionID, Verified: true, Immutable: true}, nil
+	return service.EvidenceResult{VersionID: request.VersionID, TaskID: request.TaskID, PlanID: request.PlanID, Verified: true, Immutable: true}, nil
 }
 
 func (integrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
@@ -86,18 +87,15 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	svc, err := service.NewService(service.Dependencies{
-		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-			Policy: integrationPolicy{}, Integrity: security.NewIntegrity(validators)},
-		OnboardingPlan: repos.OnboardingPlan, OnboardingTask: repos.OnboardingTask,
-		Evidence: integrationEvidenceVerifier{},
-	})
+	registry, err := appservice.NewRegistry(repos, operation.Dependencies{
+		Policy: integrationPolicy{}, Integrity: security.NewIntegrity(validators),
+	}, appservice.WithOnboardingEvidenceVerifier(integrationEvidenceVerifier{}))
 	if err != nil {
 		t.Fatal(err)
 	}
 	listener := bufconn.Listen(1 << 20)
 	server := grpc.NewServer()
-	if err := handler.Register(server, svc); err != nil {
+	if err := handler.Register(server, registry.Onboarding); err != nil {
 		t.Fatal(err)
 	}
 	served := make(chan error, 1)
@@ -277,12 +275,20 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	startTaskCode := "START-ORIENTATION"
 	startTask, err := client.CreateOnboardingTask(ctx, &pb.CreateOnboardingTaskRequest{Input: &pb.OnboardingTaskInput{
 		OnboardingPlanId: &startedPlanID, TaskCode: &startTaskCode, TaskName: &name, TaskOwnerType: &owner,
-		AssignedPrincipalId: &principal,
 	}})
 	if err != nil {
 		t.Fatalf("create task for start: %v", err)
 	}
 	startedTaskID = startTask.GetItem().GetId()
+	if _, err := client.StartOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("start with unassigned mandatory task: %v", err)
+	}
+	if _, err := client.UpdateOnboardingTask(ctx, &pb.UpdateOnboardingTaskRequest{
+		Id: startedTaskID, Input: &pb.OnboardingTaskInput{AssignedPrincipalId: &principal},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"assigned_principal_id"}},
+	}); err != nil {
+		t.Fatalf("assign mandatory task before start: %v", err)
+	}
 	started, err := client.StartOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID})
 	if err != nil || started.GetItem().GetStatus() != "in_progress" || started.GetItem().GetStartedAt() == nil ||
 		started.GetItem().GetStartedByPrincipalId() != principal {
@@ -308,6 +314,17 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("repeat task completion: %v", err)
 	}
+	if err := database.WithContext(ctx).Table("hr_onboarding_tasks").Where("id = ?", startedTaskID).
+		Update("completed_at", started.GetItem().GetStartedAt().AsTime().Add(-time.Second)).Error; err != nil {
+		t.Fatalf("set task completion before onboarding started: %v", err)
+	}
+	if _, err := client.CompleteOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("complete plan with task predating its start: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_onboarding_tasks").Where("id = ?", startedTaskID).
+		Update("completed_at", finishedTask.GetItem().GetCompletedAt().AsTime()).Error; err != nil {
+		t.Fatalf("restore onboarding task completion: %v", err)
+	}
 	completed, err := client.CompleteOnboardingPlan(ctx, &common.IDRequest{Id: startedPlanID})
 	if err != nil || completed.GetItem().GetStatus() != "completed" || completed.GetItem().GetCompletedAt() == nil ||
 		completed.GetItem().GetCompletedByPrincipalId() != principal {
@@ -319,7 +336,7 @@ func TestOnboardingDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedPlanID).Count(&events).Error; err != nil || events != 3 {
 		t.Fatalf("start and complete plan outbox count=%d, error=%v", events, err)
 	}
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedTaskID).Count(&events).Error; err != nil || events != 2 {
-		t.Fatalf("task create and complete outbox count=%d, error=%v", events, err)
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", startedTaskID).Count(&events).Error; err != nil || events != 3 {
+		t.Fatalf("task create, assignment update and complete outbox count=%d, error=%v", events, err)
 	}
 }

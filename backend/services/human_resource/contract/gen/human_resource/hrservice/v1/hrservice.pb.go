@@ -856,6 +856,58 @@ func (x *ServiceRequestEventsResponse) GetPage() *v1.PageInfo {
 	return nil
 }
 
+type ResolveServiceRequestRequest struct {
+	state                                protoimpl.MessageState `protogen:"open.v1"`
+	Id                                   string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ResolutionDocumentVersionReferenceId string                 `protobuf:"bytes,2,opt,name=resolution_document_version_reference_id,json=resolutionDocumentVersionReferenceId,proto3" json:"resolution_document_version_reference_id,omitempty"`
+	unknownFields                        protoimpl.UnknownFields
+	sizeCache                            protoimpl.SizeCache
+}
+
+func (x *ResolveServiceRequestRequest) Reset() {
+	*x = ResolveServiceRequestRequest{}
+	mi := &file_human_resource_hrservice_v1_hrservice_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResolveServiceRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResolveServiceRequestRequest) ProtoMessage() {}
+
+func (x *ResolveServiceRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_hrservice_v1_hrservice_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResolveServiceRequestRequest.ProtoReflect.Descriptor instead.
+func (*ResolveServiceRequestRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_hrservice_v1_hrservice_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ResolveServiceRequestRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ResolveServiceRequestRequest) GetResolutionDocumentVersionReferenceId() string {
+	if x != nil {
+		return x.ResolutionDocumentVersionReferenceId
+	}
+	return ""
+}
+
 var File_human_resource_hrservice_v1_hrservice_proto protoreflect.FileDescriptor
 
 const file_human_resource_hrservice_v1_hrservice_proto_rawDesc = "" +
@@ -949,8 +1001,15 @@ const file_human_resource_hrservice_v1_hrservice_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v20.human_resource.hrservice.v1.ServiceRequestEventR\x05value\"\x9e\x01\n" +
 	"\x1cServiceRequestEventsResponse\x12F\n" +
 	"\x05items\x18\x01 \x03(\v20.human_resource.hrservice.v1.ServiceRequestEventR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x9b\x1a\n" +
-	"\tHRService\x12\x85\x01\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\x86\x01\n" +
+	"\x1cResolveServiceRequestRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12V\n" +
+	"(resolution_document_version_reference_id\x18\x02 \x01(\tR$resolutionDocumentVersionReferenceId2\xfa\x1d\n" +
+	"\tHRService\x12\x87\x01\n" +
+	"\x15ResolveServiceRequest\x129.human_resource.hrservice.v1.ResolveServiceRequestRequest\x1a3.human_resource.hrservice.v1.ServiceRequestResponse\x12o\n" +
+	"\x13CloseServiceRequest\x12#.human_resource.common.v1.IDRequest\x1a3.human_resource.hrservice.v1.ServiceRequestResponse\x12p\n" +
+	"\x14CancelServiceRequest\x12#.human_resource.common.v1.IDRequest\x1a3.human_resource.hrservice.v1.ServiceRequestResponse\x12p\n" +
+	"\x14AssignServiceRequest\x12#.human_resource.common.v1.IDRequest\x1a3.human_resource.hrservice.v1.ServiceRequestResponse\x12\x85\x01\n" +
 	"\x14CreateServiceRequest\x128.human_resource.hrservice.v1.CreateServiceRequestRequest\x1a3.human_resource.hrservice.v1.ServiceRequestResponse\x12\x85\x01\n" +
 	"\x14UpdateServiceRequest\x128.human_resource.hrservice.v1.UpdateServiceRequestRequest\x1a3.human_resource.hrservice.v1.ServiceRequestResponse\x12d\n" +
 	"\x14DeleteServiceRequest\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12q\n" +
@@ -988,7 +1047,7 @@ func file_human_resource_hrservice_v1_hrservice_proto_rawDescGZIP() []byte {
 	return file_human_resource_hrservice_v1_hrservice_proto_rawDescData
 }
 
-var file_human_resource_hrservice_v1_hrservice_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_human_resource_hrservice_v1_hrservice_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_human_resource_hrservice_v1_hrservice_proto_goTypes = []any{
 	(*ServiceRequest)(nil),                   // 0: human_resource.hrservice.v1.ServiceRequest
 	(*ServiceRequestInput)(nil),              // 1: human_resource.hrservice.v1.ServiceRequestInput
@@ -1002,83 +1061,92 @@ var file_human_resource_hrservice_v1_hrservice_proto_goTypes = []any{
 	(*UpdateServiceRequestEventRequest)(nil), // 9: human_resource.hrservice.v1.UpdateServiceRequestEventRequest
 	(*ServiceRequestEventResponse)(nil),      // 10: human_resource.hrservice.v1.ServiceRequestEventResponse
 	(*ServiceRequestEventsResponse)(nil),     // 11: human_resource.hrservice.v1.ServiceRequestEventsResponse
-	(*timestamppb.Timestamp)(nil),            // 12: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),            // 13: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                      // 14: human_resource.common.v1.PageInfo
-	(*v1.IDRequest)(nil),                     // 15: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                   // 16: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),           // 17: human_resource.common.v1.StringFinderRequest
-	(*v1.EmptyResponse)(nil),                 // 18: human_resource.common.v1.EmptyResponse
+	(*ResolveServiceRequestRequest)(nil),     // 12: human_resource.hrservice.v1.ResolveServiceRequestRequest
+	(*timestamppb.Timestamp)(nil),            // 13: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),            // 14: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                      // 15: human_resource.common.v1.PageInfo
+	(*v1.IDRequest)(nil),                     // 16: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                   // 17: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),           // 18: human_resource.common.v1.StringFinderRequest
+	(*v1.EmptyResponse)(nil),                 // 19: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_hrservice_v1_hrservice_proto_depIdxs = []int32{
-	12, // 0: human_resource.hrservice.v1.ServiceRequest.opened_at:type_name -> google.protobuf.Timestamp
-	12, // 1: human_resource.hrservice.v1.ServiceRequest.due_at:type_name -> google.protobuf.Timestamp
-	12, // 2: human_resource.hrservice.v1.ServiceRequest.resolved_at:type_name -> google.protobuf.Timestamp
-	12, // 3: human_resource.hrservice.v1.ServiceRequestInput.due_at:type_name -> google.protobuf.Timestamp
-	12, // 4: human_resource.hrservice.v1.ServiceRequestInput.resolved_at:type_name -> google.protobuf.Timestamp
+	13, // 0: human_resource.hrservice.v1.ServiceRequest.opened_at:type_name -> google.protobuf.Timestamp
+	13, // 1: human_resource.hrservice.v1.ServiceRequest.due_at:type_name -> google.protobuf.Timestamp
+	13, // 2: human_resource.hrservice.v1.ServiceRequest.resolved_at:type_name -> google.protobuf.Timestamp
+	13, // 3: human_resource.hrservice.v1.ServiceRequestInput.due_at:type_name -> google.protobuf.Timestamp
+	13, // 4: human_resource.hrservice.v1.ServiceRequestInput.resolved_at:type_name -> google.protobuf.Timestamp
 	1,  // 5: human_resource.hrservice.v1.CreateServiceRequestRequest.input:type_name -> human_resource.hrservice.v1.ServiceRequestInput
 	1,  // 6: human_resource.hrservice.v1.UpdateServiceRequestRequest.input:type_name -> human_resource.hrservice.v1.ServiceRequestInput
-	13, // 7: human_resource.hrservice.v1.UpdateServiceRequestRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 7: human_resource.hrservice.v1.UpdateServiceRequestRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 8: human_resource.hrservice.v1.ServiceRequestResponse.value:type_name -> human_resource.hrservice.v1.ServiceRequest
 	0,  // 9: human_resource.hrservice.v1.ServiceRequestsResponse.items:type_name -> human_resource.hrservice.v1.ServiceRequest
-	14, // 10: human_resource.hrservice.v1.ServiceRequestsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	12, // 11: human_resource.hrservice.v1.ServiceRequestEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	15, // 10: human_resource.hrservice.v1.ServiceRequestsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	13, // 11: human_resource.hrservice.v1.ServiceRequestEvent.occurred_at:type_name -> google.protobuf.Timestamp
 	7,  // 12: human_resource.hrservice.v1.CreateServiceRequestEventRequest.input:type_name -> human_resource.hrservice.v1.ServiceRequestEventInput
 	7,  // 13: human_resource.hrservice.v1.UpdateServiceRequestEventRequest.input:type_name -> human_resource.hrservice.v1.ServiceRequestEventInput
-	13, // 14: human_resource.hrservice.v1.UpdateServiceRequestEventRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 14: human_resource.hrservice.v1.UpdateServiceRequestEventRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,  // 15: human_resource.hrservice.v1.ServiceRequestEventResponse.value:type_name -> human_resource.hrservice.v1.ServiceRequestEvent
 	6,  // 16: human_resource.hrservice.v1.ServiceRequestEventsResponse.items:type_name -> human_resource.hrservice.v1.ServiceRequestEvent
-	14, // 17: human_resource.hrservice.v1.ServiceRequestEventsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	2,  // 18: human_resource.hrservice.v1.HRService.CreateServiceRequest:input_type -> human_resource.hrservice.v1.CreateServiceRequestRequest
-	3,  // 19: human_resource.hrservice.v1.HRService.UpdateServiceRequest:input_type -> human_resource.hrservice.v1.UpdateServiceRequestRequest
-	15, // 20: human_resource.hrservice.v1.HRService.DeleteServiceRequest:input_type -> human_resource.common.v1.IDRequest
-	15, // 21: human_resource.hrservice.v1.HRService.GetServiceRequestByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 22: human_resource.hrservice.v1.HRService.GetAllServiceRequests:input_type -> human_resource.common.v1.PageRequest
-	17, // 23: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 24: human_resource.hrservice.v1.HRService.FindServiceRequestByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 25: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestType:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 26: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 27: human_resource.hrservice.v1.HRService.FindServiceRequestByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 28: human_resource.hrservice.v1.HRService.FindServiceRequestByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 29: human_resource.hrservice.v1.HRService.FindServiceRequestByRestrictedDetailsDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 30: human_resource.hrservice.v1.HRService.FindServiceRequestByResolutionDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 31: human_resource.hrservice.v1.HRService.FindServiceRequestByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 32: human_resource.hrservice.v1.HRService.CreateServiceRequestEvent:input_type -> human_resource.hrservice.v1.CreateServiceRequestEventRequest
-	9,  // 33: human_resource.hrservice.v1.HRService.UpdateServiceRequestEvent:input_type -> human_resource.hrservice.v1.UpdateServiceRequestEventRequest
-	15, // 34: human_resource.hrservice.v1.HRService.DeleteServiceRequestEvent:input_type -> human_resource.common.v1.IDRequest
-	15, // 35: human_resource.hrservice.v1.HRService.GetServiceRequestEventByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 36: human_resource.hrservice.v1.HRService.GetAllServiceRequestEvents:input_type -> human_resource.common.v1.PageRequest
-	17, // 37: human_resource.hrservice.v1.HRService.FindServiceRequestEventByServiceRequestID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 38: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEventType:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 39: human_resource.hrservice.v1.HRService.FindServiceRequestEventByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 40: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 41: human_resource.hrservice.v1.HRService.FindServiceRequestEventByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 42: human_resource.hrservice.v1.HRService.CreateServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
-	4,  // 43: human_resource.hrservice.v1.HRService.UpdateServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
-	18, // 44: human_resource.hrservice.v1.HRService.DeleteServiceRequest:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 45: human_resource.hrservice.v1.HRService.GetServiceRequestByID:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
-	5,  // 46: human_resource.hrservice.v1.HRService.GetAllServiceRequests:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 47: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestNumber:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 48: human_resource.hrservice.v1.HRService.FindServiceRequestByWorkerID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 49: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestType:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 50: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestedByPrincipalID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 51: human_resource.hrservice.v1.HRService.FindServiceRequestByAssignedPrincipalID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 52: human_resource.hrservice.v1.HRService.FindServiceRequestByStatus:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 53: human_resource.hrservice.v1.HRService.FindServiceRequestByRestrictedDetailsDocumentVersionReferenceID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 54: human_resource.hrservice.v1.HRService.FindServiceRequestByResolutionDocumentVersionReferenceID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	5,  // 55: human_resource.hrservice.v1.HRService.FindServiceRequestByIdempotencyKey:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
-	10, // 56: human_resource.hrservice.v1.HRService.CreateServiceRequestEvent:output_type -> human_resource.hrservice.v1.ServiceRequestEventResponse
-	10, // 57: human_resource.hrservice.v1.HRService.UpdateServiceRequestEvent:output_type -> human_resource.hrservice.v1.ServiceRequestEventResponse
-	18, // 58: human_resource.hrservice.v1.HRService.DeleteServiceRequestEvent:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 59: human_resource.hrservice.v1.HRService.GetServiceRequestEventByID:output_type -> human_resource.hrservice.v1.ServiceRequestEventResponse
-	11, // 60: human_resource.hrservice.v1.HRService.GetAllServiceRequestEvents:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
-	11, // 61: human_resource.hrservice.v1.HRService.FindServiceRequestEventByServiceRequestID:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
-	11, // 62: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEventType:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
-	11, // 63: human_resource.hrservice.v1.HRService.FindServiceRequestEventByActorPrincipalID:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
-	11, // 64: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEvidenceDocumentVersionReferenceID:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
-	11, // 65: human_resource.hrservice.v1.HRService.FindServiceRequestEventByIdempotencyKey:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
-	42, // [42:66] is the sub-list for method output_type
-	18, // [18:42] is the sub-list for method input_type
+	15, // 17: human_resource.hrservice.v1.ServiceRequestEventsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	12, // 18: human_resource.hrservice.v1.HRService.ResolveServiceRequest:input_type -> human_resource.hrservice.v1.ResolveServiceRequestRequest
+	16, // 19: human_resource.hrservice.v1.HRService.CloseServiceRequest:input_type -> human_resource.common.v1.IDRequest
+	16, // 20: human_resource.hrservice.v1.HRService.CancelServiceRequest:input_type -> human_resource.common.v1.IDRequest
+	16, // 21: human_resource.hrservice.v1.HRService.AssignServiceRequest:input_type -> human_resource.common.v1.IDRequest
+	2,  // 22: human_resource.hrservice.v1.HRService.CreateServiceRequest:input_type -> human_resource.hrservice.v1.CreateServiceRequestRequest
+	3,  // 23: human_resource.hrservice.v1.HRService.UpdateServiceRequest:input_type -> human_resource.hrservice.v1.UpdateServiceRequestRequest
+	16, // 24: human_resource.hrservice.v1.HRService.DeleteServiceRequest:input_type -> human_resource.common.v1.IDRequest
+	16, // 25: human_resource.hrservice.v1.HRService.GetServiceRequestByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 26: human_resource.hrservice.v1.HRService.GetAllServiceRequests:input_type -> human_resource.common.v1.PageRequest
+	18, // 27: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 28: human_resource.hrservice.v1.HRService.FindServiceRequestByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 29: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestType:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 30: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 31: human_resource.hrservice.v1.HRService.FindServiceRequestByAssignedPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 32: human_resource.hrservice.v1.HRService.FindServiceRequestByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 33: human_resource.hrservice.v1.HRService.FindServiceRequestByRestrictedDetailsDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 34: human_resource.hrservice.v1.HRService.FindServiceRequestByResolutionDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 35: human_resource.hrservice.v1.HRService.FindServiceRequestByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	8,  // 36: human_resource.hrservice.v1.HRService.CreateServiceRequestEvent:input_type -> human_resource.hrservice.v1.CreateServiceRequestEventRequest
+	9,  // 37: human_resource.hrservice.v1.HRService.UpdateServiceRequestEvent:input_type -> human_resource.hrservice.v1.UpdateServiceRequestEventRequest
+	16, // 38: human_resource.hrservice.v1.HRService.DeleteServiceRequestEvent:input_type -> human_resource.common.v1.IDRequest
+	16, // 39: human_resource.hrservice.v1.HRService.GetServiceRequestEventByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 40: human_resource.hrservice.v1.HRService.GetAllServiceRequestEvents:input_type -> human_resource.common.v1.PageRequest
+	18, // 41: human_resource.hrservice.v1.HRService.FindServiceRequestEventByServiceRequestID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 42: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEventType:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 43: human_resource.hrservice.v1.HRService.FindServiceRequestEventByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 44: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 45: human_resource.hrservice.v1.HRService.FindServiceRequestEventByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 46: human_resource.hrservice.v1.HRService.ResolveServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
+	4,  // 47: human_resource.hrservice.v1.HRService.CloseServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
+	4,  // 48: human_resource.hrservice.v1.HRService.CancelServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
+	4,  // 49: human_resource.hrservice.v1.HRService.AssignServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
+	4,  // 50: human_resource.hrservice.v1.HRService.CreateServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
+	4,  // 51: human_resource.hrservice.v1.HRService.UpdateServiceRequest:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
+	19, // 52: human_resource.hrservice.v1.HRService.DeleteServiceRequest:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 53: human_resource.hrservice.v1.HRService.GetServiceRequestByID:output_type -> human_resource.hrservice.v1.ServiceRequestResponse
+	5,  // 54: human_resource.hrservice.v1.HRService.GetAllServiceRequests:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 55: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestNumber:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 56: human_resource.hrservice.v1.HRService.FindServiceRequestByWorkerID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 57: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestType:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 58: human_resource.hrservice.v1.HRService.FindServiceRequestByRequestedByPrincipalID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 59: human_resource.hrservice.v1.HRService.FindServiceRequestByAssignedPrincipalID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 60: human_resource.hrservice.v1.HRService.FindServiceRequestByStatus:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 61: human_resource.hrservice.v1.HRService.FindServiceRequestByRestrictedDetailsDocumentVersionReferenceID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 62: human_resource.hrservice.v1.HRService.FindServiceRequestByResolutionDocumentVersionReferenceID:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	5,  // 63: human_resource.hrservice.v1.HRService.FindServiceRequestByIdempotencyKey:output_type -> human_resource.hrservice.v1.ServiceRequestsResponse
+	10, // 64: human_resource.hrservice.v1.HRService.CreateServiceRequestEvent:output_type -> human_resource.hrservice.v1.ServiceRequestEventResponse
+	10, // 65: human_resource.hrservice.v1.HRService.UpdateServiceRequestEvent:output_type -> human_resource.hrservice.v1.ServiceRequestEventResponse
+	19, // 66: human_resource.hrservice.v1.HRService.DeleteServiceRequestEvent:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 67: human_resource.hrservice.v1.HRService.GetServiceRequestEventByID:output_type -> human_resource.hrservice.v1.ServiceRequestEventResponse
+	11, // 68: human_resource.hrservice.v1.HRService.GetAllServiceRequestEvents:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
+	11, // 69: human_resource.hrservice.v1.HRService.FindServiceRequestEventByServiceRequestID:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
+	11, // 70: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEventType:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
+	11, // 71: human_resource.hrservice.v1.HRService.FindServiceRequestEventByActorPrincipalID:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
+	11, // 72: human_resource.hrservice.v1.HRService.FindServiceRequestEventByEvidenceDocumentVersionReferenceID:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
+	11, // 73: human_resource.hrservice.v1.HRService.FindServiceRequestEventByIdempotencyKey:output_type -> human_resource.hrservice.v1.ServiceRequestEventsResponse
+	46, // [46:74] is the sub-list for method output_type
+	18, // [18:46] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
@@ -1099,7 +1167,7 @@ func file_human_resource_hrservice_v1_hrservice_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_hrservice_v1_hrservice_proto_rawDesc), len(file_human_resource_hrservice_v1_hrservice_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -3,10 +3,43 @@ package service
 
 import (
 	"strings"
+	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 )
+
+// ValidateAssignmentManager memeriksa identitas dan masa kerja manajer untuk seluruh periode penempatan.
+func ValidateAssignmentManager(worker, manager *entity.Worker, managerID string, from time.Time, to *time.Time) error {
+	if worker == nil || manager == nil || !strings.EqualFold(manager.ID, managerID) ||
+		strings.EqualFold(manager.ID, worker.ID) || manager.Status != entity.WorkerStatusActive ||
+		!strings.EqualFold(manager.PrimaryLegalEntityReferenceID, worker.PrimaryLegalEntityReferenceID) ||
+		(manager.HireDate != nil && entity.CompareDates(from, *manager.HireDate) < 0) ||
+		(manager.ServiceStartDate != nil && entity.CompareDates(from, *manager.ServiceStartDate) < 0) ||
+		(manager.TerminationDate != nil && (to == nil || entity.CompareDates(*to, *manager.TerminationDate) > 0)) {
+		return hrerrors.ErrReferenceConflict
+	}
+	return nil
+}
+
+// ClosePrimaryAssignment mengakhiri penempatan primer lama sehari sebelum penempatan pengganti.
+func ClosePrimaryAssignment(worker *entity.Worker, source *entity.WorkerAssignment, effectiveDate time.Time) (*entity.WorkerAssignment, error) {
+	endDate := effectiveDate.AddDate(0, 0, -1)
+	if worker == nil || source == nil || worker.Status != entity.WorkerStatusActive ||
+		worker.TerminationDate != nil ||
+		(worker.HireDate != nil && entity.CompareDates(effectiveDate, *worker.HireDate) < 0) ||
+		(worker.ServiceStartDate != nil && entity.CompareDates(effectiveDate, *worker.ServiceStartDate) < 0) ||
+		worker.PrimaryAssignmentID == nil || !strings.EqualFold(*worker.PrimaryAssignmentID, source.ID) ||
+		!strings.EqualFold(worker.ID, source.WorkerID) || source.AssignmentType != "primary" ||
+		source.CancelledAt != nil || source.ApprovedAt == nil || source.ApprovedByPrincipalID == nil ||
+		entity.CompareDates(effectiveDate, source.ValidFrom) <= 0 ||
+		(source.ValidTo != nil && entity.CompareDates(endDate, *source.ValidTo) > 0) {
+		return nil, hrerrors.ErrReferenceConflict
+	}
+	closed := *source
+	closed.ValidTo = &endDate
+	return &closed, nil
+}
 
 // ValidateAssignment memeriksa satu penempatan terhadap pekerja dan posisi yang dimuat pemanggil.
 // Keberadaan master Foundation, kapasitas serentak dan approval tetap diperiksa use case.

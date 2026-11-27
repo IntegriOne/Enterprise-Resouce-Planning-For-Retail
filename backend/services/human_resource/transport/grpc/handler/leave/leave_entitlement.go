@@ -19,6 +19,7 @@ func leaveEntitlement(v *entity.LeaveEntitlement) *pb.LeaveEntitlement {
 		EntitlementPeriodStart: v.EntitlementPeriodStart.Format("2006-01-02"), EntitlementPeriodEnd: v.EntitlementPeriodEnd.Format("2006-01-02"),
 		OpeningBalance: string(v.OpeningBalance), AccruedQuantity: string(v.AccruedQuantity), UsedQuantitySnapshot: string(v.UsedQuantitySnapshot),
 		AdjustedQuantity: string(v.AdjustedQuantity), ClosingBalanceSnapshot: string(v.ClosingBalanceSnapshot), UomCode: v.UOMCode,
+		ClosedAt: timestamp(v.ClosedAt), ClosedByPrincipalId: v.ClosedByPrincipalID,
 		Revision: v.Revision, CalculatedAt: timestamppb.New(v.CalculatedAt), SourceWorkforceSnapshotReferenceId: v.SourceWorkforceSnapshotReferenceID,
 	}
 }
@@ -134,4 +135,15 @@ func (h *Handler) FindLeaveEntitlementBySourceWorkforceSnapshotReferenceID(ctx c
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return leaveEntitlements(h.service.FindLeaveEntitlementBySourceWorkforceSnapshotReferenceID(ctx, r.Value, int(r.Limit), int(r.Offset)))
+}
+
+func (h *Handler) CloseLeaveEntitlement(ctx context.Context, request *common.IDRequest) (*pb.LeaveEntitlementResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	closed, err := h.service.CloseLeaveEntitlement(ctx, request.Id)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.LeaveEntitlementResponse{Item: leaveEntitlement(closed)}, nil
 }

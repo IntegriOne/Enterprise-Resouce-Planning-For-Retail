@@ -28,7 +28,12 @@ type offboardingTaskReader interface {
 	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 }
 
+type offboardingPayrollReader interface {
+	FindByIDForUpdate(context.Context, string) (*entity.PayrollRun, error)
+}
+
 type offboardingPlanValidator struct {
+	payroll offboardingPayrollReader
 	workers offboardingWorkerReader
 	plans   offboardingPlanReader
 	tasks   offboardingTaskReader
@@ -47,7 +52,7 @@ func OffboardingValidators(repos *repository.Registry) (map[string]MutationValid
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
-		"hr_offboarding_plans": &offboardingPlanValidator{workers: repos.Worker, plans: repos.OffboardingPlan, tasks: repos.OffboardingTask},
+		"hr_offboarding_plans": &offboardingPlanValidator{workers: repos.Worker, plans: repos.OffboardingPlan, tasks: repos.OffboardingTask, payroll: repos.PayrollRun},
 		"hr_offboarding_tasks": &offboardingTaskValidator{workers: repos.Worker, plans: repos.OffboardingPlan, tasks: repos.OffboardingTask},
 	}, nil
 }
@@ -64,7 +69,7 @@ func (v *offboardingPlanValidator) ValidateMutation(ctx context.Context, table s
 	if before != nil {
 		var ok bool
 		old, ok = before.(*entity.OffboardingPlan)
-		if !ok || old == nil || (old.Status != "draft" && old.Status != "approved") {
+		if !ok || old == nil || (old.Status != "draft" && old.Status != "approved" && old.Status != "in_progress") {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -72,19 +77,51 @@ func (v *offboardingPlanValidator) ValidateMutation(ctx context.Context, table s
 		return hrerrors.ErrInvalidInput
 	}
 	plan := old
-	transition := false
+	approving := false
+	starting := false
+	completing := false
+	cancelling := false
 	if after != nil {
 		var ok bool
 		plan, ok = after.(*entity.OffboardingPlan)
-		if !ok || plan == nil || plan.CompletedAt != nil || plan.ExitInterviewDocumentVersionReferenceID != nil ||
-			plan.FinalPayrollRunID != nil || plan.FinanceClearanceReferenceID != nil {
+		if !ok || plan == nil || plan.ExitInterviewDocumentVersionReferenceID != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
-		switch {
-		case old != nil && old.Status == "draft" && plan.Status == "approved":
+		approving = old != nil && old.Status == "draft" && plan.Status == "approved"
+		starting = old != nil && old.Status == "approved" && plan.Status == "in_progress"
+		completing = old != nil && old.Status == "in_progress" && plan.Status == "completed"
+		cancelling = old != nil && old.Status == "approved" && plan.Status == "cancelled"
+		if cancelling {
+			expected := *old
+			expected.Status = "cancelled"
+			expected.CancelledAt, expected.CancelledByPrincipalID, expected.CancellationReason = plan.CancelledAt, plan.CancelledByPrincipalID, plan.CancellationReason
+			if old.ApprovedAt == nil || old.ApprovedByPrincipalID == nil || plan.CancelledAt == nil ||
+				plan.CancelledByPrincipalID == nil || plan.CancellationReason == nil || strings.TrimSpace(*plan.CancellationReason) == "" ||
+				plan.CancelledAt.Before(*old.ApprovedAt) || !reflect.DeepEqual(&expected, plan) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if plan.CancelledAt != nil || plan.CancelledByPrincipalID != nil || plan.CancellationReason != nil {
+			return hrerrors.ErrWorkflowRequired
+		} else if completing {
+			expected := *old
+			expected.Status = "completed"
+			expected.CompletedAt = plan.CompletedAt
+			expected.FinalPayrollRunID = plan.FinalPayrollRunID
+			expected.FinanceClearanceReferenceID = plan.FinanceClearanceReferenceID
+			if old.CompletedAt != nil || old.FinalPayrollRunID != nil || old.FinanceClearanceReferenceID != nil ||
+				plan.CompletedAt == nil || plan.FinalPayrollRunID == nil || plan.FinanceClearanceReferenceID == nil ||
+				old.ApprovedAt == nil || plan.CompletedAt.Before(*old.ApprovedAt) ||
+				entity.CompareDates(plan.CompletedAt.UTC(), plan.TerminationEffectiveDate) < 0 ||
+				!reflect.DeepEqual(&expected, plan) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if plan.CompletedAt != nil || plan.FinalPayrollRunID != nil || plan.FinanceClearanceReferenceID != nil {
+			return hrerrors.ErrWorkflowRequired
+		} else if approving {
 			expected := *old
 			expected.Status = "approved"
-			expected.ApprovedAt, expected.ApprovedByPrincipalID = plan.ApprovedAt, plan.ApprovedByPrincipalID
+			expected.ApprovedAt = plan.ApprovedAt
+			expected.ApprovedByPrincipalID = plan.ApprovedByPrincipalID
 			if old.ApprovedAt != nil || old.ApprovedByPrincipalID != nil ||
 				plan.ApprovedAt == nil || plan.ApprovedByPrincipalID == nil ||
 				strings.EqualFold(old.CreatedByPrincipalID, *plan.ApprovedByPrincipalID) ||
@@ -93,18 +130,16 @@ func (v *offboardingPlanValidator) ValidateMutation(ctx context.Context, table s
 				!reflect.DeepEqual(&expected, plan) {
 				return hrerrors.ErrWorkflowRequired
 			}
-			transition = true
-		case old != nil && old.Status == "approved" && plan.Status == "in_progress":
+		} else if starting {
 			expected := *old
 			expected.Status = "in_progress"
 			if old.ApprovedAt == nil || old.ApprovedByPrincipalID == nil ||
 				strings.EqualFold(old.CreatedByPrincipalID, *old.ApprovedByPrincipalID) ||
-				old.ApprovedAt.Before(old.CreatedAt) || !reflect.DeepEqual(&expected, plan) {
+				old.ApprovedAt.Before(old.CreatedAt) ||
+				!reflect.DeepEqual(&expected, plan) {
 				return hrerrors.ErrWorkflowRequired
 			}
-			transition = true
-		case plan.Status != "draft" || (old != nil && old.Status != "draft") ||
-			plan.ApprovedAt != nil || plan.ApprovedByPrincipalID != nil:
+		} else if (old != nil && old.Status != "draft") || plan.Status != "draft" || plan.ApprovedAt != nil || plan.ApprovedByPrincipalID != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 		if old != nil && (old.ID != plan.ID || old.WorkerID != plan.WorkerID ||
@@ -119,16 +154,80 @@ func (v *offboardingPlanValidator) ValidateMutation(ctx context.Context, table s
 	if err != nil {
 		return offboardingReferenceError(err)
 	}
-	if worker == nil || worker.Status != entity.WorkerStatusActive && worker.Status != entity.WorkerStatusNoticePeriod ||
+	if worker == nil || worker.Status != entity.WorkerStatusActive && worker.Status != entity.WorkerStatusNoticePeriod &&
+		(!completing || worker.Status != entity.WorkerStatusTerminated) ||
 		worker.HireDate != nil && entity.CompareDates(plan.NoticeDate, *worker.HireDate) < 0 {
 		return hrerrors.ErrReferenceConflict
 	}
-	if old != nil && !transition && (after == nil || !reflect.DeepEqual(old, plan)) {
+	if cancelling {
+		if worker.IAMPrincipalReferenceID != nil && strings.EqualFold(*worker.IAMPrincipalReferenceID, *plan.CancelledByPrincipalID) {
+			return hrerrors.ErrForbidden
+		}
+		return nil
+	}
+	if after != nil && !completing && worker.ServiceStartDate != nil &&
+		entity.CompareDates(plan.LastWorkingDate, *worker.ServiceStartDate) < 0 {
+		return hrerrors.ErrReferenceConflict
+	}
+	if approving && worker.IAMPrincipalReferenceID != nil &&
+		strings.EqualFold(*worker.IAMPrincipalReferenceID, *plan.ApprovedByPrincipalID) {
+		return hrerrors.ErrForbidden
+	}
+	if completing {
+		if worker.Status != entity.WorkerStatusTerminated || worker.TerminationDate == nil ||
+			entity.CompareDates(*worker.TerminationDate, plan.TerminationEffectiveDate) != 0 ||
+			(worker.TerminationReasonCode != nil && *worker.TerminationReasonCode != plan.ReasonCode) {
+			return hrerrors.ErrReferenceConflict
+		}
+		if operation.RequireDependency(v.payroll) != nil {
+			return hrerrors.ErrUnavailable
+		}
+		run, err := v.payroll.FindByIDForUpdate(ctx, *plan.FinalPayrollRunID)
+		if err != nil {
+			return offboardingReferenceError(err)
+		}
+		if run == nil || !strings.EqualFold(run.EmployingLegalEntityReferenceID, worker.PrimaryLegalEntityReferenceID) {
+			return hrerrors.ErrReferenceConflict
+		}
+		mandatory := []domainrepo.Filter{
+			{Column: "offboarding_plan_id", Values: []any{plan.ID}},
+			{Column: "is_mandatory", Values: []any{true}},
+		}
+		total, err := v.tasks.CountWhere(ctx, mandatory)
+		if err != nil {
+			return err
+		}
+		tasks, err := operation.CollectComplete(ctx, total, func(limit, offset int) (operation.Page[entity.OffboardingTask], error) {
+			items, err := v.tasks.SelectWhere(ctx, mandatory, limit, offset)
+			return operation.Page[entity.OffboardingTask]{Items: items}, err
+		})
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			switch task.Status {
+			case "completed":
+				if task.CompletedAt == nil || task.OwnerConfirmationReferenceID == nil ||
+					task.CompletedAt.Before(*plan.ApprovedAt) || task.CompletedAt.After(*plan.CompletedAt) {
+					return hrerrors.ErrReferenceConflict
+				}
+			case "waived":
+				if task.WaivedByPrincipalID == nil || task.WaiverReason == nil || strings.TrimSpace(*task.WaiverReason) == "" {
+					return hrerrors.ErrReferenceConflict
+				}
+			default:
+				return hrerrors.ErrReferenceConflict
+			}
+		}
+		return nil
+	}
+	requiresTasks := approving || starting
+	if requiresTasks || (old != nil && (after == nil || !reflect.DeepEqual(old, plan))) {
 		count, err := v.tasks.CountWhere(ctx, []domainrepo.Filter{{Column: "offboarding_plan_id", Values: []any{plan.ID}}})
 		if err != nil {
 			return err
 		}
-		if count != 0 {
+		if (requiresTasks && count == 0) || (!requiresTasks && count != 0) {
 			return hrerrors.ErrReferenceConflict
 		}
 	}
@@ -171,12 +270,37 @@ func (v *offboardingTaskValidator) ValidateMutation(ctx context.Context, table s
 		return hrerrors.ErrInvalidInput
 	}
 	task := old
+	waiving := false
+	completing := false
 	if after != nil {
 		var ok bool
 		task, ok = after.(*entity.OffboardingTask)
-		if !ok || task == nil || task.Status != "pending" || task.CompletedAt != nil ||
-			task.OwnerConfirmationReferenceID != nil || task.WaiverReason != nil || task.WaivedByPrincipalID != nil ||
+		if !ok || task == nil ||
 			task.AssignedPrincipalID != nil || task.OwnerManagement != "human_resource" {
+			return hrerrors.ErrWorkflowRequired
+		}
+		completing = old != nil && task.Status == "completed"
+		waiving = old != nil && task.Status == "waived"
+		if completing {
+			expected := *old
+			expected.Status = "completed"
+			expected.CompletedAt = task.CompletedAt
+			expected.OwnerConfirmationReferenceID = task.OwnerConfirmationReferenceID
+			if task.CompletedAt == nil || task.OwnerConfirmationReferenceID == nil || !reflect.DeepEqual(&expected, task) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if task.CompletedAt != nil || task.OwnerConfirmationReferenceID != nil {
+			return hrerrors.ErrWorkflowRequired
+		} else if waiving {
+			expected := *old
+			expected.Status = "waived"
+			expected.WaiverReason = task.WaiverReason
+			expected.WaivedByPrincipalID = task.WaivedByPrincipalID
+			if task.WaiverReason == nil || strings.TrimSpace(*task.WaiverReason) == "" ||
+				task.WaivedByPrincipalID == nil || !reflect.DeepEqual(&expected, task) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if task.Status != "pending" || task.WaiverReason != nil || task.WaivedByPrincipalID != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 		if old != nil && (old.ID != task.ID || old.OffboardingPlanID != task.OffboardingPlanID) {
@@ -187,17 +311,33 @@ func (v *offboardingTaskValidator) ValidateMutation(ctx context.Context, table s
 	if err != nil {
 		return offboardingReferenceError(err)
 	}
-	if plan == nil || plan.Status != "draft" {
+	requiredStatus := "draft"
+	if waiving || completing {
+		requiredStatus = "in_progress"
+	}
+	if plan == nil || plan.Status != requiredStatus {
+		return hrerrors.ErrReferenceConflict
+	}
+	if completing && (plan.ApprovedAt == nil || task.CompletedAt.Before(*plan.ApprovedAt)) {
 		return hrerrors.ErrReferenceConflict
 	}
 	worker, err := v.workers.FindByIDForUpdate(ctx, plan.WorkerID)
 	if err != nil {
 		return offboardingReferenceError(err)
 	}
-	if worker == nil || worker.Status != entity.WorkerStatusActive && worker.Status != entity.WorkerStatusNoticePeriod {
+	if worker == nil {
 		return hrerrors.ErrReferenceConflict
 	}
-	if after == nil {
+	if worker.Status != entity.WorkerStatusActive && worker.Status != entity.WorkerStatusNoticePeriod &&
+		(!(waiving || completing) || worker.Status != entity.WorkerStatusTerminated ||
+			worker.TerminationDate == nil || entity.CompareDates(*worker.TerminationDate, plan.TerminationEffectiveDate) != 0) {
+		return hrerrors.ErrReferenceConflict
+	}
+	if waiving && worker.IAMPrincipalReferenceID != nil &&
+		strings.EqualFold(*worker.IAMPrincipalReferenceID, *task.WaivedByPrincipalID) {
+		return hrerrors.ErrForbidden
+	}
+	if after == nil || waiving || completing {
 		return nil
 	}
 	if task.DueAt != nil && (offboardingDateBefore(*task.DueAt, plan.NoticeDate) ||

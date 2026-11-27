@@ -143,3 +143,17 @@ func (s *server) FindDevelopmentPlanByApprovedByPrincipalID(ctx context.Context,
 	}
 	return plans(s.service.FindDevelopmentPlanByApprovedByPrincipalID(ctx, r.Value, int(r.Limit), int(r.Offset)))
 }
+
+func (s *server) ApproveDevelopmentPlan(ctx context.Context, request *commonv1.IDRequest) (*pb.DevelopmentPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return planResult(s.service.ApproveDevelopmentPlan(ctx, request.Id))
+}
+
+func (s *server) CompleteDevelopmentPlan(ctx context.Context, request *commonv1.IDRequest) (*pb.DevelopmentPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return planResult(s.service.CompleteDevelopmentPlan(ctx, request.Id))
+}

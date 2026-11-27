@@ -26,6 +26,10 @@ type learningEnrollmentStub struct {
 }
 
 func (s *learningEnrollmentStub) SelectWhere(_ context.Context, filters []domainrepo.Filter, _, _ int) ([]entity.LearningEnrollment, error) {
+	if len(filters) == 3 && filters[0].Column == "worker_id" &&
+		filters[1].Column == "course_id" && filters[2].Column == "enrollment_status" {
+		return nil, nil
+	}
 	if len(filters) != 1 || filters[0].Column != "idempotency_key" {
 		return nil, hrerrors.ErrInvalidInput
 	}
@@ -51,6 +55,17 @@ func TestLearningEnrollmentValidatorChecksParentsDatesAndIdempotency(t *testing.
 	if len(order) != 2 || order[0] != "worker" || order[1] != "course" {
 		t.Fatalf("parent lock order = %v", order)
 	}
+	futureStart := assigned.AddDate(0, 0, 1)
+	courses.course.ValidFrom = &futureStart
+	courses.course.ValidTo = nil
+	if err := validator.ValidateMutation(t.Context(), "hr_learning_enrollments", nil, value); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("assignment before course validity: %v", err)
+	}
+	courses.course.ValidFrom = &validTo
+	if err := validator.ValidateMutation(t.Context(), "hr_learning_enrollments", nil, value); err != nil {
+		t.Fatalf("assignment on first course validity date: %v", err)
+	}
+	courses.course.ValidTo = &validTo
 	enrollments.rows = []entity.LearningEnrollment{{ID: "other"}}
 	if err := validator.ValidateMutation(t.Context(), "hr_learning_enrollments", nil, value); !errors.Is(err, hrerrors.ErrAlreadyExists) {
 		t.Fatalf("duplicate idempotency key: %v", err)

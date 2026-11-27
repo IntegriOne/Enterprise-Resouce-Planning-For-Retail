@@ -545,6 +545,8 @@ type LeaveEntitlement struct {
 	Revision                           int64                  `protobuf:"varint,13,opt,name=revision,proto3" json:"revision,omitempty"`
 	CalculatedAt                       *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=calculated_at,json=calculatedAt,proto3" json:"calculated_at,omitempty"`
 	SourceWorkforceSnapshotReferenceId *string                `protobuf:"bytes,15,opt,name=source_workforce_snapshot_reference_id,json=sourceWorkforceSnapshotReferenceId,proto3,oneof" json:"source_workforce_snapshot_reference_id,omitempty"`
+	ClosedAt                           *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=closed_at,json=closedAt,proto3" json:"closed_at,omitempty"`
+	ClosedByPrincipalId                *string                `protobuf:"bytes,17,opt,name=closed_by_principal_id,json=closedByPrincipalId,proto3,oneof" json:"closed_by_principal_id,omitempty"`
 	unknownFields                      protoimpl.UnknownFields
 	sizeCache                          protoimpl.SizeCache
 }
@@ -680,6 +682,20 @@ func (x *LeaveEntitlement) GetCalculatedAt() *timestamppb.Timestamp {
 func (x *LeaveEntitlement) GetSourceWorkforceSnapshotReferenceId() string {
 	if x != nil && x.SourceWorkforceSnapshotReferenceId != nil {
 		return *x.SourceWorkforceSnapshotReferenceId
+	}
+	return ""
+}
+
+func (x *LeaveEntitlement) GetClosedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ClosedAt
+	}
+	return nil
+}
+
+func (x *LeaveEntitlement) GetClosedByPrincipalId() string {
+	if x != nil && x.ClosedByPrincipalId != nil {
+		return *x.ClosedByPrincipalId
 	}
 	return ""
 }
@@ -1036,6 +1052,9 @@ type LeaveAdjustment struct {
 	ApprovedAt             *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
 	CreatedAt              *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	IdempotencyKey         string                 `protobuf:"bytes,10,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	RejectedAt             *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=rejected_at,json=rejectedAt,proto3" json:"rejected_at,omitempty"`
+	RejectedByPrincipalId  *string                `protobuf:"bytes,12,opt,name=rejected_by_principal_id,json=rejectedByPrincipalId,proto3,oneof" json:"rejected_by_principal_id,omitempty"`
+	RejectionReasonCode    *string                `protobuf:"bytes,13,opt,name=rejection_reason_code,json=rejectionReasonCode,proto3,oneof" json:"rejection_reason_code,omitempty"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -1136,6 +1155,27 @@ func (x *LeaveAdjustment) GetCreatedAt() *timestamppb.Timestamp {
 func (x *LeaveAdjustment) GetIdempotencyKey() string {
 	if x != nil {
 		return x.IdempotencyKey
+	}
+	return ""
+}
+
+func (x *LeaveAdjustment) GetRejectedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RejectedAt
+	}
+	return nil
+}
+
+func (x *LeaveAdjustment) GetRejectedByPrincipalId() string {
+	if x != nil && x.RejectedByPrincipalId != nil {
+		return *x.RejectedByPrincipalId
+	}
+	return ""
+}
+
+func (x *LeaveAdjustment) GetRejectionReasonCode() string {
+	if x != nil && x.RejectionReasonCode != nil {
+		return *x.RejectionReasonCode
 	}
 	return ""
 }
@@ -2089,6 +2129,58 @@ func (x *PostLedgerEntryRequest) GetInput() *PostLedgerEntryInput {
 	return nil
 }
 
+type RejectLeaveAdjustmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ReasonCode    string                 `protobuf:"bytes,2,opt,name=reason_code,json=reasonCode,proto3" json:"reason_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RejectLeaveAdjustmentRequest) Reset() {
+	*x = RejectLeaveAdjustmentRequest{}
+	mi := &file_human_resource_leave_v1_leave_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RejectLeaveAdjustmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectLeaveAdjustmentRequest) ProtoMessage() {}
+
+func (x *RejectLeaveAdjustmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_leave_v1_leave_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectLeaveAdjustmentRequest.ProtoReflect.Descriptor instead.
+func (*RejectLeaveAdjustmentRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_leave_v1_leave_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *RejectLeaveAdjustmentRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RejectLeaveAdjustmentRequest) GetReasonCode() string {
+	if x != nil {
+		return x.ReasonCode
+	}
+	return ""
+}
+
 var File_human_resource_leave_v1_leave_proto protoreflect.FileDescriptor
 
 const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
@@ -2166,7 +2258,7 @@ const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2$.human_resource.leave.v1.LeavePolicyR\x04item\"\x8b\x01\n" +
 	"\x15LeavePoliciesResponse\x12:\n" +
 	"\x05items\x18\x01 \x03(\v2$.human_resource.leave.v1.LeavePolicyR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xfd\x05\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\x8b\a\n" +
 	"\x10LeaveEntitlement\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tworker_id\x18\x02 \x01(\tR\bworkerId\x12&\n" +
@@ -2183,8 +2275,11 @@ const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
 	"\buom_code\x18\f \x01(\tR\auomCode\x12\x1a\n" +
 	"\brevision\x18\r \x01(\x03R\brevision\x12?\n" +
 	"\rcalculated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\fcalculatedAt\x12W\n" +
-	"&source_workforce_snapshot_reference_id\x18\x0f \x01(\tH\x00R\"sourceWorkforceSnapshotReferenceId\x88\x01\x01B)\n" +
-	"'_source_workforce_snapshot_reference_id\"\xf5\a\n" +
+	"&source_workforce_snapshot_reference_id\x18\x0f \x01(\tH\x00R\"sourceWorkforceSnapshotReferenceId\x88\x01\x01\x127\n" +
+	"\tclosed_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\bclosedAt\x128\n" +
+	"\x16closed_by_principal_id\x18\x11 \x01(\tH\x01R\x13closedByPrincipalId\x88\x01\x01B)\n" +
+	"'_source_workforce_snapshot_reference_idB\x19\n" +
+	"\x17_closed_by_principal_id\"\xf5\a\n" +
 	"\x15LeaveEntitlementInput\x12 \n" +
 	"\tworker_id\x18\x01 \x01(\tH\x00R\bworkerId\x88\x01\x01\x12+\n" +
 	"\x0fleave_policy_id\x18\x02 \x01(\tH\x01R\rleavePolicyId\x88\x01\x01\x12<\n" +
@@ -2226,7 +2321,7 @@ const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2).human_resource.leave.v1.LeaveEntitlementR\x04item\"\x94\x01\n" +
 	"\x19LeaveEntitlementsResponse\x12?\n" +
 	"\x05items\x18\x01 \x03(\v2).human_resource.leave.v1.LeaveEntitlementR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xdf\x03\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xca\x05\n" +
 	"\x0fLeaveAdjustment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12%\n" +
 	"\x0eentitlement_id\x18\x02 \x01(\tR\rentitlementId\x12%\n" +
@@ -2241,8 +2336,14 @@ const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12'\n" +
 	"\x0fidempotency_key\x18\n" +
-	" \x01(\tR\x0eidempotencyKeyB\x1b\n" +
-	"\x19_approved_by_principal_id\"\xcc\x03\n" +
+	" \x01(\tR\x0eidempotencyKey\x12;\n" +
+	"\vrejected_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"rejectedAt\x12<\n" +
+	"\x18rejected_by_principal_id\x18\f \x01(\tH\x01R\x15rejectedByPrincipalId\x88\x01\x01\x127\n" +
+	"\x15rejection_reason_code\x18\r \x01(\tH\x02R\x13rejectionReasonCode\x88\x01\x01B\x1b\n" +
+	"\x19_approved_by_principal_idB\x1b\n" +
+	"\x19_rejected_by_principal_idB\x18\n" +
+	"\x16_rejection_reason_code\"\xcc\x03\n" +
 	"\x14LeaveAdjustmentInput\x12*\n" +
 	"\x0eentitlement_id\x18\x01 \x01(\tH\x00R\rentitlementId\x88\x01\x01\x12*\n" +
 	"\x0equantity_delta\x18\x02 \x01(\tH\x01R\rquantityDelta\x88\x01\x01\x12$\n" +
@@ -2360,7 +2461,11 @@ const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
 	"\f_reason_codeJ\x04\b\x01\x10\x02J\x04\b\x02\x10\x03R\x0eentitlement_idR\x0eentry_sequence\"\x84\x01\n" +
 	"\x16PostLedgerEntryRequest\x12%\n" +
 	"\x0eentitlement_id\x18\x01 \x01(\tR\rentitlementId\x12C\n" +
-	"\x05input\x18\x02 \x01(\v2-.human_resource.leave.v1.PostLedgerEntryInputR\x05input2\x80*\n" +
+	"\x05input\x18\x02 \x01(\v2-.human_resource.leave.v1.PostLedgerEntryInputR\x05input\"O\n" +
+	"\x1cRejectLeaveAdjustmentRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
+	"\vreason_code\x18\x02 \x01(\tR\n" +
+	"reasonCode2\xf4+\n" +
 	"\fLeaveService\x12t\n" +
 	"\x11CreateLeavePolicy\x121.human_resource.leave.v1.CreateLeavePolicyRequest\x1a,.human_resource.leave.v1.LeavePolicyResponse\x12t\n" +
 	"\x11UpdateLeavePolicy\x121.human_resource.leave.v1.UpdateLeavePolicyRequest\x1a,.human_resource.leave.v1.LeavePolicyResponse\x12a\n" +
@@ -2388,7 +2493,8 @@ const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
 	"\x1fFindLeaveAdjustmentByReasonCode\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.leave.v1.LeaveAdjustmentsResponse\x12\x8f\x01\n" +
 	"+FindLeaveAdjustmentByRequestedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.leave.v1.LeaveAdjustmentsResponse\x12\x8e\x01\n" +
 	"*FindLeaveAdjustmentByApprovedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.leave.v1.LeaveAdjustmentsResponse\x12\x87\x01\n" +
-	"#FindLeaveAdjustmentByIdempotencyKey\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.leave.v1.LeaveAdjustmentsResponse\x12o\n" +
+	"#FindLeaveAdjustmentByIdempotencyKey\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.leave.v1.LeaveAdjustmentsResponse\x12\x80\x01\n" +
+	"\x15RejectLeaveAdjustment\x125.human_resource.leave.v1.RejectLeaveAdjustmentRequest\x1a0.human_resource.leave.v1.LeaveAdjustmentResponse\x12o\n" +
 	"\x16ApproveLeaveAdjustment\x12#.human_resource.common.v1.IDRequest\x1a0.human_resource.leave.v1.LeaveAdjustmentResponse\x12\x83\x01\n" +
 	"\x16CreateLeaveLedgerEntry\x126.human_resource.leave.v1.CreateLeaveLedgerEntryRequest\x1a1.human_resource.leave.v1.LeaveLedgerEntryResponse\x12\x83\x01\n" +
 	"\x16UpdateLeaveLedgerEntry\x126.human_resource.leave.v1.UpdateLeaveLedgerEntryRequest\x1a1.human_resource.leave.v1.LeaveLedgerEntryResponse\x12f\n" +
@@ -2402,7 +2508,8 @@ const file_human_resource_leave_v1_leave_proto_rawDesc = "" +
 	"&FindLeaveLedgerEntryBySourceManagement\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.leave.v1.LeaveLedgerEntriesResponse\x12\x89\x01\n" +
 	"#FindLeaveLedgerEntryBySourceEventID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.leave.v1.LeaveLedgerEntriesResponse\x12\x86\x01\n" +
 	" FindLeaveLedgerEntryByReasonCode\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.leave.v1.LeaveLedgerEntriesResponse\x12\x8c\x01\n" +
-	"&FindLeaveLedgerEntryByActorPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.leave.v1.LeaveLedgerEntriesResponse\x12u\n" +
+	"&FindLeaveLedgerEntryByActorPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.leave.v1.LeaveLedgerEntriesResponse\x12o\n" +
+	"\x15CloseLeaveEntitlement\x12#.human_resource.common.v1.IDRequest\x1a1.human_resource.leave.v1.LeaveEntitlementResponse\x12u\n" +
 	"\x0fPostLedgerEntry\x12/.human_resource.leave.v1.PostLedgerEntryRequest\x1a1.human_resource.leave.v1.LeaveEntitlementResponseBoZmgithub.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/leave/v1;leavev1b\x06proto3"
 
 var (
@@ -2417,7 +2524,7 @@ func file_human_resource_leave_v1_leave_proto_rawDescGZIP() []byte {
 	return file_human_resource_leave_v1_leave_proto_rawDescData
 }
 
-var file_human_resource_leave_v1_leave_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_human_resource_leave_v1_leave_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_human_resource_leave_v1_leave_proto_goTypes = []any{
 	(*LeavePolicy)(nil),                   // 0: human_resource.leave.v1.LeavePolicy
 	(*LeavePolicyInput)(nil),              // 1: human_resource.leave.v1.LeavePolicyInput
@@ -2445,134 +2552,141 @@ var file_human_resource_leave_v1_leave_proto_goTypes = []any{
 	(*LeaveLedgerEntriesResponse)(nil),    // 23: human_resource.leave.v1.LeaveLedgerEntriesResponse
 	(*PostLedgerEntryInput)(nil),          // 24: human_resource.leave.v1.PostLedgerEntryInput
 	(*PostLedgerEntryRequest)(nil),        // 25: human_resource.leave.v1.PostLedgerEntryRequest
-	(*fieldmaskpb.FieldMask)(nil),         // 26: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                   // 27: human_resource.common.v1.PageInfo
-	(*timestamppb.Timestamp)(nil),         // 28: google.protobuf.Timestamp
-	(*v1.IDRequest)(nil),                  // 29: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                // 30: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),        // 31: human_resource.common.v1.StringFinderRequest
-	(*v1.EmptyResponse)(nil),              // 32: human_resource.common.v1.EmptyResponse
+	(*RejectLeaveAdjustmentRequest)(nil),  // 26: human_resource.leave.v1.RejectLeaveAdjustmentRequest
+	(*fieldmaskpb.FieldMask)(nil),         // 27: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                   // 28: human_resource.common.v1.PageInfo
+	(*timestamppb.Timestamp)(nil),         // 29: google.protobuf.Timestamp
+	(*v1.IDRequest)(nil),                  // 30: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                // 31: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),        // 32: human_resource.common.v1.StringFinderRequest
+	(*v1.EmptyResponse)(nil),              // 33: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_leave_v1_leave_proto_depIdxs = []int32{
 	1,  // 0: human_resource.leave.v1.CreateLeavePolicyRequest.input:type_name -> human_resource.leave.v1.LeavePolicyInput
 	1,  // 1: human_resource.leave.v1.UpdateLeavePolicyRequest.input:type_name -> human_resource.leave.v1.LeavePolicyInput
-	26, // 2: human_resource.leave.v1.UpdateLeavePolicyRequest.update_mask:type_name -> google.protobuf.FieldMask
+	27, // 2: human_resource.leave.v1.UpdateLeavePolicyRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 3: human_resource.leave.v1.LeavePolicyResponse.item:type_name -> human_resource.leave.v1.LeavePolicy
 	0,  // 4: human_resource.leave.v1.LeavePoliciesResponse.items:type_name -> human_resource.leave.v1.LeavePolicy
-	27, // 5: human_resource.leave.v1.LeavePoliciesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	28, // 6: human_resource.leave.v1.LeaveEntitlement.calculated_at:type_name -> google.protobuf.Timestamp
-	7,  // 7: human_resource.leave.v1.CreateLeaveEntitlementRequest.input:type_name -> human_resource.leave.v1.LeaveEntitlementInput
-	7,  // 8: human_resource.leave.v1.UpdateLeaveEntitlementRequest.input:type_name -> human_resource.leave.v1.LeaveEntitlementInput
-	26, // 9: human_resource.leave.v1.UpdateLeaveEntitlementRequest.update_mask:type_name -> google.protobuf.FieldMask
-	6,  // 10: human_resource.leave.v1.LeaveEntitlementResponse.item:type_name -> human_resource.leave.v1.LeaveEntitlement
-	6,  // 11: human_resource.leave.v1.LeaveEntitlementsResponse.items:type_name -> human_resource.leave.v1.LeaveEntitlement
-	27, // 12: human_resource.leave.v1.LeaveEntitlementsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	28, // 13: human_resource.leave.v1.LeaveAdjustment.approved_at:type_name -> google.protobuf.Timestamp
-	28, // 14: human_resource.leave.v1.LeaveAdjustment.created_at:type_name -> google.protobuf.Timestamp
-	28, // 15: human_resource.leave.v1.LeaveAdjustmentInput.approved_at:type_name -> google.protobuf.Timestamp
-	13, // 16: human_resource.leave.v1.CreateLeaveAdjustmentRequest.input:type_name -> human_resource.leave.v1.LeaveAdjustmentInput
-	13, // 17: human_resource.leave.v1.UpdateLeaveAdjustmentRequest.input:type_name -> human_resource.leave.v1.LeaveAdjustmentInput
-	26, // 18: human_resource.leave.v1.UpdateLeaveAdjustmentRequest.update_mask:type_name -> google.protobuf.FieldMask
-	12, // 19: human_resource.leave.v1.LeaveAdjustmentResponse.item:type_name -> human_resource.leave.v1.LeaveAdjustment
-	12, // 20: human_resource.leave.v1.LeaveAdjustmentsResponse.items:type_name -> human_resource.leave.v1.LeaveAdjustment
-	27, // 21: human_resource.leave.v1.LeaveAdjustmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	28, // 22: human_resource.leave.v1.LeaveLedgerEntry.recorded_at:type_name -> google.protobuf.Timestamp
-	19, // 23: human_resource.leave.v1.CreateLeaveLedgerEntryRequest.input:type_name -> human_resource.leave.v1.LeaveLedgerEntryInput
-	19, // 24: human_resource.leave.v1.UpdateLeaveLedgerEntryRequest.input:type_name -> human_resource.leave.v1.LeaveLedgerEntryInput
-	26, // 25: human_resource.leave.v1.UpdateLeaveLedgerEntryRequest.update_mask:type_name -> google.protobuf.FieldMask
-	18, // 26: human_resource.leave.v1.LeaveLedgerEntryResponse.item:type_name -> human_resource.leave.v1.LeaveLedgerEntry
-	18, // 27: human_resource.leave.v1.LeaveLedgerEntriesResponse.items:type_name -> human_resource.leave.v1.LeaveLedgerEntry
-	27, // 28: human_resource.leave.v1.LeaveLedgerEntriesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	24, // 29: human_resource.leave.v1.PostLedgerEntryRequest.input:type_name -> human_resource.leave.v1.PostLedgerEntryInput
-	2,  // 30: human_resource.leave.v1.LeaveService.CreateLeavePolicy:input_type -> human_resource.leave.v1.CreateLeavePolicyRequest
-	3,  // 31: human_resource.leave.v1.LeaveService.UpdateLeavePolicy:input_type -> human_resource.leave.v1.UpdateLeavePolicyRequest
-	29, // 32: human_resource.leave.v1.LeaveService.DeleteLeavePolicy:input_type -> human_resource.common.v1.IDRequest
-	29, // 33: human_resource.leave.v1.LeaveService.GetLeavePolicyByID:input_type -> human_resource.common.v1.IDRequest
-	30, // 34: human_resource.leave.v1.LeaveService.GetAllLeavePolicies:input_type -> human_resource.common.v1.PageRequest
-	31, // 35: human_resource.leave.v1.LeaveService.FindLeavePolicyByPolicyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 36: human_resource.leave.v1.LeaveService.FindLeavePolicyByLeaveTypeCode:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 37: human_resource.leave.v1.LeaveService.FindLeavePolicyByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 38: human_resource.leave.v1.LeaveService.CreateLeaveEntitlement:input_type -> human_resource.leave.v1.CreateLeaveEntitlementRequest
-	9,  // 39: human_resource.leave.v1.LeaveService.UpdateLeaveEntitlement:input_type -> human_resource.leave.v1.UpdateLeaveEntitlementRequest
-	29, // 40: human_resource.leave.v1.LeaveService.DeleteLeaveEntitlement:input_type -> human_resource.common.v1.IDRequest
-	29, // 41: human_resource.leave.v1.LeaveService.GetLeaveEntitlementByID:input_type -> human_resource.common.v1.IDRequest
-	30, // 42: human_resource.leave.v1.LeaveService.GetAllLeaveEntitlements:input_type -> human_resource.common.v1.PageRequest
-	31, // 43: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 44: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByLeavePolicyID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 45: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByUOMCode:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 46: human_resource.leave.v1.LeaveService.FindLeaveEntitlementBySourceWorkforceSnapshotReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	14, // 47: human_resource.leave.v1.LeaveService.CreateLeaveAdjustment:input_type -> human_resource.leave.v1.CreateLeaveAdjustmentRequest
-	15, // 48: human_resource.leave.v1.LeaveService.UpdateLeaveAdjustment:input_type -> human_resource.leave.v1.UpdateLeaveAdjustmentRequest
-	29, // 49: human_resource.leave.v1.LeaveService.DeleteLeaveAdjustment:input_type -> human_resource.common.v1.IDRequest
-	29, // 50: human_resource.leave.v1.LeaveService.GetLeaveAdjustmentByID:input_type -> human_resource.common.v1.IDRequest
-	30, // 51: human_resource.leave.v1.LeaveService.GetAllLeaveAdjustments:input_type -> human_resource.common.v1.PageRequest
-	31, // 52: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByEntitlementID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 53: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 54: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 55: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 56: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	29, // 57: human_resource.leave.v1.LeaveService.ApproveLeaveAdjustment:input_type -> human_resource.common.v1.IDRequest
-	20, // 58: human_resource.leave.v1.LeaveService.CreateLeaveLedgerEntry:input_type -> human_resource.leave.v1.CreateLeaveLedgerEntryRequest
-	21, // 59: human_resource.leave.v1.LeaveService.UpdateLeaveLedgerEntry:input_type -> human_resource.leave.v1.UpdateLeaveLedgerEntryRequest
-	29, // 60: human_resource.leave.v1.LeaveService.DeleteLeaveLedgerEntry:input_type -> human_resource.common.v1.IDRequest
-	29, // 61: human_resource.leave.v1.LeaveService.GetLeaveLedgerEntryByID:input_type -> human_resource.common.v1.IDRequest
-	30, // 62: human_resource.leave.v1.LeaveService.GetAllLeaveLedgerEntries:input_type -> human_resource.common.v1.PageRequest
-	31, // 63: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntitlementID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 64: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntryType:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 65: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByAdjustmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 66: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReversesEntryID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 67: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceManagement:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 68: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceEventID:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 69: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	31, // 70: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	25, // 71: human_resource.leave.v1.LeaveService.PostLedgerEntry:input_type -> human_resource.leave.v1.PostLedgerEntryRequest
-	4,  // 72: human_resource.leave.v1.LeaveService.CreateLeavePolicy:output_type -> human_resource.leave.v1.LeavePolicyResponse
-	4,  // 73: human_resource.leave.v1.LeaveService.UpdateLeavePolicy:output_type -> human_resource.leave.v1.LeavePolicyResponse
-	32, // 74: human_resource.leave.v1.LeaveService.DeleteLeavePolicy:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 75: human_resource.leave.v1.LeaveService.GetLeavePolicyByID:output_type -> human_resource.leave.v1.LeavePolicyResponse
-	5,  // 76: human_resource.leave.v1.LeaveService.GetAllLeavePolicies:output_type -> human_resource.leave.v1.LeavePoliciesResponse
-	5,  // 77: human_resource.leave.v1.LeaveService.FindLeavePolicyByPolicyCode:output_type -> human_resource.leave.v1.LeavePoliciesResponse
-	5,  // 78: human_resource.leave.v1.LeaveService.FindLeavePolicyByLeaveTypeCode:output_type -> human_resource.leave.v1.LeavePoliciesResponse
-	5,  // 79: human_resource.leave.v1.LeaveService.FindLeavePolicyByJurisdictionCode:output_type -> human_resource.leave.v1.LeavePoliciesResponse
-	10, // 80: human_resource.leave.v1.LeaveService.CreateLeaveEntitlement:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
-	10, // 81: human_resource.leave.v1.LeaveService.UpdateLeaveEntitlement:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
-	32, // 82: human_resource.leave.v1.LeaveService.DeleteLeaveEntitlement:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 83: human_resource.leave.v1.LeaveService.GetLeaveEntitlementByID:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
-	11, // 84: human_resource.leave.v1.LeaveService.GetAllLeaveEntitlements:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
-	11, // 85: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByWorkerID:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
-	11, // 86: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByLeavePolicyID:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
-	11, // 87: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByUOMCode:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
-	11, // 88: human_resource.leave.v1.LeaveService.FindLeaveEntitlementBySourceWorkforceSnapshotReferenceID:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
-	16, // 89: human_resource.leave.v1.LeaveService.CreateLeaveAdjustment:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
-	16, // 90: human_resource.leave.v1.LeaveService.UpdateLeaveAdjustment:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
-	32, // 91: human_resource.leave.v1.LeaveService.DeleteLeaveAdjustment:output_type -> human_resource.common.v1.EmptyResponse
-	16, // 92: human_resource.leave.v1.LeaveService.GetLeaveAdjustmentByID:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
-	17, // 93: human_resource.leave.v1.LeaveService.GetAllLeaveAdjustments:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
-	17, // 94: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByEntitlementID:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
-	17, // 95: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByReasonCode:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
-	17, // 96: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByRequestedByPrincipalID:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
-	17, // 97: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByApprovedByPrincipalID:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
-	17, // 98: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByIdempotencyKey:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
-	16, // 99: human_resource.leave.v1.LeaveService.ApproveLeaveAdjustment:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
-	22, // 100: human_resource.leave.v1.LeaveService.CreateLeaveLedgerEntry:output_type -> human_resource.leave.v1.LeaveLedgerEntryResponse
-	22, // 101: human_resource.leave.v1.LeaveService.UpdateLeaveLedgerEntry:output_type -> human_resource.leave.v1.LeaveLedgerEntryResponse
-	32, // 102: human_resource.leave.v1.LeaveService.DeleteLeaveLedgerEntry:output_type -> human_resource.common.v1.EmptyResponse
-	22, // 103: human_resource.leave.v1.LeaveService.GetLeaveLedgerEntryByID:output_type -> human_resource.leave.v1.LeaveLedgerEntryResponse
-	23, // 104: human_resource.leave.v1.LeaveService.GetAllLeaveLedgerEntries:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 105: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntitlementID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 106: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntryType:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 107: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByAdjustmentID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 108: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReversesEntryID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 109: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceManagement:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 110: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceEventID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 111: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReasonCode:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	23, // 112: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByActorPrincipalID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
-	10, // 113: human_resource.leave.v1.LeaveService.PostLedgerEntry:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
-	72, // [72:114] is the sub-list for method output_type
-	30, // [30:72] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	28, // 5: human_resource.leave.v1.LeavePoliciesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	29, // 6: human_resource.leave.v1.LeaveEntitlement.calculated_at:type_name -> google.protobuf.Timestamp
+	29, // 7: human_resource.leave.v1.LeaveEntitlement.closed_at:type_name -> google.protobuf.Timestamp
+	7,  // 8: human_resource.leave.v1.CreateLeaveEntitlementRequest.input:type_name -> human_resource.leave.v1.LeaveEntitlementInput
+	7,  // 9: human_resource.leave.v1.UpdateLeaveEntitlementRequest.input:type_name -> human_resource.leave.v1.LeaveEntitlementInput
+	27, // 10: human_resource.leave.v1.UpdateLeaveEntitlementRequest.update_mask:type_name -> google.protobuf.FieldMask
+	6,  // 11: human_resource.leave.v1.LeaveEntitlementResponse.item:type_name -> human_resource.leave.v1.LeaveEntitlement
+	6,  // 12: human_resource.leave.v1.LeaveEntitlementsResponse.items:type_name -> human_resource.leave.v1.LeaveEntitlement
+	28, // 13: human_resource.leave.v1.LeaveEntitlementsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	29, // 14: human_resource.leave.v1.LeaveAdjustment.approved_at:type_name -> google.protobuf.Timestamp
+	29, // 15: human_resource.leave.v1.LeaveAdjustment.created_at:type_name -> google.protobuf.Timestamp
+	29, // 16: human_resource.leave.v1.LeaveAdjustment.rejected_at:type_name -> google.protobuf.Timestamp
+	29, // 17: human_resource.leave.v1.LeaveAdjustmentInput.approved_at:type_name -> google.protobuf.Timestamp
+	13, // 18: human_resource.leave.v1.CreateLeaveAdjustmentRequest.input:type_name -> human_resource.leave.v1.LeaveAdjustmentInput
+	13, // 19: human_resource.leave.v1.UpdateLeaveAdjustmentRequest.input:type_name -> human_resource.leave.v1.LeaveAdjustmentInput
+	27, // 20: human_resource.leave.v1.UpdateLeaveAdjustmentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	12, // 21: human_resource.leave.v1.LeaveAdjustmentResponse.item:type_name -> human_resource.leave.v1.LeaveAdjustment
+	12, // 22: human_resource.leave.v1.LeaveAdjustmentsResponse.items:type_name -> human_resource.leave.v1.LeaveAdjustment
+	28, // 23: human_resource.leave.v1.LeaveAdjustmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	29, // 24: human_resource.leave.v1.LeaveLedgerEntry.recorded_at:type_name -> google.protobuf.Timestamp
+	19, // 25: human_resource.leave.v1.CreateLeaveLedgerEntryRequest.input:type_name -> human_resource.leave.v1.LeaveLedgerEntryInput
+	19, // 26: human_resource.leave.v1.UpdateLeaveLedgerEntryRequest.input:type_name -> human_resource.leave.v1.LeaveLedgerEntryInput
+	27, // 27: human_resource.leave.v1.UpdateLeaveLedgerEntryRequest.update_mask:type_name -> google.protobuf.FieldMask
+	18, // 28: human_resource.leave.v1.LeaveLedgerEntryResponse.item:type_name -> human_resource.leave.v1.LeaveLedgerEntry
+	18, // 29: human_resource.leave.v1.LeaveLedgerEntriesResponse.items:type_name -> human_resource.leave.v1.LeaveLedgerEntry
+	28, // 30: human_resource.leave.v1.LeaveLedgerEntriesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	24, // 31: human_resource.leave.v1.PostLedgerEntryRequest.input:type_name -> human_resource.leave.v1.PostLedgerEntryInput
+	2,  // 32: human_resource.leave.v1.LeaveService.CreateLeavePolicy:input_type -> human_resource.leave.v1.CreateLeavePolicyRequest
+	3,  // 33: human_resource.leave.v1.LeaveService.UpdateLeavePolicy:input_type -> human_resource.leave.v1.UpdateLeavePolicyRequest
+	30, // 34: human_resource.leave.v1.LeaveService.DeleteLeavePolicy:input_type -> human_resource.common.v1.IDRequest
+	30, // 35: human_resource.leave.v1.LeaveService.GetLeavePolicyByID:input_type -> human_resource.common.v1.IDRequest
+	31, // 36: human_resource.leave.v1.LeaveService.GetAllLeavePolicies:input_type -> human_resource.common.v1.PageRequest
+	32, // 37: human_resource.leave.v1.LeaveService.FindLeavePolicyByPolicyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 38: human_resource.leave.v1.LeaveService.FindLeavePolicyByLeaveTypeCode:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 39: human_resource.leave.v1.LeaveService.FindLeavePolicyByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	8,  // 40: human_resource.leave.v1.LeaveService.CreateLeaveEntitlement:input_type -> human_resource.leave.v1.CreateLeaveEntitlementRequest
+	9,  // 41: human_resource.leave.v1.LeaveService.UpdateLeaveEntitlement:input_type -> human_resource.leave.v1.UpdateLeaveEntitlementRequest
+	30, // 42: human_resource.leave.v1.LeaveService.DeleteLeaveEntitlement:input_type -> human_resource.common.v1.IDRequest
+	30, // 43: human_resource.leave.v1.LeaveService.GetLeaveEntitlementByID:input_type -> human_resource.common.v1.IDRequest
+	31, // 44: human_resource.leave.v1.LeaveService.GetAllLeaveEntitlements:input_type -> human_resource.common.v1.PageRequest
+	32, // 45: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 46: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByLeavePolicyID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 47: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByUOMCode:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 48: human_resource.leave.v1.LeaveService.FindLeaveEntitlementBySourceWorkforceSnapshotReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	14, // 49: human_resource.leave.v1.LeaveService.CreateLeaveAdjustment:input_type -> human_resource.leave.v1.CreateLeaveAdjustmentRequest
+	15, // 50: human_resource.leave.v1.LeaveService.UpdateLeaveAdjustment:input_type -> human_resource.leave.v1.UpdateLeaveAdjustmentRequest
+	30, // 51: human_resource.leave.v1.LeaveService.DeleteLeaveAdjustment:input_type -> human_resource.common.v1.IDRequest
+	30, // 52: human_resource.leave.v1.LeaveService.GetLeaveAdjustmentByID:input_type -> human_resource.common.v1.IDRequest
+	31, // 53: human_resource.leave.v1.LeaveService.GetAllLeaveAdjustments:input_type -> human_resource.common.v1.PageRequest
+	32, // 54: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByEntitlementID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 55: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 56: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 57: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 58: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	26, // 59: human_resource.leave.v1.LeaveService.RejectLeaveAdjustment:input_type -> human_resource.leave.v1.RejectLeaveAdjustmentRequest
+	30, // 60: human_resource.leave.v1.LeaveService.ApproveLeaveAdjustment:input_type -> human_resource.common.v1.IDRequest
+	20, // 61: human_resource.leave.v1.LeaveService.CreateLeaveLedgerEntry:input_type -> human_resource.leave.v1.CreateLeaveLedgerEntryRequest
+	21, // 62: human_resource.leave.v1.LeaveService.UpdateLeaveLedgerEntry:input_type -> human_resource.leave.v1.UpdateLeaveLedgerEntryRequest
+	30, // 63: human_resource.leave.v1.LeaveService.DeleteLeaveLedgerEntry:input_type -> human_resource.common.v1.IDRequest
+	30, // 64: human_resource.leave.v1.LeaveService.GetLeaveLedgerEntryByID:input_type -> human_resource.common.v1.IDRequest
+	31, // 65: human_resource.leave.v1.LeaveService.GetAllLeaveLedgerEntries:input_type -> human_resource.common.v1.PageRequest
+	32, // 66: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntitlementID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 67: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntryType:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 68: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByAdjustmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 69: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReversesEntryID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 70: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceManagement:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 71: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceEventID:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 72: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	32, // 73: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByActorPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	30, // 74: human_resource.leave.v1.LeaveService.CloseLeaveEntitlement:input_type -> human_resource.common.v1.IDRequest
+	25, // 75: human_resource.leave.v1.LeaveService.PostLedgerEntry:input_type -> human_resource.leave.v1.PostLedgerEntryRequest
+	4,  // 76: human_resource.leave.v1.LeaveService.CreateLeavePolicy:output_type -> human_resource.leave.v1.LeavePolicyResponse
+	4,  // 77: human_resource.leave.v1.LeaveService.UpdateLeavePolicy:output_type -> human_resource.leave.v1.LeavePolicyResponse
+	33, // 78: human_resource.leave.v1.LeaveService.DeleteLeavePolicy:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 79: human_resource.leave.v1.LeaveService.GetLeavePolicyByID:output_type -> human_resource.leave.v1.LeavePolicyResponse
+	5,  // 80: human_resource.leave.v1.LeaveService.GetAllLeavePolicies:output_type -> human_resource.leave.v1.LeavePoliciesResponse
+	5,  // 81: human_resource.leave.v1.LeaveService.FindLeavePolicyByPolicyCode:output_type -> human_resource.leave.v1.LeavePoliciesResponse
+	5,  // 82: human_resource.leave.v1.LeaveService.FindLeavePolicyByLeaveTypeCode:output_type -> human_resource.leave.v1.LeavePoliciesResponse
+	5,  // 83: human_resource.leave.v1.LeaveService.FindLeavePolicyByJurisdictionCode:output_type -> human_resource.leave.v1.LeavePoliciesResponse
+	10, // 84: human_resource.leave.v1.LeaveService.CreateLeaveEntitlement:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
+	10, // 85: human_resource.leave.v1.LeaveService.UpdateLeaveEntitlement:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
+	33, // 86: human_resource.leave.v1.LeaveService.DeleteLeaveEntitlement:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 87: human_resource.leave.v1.LeaveService.GetLeaveEntitlementByID:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
+	11, // 88: human_resource.leave.v1.LeaveService.GetAllLeaveEntitlements:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
+	11, // 89: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByWorkerID:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
+	11, // 90: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByLeavePolicyID:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
+	11, // 91: human_resource.leave.v1.LeaveService.FindLeaveEntitlementByUOMCode:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
+	11, // 92: human_resource.leave.v1.LeaveService.FindLeaveEntitlementBySourceWorkforceSnapshotReferenceID:output_type -> human_resource.leave.v1.LeaveEntitlementsResponse
+	16, // 93: human_resource.leave.v1.LeaveService.CreateLeaveAdjustment:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
+	16, // 94: human_resource.leave.v1.LeaveService.UpdateLeaveAdjustment:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
+	33, // 95: human_resource.leave.v1.LeaveService.DeleteLeaveAdjustment:output_type -> human_resource.common.v1.EmptyResponse
+	16, // 96: human_resource.leave.v1.LeaveService.GetLeaveAdjustmentByID:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
+	17, // 97: human_resource.leave.v1.LeaveService.GetAllLeaveAdjustments:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
+	17, // 98: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByEntitlementID:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
+	17, // 99: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByReasonCode:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
+	17, // 100: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByRequestedByPrincipalID:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
+	17, // 101: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByApprovedByPrincipalID:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
+	17, // 102: human_resource.leave.v1.LeaveService.FindLeaveAdjustmentByIdempotencyKey:output_type -> human_resource.leave.v1.LeaveAdjustmentsResponse
+	16, // 103: human_resource.leave.v1.LeaveService.RejectLeaveAdjustment:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
+	16, // 104: human_resource.leave.v1.LeaveService.ApproveLeaveAdjustment:output_type -> human_resource.leave.v1.LeaveAdjustmentResponse
+	22, // 105: human_resource.leave.v1.LeaveService.CreateLeaveLedgerEntry:output_type -> human_resource.leave.v1.LeaveLedgerEntryResponse
+	22, // 106: human_resource.leave.v1.LeaveService.UpdateLeaveLedgerEntry:output_type -> human_resource.leave.v1.LeaveLedgerEntryResponse
+	33, // 107: human_resource.leave.v1.LeaveService.DeleteLeaveLedgerEntry:output_type -> human_resource.common.v1.EmptyResponse
+	22, // 108: human_resource.leave.v1.LeaveService.GetLeaveLedgerEntryByID:output_type -> human_resource.leave.v1.LeaveLedgerEntryResponse
+	23, // 109: human_resource.leave.v1.LeaveService.GetAllLeaveLedgerEntries:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 110: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntitlementID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 111: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByEntryType:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 112: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByAdjustmentID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 113: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReversesEntryID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 114: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceManagement:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 115: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryBySourceEventID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 116: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByReasonCode:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	23, // 117: human_resource.leave.v1.LeaveService.FindLeaveLedgerEntryByActorPrincipalID:output_type -> human_resource.leave.v1.LeaveLedgerEntriesResponse
+	10, // 118: human_resource.leave.v1.LeaveService.CloseLeaveEntitlement:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
+	10, // 119: human_resource.leave.v1.LeaveService.PostLedgerEntry:output_type -> human_resource.leave.v1.LeaveEntitlementResponse
+	76, // [76:120] is the sub-list for method output_type
+	32, // [32:76] is the sub-list for method input_type
+	32, // [32:32] is the sub-list for extension type_name
+	32, // [32:32] is the sub-list for extension extendee
+	0,  // [0:32] is the sub-list for field type_name
 }
 
 func init() { file_human_resource_leave_v1_leave_proto_init() }
@@ -2595,7 +2709,7 @@ func file_human_resource_leave_v1_leave_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_leave_v1_leave_proto_rawDesc), len(file_human_resource_leave_v1_leave_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   26,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

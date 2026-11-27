@@ -41,12 +41,16 @@ type OutboxConfig struct {
 	MaxAttempts       int
 }
 
+// EnterpriseFoundationConfig mengatur koneksi gRPC internal ke pemilik data Enterprise Foundation.
+type EnterpriseFoundationConfig struct {
+	Enabled    bool
+	Target     string
+	Timeout    time.Duration
+	HMACSecret []byte
+}
+
 // Config menyediakan dependency runtime yang sudah divalidasi sebelum listener dibuka.
 type Config struct {
-	IAMMandateTarget              string
-	IAMMandateTLS                 TLSConfig
-	TerminationAccessAddress      string
-	TerminationAccessTLS          TLSConfig
 	AppEnv, ServiceName, GRPCHost string
 	GRPCPort                      int
 	Database                      DatabaseConfig
@@ -57,21 +61,18 @@ type Config struct {
 	SecurityRedis                 authsession.RedisConfig
 	SecurityNamespace             string
 	Outbox                        OutboxConfig
+	EnterpriseFoundation          EnterpriseFoundationConfig
+	IAMMandateTarget              string
+	IAMMandateTLS                 TLSConfig
+	TerminationAccessAddress      string
+	TerminationAccessTLS          TLSConfig
+	PayrollEventsAddress          string
+	PayrollEventsTLS              TLSConfig
 }
 
 // Load membaca environment; nilai secret dapat dipasang sebagai berkas Docker secret.
 func Load() (Config, error) {
 	cfg := Config{
-		IAMMandateTarget: env("HRM_IAM_MANDATE_TARGET", ""),
-		IAMMandateTLS: TLSConfig{
-			CertFile: env("HRM_IAM_MANDATE_CERT_FILE", ""), KeyFile: env("HRM_IAM_MANDATE_KEY_FILE", ""),
-			CAFile: env("HRM_IAM_MANDATE_CA_FILE", ""), ServerName: env("HRM_IAM_MANDATE_SERVER_NAME", ""),
-		},
-		TerminationAccessAddress: env("HRM_TERMINATION_ACCESS_ADDR", ""),
-		TerminationAccessTLS: TLSConfig{
-			CertFile: env("HRM_TERMINATION_ACCESS_CERT_FILE", ""), KeyFile: env("HRM_TERMINATION_ACCESS_KEY_FILE", ""),
-			CAFile: env("HRM_TERMINATION_ACCESS_CLIENT_CA_FILE", ""),
-		},
 		AppEnv: env("APP_ENV", "development"), ServiceName: env("HRM_SERVICE_NAME", "integrione-human-resource"),
 		GRPCHost:          env("HRM_GRPC_HOST", "127.0.0.1"),
 		SecurityNamespace: env("HRM_SECURITY_NAMESPACE", "development"),
@@ -88,9 +89,28 @@ func Load() (Config, error) {
 			CertFile: env("HRM_GRPC_TLS_CERT_FILE", ""), KeyFile: env("HRM_GRPC_TLS_KEY_FILE", ""),
 			CAFile: env("HRM_GRPC_TLS_CA_FILE", ""), ServerName: env("HRM_GRPC_TLS_SERVER_NAME", "human-resource"),
 		},
+		TerminationAccessAddress: env("HRM_TERMINATION_ACCESS_ADDR", ""),
+		TerminationAccessTLS: TLSConfig{
+			CertFile: env("HRM_TERMINATION_ACCESS_CERT_FILE", ""), KeyFile: env("HRM_TERMINATION_ACCESS_KEY_FILE", ""),
+			CAFile: env("HRM_TERMINATION_ACCESS_CLIENT_CA_FILE", ""),
+		},
+		PayrollEventsAddress: env("HRM_PAYROLL_EVENTS_ADDR", ""),
+		PayrollEventsTLS: TLSConfig{
+			CertFile: env("HRM_PAYROLL_EVENTS_CERT_FILE", ""), KeyFile: env("HRM_PAYROLL_EVENTS_KEY_FILE", ""),
+			CAFile: env("HRM_PAYROLL_EVENTS_CLIENT_CA_FILE", ""),
+		},
+		IAMMandateTarget: env("HRM_IAM_MANDATE_TARGET", ""),
+		IAMMandateTLS: TLSConfig{
+			CertFile: env("HRM_IAM_MANDATE_CERT_FILE", ""), KeyFile: env("HRM_IAM_MANDATE_KEY_FILE", ""),
+			CAFile: env("HRM_IAM_MANDATE_CA_FILE", ""), ServerName: env("HRM_IAM_MANDATE_SERVER_NAME", ""),
+		},
 		Outbox: OutboxConfig{
 			Mode:       env("HRM_OUTBOX_MODE", "standby"),
 			WebhookURL: env("HRM_OUTBOX_WEBHOOK_URL", ""),
+		},
+		EnterpriseFoundation: EnterpriseFoundationConfig{
+			Enabled: strings.EqualFold(env("HRM_EF_ENABLED", "false"), "true"),
+			Target:  env("HRM_EF_GRPC_TARGET", ""),
 		},
 	}
 	integers := []struct {
@@ -125,6 +145,7 @@ func Load() (Config, error) {
 		{"HRM_REDIS_WRITE_TIMEOUT", time.Second, &cfg.SecurityRedis.WriteTimeout},
 		{"HRM_OUTBOX_POLL_INTERVAL", 5 * time.Second, &cfg.Outbox.PollInterval},
 		{"HRM_OUTBOX_PUBLISH_TIMEOUT", 5 * time.Second, &cfg.Outbox.PublishTimeout},
+		{"HRM_EF_GRPC_TIMEOUT", 5 * time.Second, &cfg.EnterpriseFoundation.Timeout},
 	}
 	for _, setting := range durations {
 		value, err := time.ParseDuration(env(setting.key, setting.fallback.String()))
@@ -149,6 +170,12 @@ func Load() (Config, error) {
 	}
 	if cfg.Outbox.Mode == "webhook" {
 		cfg.Outbox.WebhookHMACSecret, err = secret("HRM_OUTBOX_WEBHOOK_HMAC_SECRET")
+		if err != nil {
+			return Config{}, err
+		}
+	}
+	if cfg.EnterpriseFoundation.Enabled {
+		cfg.EnterpriseFoundation.HMACSecret, err = secret("HRM_EF_HMAC_SECRET")
 		if err != nil {
 			return Config{}, err
 		}
@@ -187,11 +214,23 @@ func (c Config) Validate() error {
 			portNumber == c.GRPCPort || tls.CertFile == "" || tls.KeyFile == "" || tls.CAFile == "" {
 			return errors.New("HRM termination access requires a separate port, certificate, key, and client CA")
 		}
+		// Relay memegang transaksi outbox saat IAM memanggil balik verifier HRM.
+		if c.IAMMandateTarget != "" && c.Database.MaxOpenConns < 2 {
+			return errors.New("HRM termination delivery requires HRM_DB_MAX_OPEN_CONNS to be at least 2")
+		}
 	}
 
-	// Relay memegang transaksi outbox saat IAM memanggil balik verifier HRM.
-	if c.TerminationAccessAddress != "" && c.IAMMandateTarget != "" && c.Database.MaxOpenConns < 2 {
-		return errors.New("HRM termination delivery requires HRM_DB_MAX_OPEN_CONNS to be at least 2")
+	if c.PayrollEventsAddress != "" || c.PayrollEventsTLS != (TLSConfig{}) {
+		_, port, err := net.SplitHostPort(c.PayrollEventsAddress)
+		payrollPort, portErr := strconv.Atoi(port)
+		_, terminationPort, _ := net.SplitHostPort(c.TerminationAccessAddress)
+		terminationPortNumber, _ := strconv.Atoi(terminationPort)
+		tls := c.PayrollEventsTLS
+		if err != nil || portErr != nil || payrollPort < 1 || payrollPort > 65535 ||
+			payrollPort == c.GRPCPort || payrollPort == terminationPortNumber ||
+			tls.CertFile == "" || tls.KeyFile == "" || tls.CAFile == "" {
+			return errors.New("HRM payroll events requires a separate port, certificate, key, and client CA")
+		}
 	}
 
 	if len(c.GatewayHMACSecret) < 32 {
@@ -254,6 +293,20 @@ func (c Config) Validate() error {
 	}
 	if (db.SSLMode == "verify-full" || db.SSLMode == "verify-ca") && db.SSLRootCert == "" {
 		return errors.New("HRM_DB_SSLROOTCERT is required for database certificate verification")
+	}
+	if c.EnterpriseFoundation.Enabled {
+		efHost, efPort, efAddrErr := net.SplitHostPort(strings.TrimSpace(c.EnterpriseFoundation.Target))
+		efPortNumber, efPortErr := strconv.Atoi(efPort)
+		if efAddrErr != nil || efHost == "" || strings.ContainsAny(efHost, "\r\n\t /") ||
+			efPortErr != nil || efPortNumber < 1 || efPortNumber > 65535 {
+			return errors.New("HRM_EF_GRPC_TARGET must contain a host and port")
+		}
+		if c.EnterpriseFoundation.Timeout <= 0 || c.EnterpriseFoundation.Timeout > time.Minute {
+			return errors.New("HRM_EF_GRPC_TIMEOUT is outside allowed bounds")
+		}
+		if len(c.EnterpriseFoundation.HMACSecret) < 32 {
+			return errors.New("HRM_EF_HMAC_SECRET must contain at least 32 bytes")
+		}
 	}
 	return nil
 }

@@ -67,7 +67,7 @@ func (s *Service) LinkWorkerPrincipal(ctx context.Context, workerID, principalID
 			EvidenceID: evidenceID, WorkerID: worker.ID, PersonPartyID: worker.PersonPartyReferenceID,
 			PrincipalID: principalID, RequestedByPrincipalID: actor.PrincipalID,
 		}); err != nil {
-			return nil, err
+			return nil, operation.OwnerVerificationError(txCtx, err)
 		}
 		event, err := entity.NewWorkerLifecycleEvent(entity.WorkerLifecycleEvent{
 			WorkerID: worker.ID, EventType: "principal_linked", OccurredAt: now, EffectiveDate: now.UTC(),

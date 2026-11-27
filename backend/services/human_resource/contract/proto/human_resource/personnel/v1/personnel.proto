@@ -11,6 +11,10 @@ service PersonnelService {
   rpc ActivateWorker(human_resource.common.v1.IDRequest) returns (WorkerResponse);
   rpc LinkWorkerPrincipal(LinkWorkerPrincipalRequest) returns (WorkerResponse);
   rpc TerminateWorker(TerminateWorkerRequest) returns (WorkerResponse);
+  rpc SubmitWorkerAssignmentTransfer(SubmitWorkerAssignmentTransferRequest) returns (SubmitWorkerAssignmentTransferResponse);
+  rpc ListWorkerAssignmentTransfers(ListWorkerAssignmentTransfersRequest) returns (ListWorkerAssignmentTransfersResponse);
+  rpc GetWorkerAssignmentTransfer(human_resource.common.v1.IDRequest) returns (GetWorkerAssignmentTransferResponse);
+  rpc DecideWorkerAssignmentTransfer(DecideWorkerAssignmentTransferRequest) returns (DecideWorkerAssignmentTransferResponse);
   rpc ApplyPrimaryAssignment(ApplyPrimaryAssignmentRequest) returns (WorkerResponse);
   rpc UpdateWorker(UpdateWorkerRequest) returns (WorkerResponse);
   rpc DeleteWorker(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -24,6 +28,7 @@ service PersonnelService {
   rpc FindWorkerByPrimaryAssignmentID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
   rpc FindWorkerByIAMPrincipalReferenceID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
   rpc FindWorkerByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (WorkersResponse);
+  rpc RecordSignedEmploymentContract(RecordSignedEmploymentContractRequest) returns (EmploymentContractResponse);
   rpc CreateEmploymentContract(CreateEmploymentContractRequest) returns (EmploymentContractResponse);
   rpc UpdateEmploymentContract(UpdateEmploymentContractRequest) returns (EmploymentContractResponse);
   rpc DeleteEmploymentContract(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -82,6 +87,64 @@ service PersonnelService {
   rpc FindEmergencyContactByWorkerID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
   rpc FindEmergencyContactByContactPartyReferenceID(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
   rpc FindEmergencyContactByRelationshipCode(human_resource.common.v1.StringFinderRequest) returns (EmergencyContactsResponse);
+}
+
+message SubmitWorkerAssignmentTransferRequest {
+  string worker_id = 1;
+  string source_assignment_id = 2;
+  string target_position_id = 3;
+  string effective_date = 4;
+  string reason_code = 5;
+  string idempotency_key = 6;
+}
+
+message DecideWorkerAssignmentTransferRequest {
+  string transfer_id = 1;
+  TransferDecision decision = 2;
+}
+
+enum TransferDecision {
+  TRANSFER_DECISION_UNSPECIFIED = 0;
+  TRANSFER_DECISION_APPROVE = 1;
+  TRANSFER_DECISION_REJECT = 2;
+}
+
+message ListWorkerAssignmentTransfersRequest {
+  string worker_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListWorkerAssignmentTransfersResponse {
+  repeated WorkerAssignmentTransfer items = 1;
+  human_resource.common.v1.PageInfo page = 2;
+}
+
+message GetWorkerAssignmentTransferResponse {
+  WorkerAssignmentTransfer item = 1;
+}
+
+message DecideWorkerAssignmentTransferResponse {
+  WorkerAssignmentTransfer item = 1;
+}
+
+message SubmitWorkerAssignmentTransferResponse {
+  WorkerAssignmentTransfer item = 1;
+}
+
+message WorkerAssignmentTransfer {
+  string id = 1;
+  string worker_id = 2;
+  string source_assignment_id = 3;
+  string target_position_id = 4;
+  string effective_date = 5;
+  string reason_code = 6;
+  string status = 7;
+  string requested_by_principal_id = 8;
+  google.protobuf.Timestamp requested_at = 9;
+  optional string decided_by_principal_id = 10;
+  google.protobuf.Timestamp decided_at = 11;
+  optional string applied_assignment_id = 12;
 }
 
 message LinkWorkerPrincipalRequest {
@@ -173,6 +236,11 @@ message EmploymentContractInput {
   optional string governing_jurisdiction_code = 15;
   optional string collective_agreement_id = 16;
 }
+message RecordSignedEmploymentContractRequest {
+  string contract_id = 1;
+  string document_version_id = 2;
+}
+
 message CreateEmploymentContractRequest { EmploymentContractInput input = 1; }
 message UpdateEmploymentContractRequest { string id = 1; EmploymentContractInput input = 2; google.protobuf.FieldMask update_mask = 3; }
 message EmploymentContractResponse { EmploymentContract item = 1; }

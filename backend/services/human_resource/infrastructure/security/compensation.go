@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -51,6 +52,7 @@ type compensationBandValidator struct {
 }
 
 type compensationRecordValidator struct {
+	records     domainrepo.RecordRepository[entity.CompensationRecord, string]
 	workers     compensationWorkerReader
 	assignments compensationAssignmentReader
 	positions   compensationPositionReader
@@ -73,7 +75,7 @@ func CompensationValidators(repos *repository.Registry) (map[string]MutationVali
 		},
 		"hr_compensation_records": &compensationRecordValidator{
 			workers: repos.Worker, assignments: repos.WorkerAssignment, positions: repos.Position,
-			jobs: repos.Job, components: repos.PayComponent, bands: repos.CompensationBand,
+			jobs: repos.Job, components: repos.PayComponent, bands: repos.CompensationBand, records: repos.CompensationRecord,
 		},
 	}, nil
 }
@@ -177,6 +179,19 @@ func (v *compensationRecordValidator) ValidateMutation(ctx context.Context, tabl
 		previous.PayFrequency != record.PayFrequency || !reflect.DeepEqual(previous.CompensationBandID, record.CompensationBandID))) {
 		return hrerrors.ErrInvalidInput
 	}
+	var approverID *string
+	if previous != nil && record.Status == entity.CompensationStatusApproved {
+		expected := *previous
+		expected.Status = entity.CompensationStatusApproved
+		expected.ApprovedByPrincipalID = record.ApprovedByPrincipalID
+		expected.ApprovedAt = record.ApprovedAt
+		if previous.ApprovedAt != nil || previous.ApprovedByPrincipalID != nil ||
+			record.ApprovedByPrincipalID == nil || record.ApprovedAt == nil || !reflect.DeepEqual(&expected, record) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		approverID = record.ApprovedByPrincipalID
+		record = previous
+	}
 	if record.Status != entity.CompensationStatusProposed || record.ApprovedByPrincipalID != nil ||
 		record.ApprovedAt != nil || record.SourceChangeReferenceID != nil || record.AccessClass != "restricted" ||
 		(record.CompensationType != "base_salary" && record.CompensationType != "allowance") {
@@ -191,12 +206,21 @@ func (v *compensationRecordValidator) ValidateMutation(ctx context.Context, tabl
 		(worker.TerminationDate != nil && (record.EffectiveTo == nil || entity.CompareDates(*record.EffectiveTo, *worker.TerminationDate) > 0)) {
 		return hrerrors.ErrReferenceConflict
 	}
+	if approverID != nil && worker.IAMPrincipalReferenceID != nil &&
+		strings.EqualFold(*approverID, *worker.IAMPrincipalReferenceID) {
+		return hrerrors.ErrForbidden
+	}
+	if approverID != nil {
+		if err := v.rejectOverlappingApproval(ctx, record); err != nil {
+			return err
+		}
+	}
 	assignment, err := v.assignments.FindByID(ctx, record.AssignmentID)
 	if err != nil {
 		return compensationReferenceError(err)
 	}
 	if assignment == nil || assignment.WorkerID != record.WorkerID ||
-		assignment.ApprovedByPrincipalID == nil || assignment.ApprovedAt == nil ||
+		assignment.CancelledAt != nil || assignment.ApprovedByPrincipalID == nil || assignment.ApprovedAt == nil ||
 		!compensationPeriodWithin(record.EffectiveFrom, record.EffectiveTo, assignment.ValidFrom, assignment.ValidTo) {
 		return hrerrors.ErrReferenceConflict
 	}
@@ -253,6 +277,34 @@ func (v *compensationRecordValidator) ValidateMutation(ctx context.Context, tabl
 		return hrerrors.ErrReferenceConflict
 	}
 	return nil
+}
+
+// rejectOverlappingApproval dijalankan saat pekerja sudah terkunci.
+func (v *compensationRecordValidator) rejectOverlappingApproval(ctx context.Context, record *entity.CompensationRecord) error {
+	if operation.RequireDependency(v.records) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	filters := []domainrepo.Filter{
+		{Column: "worker_id", Values: []any{record.WorkerID}},
+		{Column: "assignment_id", Values: []any{record.AssignmentID}},
+		{Column: "component_id", Values: []any{record.ComponentID}},
+		{Column: "status", Values: []any{entity.CompensationStatusApproved, entity.CompensationStatusActive}},
+	}
+	for offset := 0; ; offset += domainrepo.MaxLimit {
+		rows, err := v.records.SelectWhere(ctx, filters, domainrepo.MaxLimit, offset)
+		if err != nil {
+			return err
+		}
+		for _, existing := range rows {
+			if (existing.EffectiveTo == nil || entity.CompareDates(record.EffectiveFrom, *existing.EffectiveTo) <= 0) &&
+				(record.EffectiveTo == nil || entity.CompareDates(existing.EffectiveFrom, *record.EffectiveTo) <= 0) {
+				return hrerrors.ErrReferenceConflict
+			}
+		}
+		if len(rows) < domainrepo.MaxLimit {
+			return nil
+		}
+	}
 }
 
 func compensationPeriodWithin(from time.Time, to *time.Time, parentFrom time.Time, parentTo *time.Time) bool {

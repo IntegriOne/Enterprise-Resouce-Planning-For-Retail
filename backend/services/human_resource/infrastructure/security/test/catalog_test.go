@@ -2,10 +2,12 @@ package security_test
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 	"time"
 
+	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	"github.com/integrione/erp-retail/backend/shared/authcontext"
@@ -17,52 +19,77 @@ import (
 func TestPermissionCatalogCoversExplicitOperations(t *testing.T) {
 	t.Parallel()
 	catalog := security.PermissionCatalog()
-	if len(catalog) != 430 {
-		t.Fatalf("operation mapping count = %d, want 430", len(catalog))
+	if len(catalog) != 494 {
+		t.Fatalf("operation mapping count = %d, want 494", len(catalog))
 	}
 	codes := make(map[string]struct{}, len(catalog))
 	for operation, code := range catalog {
-		if !strings.HasPrefix(operation, "hr_") || (!strings.HasPrefix(code, "human_resource.") && operation != "hr_workers.link_principal") {
+		isIAMProvisioning := operation == "hr_workers.link_principal" && code == "iam.users.write"
+		if !strings.HasPrefix(operation, "hr_") || (!strings.HasPrefix(code, "human_resource.") && !isIAMProvisioning) {
 			t.Fatalf("invalid catalog mapping: %q -> %q", operation, code)
 		}
 		codes[code] = struct{}{}
 	}
-	if len(codes) != 346 {
-		t.Fatalf("permission count = %d, want 346", len(codes))
+	if len(codes) != 410 {
+		t.Fatalf("permission count = %d, want 410", len(codes))
 	}
 	for operation, want := range map[string]string{
-		"hr_workers.list":                        "human_resource.workers.read",
-		"hr_workers.create":                      "human_resource.workers.create",
-		"hr_workers.update":                      "human_resource.workers.update",
-		"hr_workers.delete":                      "human_resource.workers.delete",
-		"hr_leave_entitlements.post_leave_entry": "human_resource.leave_entitlements.post",
-		"hr_leave_adjustments.approve":           "human_resource.leave_adjustments.approve",
-		"hr_payroll_runs.approve":                "human_resource.payroll_runs.approve",
-		"hr_career_paths.approve":                "human_resource.career_paths.approve",
-		"hr_worker_assignments.approve":          "human_resource.worker_assignments.approve",
-		"hr_positions.activate":                  "human_resource.positions.activate",
-		"hr_workers.apply_primary_assignment":    "human_resource.workers.apply_primary_assignment",
-		"hr_workers.activate":                    "human_resource.workers.activate",
-		"hr_workers.terminate":                   "human_resource.workers.terminate",
-		"hr_performance_cycles.launch":           "human_resource.performance_cycles.launch",
-		"hr_onboarding_plans.start":              "human_resource.onboarding_plans.start",
-		"hr_onboarding_plans.complete":           "human_resource.onboarding_plans.complete",
-		"hr_onboarding_tasks.complete":           "human_resource.onboarding_tasks.complete",
-		"hr_talent_assessments.finalize":         "human_resource.talent_assessments.finalize",
-		"hr_applications.start_screening":        "human_resource.applications.start_screening",
-		"hr_applications.advance":                "human_resource.applications.advance",
-		"hr_applications.reject":                 "human_resource.applications.reject",
-		"hr_requisitions.submit":                 "human_resource.requisitions.submit",
-		"hr_requisitions.approve":                "human_resource.requisitions.approve",
-		"hr_requisitions.reject":                 "human_resource.requisitions.reject",
-		"hr_requisitions.open":                   "human_resource.requisitions.open",
-		"hr_requisitions.close":                  "human_resource.requisitions.close",
-		"hr_job_postings.publish":                "human_resource.job_postings.publish",
-		"hr_job_postings.close":                  "human_resource.job_postings.close",
-		"hr_job_postings.withdraw":               "human_resource.job_postings.withdraw",
-		"hr_payroll_result_lines.read":           "human_resource.payroll_result_lines.read",
-		"hr_application_stage_history.list":      "human_resource.application_stage_history.read",
-		"hr_engagement_survey_results.read":      "human_resource.engagement_survey_results.read",
+		"hr_workers.list":                           "human_resource.workers.read",
+		"hr_workers.create":                         "human_resource.workers.create",
+		"hr_workers.update":                         "human_resource.workers.update",
+		"hr_workers.delete":                         "human_resource.workers.delete",
+		"hr_leave_entitlements.post_leave_entry":    "human_resource.leave_entitlements.post",
+		"hr_leave_adjustments.approve":              "human_resource.leave_adjustments.approve",
+		"hr_payroll_runs.approve":                   "human_resource.payroll_runs.approve",
+		"hr_career_paths.approve":                   "human_resource.career_paths.approve",
+		"hr_worker_assignment_transfers.read":       "human_resource.worker_assignment_transfers.read",
+		"hr_worker_assignments.approve":             "human_resource.worker_assignments.approve",
+		"hr_positions.activate":                     "human_resource.positions.activate",
+		"hr_workers.apply_primary_assignment":       "human_resource.workers.apply_primary_assignment",
+		"hr_workers.link_principal":                 "iam.users.write",
+		"hr_workers.activate":                       "human_resource.workers.activate",
+		"hr_performance_cycles.launch":              "human_resource.performance_cycles.launch",
+		"hr_onboarding_plans.start":                 "human_resource.onboarding_plans.start",
+		"hr_onboarding_plans.complete":              "human_resource.onboarding_plans.complete",
+		"hr_onboarding_tasks.complete":              "human_resource.onboarding_tasks.complete",
+		"hr_talent_assessments.finalize":            "human_resource.talent_assessments.finalize",
+		"hr_applications.start_screening":           "human_resource.applications.start_screening",
+		"hr_applications.advance":                   "human_resource.applications.advance",
+		"hr_applications.reject":                    "human_resource.applications.reject",
+		"hr_requisitions.submit":                    "human_resource.requisitions.submit",
+		"hr_requisitions.approve":                   "human_resource.requisitions.approve",
+		"hr_requisitions.reject":                    "human_resource.requisitions.reject",
+		"hr_requisitions.open":                      "human_resource.requisitions.open",
+		"hr_requisitions.close":                     "human_resource.requisitions.close",
+		"hr_job_postings.publish":                   "human_resource.job_postings.publish",
+		"hr_job_postings.close":                     "human_resource.job_postings.close",
+		"hr_job_postings.withdraw":                  "human_resource.job_postings.withdraw",
+		"hr_application_assessments.complete":       "human_resource.application_assessments.complete",
+		"hr_talent_review_cycles.launch":            "human_resource.talent_review_cycles.launch",
+		"hr_talent_review_cycles.start_calibration": "human_resource.talent_review_cycles.start_calibration",
+		"hr_talent_review_cycles.close":             "human_resource.talent_review_cycles.close",
+		"hr_talent_assessments.submit":              "human_resource.talent_assessments.submit",
+		"hr_talent_assessments.withdraw":            "human_resource.talent_assessments.withdraw",
+		"hr_talent_calibration_sessions.open":       "human_resource.talent_calibration_sessions.open",
+		"hr_talent_calibration_sessions.approve":    "human_resource.talent_calibration_sessions.approve",
+		"hr_talent_pool_memberships.approve":        "human_resource.talent_pool_memberships.approve",
+		"hr_talent_pool_memberships.reject":         "human_resource.talent_pool_memberships.reject",
+		"hr_talent_pool_memberships.exit":           "human_resource.talent_pool_memberships.exit",
+		"hr_performance_goals.submit":               "human_resource.performance_goals.submit",
+		"hr_performance_goals.approve":              "human_resource.performance_goals.approve",
+		"hr_performance_goals.reject":               "human_resource.performance_goals.reject",
+		"hr_performance_reviews.submit":             "human_resource.performance_reviews.submit",
+		"hr_performance_reviews.finalize":           "human_resource.performance_reviews.finalize",
+		"hr_performance_cycles.close":               "human_resource.performance_cycles.close",
+		"hr_promotion_recommendations.submit":       "human_resource.promotion_recommendations.submit",
+		"hr_promotion_recommendations.approve":      "human_resource.promotion_decisions.approve",
+		"hr_promotion_recommendations.reject":       "human_resource.promotion_decisions.reject",
+		"hr_promotion_recommendations.return":       "human_resource.promotion_decisions.return",
+		"hr_promotion_recommendations.apply":        "human_resource.promotion_decisions.apply",
+		"hr_policy_acknowledgements.acknowledge":    "human_resource.policy_acknowledgements.acknowledge",
+		"hr_payroll_result_lines.read":              "human_resource.payroll_result_lines.read",
+		"hr_application_stage_history.list":         "human_resource.application_stage_history.read",
+		"hr_engagement_survey_results.read":         "human_resource.engagement_survey_results.read",
 	} {
 		if got := catalog[operation]; got != want {
 			t.Errorf("mapping %q = %q, want %q", operation, got, want)
@@ -90,6 +117,8 @@ func TestSensitiveOperationsRequireIndependentStepUp(t *testing.T) {
 		{"hr_workers", "delete", true},
 		{"hr_workers", "apply_primary_assignment", true},
 		{"hr_workers", "activate", true},
+		{"hr_workers", "terminate", true},
+		{"hr_workers", "link_principal", true},
 		{"hr_payroll_runs", "approve", true},
 		{"hr_career_paths", "approve", true},
 		{"hr_performance_cycles", "launch", true},
@@ -150,6 +179,9 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 				{Code: "human_resource.payroll_runs.approve", Scope: authz.ScopeGrant{Type: "global"}},
 				{Code: "human_resource.performance_cycles.launch", Scope: authz.ScopeGrant{Type: "global"}},
 				{Code: "human_resource.onboarding_plans.start", Scope: authz.ScopeGrant{Type: "global"}},
+				{Code: "human_resource.succession_plans.read", Scope: authz.ScopeGrant{Type: "global"}},
+				{Code: "human_resource.succession_candidates.read", Scope: authz.ScopeGrant{Type: "global"}},
+				{Code: "human_resource.promotion_decisions.read", Scope: authz.ScopeGrant{Type: "global"}},
 			},
 		},
 	}}
@@ -166,6 +198,19 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 			t.Errorf("worker %s was denied: %v", action, err)
 		}
 	}
+	sensitiveReads := []operation.Access{
+		{Resource: "hr_succession_plans", Action: "read"},
+		{Resource: "hr_succession_plans", Action: "list"},
+		{Resource: "hr_succession_candidates", Action: "read"},
+		{Resource: "hr_succession_candidates", Action: "list"},
+		{Resource: "hr_promotion_decisions", Action: "read"},
+		{Resource: "hr_promotion_decisions", Action: "list"},
+	}
+	for _, access := range sensitiveReads {
+		if _, err := policy.Authorize(ctx, access); err == nil {
+			t.Errorf("operation %s.%s was allowed without MFA", access.Resource, access.Action)
+		}
+	}
 	for _, access := range []operation.Access{
 		{Resource: "hr_workers", Action: "create"},
 		{Resource: "hr_workers", Action: "delete"},
@@ -178,6 +223,11 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 		}
 	}
 	reader.state.Token.MFAAuthenticated = true
+	for _, access := range sensitiveReads {
+		if _, err := policy.Authorize(ctx, access); err != nil {
+			t.Errorf("operation %s.%s was denied after MFA: %v", access.Resource, access.Action, err)
+		}
+	}
 	for _, access := range []operation.Access{
 		{Resource: "hr_workers", Action: "delete"},
 		{Resource: "hr_payroll_runs", Action: "approve"},
@@ -188,4 +238,21 @@ func TestCatalogPolicySeparatesReadDeleteAndApproval(t *testing.T) {
 			t.Errorf("operation %s.%s was denied after MFA: %v", access.Resource, access.Action, err)
 		}
 	}
+	for _, resource := range []string{
+		"hr_worker_lifecycle_events", "hr_application_stage_history", "hr_payroll_results",
+		"hr_payroll_result_lines", "hr_leave_ledger_entries", "hr_engagement_survey_results",
+	} {
+		for _, action := range []string{"create", "update", "delete"} {
+			// Proyeksi fixture sengaja memuat grant historis yang tidak dikenal katalog.
+			reader.state.Snapshot.Permissions = append(reader.state.Snapshot.Permissions, authz.PermissionGrant{
+				Code:  "human_resource." + strings.TrimPrefix(resource, "hr_") + "." + action,
+				Scope: authz.ScopeGrant{Type: authz.ScopeGlobal},
+			})
+			_, err := policy.Authorize(ctx, operation.Access{Resource: resource, Action: action})
+			if !errors.Is(err, hrerrors.ErrForbidden) {
+				t.Errorf("read-only operation %s.%s: got %v, want forbidden", resource, action, err)
+			}
+		}
+	}
+
 }

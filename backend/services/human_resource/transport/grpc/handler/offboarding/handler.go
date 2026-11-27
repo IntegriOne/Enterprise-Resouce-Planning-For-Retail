@@ -17,7 +17,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedOffboardingServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeOffboardingServiceServer
 	service *service.Service
 }
 
@@ -55,6 +56,7 @@ func plan(value *entity.OffboardingPlan) *pb.OffboardingPlan {
 		Status: value.Status, ExitInterviewDocumentVersionReferenceId: value.ExitInterviewDocumentVersionReferenceID,
 		FinalPayrollRunId: value.FinalPayrollRunID, FinanceClearanceReferenceId: value.FinanceClearanceReferenceID,
 		ApprovedByPrincipalId: value.ApprovedByPrincipalID, ApprovedAt: timestamp(value.ApprovedAt), CompletedAt: timestamp(value.CompletedAt),
+		CancelledAt: timestamp(value.CancelledAt), CancelledByPrincipalId: value.CancelledByPrincipalID, CancellationReason: value.CancellationReason,
 		CreatedByPrincipalId: value.CreatedByPrincipalID, CreatedAt: timestamppb.New(value.CreatedAt),
 	}
 }
@@ -357,9 +359,35 @@ func (s *server) ApproveOffboardingPlan(ctx context.Context, request *commonv1.I
 	return planResponse(s.service.ApproveOffboardingPlan(ctx, request.Id))
 }
 
+// CancelOffboardingPlan meneruskan keputusan pembatalan rencana ke HRM.
+func (s *server) CancelOffboardingPlan(ctx context.Context, request *pb.CancelOffboardingPlanRequest) (*pb.OffboardingPlanResponse, error) {
+	return planResponse(s.service.CancelOffboardingPlan(ctx, request.GetId(), request.GetReason()))
+}
+
 func (s *server) StartOffboardingPlan(ctx context.Context, request *commonv1.IDRequest) (*pb.OffboardingPlanResponse, error) {
 	if request == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return planResponse(s.service.StartOffboardingPlan(ctx, request.Id))
+}
+
+func (s *server) WaiveOffboardingTask(ctx context.Context, request *pb.WaiveOffboardingTaskRequest) (*pb.OffboardingTaskResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return taskResponse(s.service.WaiveOffboardingTask(ctx, request.Id, request.Reason))
+}
+
+func (s *server) CompleteOffboardingTask(ctx context.Context, request *pb.CompleteOffboardingTaskRequest) (*pb.OffboardingTaskResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return taskResponse(s.service.CompleteOffboardingTask(ctx, request.Id, request.OwnerConfirmationReferenceId))
+}
+
+func (s *server) CompleteOffboardingPlan(ctx context.Context, request *pb.CompleteOffboardingPlanRequest) (*pb.OffboardingPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return planResponse(s.service.CompleteOffboardingPlan(ctx, request.Id, request.FinalPayrollRunId, request.FinanceClearanceReferenceId))
 }

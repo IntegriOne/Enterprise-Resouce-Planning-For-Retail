@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -12,7 +11,7 @@ import (
 
 // OpenRequisition membuka requisition yang sudah disetujui setelah bukti owner diperiksa ulang.
 func (s *Service) OpenRequisition(ctx context.Context, requisitionID string) (*entity.Requisition, error) {
-	if s == nil || operation.RequireDependency(s.approvalVerifier) != nil {
+	if s == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return s.requisition.Command(ctx, requisitionID, "open", func(txCtx context.Context, requisition *entity.Requisition, actor operation.Actor, now time.Time) (*entity.Requisition, error) {
@@ -28,15 +27,20 @@ func (s *Service) OpenRequisition(ctx context.Context, requisitionID string) (*e
 		if now.Before(*requisition.ApprovedAt) {
 			return nil, hrerrors.ErrWorkflowRequired
 		}
-		budgetID, err := s.approvalVerifier.VerifyRequisitionApproval(txCtx, requisitionApprovalCheck(requisition, *requisition.ApprovedByPrincipalID))
-		if err != nil {
-			if txCtx.Err() != nil {
-				return nil, txCtx.Err()
-			}
-			if errors.Is(err, hrerrors.ErrReferenceConflict) {
-				return nil, hrerrors.ErrReferenceConflict
-			}
+		if operation.RequireDependency(s.mandateVerifier) != nil {
 			return nil, hrerrors.ErrUnavailable
+		}
+		if err := s.mandateVerifier.VerifyRequisitionMandate(txCtx, *requisition.ApprovedByPrincipalID, requisition.OrganizationUnitReferenceID); err != nil {
+			return nil, operation.OwnerVerificationError(txCtx, err)
+		}
+		if operation.RequireDependency(s.approvalVerifier) != nil {
+			return nil, hrerrors.ErrUnavailable
+		}
+		check := requisitionApprovalCheck(requisition, *requisition.ApprovedByPrincipalID)
+		check.ExpectedBudgetReferenceID = *requisition.BudgetReferenceID
+		budgetID, err := s.approvalVerifier.VerifyRequisitionApproval(txCtx, check)
+		if err != nil {
+			return nil, operation.OwnerVerificationError(txCtx, err)
 		}
 		if budgetID != *requisition.BudgetReferenceID {
 			return nil, hrerrors.ErrReferenceConflict

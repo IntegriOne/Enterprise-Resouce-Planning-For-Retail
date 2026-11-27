@@ -28,6 +28,13 @@ VALUES (pg_temp.u(3),'CASHIER-01','Kasir toko',pg_temp.u(2),pg_temp.u(900),pg_te
 INSERT INTO hr_workers (id,worker_number,person_party_reference_id,worker_category,primary_legal_entity_reference_id)
 VALUES (pg_temp.u(4),'W-A',pg_temp.u(904),'employee',pg_temp.u(901)),
        (pg_temp.u(5),'W-B',pg_temp.u(905),'employee',pg_temp.u(901));
+SAVEPOINT worker_principal_case;
+UPDATE hr_workers SET iam_principal_reference_id=pg_temp.u(9903), status='active' WHERE id=pg_temp.u(4);
+SELECT pg_temp.expect_error($q$UPDATE hr_workers SET iam_principal_reference_id=pg_temp.u(9903), status='notice_period' WHERE id=pg_temp.u(5)$q$,'23505','satu principal per hubungan kerja berjalan');
+UPDATE hr_workers SET status='terminated' WHERE id=pg_temp.u(4);
+UPDATE hr_workers SET iam_principal_reference_id=pg_temp.u(9903), status='active' WHERE id=pg_temp.u(5);
+ROLLBACK TO SAVEPOINT worker_principal_case;
+RELEASE SAVEPOINT worker_principal_case;
 INSERT INTO hr_onboarding_plans (id,worker_id,plan_code,start_date)
 VALUES (pg_temp.u(100),pg_temp.u(4),'FIRST-WEEK','2026-01-01');
 SELECT pg_temp.expect_error($q$UPDATE hr_onboarding_plans SET status='in_progress' WHERE id=pg_temp.u(100)$q$,'23514','onboarding mulai tanpa audit actor dan waktu');
@@ -45,6 +52,25 @@ VALUES (pg_temp.u(7),pg_temp.u(4),pg_temp.u(3),'primary','2026-07-01'),
 SELECT pg_temp.expect_error($q$INSERT INTO hr_worker_assignments (id,worker_id,position_id,assignment_type,valid_from) VALUES (pg_temp.u(9),pg_temp.u(4),pg_temp.u(3),'primary','2026-06-30')$q$,'23P01','primary overlap termasuk batas tanggal');
 SELECT pg_temp.expect_error($q$UPDATE hr_worker_assignments SET fte_percent=101 WHERE id=pg_temp.u(6)$q$,'23514','FTE di atas 100');
 SELECT pg_temp.expect_error($q$UPDATE hr_workers SET primary_assignment_id=pg_temp.u(6) WHERE id=pg_temp.u(5)$q$,'23503','primary assignment pekerja lain');
+
+-- Jadwal batal tetap tersimpan tanpa menghalangi jadwal pengganti.
+INSERT INTO hr_worker_assignments (id,worker_id,position_id,assignment_type,valid_from)
+VALUES (pg_temp.u(9901),pg_temp.u(5),pg_temp.u(3),'primary','2026-07-01');
+SELECT pg_temp.expect_error($q$UPDATE hr_worker_assignments SET cancelled_at=now() WHERE id=pg_temp.u(9901)$q$,'23514','pembatalan penempatan tanpa persetujuan');
+UPDATE hr_worker_assignments SET requested_by_principal_id=pg_temp.u(999), requested_at=now(),
+  approved_by_principal_id=pg_temp.u(998), approved_at=now(), cancelled_at=now() WHERE id=pg_temp.u(9901);
+INSERT INTO hr_worker_assignments (id,worker_id,position_id,assignment_type,valid_from)
+VALUES (pg_temp.u(9902),pg_temp.u(5),pg_temp.u(3),'primary','2026-07-01');
+
+-- Permintaan transfer dapat dicatat ketika penempatan primer sumber masih berlaku.
+INSERT INTO hr_worker_assignment_transfers
+  (id,worker_id,source_assignment_id,target_position_id,effective_date,reason_code,idempotency_key,requested_by_principal_id,requested_at)
+VALUES (pg_temp.u(102),pg_temp.u(4),pg_temp.u(7),pg_temp.u(3),'2026-08-01','rotation','transfer-a',pg_temp.u(999),now());
+SELECT pg_temp.expect_error($q$UPDATE hr_worker_assignment_transfers SET worker_id=pg_temp.u(5) WHERE id=pg_temp.u(102)$q$,'23503','transfer memakai penempatan sumber milik pekerja lain');
+SELECT pg_temp.expect_error($q$UPDATE hr_worker_assignment_transfers SET status='rejected',decided_at=now(),decided_by_principal_id=pg_temp.u(999) WHERE id=pg_temp.u(102)$q$,'23514','pengaju tidak boleh memutuskan transfer sendiri');
+SELECT pg_temp.expect_error($q$UPDATE hr_worker_assignment_transfers SET status='applied',decided_at=now(),decided_by_principal_id=pg_temp.u(998) WHERE id=pg_temp.u(102)$q$,'23514','transfer diterapkan tanpa penempatan pengganti');
+UPDATE hr_worker_assignment_transfers SET status='rejected',decided_at=now(),decided_by_principal_id=pg_temp.u(998)
+WHERE id=pg_temp.u(102);
 
 INSERT INTO hr_payroll_groups (id,group_code,group_name,employing_legal_entity_reference_id,jurisdiction_code,currency_code,currency_scale,pay_frequency,timezone)
 VALUES (pg_temp.u(10),'MONTHLY','Bulanan',pg_temp.u(901),'ID','IDR',0,'monthly','Asia/Jakarta'),
@@ -83,7 +109,11 @@ SELECT pg_temp.expect_error($q$UPDATE hr_payroll_results SET payroll_profile_ref
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_results SET payroll_profile_reference_id=pg_temp.u(32) WHERE id=pg_temp.u(42)$q$,'23503','hasil payroll memakai profil grup lain');
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_results SET net_pay_amount=9500000 WHERE id=pg_temp.u(42)$q$,'23514','persamaan gross reimbursement deductions net');
 UPDATE hr_payroll_runs SET status='calculated',calculated_at=now(),output_digest='\x04' WHERE id=pg_temp.u(41);
+SAVEPOINT payroll_review_case;
+UPDATE hr_payroll_runs SET status='review' WHERE id=pg_temp.u(41);
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_runs SET status='approved',approved_at=now(),approved_by_principal_id=pg_temp.u(999) WHERE id=pg_temp.u(41)$q$,'23514','approval tanpa rincian payroll');
+ROLLBACK TO SAVEPOINT payroll_review_case;
+RELEASE SAVEPOINT payroll_review_case;
 INSERT INTO hr_payroll_result_lines (id,payroll_result_id,component_id,component_code_snapshot,component_name_snapshot,component_type_snapshot,amount,line_sequence)
 VALUES (pg_temp.u(43),pg_temp.u(42),pg_temp.u(13),'BASE','Gaji pokok','earning',10000000,1),
        (pg_temp.u(44),pg_temp.u(42),pg_temp.u(14),'TAX','Pajak','tax',2000000,2),
@@ -91,15 +121,21 @@ VALUES (pg_temp.u(43),pg_temp.u(42),pg_temp.u(13),'BASE','Gaji pokok','earning',
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_result_lines SET component_type_snapshot='earning' WHERE id=pg_temp.u(44)$q$,'23503','tipe snapshot baris tidak sesuai komponen');
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_runs SET status='approved',approved_at=now() WHERE id=pg_temp.u(41)$q$,'23514','approval tanpa aktor');
 UPDATE hr_payroll_result_lines SET amount=1 WHERE id=pg_temp.u(43);
+SAVEPOINT payroll_review_case;
+UPDATE hr_payroll_runs SET status='review' WHERE id=pg_temp.u(41);
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_runs SET status='approved',approved_at=now(),approved_by_principal_id=pg_temp.u(999) WHERE id=pg_temp.u(41)$q$,'23514','approval total tidak sesuai baris');
+ROLLBACK TO SAVEPOINT payroll_review_case;
+RELEASE SAVEPOINT payroll_review_case;
 UPDATE hr_payroll_result_lines SET amount=10000000 WHERE id=pg_temp.u(43);
+UPDATE hr_payroll_runs SET status='review' WHERE id=pg_temp.u(41);
 UPDATE hr_payroll_runs SET status='approved',approved_at=now(),approved_by_principal_id=pg_temp.u(999) WHERE id=pg_temp.u(41);
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_result_lines SET amount=1 WHERE id=pg_temp.u(43)$q$,'23514','rincian payroll immutable setelah approval');
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_results SET employer_cost_amount=1 WHERE id=pg_temp.u(42)$q$,'23514','hasil payroll immutable setelah approval');
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_runs SET status='draft' WHERE id=pg_temp.u(41)$q$,'23514','rollback status payroll approved');
+SELECT pg_temp.expect_error($q$UPDATE hr_payroll_results SET payslip_document_reference_id=pg_temp.u(913) WHERE id=pg_temp.u(42)$q$,'23514','penautan payslip sebelum posting');
+UPDATE hr_payroll_runs SET status='posted',finance_journal_reference_id=pg_temp.u(915) WHERE id=pg_temp.u(41);
 UPDATE hr_payroll_results SET payslip_document_reference_id=pg_temp.u(913) WHERE id=pg_temp.u(42);
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_results SET payslip_document_reference_id=pg_temp.u(914) WHERE id=pg_temp.u(42)$q$,'23514','overwrite bukti payslip');
-UPDATE hr_payroll_runs SET status='posted',finance_journal_reference_id=pg_temp.u(915) WHERE id=pg_temp.u(41);
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_runs SET status='paid' WHERE id=pg_temp.u(41)$q$,'23514','paid tanpa bukti Finance');
 UPDATE hr_payroll_runs SET status='paid',payment_batch_reference_id=pg_temp.u(916),finance_settlement_event_reference_id=pg_temp.u(917),finance_settled_at=now() WHERE id=pg_temp.u(41);
 SELECT pg_temp.expect_error($q$UPDATE hr_payroll_rule_sets SET artifact_digest='\x05' WHERE id=pg_temp.u(12)$q$,'23514','artefak aturan immutable');
@@ -143,12 +179,21 @@ VALUES (pg_temp.u(82),pg_temp.u(4),'CASHIER',1,'2026-01-01','2026-12-31');
 INSERT INTO hr_succession_plans (id,position_id,plan_code,plan_version,review_date)
 VALUES (pg_temp.u(83),pg_temp.u(3),'CASHIER',1,'2026-11-01');
 SELECT pg_temp.expect_error($q$INSERT INTO hr_succession_candidates (id,succession_plan_id,candidate_worker_id,readiness_code,readiness_assessed_at,development_plan_id) VALUES (pg_temp.u(84),pg_temp.u(83),pg_temp.u(5),'development_needed','2026-11-01',pg_temp.u(82))$q$,'23503','suksesi memakai rencana pengembangan orang lain');
+SELECT pg_temp.expect_error($q$UPDATE hr_succession_plans SET approved_at=NOW(), approved_by_principal_id=pg_temp.u(999) WHERE id=pg_temp.u(83)$q$,'23514','persetujuan suksesi tanpa referensi mandat');
+
 INSERT INTO hr_offboarding_plans (id,worker_id,plan_number,reason_code,notice_date,last_working_date,termination_effective_date,created_by_principal_id)
 VALUES (pg_temp.u(85),pg_temp.u(4),'EXIT-1','resignation','2026-10-01','2026-11-30','2026-11-30',pg_temp.u(999));
 INSERT INTO hr_offboarding_tasks (id,offboarding_plan_id,task_code,task_name,owner_management)
 VALUES (pg_temp.u(86),pg_temp.u(85),'REVOKE','Cabut akses kerja','iam_management');
 SELECT pg_temp.expect_error($q$UPDATE hr_offboarding_tasks SET status='completed',completed_at=now() WHERE id=pg_temp.u(86)$q$,'23514','offboarding selesai tanpa receipt owner');
 SELECT pg_temp.expect_error($q$UPDATE hr_offboarding_tasks SET status='waived' WHERE id=pg_temp.u(86)$q$,'23514','waiver offboarding tanpa alasan dan aktor');
+SELECT pg_temp.expect_error($q$UPDATE hr_offboarding_plans SET cancellation_reason='duplicate' WHERE id=pg_temp.u(85)$q$,'23514','metadata pembatalan pada rencana draf');
+SELECT pg_temp.expect_error($q$INSERT INTO hr_offboarding_plans (id,worker_id,plan_number,reason_code,notice_date,last_working_date,termination_effective_date,created_by_principal_id) VALUES (pg_temp.u(9904),pg_temp.u(4),'EXIT-DUPLICATE','resignation','2026-10-01','2026-11-30','2026-11-30',pg_temp.u(999))$q$,'23505','dua rencana offboarding terbuka');
+UPDATE hr_offboarding_plans SET status='approved', approved_at=now(), approved_by_principal_id=pg_temp.u(998) WHERE id=pg_temp.u(85);
+SELECT pg_temp.expect_error($q$UPDATE hr_offboarding_plans SET status='cancelled', cancelled_at=now()-interval '1 second', cancelled_by_principal_id=pg_temp.u(998), cancellation_reason='contract extension' WHERE id=pg_temp.u(85)$q$,'23514','pembatalan mendahului persetujuan');
+UPDATE hr_offboarding_plans SET status='cancelled', cancelled_at=now(), cancelled_by_principal_id=pg_temp.u(998), cancellation_reason='contract extension' WHERE id=pg_temp.u(85);
+INSERT INTO hr_offboarding_plans (id,worker_id,plan_number,reason_code,notice_date,last_working_date,termination_effective_date,created_by_principal_id)
+VALUES (pg_temp.u(9904),pg_temp.u(4),'EXIT-REPLACEMENT','resignation','2026-10-01','2026-11-30','2026-11-30',pg_temp.u(999));
 INSERT INTO hr_inbox_events (id,source_management,source_event_id,event_type,schema_version,source_aggregate_reference,source_aggregate_version,payload_digest)
 VALUES (pg_temp.u(87),'finance_accounting','settled-1','payroll.settled',1,'batch-1',1,'\x01');
 SELECT pg_temp.expect_error($q$INSERT INTO hr_inbox_events (id,source_management,source_event_id,event_type,schema_version,source_aggregate_reference,source_aggregate_version,payload_digest) VALUES (pg_temp.u(88),'finance_accounting','settled-1','payroll.settled',1,'batch-1',1,'\x01')$q$,'23505','deduplikasi event Finance');

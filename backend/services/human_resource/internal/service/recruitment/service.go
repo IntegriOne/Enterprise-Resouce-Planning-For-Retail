@@ -4,6 +4,7 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
@@ -11,42 +12,73 @@ import (
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
+type hiringManagerReader interface {
+	FindByIAMPrincipalReferenceID(context.Context, *string, int, int) ([]entity.Worker, error)
+	FindByIDForUpdate(context.Context, string) (*entity.Worker, error)
+}
+
 type Dependencies struct {
-	Runtime                 operation.Dependencies
-	ApprovalVerifier        RequisitionApprovalVerifier
-	PostingVerifier         PostingDocumentVerifier
-	Requisition             domainrepo.RecordRepository[entity.Requisition, string]
-	Candidate               domainrepo.RecordRepository[entity.Candidate, string]
-	Application             domainrepo.RecordRepository[entity.Application, string]
-	ApplicationStageHistory domainrepo.RecordRepository[entity.ApplicationStageHistory, int64]
-	Interview               domainrepo.RecordRepository[entity.Interview, string]
-	InterviewPanelist       domainrepo.RecordRepository[entity.InterviewPanelist, string]
-	InterviewFeedback       domainrepo.RecordRepository[entity.InterviewFeedback, string]
-	Offer                   domainrepo.RecordRepository[entity.Offer, string]
-	JobPosting              domainrepo.RecordRepository[entity.JobPosting, string]
-	ApplicationAssessment   domainrepo.RecordRepository[entity.ApplicationAssessment, string]
+	Workers                    hiringManagerReader
+	OfferResponseVerifier      OfferResponseVerifier
+	OfferDocumentVerifier      OfferDocumentVerifier
+	OfferCompensationVerifier  OfferCompensationVerifier
+	Runtime                    operation.Dependencies
+	ApprovalVerifier           RequisitionApprovalVerifier
+	MandateVerifier            RequisitionMandateVerifier
+	PostingVerifier            PostingDocumentVerifier
+	AssessmentEvidenceVerifier AssessmentEvidenceVerifier
+	Requisition                domainrepo.RecordRepository[entity.Requisition, string]
+	Candidate                  domainrepo.RecordRepository[entity.Candidate, string]
+	Application                domainrepo.RecordRepository[entity.Application, string]
+	ApplicationStageHistory    domainrepo.RecordRepository[entity.ApplicationStageHistory, int64]
+	Interview                  domainrepo.RecordRepository[entity.Interview, string]
+	InterviewPanelist          domainrepo.RecordRepository[entity.InterviewPanelist, string]
+	InterviewFeedback          domainrepo.RecordRepository[entity.InterviewFeedback, string]
+	Offer                      domainrepo.RecordRepository[entity.Offer, string]
+	JobPosting                 domainrepo.RecordRepository[entity.JobPosting, string]
+	ApplicationAssessment      domainrepo.RecordRepository[entity.ApplicationAssessment, string]
 }
 
 // Service mengoordinasikan operasi domain recruitment.
 type Service struct {
-	requisition             *operation.Resource[entity.Requisition, string, *entity.Requisition]
-	approvalVerifier        RequisitionApprovalVerifier
-	postingVerifier         PostingDocumentVerifier
-	candidate               *operation.Resource[entity.Candidate, string, *entity.Candidate]
-	application             *operation.Resource[entity.Application, string, *entity.Application]
-	applicationStageHistory *operation.Resource[entity.ApplicationStageHistory, int64, *entity.ApplicationStageHistory]
-	stageHistoryWriter      domainrepo.RecordRepository[entity.ApplicationStageHistory, int64]
-	interview               *operation.Resource[entity.Interview, string, *entity.Interview]
-	interviewPanelist       *operation.Resource[entity.InterviewPanelist, string, *entity.InterviewPanelist]
-	interviewFeedback       *operation.Resource[entity.InterviewFeedback, string, *entity.InterviewFeedback]
-	offer                   *operation.Resource[entity.Offer, string, *entity.Offer]
-	jobPosting              *operation.Resource[entity.JobPosting, string, *entity.JobPosting]
-	applicationAssessment   *operation.Resource[entity.ApplicationAssessment, string, *entity.ApplicationAssessment]
+	workers                   hiringManagerReader
+	transactor                domainrepo.Transactor
+	offerResponseVerifier     OfferResponseVerifier
+	offerRecords              domainrepo.RecordRepository[entity.Offer, string]
+	offerDocumentVerifier     OfferDocumentVerifier
+	offerCompensationVerifier OfferCompensationVerifier
+	applicationRecords        domainrepo.RecordRepository[entity.Application, string]
+	requisition               *operation.Resource[entity.Requisition, string, *entity.Requisition]
+	approvalVerifier          RequisitionApprovalVerifier
+	mandateVerifier           RequisitionMandateVerifier
+	postingVerifier           PostingDocumentVerifier
+	assessmentEvidence        AssessmentEvidenceVerifier
+	candidate                 *operation.Resource[entity.Candidate, string, *entity.Candidate]
+	application               *operation.Resource[entity.Application, string, *entity.Application]
+	applicationStageHistory   *operation.Resource[entity.ApplicationStageHistory, int64, *entity.ApplicationStageHistory]
+	stageHistoryWriter        domainrepo.RecordRepository[entity.ApplicationStageHistory, int64]
+	interview                 *operation.Resource[entity.Interview, string, *entity.Interview]
+	interviewPanelist         *operation.Resource[entity.InterviewPanelist, string, *entity.InterviewPanelist]
+	interviewFeedback         *operation.Resource[entity.InterviewFeedback, string, *entity.InterviewFeedback]
+	offer                     *operation.Resource[entity.Offer, string, *entity.Offer]
+	jobPosting                *operation.Resource[entity.JobPosting, string, *entity.JobPosting]
+	applicationAssessment     *operation.Resource[entity.ApplicationAssessment, string, *entity.ApplicationAssessment]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{approvalVerifier: deps.ApprovalVerifier, postingVerifier: deps.PostingVerifier}
+	s := &Service{
+		workers: deps.Workers, transactor: deps.Runtime.Transactor,
+		offerResponseVerifier:     deps.OfferResponseVerifier,
+		offerRecords:              deps.Offer,
+		offerDocumentVerifier:     deps.OfferDocumentVerifier,
+		offerCompensationVerifier: deps.OfferCompensationVerifier,
+		applicationRecords:        deps.Application,
+		approvalVerifier:          deps.ApprovalVerifier,
+		mandateVerifier:           deps.MandateVerifier,
+		postingVerifier:           deps.PostingVerifier,
+		assessmentEvidence:        deps.AssessmentEvidenceVerifier,
+	}
 	var err error
 	s.requisition, err = operation.NewResource[entity.Requisition, string, *entity.Requisition](
 		deps.Requisition,
@@ -145,7 +177,48 @@ func (s *Service) CreateRequisition(ctx context.Context, in CreateRequisitionInp
 	if s == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	return s.requisition.Create(ctx, func() (*entity.Requisition, error) { return createRequisition(in) })
+	if in.HiringManagerWorkerID == nil {
+		return s.requisition.Create(ctx, func() (*entity.Requisition, error) { return createRequisition(in) })
+	}
+	if in.HiringManagerPrincipalID != "" {
+		return nil, hrerrors.Invalid("hiring_manager_worker_id", "provide only one hiring manager reference")
+	}
+	if operation.RequireDependency(s.workers) != nil {
+		return nil, hrerrors.ErrUnavailable
+	}
+	var created *entity.Requisition
+	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
+		var err error
+		created, err = s.requisition.Create(txCtx, func() (*entity.Requisition, error) {
+			principalID, err := s.hiringManagerPrincipal(txCtx, *in.HiringManagerWorkerID)
+			if err != nil {
+				return nil, err
+			}
+			in.HiringManagerPrincipalID = principalID
+			return createRequisition(in)
+		})
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return created, nil
+}
+
+func (s *Service) hiringManagerPrincipal(ctx context.Context, workerID string) (string, error) {
+	if err := entity.ValidateUUID("hiring_manager_worker_id", workerID); err != nil {
+		return "", err
+	}
+	worker, err := s.workers.FindByIDForUpdate(ctx, workerID)
+	if err != nil {
+		return "", err
+	}
+	if worker == nil || !strings.EqualFold(worker.ID, workerID) || worker.Status != entity.WorkerStatusActive ||
+		worker.IAMPrincipalReferenceID == nil ||
+		entity.ValidateUUID("hiring_manager_principal_id", *worker.IAMPrincipalReferenceID) != nil {
+		return "", hrerrors.ErrReferenceConflict
+	}
+	return *worker.IAMPrincipalReferenceID, nil
 }
 
 // UpdateRequisition menjalankan operasi aplikasi dengan validasi dan scope server.
@@ -153,7 +226,29 @@ func (s *Service) UpdateRequisition(ctx context.Context, key string, in UpdateRe
 	if s == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	return s.requisition.Update(ctx, key, func(value *entity.Requisition) error { return patchRequisition(value, in) })
+	if in.HiringManagerWorkerID == nil {
+		return s.requisition.Update(ctx, key, func(value *entity.Requisition) error { return patchRequisition(value, in) })
+	}
+	if in.HiringManagerPrincipalID.Set {
+		return nil, hrerrors.Invalid("hiring_manager_worker_id", "provide only one hiring manager reference")
+	}
+	if operation.RequireDependency(s.workers) != nil {
+		return nil, hrerrors.ErrUnavailable
+	}
+	var updated *entity.Requisition
+	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
+		var err error
+		updated, err = s.requisition.Update(txCtx, key, func(value *entity.Requisition) error {
+			principalID, err := s.hiringManagerPrincipal(txCtx, *in.HiringManagerWorkerID)
+			if err != nil {
+				return err
+			}
+			in.HiringManagerPrincipalID = operation.Field[string]{Set: true, Value: &principalID}
+			return patchRequisition(value, in)
+		})
+		return err
+	})
+	return updated, err
 }
 
 // DeleteRequisition menjalankan operasi aplikasi dengan validasi dan scope server.
@@ -170,6 +265,28 @@ func (s *Service) GetRequisitionByID(ctx context.Context, key string) (*entity.R
 		return nil, hrerrors.ErrUnavailable
 	}
 	return s.requisition.Get(ctx, key)
+}
+
+// GetRequisitionDetail membaca requisition berizin dan referensi pekerja hiring manager.
+func (s *Service) GetRequisitionDetail(ctx context.Context, key string) (*entity.Requisition, *string, error) {
+	requisition, err := s.GetRequisitionByID(ctx, key)
+	if err != nil {
+		return nil, nil, err
+	}
+	if operation.RequireDependency(s.workers) != nil {
+		return requisition, nil, nil
+	}
+	principal := requisition.HiringManagerPrincipalID
+	workers, err := s.workers.FindByIAMPrincipalReferenceID(ctx, &principal, 2, 0)
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(workers) != 1 || workers[0].IAMPrincipalReferenceID == nil ||
+		!strings.EqualFold(*workers[0].IAMPrincipalReferenceID, principal) ||
+		entity.ValidateUUID("hiring_manager_worker_id", workers[0].ID) != nil {
+		return requisition, nil, nil
+	}
+	return requisition, &workers[0].ID, nil
 }
 
 // GetAllRequisitions menjalankan operasi aplikasi dengan validasi dan scope server.

@@ -20,6 +20,8 @@ func payrollRun(v *entity.PayrollRun) *pb.PayrollRun {
 		RunNumber: v.RunNumber, RunType: v.RunType, Status: string(v.Status), JurisdictionCode: v.JurisdictionCode, RuleEngineName: v.RuleEngineName,
 		RuleEngineVersion: v.RuleEngineVersion, InputSnapshotReferenceId: v.InputSnapshotReferenceID, InputDigest: append([]byte(nil), v.InputDigest...),
 		OutputDigest: append([]byte(nil), v.OutputDigest...), CalculatedAt: timestamp(v.CalculatedAt), ApprovedByPrincipalId: v.ApprovedByPrincipalID,
+		CancelledAt: timestamp(v.CancelledAt), CancelledByPrincipalId: v.CancelledByPrincipalID, CancellationReason: v.CancellationReason,
+		PostingRequestedByPrincipalId: v.PostingRequestedByPrincipalID, PostingRequestedAt: timestamp(v.PostingRequestedAt),
 		ApprovedAt: timestamp(v.ApprovedAt), FinanceJournalReferenceId: v.FinanceJournalReferenceID, PaymentBatchReferenceId: v.PaymentBatchReferenceID,
 		FinanceSettlementEventReferenceId: v.FinanceSettlementEventReferenceID, FinanceSettledAt: timestamp(v.FinanceSettledAt),
 		StartedByPrincipalId: v.StartedByPrincipalID, CreatedAt: timestamppb.New(v.CreatedAt), IdempotencyKey: v.IdempotencyKey,
@@ -132,6 +134,54 @@ func (h *Handler) GetAllPayrollRuns(ctx context.Context, r *common.PageRequest) 
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return payrollRuns(h.service.GetAllPayrollRuns(ctx, int(r.Limit), int(r.Offset)))
+}
+
+// CalculatePayrollRun menjalankan kalkulasi melalui service payroll.
+func (h *Handler) CalculatePayrollRun(ctx context.Context, request *common.IDRequest) (*pb.PayrollRunResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	value, err := h.service.CalculatePayrollRun(ctx, request.Id)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.PayrollRunResponse{Item: payrollRun(value)}, nil
+}
+
+// CancelPayrollRun membatalkan run dalam review dengan alasan tercatat.
+func (h *Handler) CancelPayrollRun(ctx context.Context, request *pb.CancelPayrollRunRequest) (*pb.PayrollRunResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	value, err := h.service.CancelPayrollRun(ctx, request.Id, request.Reason)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.PayrollRunResponse{Item: payrollRun(value)}, nil
+}
+
+// SubmitPayrollRunForReview mengajukan hasil payroll yang telah direkonsiliasi.
+func (h *Handler) SubmitPayrollRunForReview(ctx context.Context, request *common.IDRequest) (*pb.PayrollRunResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	value, err := h.service.SubmitPayrollRunForReview(ctx, request.Id)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.PayrollRunResponse{Item: payrollRun(value)}, nil
+}
+
+// RequestPayrollPosting meneruskan permintaan jurnal untuk Finance.
+func (h *Handler) RequestPayrollPosting(ctx context.Context, request *common.IDRequest) (*pb.PayrollRunResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	value, err := h.service.RequestPayrollPosting(ctx, request.Id)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.PayrollRunResponse{Item: payrollRun(value)}, nil
 }
 func (h *Handler) ApprovePayrollRun(ctx context.Context, r *common.IDRequest) (*pb.PayrollRunResponse, error) {
 	if r == nil {

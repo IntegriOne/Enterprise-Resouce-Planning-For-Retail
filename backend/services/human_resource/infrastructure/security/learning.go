@@ -103,8 +103,29 @@ func (v *learningCourseValidator) ValidateMutation(ctx context.Context, table st
 		!reflect.DeepEqual(previous.DurationHours, course.DurationHours) ||
 		previous.CredentialAwarded != course.CredentialAwarded || !reflect.DeepEqual(previous.ExpiryMonths, course.ExpiryMonths) ||
 		!reflect.DeepEqual(previous.ValidFrom, course.ValidFrom) || !reflect.DeepEqual(previous.ValidTo, course.ValidTo)
-	if changedDefinition || (previous.IsActive && !course.IsActive) {
+	if changedDefinition {
 		return v.rejectIfReferenced(ctx, course.ID)
+	}
+	if previous.IsActive && !course.IsActive {
+		courseFilter := domainrepo.Filter{Column: "course_id", Values: []any{course.ID}}
+		active, err := v.enrollments.CountWhere(ctx, []domainrepo.Filter{
+			courseFilter, {Column: "enrollment_status", Values: []any{entity.LearningStatusPlanned, entity.LearningStatusEnrolled, entity.LearningStatusInProgress}},
+		})
+		if err != nil {
+			return err
+		}
+		if active != 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+		pending, err := v.developmentActions.CountWhere(ctx, []domainrepo.Filter{
+			courseFilter, {Column: "completed_at", Values: []any{nil}},
+		})
+		if err != nil {
+			return err
+		}
+		if pending != 0 {
+			return hrerrors.ErrReferenceConflict
+		}
 	}
 	return nil
 }

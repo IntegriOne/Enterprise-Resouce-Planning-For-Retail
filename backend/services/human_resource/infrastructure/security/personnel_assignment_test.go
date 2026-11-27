@@ -137,6 +137,16 @@ func TestWorkerAssignmentValidatorAcceptsOnlyConsistentDraft(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, nil); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("generic delete: %v", err)
 	}
+	serviceStart := from.AddDate(0, 0, 1)
+	workers.worker.ServiceStartDate = &serviceStart
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("assignment before service starts: %v", err)
+	}
+	atServiceStart := *draft
+	atServiceStart.ValidFrom = serviceStart
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, &atServiceStart); err != nil {
+		t.Fatalf("assignment on service start date: %v", err)
+	}
 	workers.worker.Status = entity.WorkerStatusTerminated
 	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("terminated worker: %v", err)
@@ -175,6 +185,31 @@ func TestWorkerAssignmentValidatorChecksManager(t *testing.T) {
 	workers.manager.Status = entity.WorkerStatusTerminated
 	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("inactive manager: %v", err)
+	}
+	workers.manager.Status = entity.WorkerStatusActive
+	nextDay := from.AddDate(0, 0, 1)
+	workers.manager.HireDate = &nextDay
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("manager hired after assignment starts: %v", err)
+	}
+	workers.manager.HireDate = &from
+	workers.manager.ServiceStartDate = &nextDay
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("manager service has not started: %v", err)
+	}
+	workers.manager.ServiceStartDate = nil
+	workers.manager.TerminationDate = &nextDay
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("open-ended assignment with exiting manager: %v", err)
+	}
+	draft.ValidTo = &nextDay
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); err != nil {
+		t.Fatalf("assignment within manager employment period: %v", err)
+	}
+	workers.manager = workers.worker
+	draft.ManagerWorkerID = &workers.worker.ID
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("worker assigned as their own manager: %v", err)
 	}
 }
 
@@ -230,6 +265,13 @@ func TestWorkerAssignmentApprovalChecksTemporalCapacity(t *testing.T) {
 	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("position FTE overflow: %v", err)
 	}
+	cancelledAt := approvedAt.Add(time.Hour)
+	other.CancelledAt = &cancelledAt
+	rows.positionRows = []entity.WorkerAssignment{other}
+	if err := v.ValidateMutation(t.Context(), "hr_worker_assignments", draft, &approved); err != nil {
+		t.Fatalf("cancelled assignment must not consume capacity: %v", err)
+	}
+	other.CancelledAt = nil
 	other.ValidTo = &from
 	approved.ValidFrom = from.AddDate(0, 0, 1)
 	rows.positionRows = []entity.WorkerAssignment{other}

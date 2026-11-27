@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"reflect"
 	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -43,7 +44,7 @@ func (v *performanceReviewValidator) ValidateMutation(ctx context.Context, table
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.PerformanceReview)
-		if !ok || previous == nil || !selfReviewDraft(previous) {
+		if !ok || previous == nil || previous.FinalizedAt != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -51,22 +52,50 @@ func (v *performanceReviewValidator) ValidateMutation(ctx context.Context, table
 		return hrerrors.ErrInvalidInput
 	}
 	review := previous
+	submitting := false
+	finalizing := false
 	if after != nil {
 		var ok bool
 		review, ok = after.(*entity.PerformanceReview)
 		if !ok || review == nil {
 			return hrerrors.ErrInvalidInput
 		}
-		if !selfReviewDraft(review) {
-			return hrerrors.ErrWorkflowRequired
+		submitting = previous != nil && previous.SubmittedAt == nil && review.SubmittedAt != nil && review.FinalizedAt == nil
+		finalizing = previous != nil && previous.FinalizedAt == nil && review.FinalizedAt != nil
+		switch {
+		case submitting:
+			unchanged := *review
+			unchanged.SubmittedAt = nil
+			if previous.ReviewerRole != "self" || previous.VisibilityClass != "restricted" ||
+				!reflect.DeepEqual(previous, &unchanged) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		case finalizing:
+			if review.SubmittedAt != nil && review.FinalizedAt.Before(*review.SubmittedAt) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			unchanged := *review
+			unchanged.FinalizedAt = nil
+			if previous.SubmittedAt == nil && review.SubmittedAt != nil {
+				unchanged.SubmittedAt = nil
+			}
+			if !reflect.DeepEqual(previous, &unchanged) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		default:
+			if (previous != nil && previous.SubmittedAt != nil) || !selfReviewDraft(review) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			if previous != nil && (previous.ID != review.ID || previous.WorkerID != review.WorkerID ||
+				previous.PerformanceCycleID != review.PerformanceCycleID || previous.ReviewerPrincipalID != review.ReviewerPrincipalID ||
+				previous.ReviewerRole != review.ReviewerRole || previous.ReviewVersion != review.ReviewVersion) {
+				return hrerrors.ErrWorkflowRequired
+			}
 		}
-		if previous != nil && (previous.ID != review.ID || previous.WorkerID != review.WorkerID ||
-			previous.PerformanceCycleID != review.PerformanceCycleID || previous.ReviewerPrincipalID != review.ReviewerPrincipalID ||
-			previous.ReviewerRole != review.ReviewerRole || previous.ReviewVersion != review.ReviewVersion) {
-			return hrerrors.ErrWorkflowRequired
-		}
+	} else if previous.SubmittedAt != nil || !selfReviewDraft(previous) {
+		return hrerrors.ErrWorkflowRequired
 	}
-	if !strings.EqualFold(caller.PrincipalID, review.ReviewerPrincipalID) {
+	if !finalizing && !strings.EqualFold(caller.PrincipalID, review.ReviewerPrincipalID) {
 		return hrerrors.ErrForbidden
 	}
 	worker, err := v.workers.FindByIDForUpdate(ctx, review.WorkerID)
@@ -77,6 +106,9 @@ func (v *performanceReviewValidator) ValidateMutation(ctx context.Context, table
 		!strings.EqualFold(*worker.IAMPrincipalReferenceID, review.ReviewerPrincipalID) {
 		return hrerrors.ErrReferenceConflict
 	}
+	if finalizing && strings.EqualFold(*worker.IAMPrincipalReferenceID, caller.PrincipalID) {
+		return hrerrors.ErrForbidden
+	}
 	cycle, err := v.cycles.FindByIDForUpdate(ctx, review.PerformanceCycleID)
 	if err != nil {
 		return reviewReferenceError(err)
@@ -84,12 +116,12 @@ func (v *performanceReviewValidator) ValidateMutation(ctx context.Context, table
 	if cycle == nil || cycle.Status != entity.PerformanceCycleStatusOpen {
 		return hrerrors.ErrReferenceConflict
 	}
-	if previous != nil {
+	if previous != nil && !submitting && !finalizing {
 		if err := v.rejectIfReferenced(ctx, review.ID); err != nil {
 			return err
 		}
 	}
-	if after == nil {
+	if after == nil || submitting || finalizing {
 		return nil
 	}
 	matches, err := v.reviews.SelectWhere(ctx, []domainrepo.Filter{

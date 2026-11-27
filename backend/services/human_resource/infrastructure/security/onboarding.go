@@ -117,7 +117,7 @@ func (v *onboardingPlanValidator) ValidateMutation(ctx context.Context, table st
 	if after == nil {
 		return nil
 	}
-	if starting {
+	if starting || completing {
 		count, err := v.tasks.CountWhere(ctx, []domainrepo.Filter{{Column: "onboarding_plan_id", Values: []any{plan.ID}}})
 		if err != nil {
 			return err
@@ -125,25 +125,34 @@ func (v *onboardingPlanValidator) ValidateMutation(ctx context.Context, table st
 		if count == 0 {
 			return hrerrors.ErrReferenceConflict
 		}
-	}
-	if completing {
-		count, err := v.tasks.CountWhere(ctx, []domainrepo.Filter{{Column: "onboarding_plan_id", Values: []any{plan.ID}}})
-		if err != nil {
-			return err
-		}
-		if count == 0 {
-			return hrerrors.ErrReferenceConflict
-		}
-		pending, err := v.tasks.CountWhere(ctx, []domainrepo.Filter{
+		mandatory := []domainrepo.Filter{
 			{Column: "onboarding_plan_id", Values: []any{plan.ID}},
 			{Column: "is_mandatory", Values: []any{true}},
-			{Column: "completed_at", Values: []any{nil}},
+		}
+		total, err := v.tasks.CountWhere(ctx, mandatory)
+		if err != nil {
+			return err
+		}
+		tasks, err := operation.CollectComplete(ctx, total, func(limit, offset int) (operation.Page[entity.OnboardingTask], error) {
+			items, err := v.tasks.SelectWhere(ctx, mandatory, limit, offset)
+			return operation.Page[entity.OnboardingTask]{Items: items}, err
 		})
 		if err != nil {
 			return err
 		}
-		if pending > 0 {
-			return hrerrors.ErrReferenceConflict
+		for _, task := range tasks {
+			if starting {
+				if task.TaskOwnerType != "worker" || task.AssignedPrincipalID == nil ||
+					worker.IAMPrincipalReferenceID == nil || !strings.EqualFold(*task.AssignedPrincipalID, *worker.IAMPrincipalReferenceID) {
+					return hrerrors.ErrReferenceConflict
+				}
+				continue
+			}
+			if task.CompletedAt == nil || task.CompletedByPrincipalID == nil || task.CompletionEvidenceReferenceID == nil ||
+				task.CompletedAt.Before(*plan.StartedAt) || task.CompletedAt.After(*plan.CompletedAt) ||
+				(task.AssignedPrincipalID != nil && !strings.EqualFold(*task.AssignedPrincipalID, *task.CompletedByPrincipalID)) {
+				return hrerrors.ErrReferenceConflict
+			}
 		}
 	}
 	matches, err := v.plans.SelectWhere(ctx, []domainrepo.Filter{

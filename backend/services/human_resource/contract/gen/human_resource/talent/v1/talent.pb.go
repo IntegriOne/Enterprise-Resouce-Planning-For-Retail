@@ -3808,6 +3808,142 @@ func (x *TalentPoolMembershipsResponse) GetPage() *v1.PageInfo {
 	return nil
 }
 
+type TalentReasonActionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ReasonCode    string                 `protobuf:"bytes,2,opt,name=reason_code,json=reasonCode,proto3" json:"reason_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TalentReasonActionRequest) Reset() {
+	*x = TalentReasonActionRequest{}
+	mi := &file_human_resource_talent_v1_talent_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TalentReasonActionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TalentReasonActionRequest) ProtoMessage() {}
+
+func (x *TalentReasonActionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_talent_v1_talent_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TalentReasonActionRequest.ProtoReflect.Descriptor instead.
+func (*TalentReasonActionRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_talent_v1_talent_proto_rawDescGZIP(), []int{54}
+}
+
+func (x *TalentReasonActionRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *TalentReasonActionRequest) GetReasonCode() string {
+	if x != nil {
+		return x.ReasonCode
+	}
+	return ""
+}
+
+type RecordTalentCalibrationDecisionRequest struct {
+	state                               protoimpl.MessageState `protogen:"open.v1"`
+	SessionId                           string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AssessmentId                        string                 `protobuf:"bytes,2,opt,name=assessment_id,json=assessmentId,proto3" json:"assessment_id,omitempty"`
+	DimensionId                         string                 `protobuf:"bytes,3,opt,name=dimension_id,json=dimensionId,proto3" json:"dimension_id,omitempty"`
+	CalibratedScore                     int32                  `protobuf:"varint,4,opt,name=calibrated_score,json=calibratedScore,proto3" json:"calibrated_score,omitempty"`
+	RationaleDocumentVersionReferenceId string                 `protobuf:"bytes,5,opt,name=rationale_document_version_reference_id,json=rationaleDocumentVersionReferenceId,proto3" json:"rationale_document_version_reference_id,omitempty"`
+	RationaleDigest                     []byte                 `protobuf:"bytes,6,opt,name=rationale_digest,json=rationaleDigest,proto3" json:"rationale_digest,omitempty"`
+	unknownFields                       protoimpl.UnknownFields
+	sizeCache                           protoimpl.SizeCache
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) Reset() {
+	*x = RecordTalentCalibrationDecisionRequest{}
+	mi := &file_human_resource_talent_v1_talent_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordTalentCalibrationDecisionRequest) ProtoMessage() {}
+
+func (x *RecordTalentCalibrationDecisionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_talent_v1_talent_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordTalentCalibrationDecisionRequest.ProtoReflect.Descriptor instead.
+func (*RecordTalentCalibrationDecisionRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_talent_v1_talent_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) GetAssessmentId() string {
+	if x != nil {
+		return x.AssessmentId
+	}
+	return ""
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) GetDimensionId() string {
+	if x != nil {
+		return x.DimensionId
+	}
+	return ""
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) GetCalibratedScore() int32 {
+	if x != nil {
+		return x.CalibratedScore
+	}
+	return 0
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) GetRationaleDocumentVersionReferenceId() string {
+	if x != nil {
+		return x.RationaleDocumentVersionReferenceId
+	}
+	return ""
+}
+
+func (x *RecordTalentCalibrationDecisionRequest) GetRationaleDigest() []byte {
+	if x != nil {
+		return x.RationaleDigest
+	}
+	return nil
+}
+
 var File_human_resource_talent_v1_talent_proto protoreflect.FileDescriptor
 
 const file_human_resource_talent_v1_talent_proto_rawDesc = "" +
@@ -4211,7 +4347,19 @@ const file_human_resource_talent_v1_talent_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v2..human_resource.talent.v1.TalentPoolMembershipR\x05value\"\x9d\x01\n" +
 	"\x1dTalentPoolMembershipsResponse\x12D\n" +
 	"\x05items\x18\x01 \x03(\v2..human_resource.talent.v1.TalentPoolMembershipR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xe4b\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"L\n" +
+	"\x19TalentReasonActionRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
+	"\vreason_code\x18\x02 \x01(\tR\n" +
+	"reasonCode\"\xbb\x02\n" +
+	"&RecordTalentCalibrationDecisionRequest\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tR\tsessionId\x12#\n" +
+	"\rassessment_id\x18\x02 \x01(\tR\fassessmentId\x12!\n" +
+	"\fdimension_id\x18\x03 \x01(\tR\vdimensionId\x12)\n" +
+	"\x10calibrated_score\x18\x04 \x01(\x05R\x0fcalibratedScore\x12T\n" +
+	"'rationale_document_version_reference_id\x18\x05 \x01(\tR#rationaleDocumentVersionReferenceId\x12)\n" +
+	"\x10rationale_digest\x18\x06 \x01(\fR\x0frationaleDigest2\xeal\n" +
 	"\rTalentService\x12\x82\x01\n" +
 	"\x15CreateTalentFramework\x126.human_resource.talent.v1.CreateTalentFrameworkRequest\x1a1.human_resource.talent.v1.TalentFrameworkResponse\x12\x82\x01\n" +
 	"\x15UpdateTalentFramework\x126.human_resource.talent.v1.UpdateTalentFrameworkRequest\x1a1.human_resource.talent.v1.TalentFrameworkResponse\x12e\n" +
@@ -4238,7 +4386,10 @@ const file_human_resource_talent_v1_talent_proto_rawDesc = "" +
 	"-FindTalentReviewCycleByLegalEntityReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a4.human_resource.talent.v1.TalentReviewCyclesResponse\x12\x99\x01\n" +
 	"2FindTalentReviewCycleByOrganizationUnitReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a4.human_resource.talent.v1.TalentReviewCyclesResponse\x12\x84\x01\n" +
 	"\x1dFindTalentReviewCycleByStatus\x12-.human_resource.common.v1.StringFinderRequest\x1a4.human_resource.talent.v1.TalentReviewCyclesResponse\x12\x8e\x01\n" +
-	"'FindTalentReviewCycleByOwnerPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a4.human_resource.talent.v1.TalentReviewCyclesResponse\x12\x85\x01\n" +
+	"'FindTalentReviewCycleByOwnerPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a4.human_resource.talent.v1.TalentReviewCyclesResponse\x12s\n" +
+	"\x17LaunchTalentReviewCycle\x12#.human_resource.common.v1.IDRequest\x1a3.human_resource.talent.v1.TalentReviewCycleResponse\x12}\n" +
+	"!StartTalentReviewCycleCalibration\x12#.human_resource.common.v1.IDRequest\x1a3.human_resource.talent.v1.TalentReviewCycleResponse\x12r\n" +
+	"\x16CloseTalentReviewCycle\x12#.human_resource.common.v1.IDRequest\x1a3.human_resource.talent.v1.TalentReviewCycleResponse\x12\x85\x01\n" +
 	"\x16CreateTalentAssessment\x127.human_resource.talent.v1.CreateTalentAssessmentRequest\x1a2.human_resource.talent.v1.TalentAssessmentResponse\x12\x85\x01\n" +
 	"\x16UpdateTalentAssessment\x127.human_resource.talent.v1.UpdateTalentAssessmentRequest\x1a2.human_resource.talent.v1.TalentAssessmentResponse\x12f\n" +
 	"\x16DeleteTalentAssessment\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12r\n" +
@@ -4252,7 +4403,9 @@ const file_human_resource_talent_v1_talent_proto_rawDesc = "" +
 	"+FindTalentAssessmentByAssessedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.talent.v1.TalentAssessmentsResponse\x12\x9e\x01\n" +
 	"8FindTalentAssessmentByEvidenceDocumentVersionReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.talent.v1.TalentAssessmentsResponse\x12\x87\x01\n" +
 	"!FindTalentAssessmentBySegmentCode\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.talent.v1.TalentAssessmentsResponse\x12\x92\x01\n" +
-	",FindTalentAssessmentByFinalizedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.talent.v1.TalentAssessmentsResponse\x12s\n" +
+	",FindTalentAssessmentByFinalizedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.talent.v1.TalentAssessmentsResponse\x12q\n" +
+	"\x16SubmitTalentAssessment\x12#.human_resource.common.v1.IDRequest\x1a2.human_resource.talent.v1.TalentAssessmentResponse\x12s\n" +
+	"\x18WithdrawTalentAssessment\x12#.human_resource.common.v1.IDRequest\x1a2.human_resource.talent.v1.TalentAssessmentResponse\x12s\n" +
 	"\x18FinalizeTalentAssessment\x12#.human_resource.common.v1.IDRequest\x1a2.human_resource.talent.v1.TalentAssessmentResponse\x12\x94\x01\n" +
 	"\x1bCreateTalentAssessmentScore\x12<.human_resource.talent.v1.CreateTalentAssessmentScoreRequest\x1a7.human_resource.talent.v1.TalentAssessmentScoreResponse\x12\x94\x01\n" +
 	"\x1bUpdateTalentAssessmentScore\x12<.human_resource.talent.v1.UpdateTalentAssessmentScoreRequest\x1a7.human_resource.talent.v1.TalentAssessmentScoreResponse\x12k\n" +
@@ -4271,7 +4424,9 @@ const file_human_resource_talent_v1_talent_proto_rawDesc = "" +
 	")FindTalentCalibrationSessionBySessionCode\x12-.human_resource.common.v1.StringFinderRequest\x1a;.human_resource.talent.v1.TalentCalibrationSessionsResponse\x12\x9c\x01\n" +
 	".FindTalentCalibrationSessionByChairPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a;.human_resource.talent.v1.TalentCalibrationSessionsResponse\x12\x92\x01\n" +
 	"$FindTalentCalibrationSessionByStatus\x12-.human_resource.common.v1.StringFinderRequest\x1a;.human_resource.talent.v1.TalentCalibrationSessionsResponse\x12\xad\x01\n" +
-	"?FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a;.human_resource.talent.v1.TalentCalibrationSessionsResponse\x12\xa0\x01\n" +
+	"?FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a;.human_resource.talent.v1.TalentCalibrationSessionsResponse\x12\x7f\n" +
+	"\x1cOpenTalentCalibrationSession\x12#.human_resource.common.v1.IDRequest\x1a:.human_resource.talent.v1.TalentCalibrationSessionResponse\x12\xa0\x01\n" +
+	"\x1fRecordTalentCalibrationDecision\x12@.human_resource.talent.v1.RecordTalentCalibrationDecisionRequest\x1a;.human_resource.talent.v1.TalentCalibrationDecisionResponse\x12\xa0\x01\n" +
 	"\x1fCreateTalentCalibrationDecision\x12@.human_resource.talent.v1.CreateTalentCalibrationDecisionRequest\x1a;.human_resource.talent.v1.TalentCalibrationDecisionResponse\x12\xa0\x01\n" +
 	"\x1fUpdateTalentCalibrationDecision\x12@.human_resource.talent.v1.UpdateTalentCalibrationDecisionRequest\x1a;.human_resource.talent.v1.TalentCalibrationDecisionResponse\x12o\n" +
 	"\x1fDeleteTalentCalibrationDecision\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12\x84\x01\n" +
@@ -4304,7 +4459,10 @@ const file_human_resource_talent_v1_talent_proto_rawDesc = "" +
 	"0FindTalentPoolMembershipByNominatedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.talent.v1.TalentPoolMembershipsResponse\x12\x8a\x01\n" +
 	" FindTalentPoolMembershipByStatus\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.talent.v1.TalentPoolMembershipsResponse\x12\x99\x01\n" +
 	"/FindTalentPoolMembershipByApprovedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.talent.v1.TalentPoolMembershipsResponse\x12\x92\x01\n" +
-	"(FindTalentPoolMembershipByExitReasonCode\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.talent.v1.TalentPoolMembershipsResponseBqZogithub.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/talent/v1;talentv1b\x06proto3"
+	"(FindTalentPoolMembershipByExitReasonCode\x12-.human_resource.common.v1.StringFinderRequest\x1a7.human_resource.talent.v1.TalentPoolMembershipsResponse\x12z\n" +
+	"\x1bApproveTalentPoolMembership\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.talent.v1.TalentPoolMembershipResponse\x12\x89\x01\n" +
+	"\x1aRejectTalentPoolMembership\x123.human_resource.talent.v1.TalentReasonActionRequest\x1a6.human_resource.talent.v1.TalentPoolMembershipResponse\x12\x87\x01\n" +
+	"\x18ExitTalentPoolMembership\x123.human_resource.talent.v1.TalentReasonActionRequest\x1a6.human_resource.talent.v1.TalentPoolMembershipResponseBqZogithub.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/talent/v1;talentv1b\x06proto3"
 
 var (
 	file_human_resource_talent_v1_talent_proto_rawDescOnce sync.Once
@@ -4318,7 +4476,7 @@ func file_human_resource_talent_v1_talent_proto_rawDescGZIP() []byte {
 	return file_human_resource_talent_v1_talent_proto_rawDescData
 }
 
-var file_human_resource_talent_v1_talent_proto_msgTypes = make([]protoimpl.MessageInfo, 54)
+var file_human_resource_talent_v1_talent_proto_msgTypes = make([]protoimpl.MessageInfo, 56)
 var file_human_resource_talent_v1_talent_proto_goTypes = []any{
 	(*TalentFramework)(nil),                        // 0: human_resource.talent.v1.TalentFramework
 	(*TalentFrameworkInput)(nil),                   // 1: human_resource.talent.v1.TalentFrameworkInput
@@ -4374,288 +4532,310 @@ var file_human_resource_talent_v1_talent_proto_goTypes = []any{
 	(*UpdateTalentPoolMembershipRequest)(nil),      // 51: human_resource.talent.v1.UpdateTalentPoolMembershipRequest
 	(*TalentPoolMembershipResponse)(nil),           // 52: human_resource.talent.v1.TalentPoolMembershipResponse
 	(*TalentPoolMembershipsResponse)(nil),          // 53: human_resource.talent.v1.TalentPoolMembershipsResponse
-	(*timestamppb.Timestamp)(nil),                  // 54: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),                  // 55: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                            // 56: human_resource.common.v1.PageInfo
-	(*v1.JsonDocument)(nil),                        // 57: human_resource.common.v1.JsonDocument
-	(*v1.IDRequest)(nil),                           // 58: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                         // 59: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),                 // 60: human_resource.common.v1.StringFinderRequest
-	(*v1.EmptyResponse)(nil),                       // 61: human_resource.common.v1.EmptyResponse
+	(*TalentReasonActionRequest)(nil),              // 54: human_resource.talent.v1.TalentReasonActionRequest
+	(*RecordTalentCalibrationDecisionRequest)(nil), // 55: human_resource.talent.v1.RecordTalentCalibrationDecisionRequest
+	(*timestamppb.Timestamp)(nil),                  // 56: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),                  // 57: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                            // 58: human_resource.common.v1.PageInfo
+	(*v1.JsonDocument)(nil),                        // 59: human_resource.common.v1.JsonDocument
+	(*v1.IDRequest)(nil),                           // 60: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                         // 61: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),                 // 62: human_resource.common.v1.StringFinderRequest
+	(*v1.EmptyResponse)(nil),                       // 63: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_talent_v1_talent_proto_depIdxs = []int32{
-	54,  // 0: human_resource.talent.v1.TalentFramework.effective_from:type_name -> google.protobuf.Timestamp
-	54,  // 1: human_resource.talent.v1.TalentFramework.effective_to:type_name -> google.protobuf.Timestamp
-	54,  // 2: human_resource.talent.v1.TalentFramework.approved_at:type_name -> google.protobuf.Timestamp
-	54,  // 3: human_resource.talent.v1.TalentFrameworkInput.effective_from:type_name -> google.protobuf.Timestamp
-	54,  // 4: human_resource.talent.v1.TalentFrameworkInput.effective_to:type_name -> google.protobuf.Timestamp
-	54,  // 5: human_resource.talent.v1.TalentFrameworkInput.approved_at:type_name -> google.protobuf.Timestamp
+	56,  // 0: human_resource.talent.v1.TalentFramework.effective_from:type_name -> google.protobuf.Timestamp
+	56,  // 1: human_resource.talent.v1.TalentFramework.effective_to:type_name -> google.protobuf.Timestamp
+	56,  // 2: human_resource.talent.v1.TalentFramework.approved_at:type_name -> google.protobuf.Timestamp
+	56,  // 3: human_resource.talent.v1.TalentFrameworkInput.effective_from:type_name -> google.protobuf.Timestamp
+	56,  // 4: human_resource.talent.v1.TalentFrameworkInput.effective_to:type_name -> google.protobuf.Timestamp
+	56,  // 5: human_resource.talent.v1.TalentFrameworkInput.approved_at:type_name -> google.protobuf.Timestamp
 	1,   // 6: human_resource.talent.v1.CreateTalentFrameworkRequest.input:type_name -> human_resource.talent.v1.TalentFrameworkInput
 	1,   // 7: human_resource.talent.v1.UpdateTalentFrameworkRequest.input:type_name -> human_resource.talent.v1.TalentFrameworkInput
-	55,  // 8: human_resource.talent.v1.UpdateTalentFrameworkRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 8: human_resource.talent.v1.UpdateTalentFrameworkRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,   // 9: human_resource.talent.v1.TalentFrameworkResponse.value:type_name -> human_resource.talent.v1.TalentFramework
 	0,   // 10: human_resource.talent.v1.TalentFrameworksResponse.items:type_name -> human_resource.talent.v1.TalentFramework
-	56,  // 11: human_resource.talent.v1.TalentFrameworksResponse.page:type_name -> human_resource.common.v1.PageInfo
-	57,  // 12: human_resource.talent.v1.TalentDimension.rating_anchors:type_name -> human_resource.common.v1.JsonDocument
-	57,  // 13: human_resource.talent.v1.TalentDimensionInput.rating_anchors:type_name -> human_resource.common.v1.JsonDocument
+	58,  // 11: human_resource.talent.v1.TalentFrameworksResponse.page:type_name -> human_resource.common.v1.PageInfo
+	59,  // 12: human_resource.talent.v1.TalentDimension.rating_anchors:type_name -> human_resource.common.v1.JsonDocument
+	59,  // 13: human_resource.talent.v1.TalentDimensionInput.rating_anchors:type_name -> human_resource.common.v1.JsonDocument
 	7,   // 14: human_resource.talent.v1.CreateTalentDimensionRequest.input:type_name -> human_resource.talent.v1.TalentDimensionInput
 	7,   // 15: human_resource.talent.v1.UpdateTalentDimensionRequest.input:type_name -> human_resource.talent.v1.TalentDimensionInput
-	55,  // 16: human_resource.talent.v1.UpdateTalentDimensionRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 16: human_resource.talent.v1.UpdateTalentDimensionRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,   // 17: human_resource.talent.v1.TalentDimensionResponse.value:type_name -> human_resource.talent.v1.TalentDimension
 	6,   // 18: human_resource.talent.v1.TalentDimensionsResponse.items:type_name -> human_resource.talent.v1.TalentDimension
-	56,  // 19: human_resource.talent.v1.TalentDimensionsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	54,  // 20: human_resource.talent.v1.TalentReviewCycle.period_start:type_name -> google.protobuf.Timestamp
-	54,  // 21: human_resource.talent.v1.TalentReviewCycle.period_end:type_name -> google.protobuf.Timestamp
-	54,  // 22: human_resource.talent.v1.TalentReviewCycle.closed_at:type_name -> google.protobuf.Timestamp
-	54,  // 23: human_resource.talent.v1.TalentReviewCycleInput.period_start:type_name -> google.protobuf.Timestamp
-	54,  // 24: human_resource.talent.v1.TalentReviewCycleInput.period_end:type_name -> google.protobuf.Timestamp
-	54,  // 25: human_resource.talent.v1.TalentReviewCycleInput.closed_at:type_name -> google.protobuf.Timestamp
+	58,  // 19: human_resource.talent.v1.TalentDimensionsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	56,  // 20: human_resource.talent.v1.TalentReviewCycle.period_start:type_name -> google.protobuf.Timestamp
+	56,  // 21: human_resource.talent.v1.TalentReviewCycle.period_end:type_name -> google.protobuf.Timestamp
+	56,  // 22: human_resource.talent.v1.TalentReviewCycle.closed_at:type_name -> google.protobuf.Timestamp
+	56,  // 23: human_resource.talent.v1.TalentReviewCycleInput.period_start:type_name -> google.protobuf.Timestamp
+	56,  // 24: human_resource.talent.v1.TalentReviewCycleInput.period_end:type_name -> google.protobuf.Timestamp
+	56,  // 25: human_resource.talent.v1.TalentReviewCycleInput.closed_at:type_name -> google.protobuf.Timestamp
 	13,  // 26: human_resource.talent.v1.CreateTalentReviewCycleRequest.input:type_name -> human_resource.talent.v1.TalentReviewCycleInput
 	13,  // 27: human_resource.talent.v1.UpdateTalentReviewCycleRequest.input:type_name -> human_resource.talent.v1.TalentReviewCycleInput
-	55,  // 28: human_resource.talent.v1.UpdateTalentReviewCycleRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 28: human_resource.talent.v1.UpdateTalentReviewCycleRequest.update_mask:type_name -> google.protobuf.FieldMask
 	12,  // 29: human_resource.talent.v1.TalentReviewCycleResponse.value:type_name -> human_resource.talent.v1.TalentReviewCycle
 	12,  // 30: human_resource.talent.v1.TalentReviewCyclesResponse.items:type_name -> human_resource.talent.v1.TalentReviewCycle
-	56,  // 31: human_resource.talent.v1.TalentReviewCyclesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	54,  // 32: human_resource.talent.v1.TalentAssessment.assessed_at:type_name -> google.protobuf.Timestamp
-	54,  // 33: human_resource.talent.v1.TalentAssessment.finalized_at:type_name -> google.protobuf.Timestamp
-	54,  // 34: human_resource.talent.v1.TalentAssessmentInput.finalized_at:type_name -> google.protobuf.Timestamp
+	58,  // 31: human_resource.talent.v1.TalentReviewCyclesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	56,  // 32: human_resource.talent.v1.TalentAssessment.assessed_at:type_name -> google.protobuf.Timestamp
+	56,  // 33: human_resource.talent.v1.TalentAssessment.finalized_at:type_name -> google.protobuf.Timestamp
+	56,  // 34: human_resource.talent.v1.TalentAssessmentInput.finalized_at:type_name -> google.protobuf.Timestamp
 	19,  // 35: human_resource.talent.v1.CreateTalentAssessmentRequest.input:type_name -> human_resource.talent.v1.TalentAssessmentInput
 	19,  // 36: human_resource.talent.v1.UpdateTalentAssessmentRequest.input:type_name -> human_resource.talent.v1.TalentAssessmentInput
-	55,  // 37: human_resource.talent.v1.UpdateTalentAssessmentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 37: human_resource.talent.v1.UpdateTalentAssessmentRequest.update_mask:type_name -> google.protobuf.FieldMask
 	18,  // 38: human_resource.talent.v1.TalentAssessmentResponse.value:type_name -> human_resource.talent.v1.TalentAssessment
 	18,  // 39: human_resource.talent.v1.TalentAssessmentsResponse.items:type_name -> human_resource.talent.v1.TalentAssessment
-	56,  // 40: human_resource.talent.v1.TalentAssessmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	58,  // 40: human_resource.talent.v1.TalentAssessmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
 	25,  // 41: human_resource.talent.v1.CreateTalentAssessmentScoreRequest.input:type_name -> human_resource.talent.v1.TalentAssessmentScoreInput
 	25,  // 42: human_resource.talent.v1.UpdateTalentAssessmentScoreRequest.input:type_name -> human_resource.talent.v1.TalentAssessmentScoreInput
-	55,  // 43: human_resource.talent.v1.UpdateTalentAssessmentScoreRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 43: human_resource.talent.v1.UpdateTalentAssessmentScoreRequest.update_mask:type_name -> google.protobuf.FieldMask
 	24,  // 44: human_resource.talent.v1.TalentAssessmentScoreResponse.value:type_name -> human_resource.talent.v1.TalentAssessmentScore
 	24,  // 45: human_resource.talent.v1.TalentAssessmentScoresResponse.items:type_name -> human_resource.talent.v1.TalentAssessmentScore
-	56,  // 46: human_resource.talent.v1.TalentAssessmentScoresResponse.page:type_name -> human_resource.common.v1.PageInfo
-	54,  // 47: human_resource.talent.v1.TalentCalibrationSession.scheduled_at:type_name -> google.protobuf.Timestamp
-	54,  // 48: human_resource.talent.v1.TalentCalibrationSession.closed_at:type_name -> google.protobuf.Timestamp
-	54,  // 49: human_resource.talent.v1.TalentCalibrationSessionInput.scheduled_at:type_name -> google.protobuf.Timestamp
-	54,  // 50: human_resource.talent.v1.TalentCalibrationSessionInput.closed_at:type_name -> google.protobuf.Timestamp
+	58,  // 46: human_resource.talent.v1.TalentAssessmentScoresResponse.page:type_name -> human_resource.common.v1.PageInfo
+	56,  // 47: human_resource.talent.v1.TalentCalibrationSession.scheduled_at:type_name -> google.protobuf.Timestamp
+	56,  // 48: human_resource.talent.v1.TalentCalibrationSession.closed_at:type_name -> google.protobuf.Timestamp
+	56,  // 49: human_resource.talent.v1.TalentCalibrationSessionInput.scheduled_at:type_name -> google.protobuf.Timestamp
+	56,  // 50: human_resource.talent.v1.TalentCalibrationSessionInput.closed_at:type_name -> google.protobuf.Timestamp
 	31,  // 51: human_resource.talent.v1.CreateTalentCalibrationSessionRequest.input:type_name -> human_resource.talent.v1.TalentCalibrationSessionInput
 	31,  // 52: human_resource.talent.v1.UpdateTalentCalibrationSessionRequest.input:type_name -> human_resource.talent.v1.TalentCalibrationSessionInput
-	55,  // 53: human_resource.talent.v1.UpdateTalentCalibrationSessionRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 53: human_resource.talent.v1.UpdateTalentCalibrationSessionRequest.update_mask:type_name -> google.protobuf.FieldMask
 	30,  // 54: human_resource.talent.v1.TalentCalibrationSessionResponse.value:type_name -> human_resource.talent.v1.TalentCalibrationSession
 	30,  // 55: human_resource.talent.v1.TalentCalibrationSessionsResponse.items:type_name -> human_resource.talent.v1.TalentCalibrationSession
-	56,  // 56: human_resource.talent.v1.TalentCalibrationSessionsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	54,  // 57: human_resource.talent.v1.TalentCalibrationDecision.decided_at:type_name -> google.protobuf.Timestamp
+	58,  // 56: human_resource.talent.v1.TalentCalibrationSessionsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	56,  // 57: human_resource.talent.v1.TalentCalibrationDecision.decided_at:type_name -> google.protobuf.Timestamp
 	37,  // 58: human_resource.talent.v1.CreateTalentCalibrationDecisionRequest.input:type_name -> human_resource.talent.v1.TalentCalibrationDecisionInput
 	37,  // 59: human_resource.talent.v1.UpdateTalentCalibrationDecisionRequest.input:type_name -> human_resource.talent.v1.TalentCalibrationDecisionInput
-	55,  // 60: human_resource.talent.v1.UpdateTalentCalibrationDecisionRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 60: human_resource.talent.v1.UpdateTalentCalibrationDecisionRequest.update_mask:type_name -> google.protobuf.FieldMask
 	36,  // 61: human_resource.talent.v1.TalentCalibrationDecisionResponse.value:type_name -> human_resource.talent.v1.TalentCalibrationDecision
 	36,  // 62: human_resource.talent.v1.TalentCalibrationDecisionsResponse.items:type_name -> human_resource.talent.v1.TalentCalibrationDecision
-	56,  // 63: human_resource.talent.v1.TalentCalibrationDecisionsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	54,  // 64: human_resource.talent.v1.TalentPool.valid_from:type_name -> google.protobuf.Timestamp
-	54,  // 65: human_resource.talent.v1.TalentPool.valid_to:type_name -> google.protobuf.Timestamp
-	54,  // 66: human_resource.talent.v1.TalentPoolInput.valid_from:type_name -> google.protobuf.Timestamp
-	54,  // 67: human_resource.talent.v1.TalentPoolInput.valid_to:type_name -> google.protobuf.Timestamp
+	58,  // 63: human_resource.talent.v1.TalentCalibrationDecisionsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	56,  // 64: human_resource.talent.v1.TalentPool.valid_from:type_name -> google.protobuf.Timestamp
+	56,  // 65: human_resource.talent.v1.TalentPool.valid_to:type_name -> google.protobuf.Timestamp
+	56,  // 66: human_resource.talent.v1.TalentPoolInput.valid_from:type_name -> google.protobuf.Timestamp
+	56,  // 67: human_resource.talent.v1.TalentPoolInput.valid_to:type_name -> google.protobuf.Timestamp
 	43,  // 68: human_resource.talent.v1.CreateTalentPoolRequest.input:type_name -> human_resource.talent.v1.TalentPoolInput
 	43,  // 69: human_resource.talent.v1.UpdateTalentPoolRequest.input:type_name -> human_resource.talent.v1.TalentPoolInput
-	55,  // 70: human_resource.talent.v1.UpdateTalentPoolRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 70: human_resource.talent.v1.UpdateTalentPoolRequest.update_mask:type_name -> google.protobuf.FieldMask
 	42,  // 71: human_resource.talent.v1.TalentPoolResponse.value:type_name -> human_resource.talent.v1.TalentPool
 	42,  // 72: human_resource.talent.v1.TalentPoolsResponse.items:type_name -> human_resource.talent.v1.TalentPool
-	56,  // 73: human_resource.talent.v1.TalentPoolsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	54,  // 74: human_resource.talent.v1.TalentPoolMembership.valid_from:type_name -> google.protobuf.Timestamp
-	54,  // 75: human_resource.talent.v1.TalentPoolMembership.valid_to:type_name -> google.protobuf.Timestamp
-	54,  // 76: human_resource.talent.v1.TalentPoolMembership.approved_at:type_name -> google.protobuf.Timestamp
-	54,  // 77: human_resource.talent.v1.TalentPoolMembershipInput.valid_from:type_name -> google.protobuf.Timestamp
-	54,  // 78: human_resource.talent.v1.TalentPoolMembershipInput.valid_to:type_name -> google.protobuf.Timestamp
-	54,  // 79: human_resource.talent.v1.TalentPoolMembershipInput.approved_at:type_name -> google.protobuf.Timestamp
+	58,  // 73: human_resource.talent.v1.TalentPoolsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	56,  // 74: human_resource.talent.v1.TalentPoolMembership.valid_from:type_name -> google.protobuf.Timestamp
+	56,  // 75: human_resource.talent.v1.TalentPoolMembership.valid_to:type_name -> google.protobuf.Timestamp
+	56,  // 76: human_resource.talent.v1.TalentPoolMembership.approved_at:type_name -> google.protobuf.Timestamp
+	56,  // 77: human_resource.talent.v1.TalentPoolMembershipInput.valid_from:type_name -> google.protobuf.Timestamp
+	56,  // 78: human_resource.talent.v1.TalentPoolMembershipInput.valid_to:type_name -> google.protobuf.Timestamp
+	56,  // 79: human_resource.talent.v1.TalentPoolMembershipInput.approved_at:type_name -> google.protobuf.Timestamp
 	49,  // 80: human_resource.talent.v1.CreateTalentPoolMembershipRequest.input:type_name -> human_resource.talent.v1.TalentPoolMembershipInput
 	49,  // 81: human_resource.talent.v1.UpdateTalentPoolMembershipRequest.input:type_name -> human_resource.talent.v1.TalentPoolMembershipInput
-	55,  // 82: human_resource.talent.v1.UpdateTalentPoolMembershipRequest.update_mask:type_name -> google.protobuf.FieldMask
+	57,  // 82: human_resource.talent.v1.UpdateTalentPoolMembershipRequest.update_mask:type_name -> google.protobuf.FieldMask
 	48,  // 83: human_resource.talent.v1.TalentPoolMembershipResponse.value:type_name -> human_resource.talent.v1.TalentPoolMembership
 	48,  // 84: human_resource.talent.v1.TalentPoolMembershipsResponse.items:type_name -> human_resource.talent.v1.TalentPoolMembership
-	56,  // 85: human_resource.talent.v1.TalentPoolMembershipsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	58,  // 85: human_resource.talent.v1.TalentPoolMembershipsResponse.page:type_name -> human_resource.common.v1.PageInfo
 	2,   // 86: human_resource.talent.v1.TalentService.CreateTalentFramework:input_type -> human_resource.talent.v1.CreateTalentFrameworkRequest
 	3,   // 87: human_resource.talent.v1.TalentService.UpdateTalentFramework:input_type -> human_resource.talent.v1.UpdateTalentFrameworkRequest
-	58,  // 88: human_resource.talent.v1.TalentService.DeleteTalentFramework:input_type -> human_resource.common.v1.IDRequest
-	58,  // 89: human_resource.talent.v1.TalentService.GetTalentFrameworkByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 90: human_resource.talent.v1.TalentService.GetAllTalentFrameworks:input_type -> human_resource.common.v1.PageRequest
-	60,  // 91: human_resource.talent.v1.TalentService.FindTalentFrameworkByFrameworkCode:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 92: human_resource.talent.v1.TalentService.FindTalentFrameworkByRubricDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 93: human_resource.talent.v1.TalentService.FindTalentFrameworkByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	60,  // 88: human_resource.talent.v1.TalentService.DeleteTalentFramework:input_type -> human_resource.common.v1.IDRequest
+	60,  // 89: human_resource.talent.v1.TalentService.GetTalentFrameworkByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 90: human_resource.talent.v1.TalentService.GetAllTalentFrameworks:input_type -> human_resource.common.v1.PageRequest
+	62,  // 91: human_resource.talent.v1.TalentService.FindTalentFrameworkByFrameworkCode:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 92: human_resource.talent.v1.TalentService.FindTalentFrameworkByRubricDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 93: human_resource.talent.v1.TalentService.FindTalentFrameworkByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
 	8,   // 94: human_resource.talent.v1.TalentService.CreateTalentDimension:input_type -> human_resource.talent.v1.CreateTalentDimensionRequest
 	9,   // 95: human_resource.talent.v1.TalentService.UpdateTalentDimension:input_type -> human_resource.talent.v1.UpdateTalentDimensionRequest
-	58,  // 96: human_resource.talent.v1.TalentService.DeleteTalentDimension:input_type -> human_resource.common.v1.IDRequest
-	58,  // 97: human_resource.talent.v1.TalentService.GetTalentDimensionByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 98: human_resource.talent.v1.TalentService.GetAllTalentDimensions:input_type -> human_resource.common.v1.PageRequest
-	60,  // 99: human_resource.talent.v1.TalentService.FindTalentDimensionByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 100: human_resource.talent.v1.TalentService.FindTalentDimensionByDimensionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	60,  // 96: human_resource.talent.v1.TalentService.DeleteTalentDimension:input_type -> human_resource.common.v1.IDRequest
+	60,  // 97: human_resource.talent.v1.TalentService.GetTalentDimensionByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 98: human_resource.talent.v1.TalentService.GetAllTalentDimensions:input_type -> human_resource.common.v1.PageRequest
+	62,  // 99: human_resource.talent.v1.TalentService.FindTalentDimensionByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 100: human_resource.talent.v1.TalentService.FindTalentDimensionByDimensionCode:input_type -> human_resource.common.v1.StringFinderRequest
 	14,  // 101: human_resource.talent.v1.TalentService.CreateTalentReviewCycle:input_type -> human_resource.talent.v1.CreateTalentReviewCycleRequest
 	15,  // 102: human_resource.talent.v1.TalentService.UpdateTalentReviewCycle:input_type -> human_resource.talent.v1.UpdateTalentReviewCycleRequest
-	58,  // 103: human_resource.talent.v1.TalentService.DeleteTalentReviewCycle:input_type -> human_resource.common.v1.IDRequest
-	58,  // 104: human_resource.talent.v1.TalentService.GetTalentReviewCycleByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 105: human_resource.talent.v1.TalentService.GetAllTalentReviewCycles:input_type -> human_resource.common.v1.PageRequest
-	60,  // 106: human_resource.talent.v1.TalentService.FindTalentReviewCycleByCycleCode:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 107: human_resource.talent.v1.TalentService.FindTalentReviewCycleByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 108: human_resource.talent.v1.TalentService.FindTalentReviewCycleByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 109: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 110: human_resource.talent.v1.TalentService.FindTalentReviewCycleByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 111: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOwnerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	20,  // 112: human_resource.talent.v1.TalentService.CreateTalentAssessment:input_type -> human_resource.talent.v1.CreateTalentAssessmentRequest
-	21,  // 113: human_resource.talent.v1.TalentService.UpdateTalentAssessment:input_type -> human_resource.talent.v1.UpdateTalentAssessmentRequest
-	58,  // 114: human_resource.talent.v1.TalentService.DeleteTalentAssessment:input_type -> human_resource.common.v1.IDRequest
-	58,  // 115: human_resource.talent.v1.TalentService.GetTalentAssessmentByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 116: human_resource.talent.v1.TalentService.GetAllTalentAssessments:input_type -> human_resource.common.v1.PageRequest
-	60,  // 117: human_resource.talent.v1.TalentService.FindTalentAssessmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 118: human_resource.talent.v1.TalentService.FindTalentAssessmentByTalentReviewCycleID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 119: human_resource.talent.v1.TalentService.FindTalentAssessmentByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 120: human_resource.talent.v1.TalentService.FindTalentAssessmentByPerformanceReviewID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 121: human_resource.talent.v1.TalentService.FindTalentAssessmentByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 122: human_resource.talent.v1.TalentService.FindTalentAssessmentByAssessedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 123: human_resource.talent.v1.TalentService.FindTalentAssessmentByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 124: human_resource.talent.v1.TalentService.FindTalentAssessmentBySegmentCode:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 125: human_resource.talent.v1.TalentService.FindTalentAssessmentByFinalizedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	58,  // 126: human_resource.talent.v1.TalentService.FinalizeTalentAssessment:input_type -> human_resource.common.v1.IDRequest
-	26,  // 127: human_resource.talent.v1.TalentService.CreateTalentAssessmentScore:input_type -> human_resource.talent.v1.CreateTalentAssessmentScoreRequest
-	27,  // 128: human_resource.talent.v1.TalentService.UpdateTalentAssessmentScore:input_type -> human_resource.talent.v1.UpdateTalentAssessmentScoreRequest
-	58,  // 129: human_resource.talent.v1.TalentService.DeleteTalentAssessmentScore:input_type -> human_resource.common.v1.IDRequest
-	58,  // 130: human_resource.talent.v1.TalentService.GetTalentAssessmentScoreByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 131: human_resource.talent.v1.TalentService.GetAllTalentAssessmentScores:input_type -> human_resource.common.v1.PageRequest
-	60,  // 132: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 133: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 134: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByDimensionID:input_type -> human_resource.common.v1.StringFinderRequest
-	32,  // 135: human_resource.talent.v1.TalentService.CreateTalentCalibrationSession:input_type -> human_resource.talent.v1.CreateTalentCalibrationSessionRequest
-	33,  // 136: human_resource.talent.v1.TalentService.UpdateTalentCalibrationSession:input_type -> human_resource.talent.v1.UpdateTalentCalibrationSessionRequest
-	58,  // 137: human_resource.talent.v1.TalentService.DeleteTalentCalibrationSession:input_type -> human_resource.common.v1.IDRequest
-	58,  // 138: human_resource.talent.v1.TalentService.GetTalentCalibrationSessionByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 139: human_resource.talent.v1.TalentService.GetAllTalentCalibrationSessions:input_type -> human_resource.common.v1.PageRequest
-	60,  // 140: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByTalentReviewCycleID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 141: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionBySessionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 142: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByChairPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 143: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 144: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	38,  // 145: human_resource.talent.v1.TalentService.CreateTalentCalibrationDecision:input_type -> human_resource.talent.v1.CreateTalentCalibrationDecisionRequest
-	39,  // 146: human_resource.talent.v1.TalentService.UpdateTalentCalibrationDecision:input_type -> human_resource.talent.v1.UpdateTalentCalibrationDecisionRequest
-	58,  // 147: human_resource.talent.v1.TalentService.DeleteTalentCalibrationDecision:input_type -> human_resource.common.v1.IDRequest
-	58,  // 148: human_resource.talent.v1.TalentService.GetTalentCalibrationDecisionByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 149: human_resource.talent.v1.TalentService.GetAllTalentCalibrationDecisions:input_type -> human_resource.common.v1.PageRequest
-	60,  // 150: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionBySessionID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 151: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByTalentReviewCycleID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 152: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 153: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDimensionID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 154: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByRationaleDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 155: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDecidedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	44,  // 156: human_resource.talent.v1.TalentService.CreateTalentPool:input_type -> human_resource.talent.v1.CreateTalentPoolRequest
-	45,  // 157: human_resource.talent.v1.TalentService.UpdateTalentPool:input_type -> human_resource.talent.v1.UpdateTalentPoolRequest
-	58,  // 158: human_resource.talent.v1.TalentService.DeleteTalentPool:input_type -> human_resource.common.v1.IDRequest
-	58,  // 159: human_resource.talent.v1.TalentService.GetTalentPoolByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 160: human_resource.talent.v1.TalentService.GetAllTalentPools:input_type -> human_resource.common.v1.PageRequest
-	60,  // 161: human_resource.talent.v1.TalentService.FindTalentPoolByPoolCode:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 162: human_resource.talent.v1.TalentService.FindTalentPoolByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 163: human_resource.talent.v1.TalentService.FindTalentPoolByTargetJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 164: human_resource.talent.v1.TalentService.FindTalentPoolByEligibilityDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 165: human_resource.talent.v1.TalentService.FindTalentPoolByOwnerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	50,  // 166: human_resource.talent.v1.TalentService.CreateTalentPoolMembership:input_type -> human_resource.talent.v1.CreateTalentPoolMembershipRequest
-	51,  // 167: human_resource.talent.v1.TalentService.UpdateTalentPoolMembership:input_type -> human_resource.talent.v1.UpdateTalentPoolMembershipRequest
-	58,  // 168: human_resource.talent.v1.TalentService.DeleteTalentPoolMembership:input_type -> human_resource.common.v1.IDRequest
-	58,  // 169: human_resource.talent.v1.TalentService.GetTalentPoolMembershipByID:input_type -> human_resource.common.v1.IDRequest
-	59,  // 170: human_resource.talent.v1.TalentService.GetAllTalentPoolMemberships:input_type -> human_resource.common.v1.PageRequest
-	60,  // 171: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByTalentPoolID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 172: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 173: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 174: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByNominatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 175: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 176: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	60,  // 177: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByExitReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
-	4,   // 178: human_resource.talent.v1.TalentService.CreateTalentFramework:output_type -> human_resource.talent.v1.TalentFrameworkResponse
-	4,   // 179: human_resource.talent.v1.TalentService.UpdateTalentFramework:output_type -> human_resource.talent.v1.TalentFrameworkResponse
-	61,  // 180: human_resource.talent.v1.TalentService.DeleteTalentFramework:output_type -> human_resource.common.v1.EmptyResponse
-	4,   // 181: human_resource.talent.v1.TalentService.GetTalentFrameworkByID:output_type -> human_resource.talent.v1.TalentFrameworkResponse
-	5,   // 182: human_resource.talent.v1.TalentService.GetAllTalentFrameworks:output_type -> human_resource.talent.v1.TalentFrameworksResponse
-	5,   // 183: human_resource.talent.v1.TalentService.FindTalentFrameworkByFrameworkCode:output_type -> human_resource.talent.v1.TalentFrameworksResponse
-	5,   // 184: human_resource.talent.v1.TalentService.FindTalentFrameworkByRubricDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentFrameworksResponse
-	5,   // 185: human_resource.talent.v1.TalentService.FindTalentFrameworkByApprovedByPrincipalID:output_type -> human_resource.talent.v1.TalentFrameworksResponse
-	10,  // 186: human_resource.talent.v1.TalentService.CreateTalentDimension:output_type -> human_resource.talent.v1.TalentDimensionResponse
-	10,  // 187: human_resource.talent.v1.TalentService.UpdateTalentDimension:output_type -> human_resource.talent.v1.TalentDimensionResponse
-	61,  // 188: human_resource.talent.v1.TalentService.DeleteTalentDimension:output_type -> human_resource.common.v1.EmptyResponse
-	10,  // 189: human_resource.talent.v1.TalentService.GetTalentDimensionByID:output_type -> human_resource.talent.v1.TalentDimensionResponse
-	11,  // 190: human_resource.talent.v1.TalentService.GetAllTalentDimensions:output_type -> human_resource.talent.v1.TalentDimensionsResponse
-	11,  // 191: human_resource.talent.v1.TalentService.FindTalentDimensionByFrameworkID:output_type -> human_resource.talent.v1.TalentDimensionsResponse
-	11,  // 192: human_resource.talent.v1.TalentService.FindTalentDimensionByDimensionCode:output_type -> human_resource.talent.v1.TalentDimensionsResponse
-	16,  // 193: human_resource.talent.v1.TalentService.CreateTalentReviewCycle:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
-	16,  // 194: human_resource.talent.v1.TalentService.UpdateTalentReviewCycle:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
-	61,  // 195: human_resource.talent.v1.TalentService.DeleteTalentReviewCycle:output_type -> human_resource.common.v1.EmptyResponse
-	16,  // 196: human_resource.talent.v1.TalentService.GetTalentReviewCycleByID:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
-	17,  // 197: human_resource.talent.v1.TalentService.GetAllTalentReviewCycles:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
-	17,  // 198: human_resource.talent.v1.TalentService.FindTalentReviewCycleByCycleCode:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
-	17,  // 199: human_resource.talent.v1.TalentService.FindTalentReviewCycleByFrameworkID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
-	17,  // 200: human_resource.talent.v1.TalentService.FindTalentReviewCycleByLegalEntityReferenceID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
-	17,  // 201: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOrganizationUnitReferenceID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
-	17,  // 202: human_resource.talent.v1.TalentService.FindTalentReviewCycleByStatus:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
-	17,  // 203: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOwnerPrincipalID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
-	22,  // 204: human_resource.talent.v1.TalentService.CreateTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
-	22,  // 205: human_resource.talent.v1.TalentService.UpdateTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
-	61,  // 206: human_resource.talent.v1.TalentService.DeleteTalentAssessment:output_type -> human_resource.common.v1.EmptyResponse
-	22,  // 207: human_resource.talent.v1.TalentService.GetTalentAssessmentByID:output_type -> human_resource.talent.v1.TalentAssessmentResponse
-	23,  // 208: human_resource.talent.v1.TalentService.GetAllTalentAssessments:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 209: human_resource.talent.v1.TalentService.FindTalentAssessmentByWorkerID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 210: human_resource.talent.v1.TalentService.FindTalentAssessmentByTalentReviewCycleID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 211: human_resource.talent.v1.TalentService.FindTalentAssessmentByFrameworkID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 212: human_resource.talent.v1.TalentService.FindTalentAssessmentByPerformanceReviewID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 213: human_resource.talent.v1.TalentService.FindTalentAssessmentByStatus:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 214: human_resource.talent.v1.TalentService.FindTalentAssessmentByAssessedByPrincipalID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 215: human_resource.talent.v1.TalentService.FindTalentAssessmentByEvidenceDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 216: human_resource.talent.v1.TalentService.FindTalentAssessmentBySegmentCode:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	23,  // 217: human_resource.talent.v1.TalentService.FindTalentAssessmentByFinalizedByPrincipalID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
-	22,  // 218: human_resource.talent.v1.TalentService.FinalizeTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
-	28,  // 219: human_resource.talent.v1.TalentService.CreateTalentAssessmentScore:output_type -> human_resource.talent.v1.TalentAssessmentScoreResponse
-	28,  // 220: human_resource.talent.v1.TalentService.UpdateTalentAssessmentScore:output_type -> human_resource.talent.v1.TalentAssessmentScoreResponse
-	61,  // 221: human_resource.talent.v1.TalentService.DeleteTalentAssessmentScore:output_type -> human_resource.common.v1.EmptyResponse
-	28,  // 222: human_resource.talent.v1.TalentService.GetTalentAssessmentScoreByID:output_type -> human_resource.talent.v1.TalentAssessmentScoreResponse
-	29,  // 223: human_resource.talent.v1.TalentService.GetAllTalentAssessmentScores:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
-	29,  // 224: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByAssessmentID:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
-	29,  // 225: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByFrameworkID:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
-	29,  // 226: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByDimensionID:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
-	34,  // 227: human_resource.talent.v1.TalentService.CreateTalentCalibrationSession:output_type -> human_resource.talent.v1.TalentCalibrationSessionResponse
-	34,  // 228: human_resource.talent.v1.TalentService.UpdateTalentCalibrationSession:output_type -> human_resource.talent.v1.TalentCalibrationSessionResponse
-	61,  // 229: human_resource.talent.v1.TalentService.DeleteTalentCalibrationSession:output_type -> human_resource.common.v1.EmptyResponse
-	34,  // 230: human_resource.talent.v1.TalentService.GetTalentCalibrationSessionByID:output_type -> human_resource.talent.v1.TalentCalibrationSessionResponse
-	35,  // 231: human_resource.talent.v1.TalentService.GetAllTalentCalibrationSessions:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
-	35,  // 232: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByTalentReviewCycleID:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
-	35,  // 233: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionBySessionCode:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
-	35,  // 234: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByChairPrincipalID:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
-	35,  // 235: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByStatus:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
-	35,  // 236: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
-	40,  // 237: human_resource.talent.v1.TalentService.CreateTalentCalibrationDecision:output_type -> human_resource.talent.v1.TalentCalibrationDecisionResponse
-	40,  // 238: human_resource.talent.v1.TalentService.UpdateTalentCalibrationDecision:output_type -> human_resource.talent.v1.TalentCalibrationDecisionResponse
-	61,  // 239: human_resource.talent.v1.TalentService.DeleteTalentCalibrationDecision:output_type -> human_resource.common.v1.EmptyResponse
-	40,  // 240: human_resource.talent.v1.TalentService.GetTalentCalibrationDecisionByID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionResponse
-	41,  // 241: human_resource.talent.v1.TalentService.GetAllTalentCalibrationDecisions:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
-	41,  // 242: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionBySessionID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
-	41,  // 243: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByTalentReviewCycleID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
-	41,  // 244: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByAssessmentID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
-	41,  // 245: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDimensionID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
-	41,  // 246: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByRationaleDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
-	41,  // 247: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDecidedByPrincipalID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
-	46,  // 248: human_resource.talent.v1.TalentService.CreateTalentPool:output_type -> human_resource.talent.v1.TalentPoolResponse
-	46,  // 249: human_resource.talent.v1.TalentService.UpdateTalentPool:output_type -> human_resource.talent.v1.TalentPoolResponse
-	61,  // 250: human_resource.talent.v1.TalentService.DeleteTalentPool:output_type -> human_resource.common.v1.EmptyResponse
-	46,  // 251: human_resource.talent.v1.TalentService.GetTalentPoolByID:output_type -> human_resource.talent.v1.TalentPoolResponse
-	47,  // 252: human_resource.talent.v1.TalentService.GetAllTalentPools:output_type -> human_resource.talent.v1.TalentPoolsResponse
-	47,  // 253: human_resource.talent.v1.TalentService.FindTalentPoolByPoolCode:output_type -> human_resource.talent.v1.TalentPoolsResponse
-	47,  // 254: human_resource.talent.v1.TalentService.FindTalentPoolByLegalEntityReferenceID:output_type -> human_resource.talent.v1.TalentPoolsResponse
-	47,  // 255: human_resource.talent.v1.TalentService.FindTalentPoolByTargetJobID:output_type -> human_resource.talent.v1.TalentPoolsResponse
-	47,  // 256: human_resource.talent.v1.TalentService.FindTalentPoolByEligibilityDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentPoolsResponse
-	47,  // 257: human_resource.talent.v1.TalentService.FindTalentPoolByOwnerPrincipalID:output_type -> human_resource.talent.v1.TalentPoolsResponse
-	52,  // 258: human_resource.talent.v1.TalentService.CreateTalentPoolMembership:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
-	52,  // 259: human_resource.talent.v1.TalentService.UpdateTalentPoolMembership:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
-	61,  // 260: human_resource.talent.v1.TalentService.DeleteTalentPoolMembership:output_type -> human_resource.common.v1.EmptyResponse
-	52,  // 261: human_resource.talent.v1.TalentService.GetTalentPoolMembershipByID:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
-	53,  // 262: human_resource.talent.v1.TalentService.GetAllTalentPoolMemberships:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	53,  // 263: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByTalentPoolID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	53,  // 264: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByWorkerID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	53,  // 265: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByAssessmentID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	53,  // 266: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByNominatedByPrincipalID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	53,  // 267: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByStatus:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	53,  // 268: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByApprovedByPrincipalID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	53,  // 269: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByExitReasonCode:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
-	178, // [178:270] is the sub-list for method output_type
-	86,  // [86:178] is the sub-list for method input_type
+	60,  // 103: human_resource.talent.v1.TalentService.DeleteTalentReviewCycle:input_type -> human_resource.common.v1.IDRequest
+	60,  // 104: human_resource.talent.v1.TalentService.GetTalentReviewCycleByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 105: human_resource.talent.v1.TalentService.GetAllTalentReviewCycles:input_type -> human_resource.common.v1.PageRequest
+	62,  // 106: human_resource.talent.v1.TalentService.FindTalentReviewCycleByCycleCode:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 107: human_resource.talent.v1.TalentService.FindTalentReviewCycleByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 108: human_resource.talent.v1.TalentService.FindTalentReviewCycleByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 109: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 110: human_resource.talent.v1.TalentService.FindTalentReviewCycleByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 111: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOwnerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	60,  // 112: human_resource.talent.v1.TalentService.LaunchTalentReviewCycle:input_type -> human_resource.common.v1.IDRequest
+	60,  // 113: human_resource.talent.v1.TalentService.StartTalentReviewCycleCalibration:input_type -> human_resource.common.v1.IDRequest
+	60,  // 114: human_resource.talent.v1.TalentService.CloseTalentReviewCycle:input_type -> human_resource.common.v1.IDRequest
+	20,  // 115: human_resource.talent.v1.TalentService.CreateTalentAssessment:input_type -> human_resource.talent.v1.CreateTalentAssessmentRequest
+	21,  // 116: human_resource.talent.v1.TalentService.UpdateTalentAssessment:input_type -> human_resource.talent.v1.UpdateTalentAssessmentRequest
+	60,  // 117: human_resource.talent.v1.TalentService.DeleteTalentAssessment:input_type -> human_resource.common.v1.IDRequest
+	60,  // 118: human_resource.talent.v1.TalentService.GetTalentAssessmentByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 119: human_resource.talent.v1.TalentService.GetAllTalentAssessments:input_type -> human_resource.common.v1.PageRequest
+	62,  // 120: human_resource.talent.v1.TalentService.FindTalentAssessmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 121: human_resource.talent.v1.TalentService.FindTalentAssessmentByTalentReviewCycleID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 122: human_resource.talent.v1.TalentService.FindTalentAssessmentByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 123: human_resource.talent.v1.TalentService.FindTalentAssessmentByPerformanceReviewID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 124: human_resource.talent.v1.TalentService.FindTalentAssessmentByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 125: human_resource.talent.v1.TalentService.FindTalentAssessmentByAssessedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 126: human_resource.talent.v1.TalentService.FindTalentAssessmentByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 127: human_resource.talent.v1.TalentService.FindTalentAssessmentBySegmentCode:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 128: human_resource.talent.v1.TalentService.FindTalentAssessmentByFinalizedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	60,  // 129: human_resource.talent.v1.TalentService.SubmitTalentAssessment:input_type -> human_resource.common.v1.IDRequest
+	60,  // 130: human_resource.talent.v1.TalentService.WithdrawTalentAssessment:input_type -> human_resource.common.v1.IDRequest
+	60,  // 131: human_resource.talent.v1.TalentService.FinalizeTalentAssessment:input_type -> human_resource.common.v1.IDRequest
+	26,  // 132: human_resource.talent.v1.TalentService.CreateTalentAssessmentScore:input_type -> human_resource.talent.v1.CreateTalentAssessmentScoreRequest
+	27,  // 133: human_resource.talent.v1.TalentService.UpdateTalentAssessmentScore:input_type -> human_resource.talent.v1.UpdateTalentAssessmentScoreRequest
+	60,  // 134: human_resource.talent.v1.TalentService.DeleteTalentAssessmentScore:input_type -> human_resource.common.v1.IDRequest
+	60,  // 135: human_resource.talent.v1.TalentService.GetTalentAssessmentScoreByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 136: human_resource.talent.v1.TalentService.GetAllTalentAssessmentScores:input_type -> human_resource.common.v1.PageRequest
+	62,  // 137: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 138: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByFrameworkID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 139: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByDimensionID:input_type -> human_resource.common.v1.StringFinderRequest
+	32,  // 140: human_resource.talent.v1.TalentService.CreateTalentCalibrationSession:input_type -> human_resource.talent.v1.CreateTalentCalibrationSessionRequest
+	33,  // 141: human_resource.talent.v1.TalentService.UpdateTalentCalibrationSession:input_type -> human_resource.talent.v1.UpdateTalentCalibrationSessionRequest
+	60,  // 142: human_resource.talent.v1.TalentService.DeleteTalentCalibrationSession:input_type -> human_resource.common.v1.IDRequest
+	60,  // 143: human_resource.talent.v1.TalentService.GetTalentCalibrationSessionByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 144: human_resource.talent.v1.TalentService.GetAllTalentCalibrationSessions:input_type -> human_resource.common.v1.PageRequest
+	62,  // 145: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByTalentReviewCycleID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 146: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionBySessionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 147: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByChairPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 148: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 149: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	60,  // 150: human_resource.talent.v1.TalentService.OpenTalentCalibrationSession:input_type -> human_resource.common.v1.IDRequest
+	55,  // 151: human_resource.talent.v1.TalentService.RecordTalentCalibrationDecision:input_type -> human_resource.talent.v1.RecordTalentCalibrationDecisionRequest
+	38,  // 152: human_resource.talent.v1.TalentService.CreateTalentCalibrationDecision:input_type -> human_resource.talent.v1.CreateTalentCalibrationDecisionRequest
+	39,  // 153: human_resource.talent.v1.TalentService.UpdateTalentCalibrationDecision:input_type -> human_resource.talent.v1.UpdateTalentCalibrationDecisionRequest
+	60,  // 154: human_resource.talent.v1.TalentService.DeleteTalentCalibrationDecision:input_type -> human_resource.common.v1.IDRequest
+	60,  // 155: human_resource.talent.v1.TalentService.GetTalentCalibrationDecisionByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 156: human_resource.talent.v1.TalentService.GetAllTalentCalibrationDecisions:input_type -> human_resource.common.v1.PageRequest
+	62,  // 157: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionBySessionID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 158: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByTalentReviewCycleID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 159: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 160: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDimensionID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 161: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByRationaleDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 162: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDecidedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	44,  // 163: human_resource.talent.v1.TalentService.CreateTalentPool:input_type -> human_resource.talent.v1.CreateTalentPoolRequest
+	45,  // 164: human_resource.talent.v1.TalentService.UpdateTalentPool:input_type -> human_resource.talent.v1.UpdateTalentPoolRequest
+	60,  // 165: human_resource.talent.v1.TalentService.DeleteTalentPool:input_type -> human_resource.common.v1.IDRequest
+	60,  // 166: human_resource.talent.v1.TalentService.GetTalentPoolByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 167: human_resource.talent.v1.TalentService.GetAllTalentPools:input_type -> human_resource.common.v1.PageRequest
+	62,  // 168: human_resource.talent.v1.TalentService.FindTalentPoolByPoolCode:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 169: human_resource.talent.v1.TalentService.FindTalentPoolByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 170: human_resource.talent.v1.TalentService.FindTalentPoolByTargetJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 171: human_resource.talent.v1.TalentService.FindTalentPoolByEligibilityDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 172: human_resource.talent.v1.TalentService.FindTalentPoolByOwnerPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	50,  // 173: human_resource.talent.v1.TalentService.CreateTalentPoolMembership:input_type -> human_resource.talent.v1.CreateTalentPoolMembershipRequest
+	51,  // 174: human_resource.talent.v1.TalentService.UpdateTalentPoolMembership:input_type -> human_resource.talent.v1.UpdateTalentPoolMembershipRequest
+	60,  // 175: human_resource.talent.v1.TalentService.DeleteTalentPoolMembership:input_type -> human_resource.common.v1.IDRequest
+	60,  // 176: human_resource.talent.v1.TalentService.GetTalentPoolMembershipByID:input_type -> human_resource.common.v1.IDRequest
+	61,  // 177: human_resource.talent.v1.TalentService.GetAllTalentPoolMemberships:input_type -> human_resource.common.v1.PageRequest
+	62,  // 178: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByTalentPoolID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 179: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 180: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 181: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByNominatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 182: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 183: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	62,  // 184: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByExitReasonCode:input_type -> human_resource.common.v1.StringFinderRequest
+	60,  // 185: human_resource.talent.v1.TalentService.ApproveTalentPoolMembership:input_type -> human_resource.common.v1.IDRequest
+	54,  // 186: human_resource.talent.v1.TalentService.RejectTalentPoolMembership:input_type -> human_resource.talent.v1.TalentReasonActionRequest
+	54,  // 187: human_resource.talent.v1.TalentService.ExitTalentPoolMembership:input_type -> human_resource.talent.v1.TalentReasonActionRequest
+	4,   // 188: human_resource.talent.v1.TalentService.CreateTalentFramework:output_type -> human_resource.talent.v1.TalentFrameworkResponse
+	4,   // 189: human_resource.talent.v1.TalentService.UpdateTalentFramework:output_type -> human_resource.talent.v1.TalentFrameworkResponse
+	63,  // 190: human_resource.talent.v1.TalentService.DeleteTalentFramework:output_type -> human_resource.common.v1.EmptyResponse
+	4,   // 191: human_resource.talent.v1.TalentService.GetTalentFrameworkByID:output_type -> human_resource.talent.v1.TalentFrameworkResponse
+	5,   // 192: human_resource.talent.v1.TalentService.GetAllTalentFrameworks:output_type -> human_resource.talent.v1.TalentFrameworksResponse
+	5,   // 193: human_resource.talent.v1.TalentService.FindTalentFrameworkByFrameworkCode:output_type -> human_resource.talent.v1.TalentFrameworksResponse
+	5,   // 194: human_resource.talent.v1.TalentService.FindTalentFrameworkByRubricDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentFrameworksResponse
+	5,   // 195: human_resource.talent.v1.TalentService.FindTalentFrameworkByApprovedByPrincipalID:output_type -> human_resource.talent.v1.TalentFrameworksResponse
+	10,  // 196: human_resource.talent.v1.TalentService.CreateTalentDimension:output_type -> human_resource.talent.v1.TalentDimensionResponse
+	10,  // 197: human_resource.talent.v1.TalentService.UpdateTalentDimension:output_type -> human_resource.talent.v1.TalentDimensionResponse
+	63,  // 198: human_resource.talent.v1.TalentService.DeleteTalentDimension:output_type -> human_resource.common.v1.EmptyResponse
+	10,  // 199: human_resource.talent.v1.TalentService.GetTalentDimensionByID:output_type -> human_resource.talent.v1.TalentDimensionResponse
+	11,  // 200: human_resource.talent.v1.TalentService.GetAllTalentDimensions:output_type -> human_resource.talent.v1.TalentDimensionsResponse
+	11,  // 201: human_resource.talent.v1.TalentService.FindTalentDimensionByFrameworkID:output_type -> human_resource.talent.v1.TalentDimensionsResponse
+	11,  // 202: human_resource.talent.v1.TalentService.FindTalentDimensionByDimensionCode:output_type -> human_resource.talent.v1.TalentDimensionsResponse
+	16,  // 203: human_resource.talent.v1.TalentService.CreateTalentReviewCycle:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
+	16,  // 204: human_resource.talent.v1.TalentService.UpdateTalentReviewCycle:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
+	63,  // 205: human_resource.talent.v1.TalentService.DeleteTalentReviewCycle:output_type -> human_resource.common.v1.EmptyResponse
+	16,  // 206: human_resource.talent.v1.TalentService.GetTalentReviewCycleByID:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
+	17,  // 207: human_resource.talent.v1.TalentService.GetAllTalentReviewCycles:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
+	17,  // 208: human_resource.talent.v1.TalentService.FindTalentReviewCycleByCycleCode:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
+	17,  // 209: human_resource.talent.v1.TalentService.FindTalentReviewCycleByFrameworkID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
+	17,  // 210: human_resource.talent.v1.TalentService.FindTalentReviewCycleByLegalEntityReferenceID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
+	17,  // 211: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOrganizationUnitReferenceID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
+	17,  // 212: human_resource.talent.v1.TalentService.FindTalentReviewCycleByStatus:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
+	17,  // 213: human_resource.talent.v1.TalentService.FindTalentReviewCycleByOwnerPrincipalID:output_type -> human_resource.talent.v1.TalentReviewCyclesResponse
+	16,  // 214: human_resource.talent.v1.TalentService.LaunchTalentReviewCycle:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
+	16,  // 215: human_resource.talent.v1.TalentService.StartTalentReviewCycleCalibration:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
+	16,  // 216: human_resource.talent.v1.TalentService.CloseTalentReviewCycle:output_type -> human_resource.talent.v1.TalentReviewCycleResponse
+	22,  // 217: human_resource.talent.v1.TalentService.CreateTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
+	22,  // 218: human_resource.talent.v1.TalentService.UpdateTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
+	63,  // 219: human_resource.talent.v1.TalentService.DeleteTalentAssessment:output_type -> human_resource.common.v1.EmptyResponse
+	22,  // 220: human_resource.talent.v1.TalentService.GetTalentAssessmentByID:output_type -> human_resource.talent.v1.TalentAssessmentResponse
+	23,  // 221: human_resource.talent.v1.TalentService.GetAllTalentAssessments:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 222: human_resource.talent.v1.TalentService.FindTalentAssessmentByWorkerID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 223: human_resource.talent.v1.TalentService.FindTalentAssessmentByTalentReviewCycleID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 224: human_resource.talent.v1.TalentService.FindTalentAssessmentByFrameworkID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 225: human_resource.talent.v1.TalentService.FindTalentAssessmentByPerformanceReviewID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 226: human_resource.talent.v1.TalentService.FindTalentAssessmentByStatus:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 227: human_resource.talent.v1.TalentService.FindTalentAssessmentByAssessedByPrincipalID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 228: human_resource.talent.v1.TalentService.FindTalentAssessmentByEvidenceDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 229: human_resource.talent.v1.TalentService.FindTalentAssessmentBySegmentCode:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	23,  // 230: human_resource.talent.v1.TalentService.FindTalentAssessmentByFinalizedByPrincipalID:output_type -> human_resource.talent.v1.TalentAssessmentsResponse
+	22,  // 231: human_resource.talent.v1.TalentService.SubmitTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
+	22,  // 232: human_resource.talent.v1.TalentService.WithdrawTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
+	22,  // 233: human_resource.talent.v1.TalentService.FinalizeTalentAssessment:output_type -> human_resource.talent.v1.TalentAssessmentResponse
+	28,  // 234: human_resource.talent.v1.TalentService.CreateTalentAssessmentScore:output_type -> human_resource.talent.v1.TalentAssessmentScoreResponse
+	28,  // 235: human_resource.talent.v1.TalentService.UpdateTalentAssessmentScore:output_type -> human_resource.talent.v1.TalentAssessmentScoreResponse
+	63,  // 236: human_resource.talent.v1.TalentService.DeleteTalentAssessmentScore:output_type -> human_resource.common.v1.EmptyResponse
+	28,  // 237: human_resource.talent.v1.TalentService.GetTalentAssessmentScoreByID:output_type -> human_resource.talent.v1.TalentAssessmentScoreResponse
+	29,  // 238: human_resource.talent.v1.TalentService.GetAllTalentAssessmentScores:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
+	29,  // 239: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByAssessmentID:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
+	29,  // 240: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByFrameworkID:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
+	29,  // 241: human_resource.talent.v1.TalentService.FindTalentAssessmentScoreByDimensionID:output_type -> human_resource.talent.v1.TalentAssessmentScoresResponse
+	34,  // 242: human_resource.talent.v1.TalentService.CreateTalentCalibrationSession:output_type -> human_resource.talent.v1.TalentCalibrationSessionResponse
+	34,  // 243: human_resource.talent.v1.TalentService.UpdateTalentCalibrationSession:output_type -> human_resource.talent.v1.TalentCalibrationSessionResponse
+	63,  // 244: human_resource.talent.v1.TalentService.DeleteTalentCalibrationSession:output_type -> human_resource.common.v1.EmptyResponse
+	34,  // 245: human_resource.talent.v1.TalentService.GetTalentCalibrationSessionByID:output_type -> human_resource.talent.v1.TalentCalibrationSessionResponse
+	35,  // 246: human_resource.talent.v1.TalentService.GetAllTalentCalibrationSessions:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
+	35,  // 247: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByTalentReviewCycleID:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
+	35,  // 248: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionBySessionCode:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
+	35,  // 249: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByChairPrincipalID:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
+	35,  // 250: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByStatus:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
+	35,  // 251: human_resource.talent.v1.TalentService.FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentCalibrationSessionsResponse
+	34,  // 252: human_resource.talent.v1.TalentService.OpenTalentCalibrationSession:output_type -> human_resource.talent.v1.TalentCalibrationSessionResponse
+	40,  // 253: human_resource.talent.v1.TalentService.RecordTalentCalibrationDecision:output_type -> human_resource.talent.v1.TalentCalibrationDecisionResponse
+	40,  // 254: human_resource.talent.v1.TalentService.CreateTalentCalibrationDecision:output_type -> human_resource.talent.v1.TalentCalibrationDecisionResponse
+	40,  // 255: human_resource.talent.v1.TalentService.UpdateTalentCalibrationDecision:output_type -> human_resource.talent.v1.TalentCalibrationDecisionResponse
+	63,  // 256: human_resource.talent.v1.TalentService.DeleteTalentCalibrationDecision:output_type -> human_resource.common.v1.EmptyResponse
+	40,  // 257: human_resource.talent.v1.TalentService.GetTalentCalibrationDecisionByID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionResponse
+	41,  // 258: human_resource.talent.v1.TalentService.GetAllTalentCalibrationDecisions:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
+	41,  // 259: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionBySessionID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
+	41,  // 260: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByTalentReviewCycleID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
+	41,  // 261: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByAssessmentID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
+	41,  // 262: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDimensionID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
+	41,  // 263: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByRationaleDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
+	41,  // 264: human_resource.talent.v1.TalentService.FindTalentCalibrationDecisionByDecidedByPrincipalID:output_type -> human_resource.talent.v1.TalentCalibrationDecisionsResponse
+	46,  // 265: human_resource.talent.v1.TalentService.CreateTalentPool:output_type -> human_resource.talent.v1.TalentPoolResponse
+	46,  // 266: human_resource.talent.v1.TalentService.UpdateTalentPool:output_type -> human_resource.talent.v1.TalentPoolResponse
+	63,  // 267: human_resource.talent.v1.TalentService.DeleteTalentPool:output_type -> human_resource.common.v1.EmptyResponse
+	46,  // 268: human_resource.talent.v1.TalentService.GetTalentPoolByID:output_type -> human_resource.talent.v1.TalentPoolResponse
+	47,  // 269: human_resource.talent.v1.TalentService.GetAllTalentPools:output_type -> human_resource.talent.v1.TalentPoolsResponse
+	47,  // 270: human_resource.talent.v1.TalentService.FindTalentPoolByPoolCode:output_type -> human_resource.talent.v1.TalentPoolsResponse
+	47,  // 271: human_resource.talent.v1.TalentService.FindTalentPoolByLegalEntityReferenceID:output_type -> human_resource.talent.v1.TalentPoolsResponse
+	47,  // 272: human_resource.talent.v1.TalentService.FindTalentPoolByTargetJobID:output_type -> human_resource.talent.v1.TalentPoolsResponse
+	47,  // 273: human_resource.talent.v1.TalentService.FindTalentPoolByEligibilityDocumentVersionReferenceID:output_type -> human_resource.talent.v1.TalentPoolsResponse
+	47,  // 274: human_resource.talent.v1.TalentService.FindTalentPoolByOwnerPrincipalID:output_type -> human_resource.talent.v1.TalentPoolsResponse
+	52,  // 275: human_resource.talent.v1.TalentService.CreateTalentPoolMembership:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
+	52,  // 276: human_resource.talent.v1.TalentService.UpdateTalentPoolMembership:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
+	63,  // 277: human_resource.talent.v1.TalentService.DeleteTalentPoolMembership:output_type -> human_resource.common.v1.EmptyResponse
+	52,  // 278: human_resource.talent.v1.TalentService.GetTalentPoolMembershipByID:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
+	53,  // 279: human_resource.talent.v1.TalentService.GetAllTalentPoolMemberships:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	53,  // 280: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByTalentPoolID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	53,  // 281: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByWorkerID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	53,  // 282: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByAssessmentID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	53,  // 283: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByNominatedByPrincipalID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	53,  // 284: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByStatus:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	53,  // 285: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByApprovedByPrincipalID:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	53,  // 286: human_resource.talent.v1.TalentService.FindTalentPoolMembershipByExitReasonCode:output_type -> human_resource.talent.v1.TalentPoolMembershipsResponse
+	52,  // 287: human_resource.talent.v1.TalentService.ApproveTalentPoolMembership:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
+	52,  // 288: human_resource.talent.v1.TalentService.RejectTalentPoolMembership:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
+	52,  // 289: human_resource.talent.v1.TalentService.ExitTalentPoolMembership:output_type -> human_resource.talent.v1.TalentPoolMembershipResponse
+	188, // [188:290] is the sub-list for method output_type
+	86,  // [86:188] is the sub-list for method input_type
 	86,  // [86:86] is the sub-list for extension type_name
 	86,  // [86:86] is the sub-list for extension extendee
 	0,   // [0:86] is the sub-list for field type_name
@@ -4686,7 +4866,7 @@ func file_human_resource_talent_v1_talent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_talent_v1_talent_proto_rawDesc), len(file_human_resource_talent_v1_talent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   54,
+			NumMessages:   56,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

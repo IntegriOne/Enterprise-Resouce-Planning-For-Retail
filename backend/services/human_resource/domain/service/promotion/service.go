@@ -58,6 +58,9 @@ func BuildAppliedRecommendation(input ApplicationInput) (*entity.PromotionRecomm
 	if source.ValidTo == nil || entity.CompareDates(*source.ValidTo, previousDay) != 0 || entity.CompareDates(next.ValidFrom, r.RecommendedEffectiveDate) != 0 || entity.CompareDates(target.ValidFrom, r.RecommendedEffectiveDate) > 0 || (target.ValidTo != nil && entity.CompareDates(*target.ValidTo, r.RecommendedEffectiveDate) < 0) {
 		return nil, hrerrors.Invalid("valid_from", "assignment dates must match the approved effective date")
 	}
+	if target.ValidTo != nil && (next.ValidTo == nil || entity.CompareDates(*next.ValidTo, *target.ValidTo) > 0) {
+		return nil, hrerrors.Invalid("valid_to", "assignment must end within the target position period")
+	}
 	if event.ID <= 0 || !strings.EqualFold(event.WorkerID, w.ID) || event.EventType != "promotion" || event.SourceReference == nil || !strings.EqualFold(*event.SourceReference, r.ID) || entity.CompareDates(event.EffectiveDate, r.RecommendedEffectiveDate) != 0 {
 		return nil, hrerrors.Invalid("event", "persisted promotion lifecycle evidence required")
 	}

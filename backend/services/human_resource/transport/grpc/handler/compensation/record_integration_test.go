@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -33,6 +34,19 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+type compensationApprovalPolicy struct {
+	compensationIntegrationPolicy
+	principal atomic.Pointer[string]
+}
+
+func (p *compensationApprovalPolicy) Authorize(ctx context.Context, access operation.Access) (operation.Actor, error) {
+	actor, err := p.compensationIntegrationPolicy.Authorize(ctx, access)
+	if principal := p.principal.Load(); principal != nil {
+		actor.PrincipalID = *principal
+	}
+	return actor, err
+}
 
 func TestCompensationProposalRPCWithPostgreSQL(t *testing.T) {
 	dsn := os.Getenv("HRM_TEST_DATABASE_URL")
@@ -72,8 +86,9 @@ func TestCompensationProposalRPCWithPostgreSQL(t *testing.T) {
 	for name, validator := range payValidators {
 		validators[name] = validator
 	}
+	policy := &compensationApprovalPolicy{}
 	runtime := operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-		Policy: compensationIntegrationPolicy{}, Integrity: security.NewIntegrity(validators)}
+		Policy: policy, Integrity: security.NewIntegrity(validators)}
 	compensationService, err := compensationservice.NewService(compensationservice.Dependencies{
 		Runtime: runtime, CompensationBand: repos.CompensationBand, CompensationRecord: repos.CompensationRecord,
 	})
@@ -138,6 +153,24 @@ func TestCompensationProposalRPCWithPostgreSQL(t *testing.T) {
 		{"INSERT INTO hr_workers (id, worker_number, person_party_reference_id, worker_category, status, hire_date, primary_legal_entity_reference_id) VALUES (?, ?, ?, 'employee', 'active', ?, ?)", []any{workerID, "WORKER-" + code, personID, from, legalID}},
 		{"INSERT INTO hr_worker_assignments (id, worker_id, position_id, assignment_type, valid_from, valid_to, requested_by_principal_id, requested_at) VALUES (?, ?, ?, 'primary', ?, ?, ?, now())", []any{assignmentID, workerID, positionID, from, to, assignmentRequesterID}},
 	}
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cleanupCancel()
+		for _, q := range []struct {
+			sql string
+			id  string
+		}{
+			{"DELETE FROM hr_worker_assignments WHERE id = ?", assignmentID},
+			{"DELETE FROM hr_workers WHERE id = ?", workerID},
+			{"DELETE FROM hr_positions WHERE id = ?", positionID},
+			{"DELETE FROM hr_jobs WHERE id = ?", jobID},
+			{"DELETE FROM hr_job_families WHERE id = ?", familyID},
+		} {
+			if err := database.WithContext(cleanupCtx).Exec(q.sql, q.id).Error; err != nil {
+				t.Errorf("cleanup compensation fixture: %v", err)
+			}
+		}
+	})
 	for _, fixture := range fixtures {
 		if err := database.WithContext(ctx).Exec(fixture.query, fixture.args...).Error; err != nil {
 			t.Fatalf("insert HRM fixture: %v", err)
@@ -233,6 +266,92 @@ func TestCompensationProposalRPCWithPostgreSQL(t *testing.T) {
 	}
 	if _, err := compensationClient.DeleteCompensationRecord(ctx, &common.IDRequest{Id: recordID}); err != nil {
 		t.Fatalf("delete proposal: %v", err)
+	}
+	proposal, err := compensationClient.CreateCompensationRecord(ctx, &compensationpb.CreateCompensationRecordRequest{Input: recordInput})
+	if err != nil {
+		t.Fatal(err)
+	}
+	approvalRecordID := proposal.GetItem().GetId()
+	t.Cleanup(func() {
+		if err := database.Exec("DELETE FROM hr_compensation_records WHERE id = ?", approvalRecordID).Error; err != nil {
+			t.Errorf("cleanup approval record: %v", err)
+		}
+		if err := database.Exec("DELETE FROM hr_outbox_events WHERE aggregate_id = ?", approvalRecordID).Error; err != nil {
+			t.Errorf("cleanup approval outbox: %v", err)
+		}
+	})
+	approvalRequest := &common.IDRequest{Id: approvalRecordID}
+	if _, err := compensationClient.ApproveCompensationRecord(ctx, approvalRequest); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("creator approved own proposal: %v", err)
+	}
+	editor := newID()
+	policy.principal.Store(&editor)
+	if _, err := compensationClient.UpdateCompensationRecord(ctx, &compensationpb.UpdateCompensationRecordRequest{
+		Id: approvalRecordID, Input: &compensationpb.CompensationRecordInput{Amount: &changedAmount},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"amount"}},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := compensationClient.ApproveCompensationRecord(ctx, approvalRequest); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("editor approved proposal they changed: %v", err)
+	}
+	workerPrincipalID := newID()
+	if err := database.WithContext(ctx).Table("hr_workers").Where("id = ?", workerID).
+		Update("iam_principal_reference_id", workerPrincipalID).Error; err != nil {
+		t.Fatal(err)
+	}
+	policy.principal.Store(&workerPrincipalID)
+	if _, err := compensationClient.ApproveCompensationRecord(ctx, approvalRequest); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("worker approved their own compensation: %v", err)
+	}
+	policy.principal.Store(&approverID)
+	approvedRecord, err := compensationClient.ApproveCompensationRecord(ctx, approvalRequest)
+	if err != nil || approvedRecord.GetItem().GetStatus() != "approved" ||
+		approvedRecord.GetItem().GetApprovedByPrincipalId() != approverID || approvedRecord.GetItem().GetApprovedAt() == nil {
+		t.Fatalf("independent compensation approval: %+v, %v", approvedRecord, err)
+	}
+	if _, err := compensationClient.ApproveCompensationRecord(ctx, approvalRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeated compensation approval: %v", err)
+	}
+	if _, err := compensationClient.DeleteCompensationRecord(ctx, approvalRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete approved compensation: %v", err)
+	}
+	var approvalEvents int64
+	if err := database.WithContext(ctx).Table("hr_outbox_events").
+		Where("aggregate_id = ? AND event_type = ?", approvalRecordID, "hr_compensation_records.approve").
+		Count(&approvalEvents).Error; err != nil || approvalEvents != 1 {
+		t.Fatalf("compensation approval outbox: count=%d, error=%v", approvalEvents, err)
+	}
+	policy.principal.Store(&editor)
+	overlappingFrom := "2026-02-01"
+	recordInput.EffectiveFrom = &overlappingFrom
+	conflictingProposal, err := compensationClient.CreateCompensationRecord(ctx, &compensationpb.CreateCompensationRecordRequest{Input: recordInput})
+	if err != nil {
+		t.Fatalf("create competing proposal: %v", err)
+	}
+	conflictingID := conflictingProposal.GetItem().GetId()
+	t.Cleanup(func() {
+		if err := database.Exec("DELETE FROM hr_compensation_records WHERE id = ?", conflictingID).Error; err != nil {
+			t.Errorf("cleanup competing proposal: %v", err)
+		}
+		if err := database.Exec("DELETE FROM hr_outbox_events WHERE aggregate_id = ?", conflictingID).Error; err != nil {
+			t.Errorf("cleanup competing proposal outbox: %v", err)
+		}
+	})
+	policy.principal.Store(&approverID)
+	conflictingRequest := &common.IDRequest{Id: conflictingID}
+	if _, err := compensationClient.ApproveCompensationRecord(ctx, conflictingRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("approve overlapping compensation: %v", err)
+	}
+	pending, err := compensationClient.GetCompensationRecordByID(ctx, conflictingRequest)
+	if err != nil || pending.GetItem().GetStatus() != "proposed" || pending.GetItem().GetApprovedAt() != nil {
+		t.Fatalf("overlapping proposal changed after rejection: %+v, %v", pending, err)
+	}
+	if _, err := compensationClient.DeleteCompensationRecord(ctx, conflictingRequest); err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec("DELETE FROM hr_compensation_records WHERE id = ?", approvalRecordID).Error; err != nil {
+		t.Fatal(err)
 	}
 	if _, err := payrollClient.DeletePayComponent(ctx, &common.IDRequest{Id: componentID}); err != nil {
 		t.Fatalf("delete unused component: %v", err)

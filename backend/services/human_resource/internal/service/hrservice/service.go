@@ -12,6 +12,7 @@ import (
 )
 
 type Dependencies struct {
+	ResolutionVerifier  ResolutionVerifier
 	Runtime             operation.Dependencies
 	ServiceRequest      domainrepo.RecordRepository[entity.ServiceRequest, string]
 	ServiceRequestEvent domainrepo.RecordRepository[entity.ServiceRequestEvent, string]
@@ -19,13 +20,14 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain hrservice.
 type Service struct {
+	resolution          ResolutionVerifier
 	serviceRequest      *operation.Resource[entity.ServiceRequest, string, *entity.ServiceRequest]
 	serviceRequestEvent *operation.Resource[entity.ServiceRequestEvent, string, *entity.ServiceRequestEvent]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{resolution: deps.ResolutionVerifier}
 	var err error
 	s.serviceRequest, err = operation.NewResource[entity.ServiceRequest, string, *entity.ServiceRequest](
 		deps.ServiceRequest,

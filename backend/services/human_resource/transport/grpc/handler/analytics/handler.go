@@ -17,7 +17,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedAnalyticsServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeAnalyticsServiceServer
 	service *service.Service
 }
 

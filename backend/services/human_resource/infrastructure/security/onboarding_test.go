@@ -39,10 +39,9 @@ func (s *onboardingPlanStub) SelectWhere(_ context.Context, filters []domainrepo
 }
 
 type onboardingTaskStub struct {
-	rows    []entity.OnboardingTask
-	count   int64
-	pending int64
-	err     error
+	rows  []entity.OnboardingTask
+	count int64
+	err   error
 }
 
 func TestOnboardingTaskValidatorAllowsOnlyWorkerCompletionOnStartedPlan(t *testing.T) {
@@ -75,6 +74,10 @@ func TestOnboardingTaskValidatorAllowsOnlyWorkerCompletionOnStartedPlan(t *testi
 }
 
 func (s *onboardingTaskStub) SelectWhere(_ context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.OnboardingTask, error) {
+	if len(filters) == 2 && filters[0].Column == "onboarding_plan_id" && filters[1].Column == "is_mandatory" &&
+		limit == domainrepo.MaxLimit && offset == 0 {
+		return s.rows, s.err
+	}
 	if len(filters) != 2 || filters[0].Column != "onboarding_plan_id" || filters[1].Column != "task_code" ||
 		limit != 2 || offset != 0 {
 		return nil, hrerrors.ErrInvalidInput
@@ -83,9 +86,8 @@ func (s *onboardingTaskStub) SelectWhere(_ context.Context, filters []domainrepo
 }
 
 func (s *onboardingTaskStub) CountWhere(_ context.Context, filters []domainrepo.Filter) (int64, error) {
-	if len(filters) == 3 && filters[0].Column == "onboarding_plan_id" &&
-		filters[1].Column == "is_mandatory" && filters[2].Column == "completed_at" {
-		return s.pending, s.err
+	if len(filters) == 2 && filters[0].Column == "onboarding_plan_id" && filters[1].Column == "is_mandatory" {
+		return int64(len(s.rows)), s.err
 	}
 	if len(filters) != 1 || filters[0].Column != "onboarding_plan_id" {
 		return 0, hrerrors.ErrInvalidInput
@@ -168,7 +170,7 @@ func TestOnboardingPlanValidatorRequiresCompletedMandatoryTasks(t *testing.T) {
 	now := time.Date(2027, 1, 11, 12, 0, 0, 0, time.UTC)
 	principal := "00000000-0000-4000-8000-000000000001"
 	worker := &onboardingWorkerStub{value: &entity.Worker{Status: entity.WorkerStatusPreboarding}}
-	tasks := &onboardingTaskStub{count: 2, pending: 1}
+	tasks := &onboardingTaskStub{count: 2, rows: []entity.OnboardingTask{{IsMandatory: true}}}
 	validator := &onboardingPlanValidator{workers: worker, plans: &onboardingPlanStub{}, tasks: tasks}
 	started := &entity.OnboardingPlan{ID: "plan-1", WorkerID: "worker-1", PlanCode: "FIRST-WEEK", PlanVersion: 1,
 		StartDate: now.Add(-24 * time.Hour), Status: "in_progress", StartedAt: &now, StartedByPrincipalID: &principal}
@@ -180,7 +182,9 @@ func TestOnboardingPlanValidatorRequiresCompletedMandatoryTasks(t *testing.T) {
 	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", started, &completed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("pending mandatory task: %v", err)
 	}
-	tasks.pending = 0
+	tasks.rows[0].CompletedAt = &finishedAt
+	tasks.rows[0].CompletedByPrincipalID = &principal
+	tasks.rows[0].CompletionEvidenceReferenceID = &principal
 	if err := validator.ValidateMutation(t.Context(), "hr_onboarding_plans", started, &completed); err != nil {
 		t.Fatalf("all mandatory tasks completed: %v", err)
 	}

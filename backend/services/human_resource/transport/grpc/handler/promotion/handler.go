@@ -17,7 +17,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedPromotionServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafePromotionServiceServer
 	service *service.Service
 }
 
@@ -257,6 +258,51 @@ func (s *server) FindPromotionRecommendationByIdempotencyKey(ctx context.Context
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return recommendations(s.service.FindPromotionRecommendationByIdempotencyKey(ctx, r.GetValue(), int(r.Limit), int(r.Offset)))
+}
+func (s *server) SubmitPromotionRecommendation(ctx context.Context, r *commonv1.IDRequest) (*pb.PromotionRecommendationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recommendationResult(s.service.SubmitPromotionRecommendation(ctx, r.Id))
+}
+func (s *server) ApprovePromotionRecommendation(ctx context.Context, r *pb.DecidePromotionRecommendationRequest) (*pb.PromotionRecommendationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recommendationResult(s.service.ApprovePromotionRecommendation(ctx, service.DecidePromotionRecommendationInput{
+		RecommendationID:                    r.RecommendationId,
+		RationaleDocumentVersionReferenceID: r.RationaleDocumentVersionReferenceId,
+		RationaleDigest:                     r.RationaleDigest,
+		IdempotencyKey:                      r.IdempotencyKey,
+	}))
+}
+func (s *server) RejectPromotionRecommendation(ctx context.Context, r *pb.DecidePromotionRecommendationRequest) (*pb.PromotionRecommendationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recommendationResult(s.service.RejectPromotionRecommendation(ctx, service.DecidePromotionRecommendationInput{
+		RecommendationID:                    r.RecommendationId,
+		RationaleDocumentVersionReferenceID: r.RationaleDocumentVersionReferenceId,
+		RationaleDigest:                     r.RationaleDigest,
+		IdempotencyKey:                      r.IdempotencyKey,
+	}))
+}
+func (s *server) ReturnPromotionRecommendation(ctx context.Context, r *pb.DecidePromotionRecommendationRequest) (*pb.PromotionRecommendationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recommendationResult(s.service.ReturnPromotionRecommendation(ctx, service.DecidePromotionRecommendationInput{
+		RecommendationID:                    r.RecommendationId,
+		RationaleDocumentVersionReferenceID: r.RationaleDocumentVersionReferenceId,
+		RationaleDigest:                     r.RationaleDigest,
+		IdempotencyKey:                      r.IdempotencyKey,
+	}))
+}
+func (s *server) ApplyPromotionRecommendation(ctx context.Context, r *commonv1.IDRequest) (*pb.PromotionRecommendationResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recommendationResult(s.service.ApplyPromotionRecommendation(ctx, r.Id))
 }
 func (s *server) CreatePromotionDecision(ctx context.Context, r *pb.CreatePromotionDecisionRequest) (*pb.PromotionDecisionResponse, error) {
 	if r == nil || r.Input == nil {

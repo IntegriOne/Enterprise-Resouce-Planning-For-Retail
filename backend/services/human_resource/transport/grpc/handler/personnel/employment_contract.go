@@ -185,3 +185,8 @@ func (h *Handler) FindEmploymentContractByCollectiveAgreementID(ctx context.Cont
 	}
 	return contracts(h.service.FindEmploymentContractByCollectiveAgreementID(ctx, request.Value, int(request.Limit), int(request.Offset)))
 }
+
+// RecordSignedEmploymentContract mencatat versi kontrak bertanda tangan yang telah diverifikasi.
+func (h *Handler) RecordSignedEmploymentContract(ctx context.Context, request *pb.RecordSignedEmploymentContractRequest) (*pb.EmploymentContractResponse, error) {
+	return contractResponse(h.service.RecordSignedEmploymentContract(ctx, request.GetContractId(), request.GetDocumentVersionId()))
+}

@@ -72,7 +72,7 @@ Setiap nama di bawah mempunyai implementasi pada **`internal/service/` dan `repo
 | `onboarding` | `hr_onboarding_plans`, `hr_onboarding_tasks` |
 | `payroll` | `hr_payroll_groups`, `hr_payroll_rule_sets`, `hr_payroll_profiles`, `hr_pay_components`, `hr_payroll_periods`, `hr_payroll_runs`, `hr_payroll_results`, `hr_payroll_result_lines`, `hr_payroll_adjustments` |
 | `performance` | `hr_performance_cycles`, `hr_performance_goals`, `hr_performance_reviews`, `hr_performance_goal_updates`, `hr_performance_review_goal_scores` |
-| `personnel` | `hr_workers`, `hr_employment_contracts`, `hr_worker_assignments`, `hr_worker_lifecycle_events`, `hr_worker_documents`, `hr_emergency_contacts` |
+| `personnel` | `hr_workers`, `hr_employment_contracts`, `hr_worker_assignments`, `hr_worker_assignment_transfers`, `hr_worker_lifecycle_events`, `hr_worker_documents`, `hr_emergency_contacts` |
 | `policy` | `hr_policies`, `hr_policy_acknowledgements` |
 | `promotion` | `hr_promotion_recommendations`, `hr_promotion_decisions` |
 | `recruitment` | `hr_requisitions`, `hr_candidates`, `hr_applications`, `hr_application_stage_history`, `hr_interviews`, `hr_interview_panelists`, `hr_interview_feedback`, `hr_offers`, `hr_job_postings`, `hr_application_assessments` |
@@ -80,7 +80,7 @@ Setiap nama di bawah mempunyai implementasi pada **`internal/service/` dan `repo
 | `talent` | `hr_talent_frameworks`, `hr_talent_dimensions`, `hr_talent_review_cycles`, `hr_talent_assessments`, `hr_talent_assessment_scores`, `hr_talent_calibration_sessions`, `hr_talent_calibration_decisions`, `hr_talent_pools`, `hr_talent_pool_memberships` |
 | `workforceplanning` | `hr_job_families`, `hr_jobs`, `hr_positions`, `hr_workforce_plans`, `hr_workforce_plan_lines` |
 
-`hr_outbox_events` dan `hr_inbox_events` ditangani repository/infrastruktur khusus tersebut. Pemetaan mencakup seluruh **86 tabel** tanpa kepemilikan tabel ganda. Nama subdomain merupakan pedoman awal; nama package protobuf dan versi kontrak ditetapkan saat kontrak benar-benar dirancang.
+`hr_outbox_events` dan `hr_inbox_events` ditangani repository/infrastruktur khusus tersebut. Pemetaan mencakup seluruh **87 tabel** tanpa kepemilikan tabel ganda. Tabel transfer penempatan tersedia di baseline dan registry repository. RPC privat mendukung pengajuan, penolakan, dan persetujuan dengan penerapan atomik. Nama subdomain merupakan pedoman awal; nama package protobuf dan versi kontrak ditetapkan saat kontrak benar-benar dirancang.
 
 Repository mengikuti susunan IAM: satu objek satu `*_repository.go` di folder domain, berisi constructor, CRUD dan seluruh finder. Tidak ada pemisahan `operations.go`/`*_operations.go`. Contoh kebijakan cuti cukup dibaca pada `repository/leave/leave_policies_repository.go`.
 

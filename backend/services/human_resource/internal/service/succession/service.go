@@ -11,7 +11,13 @@ import (
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
+type approvalWorkerReader interface {
+	FindByIDForUpdate(context.Context, string) (*entity.Worker, error)
+}
+
 type Dependencies struct {
+	ApprovalWorkers     approvalWorkerReader
+	ApprovalVerifier    ApprovalVerifier
 	Runtime             operation.Dependencies
 	SuccessionPlan      domainrepo.RecordRepository[entity.SuccessionPlan, string]
 	SuccessionCandidate domainrepo.RecordRepository[entity.SuccessionCandidate, string]
@@ -19,13 +25,19 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain succession.
 type Service struct {
+	approvalWorkers     approvalWorkerReader
+	approvalVerifier    ApprovalVerifier
+	candidateRecords    domainrepo.RecordRepository[entity.SuccessionCandidate, string]
 	successionPlan      *operation.Resource[entity.SuccessionPlan, string, *entity.SuccessionPlan]
 	successionCandidate *operation.Resource[entity.SuccessionCandidate, string, *entity.SuccessionCandidate]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{
+		approvalVerifier: deps.ApprovalVerifier, approvalWorkers: deps.ApprovalWorkers,
+		candidateRecords: deps.SuccessionCandidate,
+	}
 	var err error
 	s.successionPlan, err = operation.NewResource[entity.SuccessionPlan, string, *entity.SuccessionPlan](
 		deps.SuccessionPlan,

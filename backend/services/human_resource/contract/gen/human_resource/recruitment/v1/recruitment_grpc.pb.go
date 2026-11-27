@@ -86,6 +86,9 @@ const (
 	RecruitmentService_FindApplicationStageHistoryByStageCode_FullMethodName                        = "/human_resource.recruitment.v1.RecruitmentService/FindApplicationStageHistoryByStageCode"
 	RecruitmentService_FindApplicationStageHistoryByChangedByPrincipalID_FullMethodName             = "/human_resource.recruitment.v1.RecruitmentService/FindApplicationStageHistoryByChangedByPrincipalID"
 	RecruitmentService_FindApplicationStageHistoryByReasonCode_FullMethodName                       = "/human_resource.recruitment.v1.RecruitmentService/FindApplicationStageHistoryByReasonCode"
+	RecruitmentService_StartInterview_FullMethodName                                                = "/human_resource.recruitment.v1.RecruitmentService/StartInterview"
+	RecruitmentService_CompleteInterview_FullMethodName                                             = "/human_resource.recruitment.v1.RecruitmentService/CompleteInterview"
+	RecruitmentService_CancelInterview_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/CancelInterview"
 	RecruitmentService_CreateInterview_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/CreateInterview"
 	RecruitmentService_UpdateInterview_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/UpdateInterview"
 	RecruitmentService_DeleteInterview_FullMethodName                                               = "/human_resource.recruitment.v1.RecruitmentService/DeleteInterview"
@@ -112,6 +115,11 @@ const (
 	RecruitmentService_GetAllInterviewFeedbacks_FullMethodName                                      = "/human_resource.recruitment.v1.RecruitmentService/GetAllInterviewFeedbacks"
 	RecruitmentService_FindInterviewFeedbackByInterviewID_FullMethodName                            = "/human_resource.recruitment.v1.RecruitmentService/FindInterviewFeedbackByInterviewID"
 	RecruitmentService_FindInterviewFeedbackByInterviewerPrincipalID_FullMethodName                 = "/human_resource.recruitment.v1.RecruitmentService/FindInterviewFeedbackByInterviewerPrincipalID"
+	RecruitmentService_ApproveOffer_FullMethodName                                                  = "/human_resource.recruitment.v1.RecruitmentService/ApproveOffer"
+	RecruitmentService_IssueOffer_FullMethodName                                                    = "/human_resource.recruitment.v1.RecruitmentService/IssueOffer"
+	RecruitmentService_AcceptOffer_FullMethodName                                                   = "/human_resource.recruitment.v1.RecruitmentService/AcceptOffer"
+	RecruitmentService_DeclineOffer_FullMethodName                                                  = "/human_resource.recruitment.v1.RecruitmentService/DeclineOffer"
+	RecruitmentService_WithdrawOffer_FullMethodName                                                 = "/human_resource.recruitment.v1.RecruitmentService/WithdrawOffer"
 	RecruitmentService_CreateOffer_FullMethodName                                                   = "/human_resource.recruitment.v1.RecruitmentService/CreateOffer"
 	RecruitmentService_UpdateOffer_FullMethodName                                                   = "/human_resource.recruitment.v1.RecruitmentService/UpdateOffer"
 	RecruitmentService_DeleteOffer_FullMethodName                                                   = "/human_resource.recruitment.v1.RecruitmentService/DeleteOffer"
@@ -144,6 +152,7 @@ const (
 	RecruitmentService_FindJobPostingByWithdrawalReasonCode_FullMethodName                          = "/human_resource.recruitment.v1.RecruitmentService/FindJobPostingByWithdrawalReasonCode"
 	RecruitmentService_FindJobPostingByWithdrawnByPrincipalID_FullMethodName                        = "/human_resource.recruitment.v1.RecruitmentService/FindJobPostingByWithdrawnByPrincipalID"
 	RecruitmentService_CreateApplicationAssessment_FullMethodName                                   = "/human_resource.recruitment.v1.RecruitmentService/CreateApplicationAssessment"
+	RecruitmentService_CompleteApplicationAssessment_FullMethodName                                 = "/human_resource.recruitment.v1.RecruitmentService/CompleteApplicationAssessment"
 	RecruitmentService_UpdateApplicationAssessment_FullMethodName                                   = "/human_resource.recruitment.v1.RecruitmentService/UpdateApplicationAssessment"
 	RecruitmentService_DeleteApplicationAssessment_FullMethodName                                   = "/human_resource.recruitment.v1.RecruitmentService/DeleteApplicationAssessment"
 	RecruitmentService_GetApplicationAssessmentByID_FullMethodName                                  = "/human_resource.recruitment.v1.RecruitmentService/GetApplicationAssessmentByID"
@@ -228,6 +237,9 @@ type RecruitmentServiceClient interface {
 	FindApplicationStageHistoryByStageCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*ApplicationStageHistoriesResponse, error)
 	FindApplicationStageHistoryByChangedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*ApplicationStageHistoriesResponse, error)
 	FindApplicationStageHistoryByReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*ApplicationStageHistoriesResponse, error)
+	StartInterview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*InterviewResponse, error)
+	CompleteInterview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*InterviewResponse, error)
+	CancelInterview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*InterviewResponse, error)
 	CreateInterview(ctx context.Context, in *CreateInterviewRequest, opts ...grpc.CallOption) (*InterviewResponse, error)
 	UpdateInterview(ctx context.Context, in *UpdateInterviewRequest, opts ...grpc.CallOption) (*InterviewResponse, error)
 	DeleteInterview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -254,6 +266,11 @@ type RecruitmentServiceClient interface {
 	GetAllInterviewFeedbacks(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*InterviewFeedbacksResponse, error)
 	FindInterviewFeedbackByInterviewID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*InterviewFeedbacksResponse, error)
 	FindInterviewFeedbackByInterviewerPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*InterviewFeedbacksResponse, error)
+	ApproveOffer(ctx context.Context, in *ApproveOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error)
+	IssueOffer(ctx context.Context, in *IssueOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error)
+	AcceptOffer(ctx context.Context, in *AcceptOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error)
+	DeclineOffer(ctx context.Context, in *DeclineOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error)
+	WithdrawOffer(ctx context.Context, in *WithdrawOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error)
 	CreateOffer(ctx context.Context, in *CreateOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error)
 	UpdateOffer(ctx context.Context, in *UpdateOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error)
 	DeleteOffer(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -286,6 +303,7 @@ type RecruitmentServiceClient interface {
 	FindJobPostingByWithdrawalReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error)
 	FindJobPostingByWithdrawnByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobPostingsResponse, error)
 	CreateApplicationAssessment(ctx context.Context, in *CreateApplicationAssessmentRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error)
+	CompleteApplicationAssessment(ctx context.Context, in *CompleteApplicationAssessmentRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error)
 	UpdateApplicationAssessment(ctx context.Context, in *UpdateApplicationAssessmentRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error)
 	DeleteApplicationAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetApplicationAssessmentByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error)
@@ -968,6 +986,36 @@ func (c *recruitmentServiceClient) FindApplicationStageHistoryByReasonCode(ctx c
 	return out, nil
 }
 
+func (c *recruitmentServiceClient) StartInterview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*InterviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(InterviewResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_StartInterview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) CompleteInterview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*InterviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(InterviewResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_CompleteInterview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) CancelInterview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*InterviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(InterviewResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_CancelInterview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *recruitmentServiceClient) CreateInterview(ctx context.Context, in *CreateInterviewRequest, opts ...grpc.CallOption) (*InterviewResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(InterviewResponse)
@@ -1222,6 +1270,56 @@ func (c *recruitmentServiceClient) FindInterviewFeedbackByInterviewerPrincipalID
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(InterviewFeedbacksResponse)
 	err := c.cc.Invoke(ctx, RecruitmentService_FindInterviewFeedbackByInterviewerPrincipalID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) ApproveOffer(ctx context.Context, in *ApproveOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OfferResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_ApproveOffer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) IssueOffer(ctx context.Context, in *IssueOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OfferResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_IssueOffer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) AcceptOffer(ctx context.Context, in *AcceptOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OfferResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_AcceptOffer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) DeclineOffer(ctx context.Context, in *DeclineOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OfferResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_DeclineOffer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recruitmentServiceClient) WithdrawOffer(ctx context.Context, in *WithdrawOfferRequest, opts ...grpc.CallOption) (*OfferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OfferResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_WithdrawOffer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1548,6 +1646,16 @@ func (c *recruitmentServiceClient) CreateApplicationAssessment(ctx context.Conte
 	return out, nil
 }
 
+func (c *recruitmentServiceClient) CompleteApplicationAssessment(ctx context.Context, in *CompleteApplicationAssessmentRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplicationAssessmentResponse)
+	err := c.cc.Invoke(ctx, RecruitmentService_CompleteApplicationAssessment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *recruitmentServiceClient) UpdateApplicationAssessment(ctx context.Context, in *UpdateApplicationAssessmentRequest, opts ...grpc.CallOption) (*ApplicationAssessmentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApplicationAssessmentResponse)
@@ -1738,6 +1846,9 @@ type RecruitmentServiceServer interface {
 	FindApplicationStageHistoryByStageCode(context.Context, *v1.StringFinderRequest) (*ApplicationStageHistoriesResponse, error)
 	FindApplicationStageHistoryByChangedByPrincipalID(context.Context, *v1.StringFinderRequest) (*ApplicationStageHistoriesResponse, error)
 	FindApplicationStageHistoryByReasonCode(context.Context, *v1.StringFinderRequest) (*ApplicationStageHistoriesResponse, error)
+	StartInterview(context.Context, *v1.IDRequest) (*InterviewResponse, error)
+	CompleteInterview(context.Context, *v1.IDRequest) (*InterviewResponse, error)
+	CancelInterview(context.Context, *v1.IDRequest) (*InterviewResponse, error)
 	CreateInterview(context.Context, *CreateInterviewRequest) (*InterviewResponse, error)
 	UpdateInterview(context.Context, *UpdateInterviewRequest) (*InterviewResponse, error)
 	DeleteInterview(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -1764,6 +1875,11 @@ type RecruitmentServiceServer interface {
 	GetAllInterviewFeedbacks(context.Context, *v1.PageRequest) (*InterviewFeedbacksResponse, error)
 	FindInterviewFeedbackByInterviewID(context.Context, *v1.StringFinderRequest) (*InterviewFeedbacksResponse, error)
 	FindInterviewFeedbackByInterviewerPrincipalID(context.Context, *v1.StringFinderRequest) (*InterviewFeedbacksResponse, error)
+	ApproveOffer(context.Context, *ApproveOfferRequest) (*OfferResponse, error)
+	IssueOffer(context.Context, *IssueOfferRequest) (*OfferResponse, error)
+	AcceptOffer(context.Context, *AcceptOfferRequest) (*OfferResponse, error)
+	DeclineOffer(context.Context, *DeclineOfferRequest) (*OfferResponse, error)
+	WithdrawOffer(context.Context, *WithdrawOfferRequest) (*OfferResponse, error)
 	CreateOffer(context.Context, *CreateOfferRequest) (*OfferResponse, error)
 	UpdateOffer(context.Context, *UpdateOfferRequest) (*OfferResponse, error)
 	DeleteOffer(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -1796,6 +1912,7 @@ type RecruitmentServiceServer interface {
 	FindJobPostingByWithdrawalReasonCode(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error)
 	FindJobPostingByWithdrawnByPrincipalID(context.Context, *v1.StringFinderRequest) (*JobPostingsResponse, error)
 	CreateApplicationAssessment(context.Context, *CreateApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error)
+	CompleteApplicationAssessment(context.Context, *CompleteApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error)
 	UpdateApplicationAssessment(context.Context, *UpdateApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error)
 	DeleteApplicationAssessment(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetApplicationAssessmentByID(context.Context, *v1.IDRequest) (*ApplicationAssessmentResponse, error)
@@ -2016,6 +2133,15 @@ func (UnimplementedRecruitmentServiceServer) FindApplicationStageHistoryByChange
 func (UnimplementedRecruitmentServiceServer) FindApplicationStageHistoryByReasonCode(context.Context, *v1.StringFinderRequest) (*ApplicationStageHistoriesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindApplicationStageHistoryByReasonCode not implemented")
 }
+func (UnimplementedRecruitmentServiceServer) StartInterview(context.Context, *v1.IDRequest) (*InterviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartInterview not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) CompleteInterview(context.Context, *v1.IDRequest) (*InterviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteInterview not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) CancelInterview(context.Context, *v1.IDRequest) (*InterviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelInterview not implemented")
+}
 func (UnimplementedRecruitmentServiceServer) CreateInterview(context.Context, *CreateInterviewRequest) (*InterviewResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateInterview not implemented")
 }
@@ -2093,6 +2219,21 @@ func (UnimplementedRecruitmentServiceServer) FindInterviewFeedbackByInterviewID(
 }
 func (UnimplementedRecruitmentServiceServer) FindInterviewFeedbackByInterviewerPrincipalID(context.Context, *v1.StringFinderRequest) (*InterviewFeedbacksResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindInterviewFeedbackByInterviewerPrincipalID not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) ApproveOffer(context.Context, *ApproveOfferRequest) (*OfferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveOffer not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) IssueOffer(context.Context, *IssueOfferRequest) (*OfferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method IssueOffer not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) AcceptOffer(context.Context, *AcceptOfferRequest) (*OfferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AcceptOffer not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) DeclineOffer(context.Context, *DeclineOfferRequest) (*OfferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeclineOffer not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) WithdrawOffer(context.Context, *WithdrawOfferRequest) (*OfferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WithdrawOffer not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) CreateOffer(context.Context, *CreateOfferRequest) (*OfferResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateOffer not implemented")
@@ -2189,6 +2330,9 @@ func (UnimplementedRecruitmentServiceServer) FindJobPostingByWithdrawnByPrincipa
 }
 func (UnimplementedRecruitmentServiceServer) CreateApplicationAssessment(context.Context, *CreateApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateApplicationAssessment not implemented")
+}
+func (UnimplementedRecruitmentServiceServer) CompleteApplicationAssessment(context.Context, *CompleteApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteApplicationAssessment not implemented")
 }
 func (UnimplementedRecruitmentServiceServer) UpdateApplicationAssessment(context.Context, *UpdateApplicationAssessmentRequest) (*ApplicationAssessmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateApplicationAssessment not implemented")
@@ -3435,6 +3579,60 @@ func _RecruitmentService_FindApplicationStageHistoryByReasonCode_Handler(srv int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RecruitmentService_StartInterview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).StartInterview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_StartInterview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).StartInterview(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_CompleteInterview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).CompleteInterview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_CompleteInterview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).CompleteInterview(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_CancelInterview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).CancelInterview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_CancelInterview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).CancelInterview(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RecruitmentService_CreateInterview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateInterviewRequest)
 	if err := dec(in); err != nil {
@@ -3899,6 +4097,96 @@ func _RecruitmentService_FindInterviewFeedbackByInterviewerPrincipalID_Handler(s
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RecruitmentServiceServer).FindInterviewFeedbackByInterviewerPrincipalID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_ApproveOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApproveOfferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).ApproveOffer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_ApproveOffer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).ApproveOffer(ctx, req.(*ApproveOfferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_IssueOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IssueOfferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).IssueOffer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_IssueOffer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).IssueOffer(ctx, req.(*IssueOfferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_AcceptOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AcceptOfferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).AcceptOffer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_AcceptOffer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).AcceptOffer(ctx, req.(*AcceptOfferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_DeclineOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeclineOfferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).DeclineOffer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_DeclineOffer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).DeclineOffer(ctx, req.(*DeclineOfferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecruitmentService_WithdrawOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawOfferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).WithdrawOffer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_WithdrawOffer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).WithdrawOffer(ctx, req.(*WithdrawOfferRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4479,6 +4767,24 @@ func _RecruitmentService_CreateApplicationAssessment_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RecruitmentService_CompleteApplicationAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteApplicationAssessmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecruitmentServiceServer).CompleteApplicationAssessment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecruitmentService_CompleteApplicationAssessment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecruitmentServiceServer).CompleteApplicationAssessment(ctx, req.(*CompleteApplicationAssessmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RecruitmentService_UpdateApplicationAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateApplicationAssessmentRequest)
 	if err := dec(in); err != nil {
@@ -4967,6 +5273,18 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RecruitmentService_FindApplicationStageHistoryByReasonCode_Handler,
 		},
 		{
+			MethodName: "StartInterview",
+			Handler:    _RecruitmentService_StartInterview_Handler,
+		},
+		{
+			MethodName: "CompleteInterview",
+			Handler:    _RecruitmentService_CompleteInterview_Handler,
+		},
+		{
+			MethodName: "CancelInterview",
+			Handler:    _RecruitmentService_CancelInterview_Handler,
+		},
+		{
 			MethodName: "CreateInterview",
 			Handler:    _RecruitmentService_CreateInterview_Handler,
 		},
@@ -5069,6 +5387,26 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindInterviewFeedbackByInterviewerPrincipalID",
 			Handler:    _RecruitmentService_FindInterviewFeedbackByInterviewerPrincipalID_Handler,
+		},
+		{
+			MethodName: "ApproveOffer",
+			Handler:    _RecruitmentService_ApproveOffer_Handler,
+		},
+		{
+			MethodName: "IssueOffer",
+			Handler:    _RecruitmentService_IssueOffer_Handler,
+		},
+		{
+			MethodName: "AcceptOffer",
+			Handler:    _RecruitmentService_AcceptOffer_Handler,
+		},
+		{
+			MethodName: "DeclineOffer",
+			Handler:    _RecruitmentService_DeclineOffer_Handler,
+		},
+		{
+			MethodName: "WithdrawOffer",
+			Handler:    _RecruitmentService_WithdrawOffer_Handler,
 		},
 		{
 			MethodName: "CreateOffer",
@@ -5197,6 +5535,10 @@ var RecruitmentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateApplicationAssessment",
 			Handler:    _RecruitmentService_CreateApplicationAssessment_Handler,
+		},
+		{
+			MethodName: "CompleteApplicationAssessment",
+			Handler:    _RecruitmentService_CompleteApplicationAssessment_Handler,
 		},
 		{
 			MethodName: "UpdateApplicationAssessment",

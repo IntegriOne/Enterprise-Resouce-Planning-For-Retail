@@ -25,18 +25,21 @@ const (
 )
 
 type SuccessionPlan struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	PositionId            string                 `protobuf:"bytes,2,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
-	PlanCode              string                 `protobuf:"bytes,3,opt,name=plan_code,json=planCode,proto3" json:"plan_code,omitempty"`
-	PlanVersion           int32                  `protobuf:"varint,4,opt,name=plan_version,json=planVersion,proto3" json:"plan_version,omitempty"`
-	ReviewDate            *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=review_date,json=reviewDate,proto3" json:"review_date,omitempty"`
-	ConfidentialityClass  string                 `protobuf:"bytes,6,opt,name=confidentiality_class,json=confidentialityClass,proto3" json:"confidentiality_class,omitempty"`
-	ApprovedByPrincipalId *string                `protobuf:"bytes,7,opt,name=approved_by_principal_id,json=approvedByPrincipalId,proto3,oneof" json:"approved_by_principal_id,omitempty"`
-	ApprovedAt            *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
-	SuccessionRisk        *string                `protobuf:"bytes,9,opt,name=succession_risk,json=successionRisk,proto3,oneof" json:"succession_risk,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	Id                         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PositionId                 string                 `protobuf:"bytes,2,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
+	PlanCode                   string                 `protobuf:"bytes,3,opt,name=plan_code,json=planCode,proto3" json:"plan_code,omitempty"`
+	PlanVersion                int32                  `protobuf:"varint,4,opt,name=plan_version,json=planVersion,proto3" json:"plan_version,omitempty"`
+	ReviewDate                 *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=review_date,json=reviewDate,proto3" json:"review_date,omitempty"`
+	ConfidentialityClass       string                 `protobuf:"bytes,6,opt,name=confidentiality_class,json=confidentialityClass,proto3" json:"confidentiality_class,omitempty"`
+	ApprovedByPrincipalId      *string                `protobuf:"bytes,7,opt,name=approved_by_principal_id,json=approvedByPrincipalId,proto3,oneof" json:"approved_by_principal_id,omitempty"`
+	ApprovedAt                 *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
+	SuccessionRisk             *string                `protobuf:"bytes,9,opt,name=succession_risk,json=successionRisk,proto3,oneof" json:"succession_risk,omitempty"`
+	ApprovalMandateReferenceId *string                `protobuf:"bytes,10,opt,name=approval_mandate_reference_id,json=approvalMandateReferenceId,proto3,oneof" json:"approval_mandate_reference_id,omitempty"`
+	CreatedByPrincipalId       *string                `protobuf:"bytes,11,opt,name=created_by_principal_id,json=createdByPrincipalId,proto3,oneof" json:"created_by_principal_id,omitempty"`
+	CreatedAt                  *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields              protoimpl.UnknownFields
+	sizeCache                  protoimpl.SizeCache
 }
 
 func (x *SuccessionPlan) Reset() {
@@ -130,6 +133,27 @@ func (x *SuccessionPlan) GetSuccessionRisk() string {
 		return *x.SuccessionRisk
 	}
 	return ""
+}
+
+func (x *SuccessionPlan) GetApprovalMandateReferenceId() string {
+	if x != nil && x.ApprovalMandateReferenceId != nil {
+		return *x.ApprovalMandateReferenceId
+	}
+	return ""
+}
+
+func (x *SuccessionPlan) GetCreatedByPrincipalId() string {
+	if x != nil && x.CreatedByPrincipalId != nil {
+		return *x.CreatedByPrincipalId
+	}
+	return ""
+}
+
+func (x *SuccessionPlan) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
 }
 
 // FieldMask pada update membedakan absen dengan NULL; nilai create mengikuti default service.
@@ -845,7 +869,7 @@ var File_human_resource_succession_v1_succession_proto protoreflect.FileDescript
 
 const file_human_resource_succession_v1_succession_proto_rawDesc = "" +
 	"\n" +
-	"-human_resource/succession/v1/succession.proto\x12\x1chuman_resource.succession.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"\xcd\x03\n" +
+	"-human_resource/succession/v1/succession.proto\x12\x1chuman_resource.succession.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%human_resource/common/v1/common.proto\"\xca\x05\n" +
 	"\x0eSuccessionPlan\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
 	"\vposition_id\x18\x02 \x01(\tR\n" +
@@ -858,9 +882,16 @@ const file_human_resource_succession_v1_succession_proto_rawDesc = "" +
 	"\x18approved_by_principal_id\x18\a \x01(\tH\x00R\x15approvedByPrincipalId\x88\x01\x01\x12;\n" +
 	"\vapproved_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"approvedAt\x12,\n" +
-	"\x0fsuccession_risk\x18\t \x01(\tH\x01R\x0esuccessionRisk\x88\x01\x01B\x1b\n" +
+	"\x0fsuccession_risk\x18\t \x01(\tH\x01R\x0esuccessionRisk\x88\x01\x01\x12F\n" +
+	"\x1dapproval_mandate_reference_id\x18\n" +
+	" \x01(\tH\x02R\x1aapprovalMandateReferenceId\x88\x01\x01\x12:\n" +
+	"\x17created_by_principal_id\x18\v \x01(\tH\x03R\x14createdByPrincipalId\x88\x01\x01\x129\n" +
+	"\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\x1b\n" +
 	"\x19_approved_by_principal_idB\x12\n" +
-	"\x10_succession_risk\"\x9f\x04\n" +
+	"\x10_succession_riskB \n" +
+	"\x1e_approval_mandate_reference_idB\x1a\n" +
+	"\x18_created_by_principal_id\"\x9f\x04\n" +
 	"\x13SuccessionPlanInput\x12$\n" +
 	"\vposition_id\x18\x01 \x01(\tH\x00R\n" +
 	"positionId\x88\x01\x01\x12 \n" +
@@ -935,8 +966,9 @@ const file_human_resource_succession_v1_succession_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v21.human_resource.succession.v1.SuccessionCandidateR\x05value\"\x9f\x01\n" +
 	"\x1cSuccessionCandidatesResponse\x12G\n" +
 	"\x05items\x18\x01 \x03(\v21.human_resource.succession.v1.SuccessionCandidateR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xb6\x13\n" +
-	"\x11SuccessionService\x12\x87\x01\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xaa\x14\n" +
+	"\x11SuccessionService\x12r\n" +
+	"\x15ApproveSuccessionPlan\x12#.human_resource.common.v1.IDRequest\x1a4.human_resource.succession.v1.SuccessionPlanResponse\x12\x87\x01\n" +
 	"\x14CreateSuccessionPlan\x129.human_resource.succession.v1.CreateSuccessionPlanRequest\x1a4.human_resource.succession.v1.SuccessionPlanResponse\x12\x87\x01\n" +
 	"\x14UpdateSuccessionPlan\x129.human_resource.succession.v1.UpdateSuccessionPlanRequest\x1a4.human_resource.succession.v1.SuccessionPlanResponse\x12d\n" +
 	"\x14DeleteSuccessionPlan\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12r\n" +
@@ -993,63 +1025,66 @@ var file_human_resource_succession_v1_succession_proto_goTypes = []any{
 var file_human_resource_succession_v1_succession_proto_depIdxs = []int32{
 	12, // 0: human_resource.succession.v1.SuccessionPlan.review_date:type_name -> google.protobuf.Timestamp
 	12, // 1: human_resource.succession.v1.SuccessionPlan.approved_at:type_name -> google.protobuf.Timestamp
-	12, // 2: human_resource.succession.v1.SuccessionPlanInput.review_date:type_name -> google.protobuf.Timestamp
-	12, // 3: human_resource.succession.v1.SuccessionPlanInput.approved_at:type_name -> google.protobuf.Timestamp
-	1,  // 4: human_resource.succession.v1.CreateSuccessionPlanRequest.input:type_name -> human_resource.succession.v1.SuccessionPlanInput
-	1,  // 5: human_resource.succession.v1.UpdateSuccessionPlanRequest.input:type_name -> human_resource.succession.v1.SuccessionPlanInput
-	13, // 6: human_resource.succession.v1.UpdateSuccessionPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
-	0,  // 7: human_resource.succession.v1.SuccessionPlanResponse.value:type_name -> human_resource.succession.v1.SuccessionPlan
-	0,  // 8: human_resource.succession.v1.SuccessionPlansResponse.items:type_name -> human_resource.succession.v1.SuccessionPlan
-	14, // 9: human_resource.succession.v1.SuccessionPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
-	12, // 10: human_resource.succession.v1.SuccessionCandidate.readiness_assessed_at:type_name -> google.protobuf.Timestamp
-	12, // 11: human_resource.succession.v1.SuccessionCandidateInput.readiness_assessed_at:type_name -> google.protobuf.Timestamp
-	7,  // 12: human_resource.succession.v1.CreateSuccessionCandidateRequest.input:type_name -> human_resource.succession.v1.SuccessionCandidateInput
-	7,  // 13: human_resource.succession.v1.UpdateSuccessionCandidateRequest.input:type_name -> human_resource.succession.v1.SuccessionCandidateInput
-	13, // 14: human_resource.succession.v1.UpdateSuccessionCandidateRequest.update_mask:type_name -> google.protobuf.FieldMask
-	6,  // 15: human_resource.succession.v1.SuccessionCandidateResponse.value:type_name -> human_resource.succession.v1.SuccessionCandidate
-	6,  // 16: human_resource.succession.v1.SuccessionCandidatesResponse.items:type_name -> human_resource.succession.v1.SuccessionCandidate
-	14, // 17: human_resource.succession.v1.SuccessionCandidatesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	2,  // 18: human_resource.succession.v1.SuccessionService.CreateSuccessionPlan:input_type -> human_resource.succession.v1.CreateSuccessionPlanRequest
-	3,  // 19: human_resource.succession.v1.SuccessionService.UpdateSuccessionPlan:input_type -> human_resource.succession.v1.UpdateSuccessionPlanRequest
-	15, // 20: human_resource.succession.v1.SuccessionService.DeleteSuccessionPlan:input_type -> human_resource.common.v1.IDRequest
-	15, // 21: human_resource.succession.v1.SuccessionService.GetSuccessionPlanByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 22: human_resource.succession.v1.SuccessionService.GetAllSuccessionPlans:input_type -> human_resource.common.v1.PageRequest
-	17, // 23: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 24: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 25: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 26: human_resource.succession.v1.SuccessionService.CreateSuccessionCandidate:input_type -> human_resource.succession.v1.CreateSuccessionCandidateRequest
-	9,  // 27: human_resource.succession.v1.SuccessionService.UpdateSuccessionCandidate:input_type -> human_resource.succession.v1.UpdateSuccessionCandidateRequest
-	15, // 28: human_resource.succession.v1.SuccessionService.DeleteSuccessionCandidate:input_type -> human_resource.common.v1.IDRequest
-	15, // 29: human_resource.succession.v1.SuccessionService.GetSuccessionCandidateByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 30: human_resource.succession.v1.SuccessionService.GetAllSuccessionCandidates:input_type -> human_resource.common.v1.PageRequest
-	17, // 31: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateBySuccessionPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 32: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByCandidateWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 33: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByReadinessCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 34: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByTalentAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 35: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByDevelopmentPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 36: human_resource.succession.v1.SuccessionService.CreateSuccessionPlan:output_type -> human_resource.succession.v1.SuccessionPlanResponse
-	4,  // 37: human_resource.succession.v1.SuccessionService.UpdateSuccessionPlan:output_type -> human_resource.succession.v1.SuccessionPlanResponse
-	18, // 38: human_resource.succession.v1.SuccessionService.DeleteSuccessionPlan:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 39: human_resource.succession.v1.SuccessionService.GetSuccessionPlanByID:output_type -> human_resource.succession.v1.SuccessionPlanResponse
-	5,  // 40: human_resource.succession.v1.SuccessionService.GetAllSuccessionPlans:output_type -> human_resource.succession.v1.SuccessionPlansResponse
-	5,  // 41: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPositionID:output_type -> human_resource.succession.v1.SuccessionPlansResponse
-	5,  // 42: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPlanCode:output_type -> human_resource.succession.v1.SuccessionPlansResponse
-	5,  // 43: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByApprovedByPrincipalID:output_type -> human_resource.succession.v1.SuccessionPlansResponse
-	10, // 44: human_resource.succession.v1.SuccessionService.CreateSuccessionCandidate:output_type -> human_resource.succession.v1.SuccessionCandidateResponse
-	10, // 45: human_resource.succession.v1.SuccessionService.UpdateSuccessionCandidate:output_type -> human_resource.succession.v1.SuccessionCandidateResponse
-	18, // 46: human_resource.succession.v1.SuccessionService.DeleteSuccessionCandidate:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 47: human_resource.succession.v1.SuccessionService.GetSuccessionCandidateByID:output_type -> human_resource.succession.v1.SuccessionCandidateResponse
-	11, // 48: human_resource.succession.v1.SuccessionService.GetAllSuccessionCandidates:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
-	11, // 49: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateBySuccessionPlanID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
-	11, // 50: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByCandidateWorkerID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
-	11, // 51: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByReadinessCode:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
-	11, // 52: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByTalentAssessmentID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
-	11, // 53: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByDevelopmentPlanID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
-	36, // [36:54] is the sub-list for method output_type
-	18, // [18:36] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	12, // 2: human_resource.succession.v1.SuccessionPlan.created_at:type_name -> google.protobuf.Timestamp
+	12, // 3: human_resource.succession.v1.SuccessionPlanInput.review_date:type_name -> google.protobuf.Timestamp
+	12, // 4: human_resource.succession.v1.SuccessionPlanInput.approved_at:type_name -> google.protobuf.Timestamp
+	1,  // 5: human_resource.succession.v1.CreateSuccessionPlanRequest.input:type_name -> human_resource.succession.v1.SuccessionPlanInput
+	1,  // 6: human_resource.succession.v1.UpdateSuccessionPlanRequest.input:type_name -> human_resource.succession.v1.SuccessionPlanInput
+	13, // 7: human_resource.succession.v1.UpdateSuccessionPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
+	0,  // 8: human_resource.succession.v1.SuccessionPlanResponse.value:type_name -> human_resource.succession.v1.SuccessionPlan
+	0,  // 9: human_resource.succession.v1.SuccessionPlansResponse.items:type_name -> human_resource.succession.v1.SuccessionPlan
+	14, // 10: human_resource.succession.v1.SuccessionPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
+	12, // 11: human_resource.succession.v1.SuccessionCandidate.readiness_assessed_at:type_name -> google.protobuf.Timestamp
+	12, // 12: human_resource.succession.v1.SuccessionCandidateInput.readiness_assessed_at:type_name -> google.protobuf.Timestamp
+	7,  // 13: human_resource.succession.v1.CreateSuccessionCandidateRequest.input:type_name -> human_resource.succession.v1.SuccessionCandidateInput
+	7,  // 14: human_resource.succession.v1.UpdateSuccessionCandidateRequest.input:type_name -> human_resource.succession.v1.SuccessionCandidateInput
+	13, // 15: human_resource.succession.v1.UpdateSuccessionCandidateRequest.update_mask:type_name -> google.protobuf.FieldMask
+	6,  // 16: human_resource.succession.v1.SuccessionCandidateResponse.value:type_name -> human_resource.succession.v1.SuccessionCandidate
+	6,  // 17: human_resource.succession.v1.SuccessionCandidatesResponse.items:type_name -> human_resource.succession.v1.SuccessionCandidate
+	14, // 18: human_resource.succession.v1.SuccessionCandidatesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	15, // 19: human_resource.succession.v1.SuccessionService.ApproveSuccessionPlan:input_type -> human_resource.common.v1.IDRequest
+	2,  // 20: human_resource.succession.v1.SuccessionService.CreateSuccessionPlan:input_type -> human_resource.succession.v1.CreateSuccessionPlanRequest
+	3,  // 21: human_resource.succession.v1.SuccessionService.UpdateSuccessionPlan:input_type -> human_resource.succession.v1.UpdateSuccessionPlanRequest
+	15, // 22: human_resource.succession.v1.SuccessionService.DeleteSuccessionPlan:input_type -> human_resource.common.v1.IDRequest
+	15, // 23: human_resource.succession.v1.SuccessionService.GetSuccessionPlanByID:input_type -> human_resource.common.v1.IDRequest
+	16, // 24: human_resource.succession.v1.SuccessionService.GetAllSuccessionPlans:input_type -> human_resource.common.v1.PageRequest
+	17, // 25: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPositionID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 26: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 27: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	8,  // 28: human_resource.succession.v1.SuccessionService.CreateSuccessionCandidate:input_type -> human_resource.succession.v1.CreateSuccessionCandidateRequest
+	9,  // 29: human_resource.succession.v1.SuccessionService.UpdateSuccessionCandidate:input_type -> human_resource.succession.v1.UpdateSuccessionCandidateRequest
+	15, // 30: human_resource.succession.v1.SuccessionService.DeleteSuccessionCandidate:input_type -> human_resource.common.v1.IDRequest
+	15, // 31: human_resource.succession.v1.SuccessionService.GetSuccessionCandidateByID:input_type -> human_resource.common.v1.IDRequest
+	16, // 32: human_resource.succession.v1.SuccessionService.GetAllSuccessionCandidates:input_type -> human_resource.common.v1.PageRequest
+	17, // 33: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateBySuccessionPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 34: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByCandidateWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 35: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByReadinessCode:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 36: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByTalentAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	17, // 37: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByDevelopmentPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 38: human_resource.succession.v1.SuccessionService.ApproveSuccessionPlan:output_type -> human_resource.succession.v1.SuccessionPlanResponse
+	4,  // 39: human_resource.succession.v1.SuccessionService.CreateSuccessionPlan:output_type -> human_resource.succession.v1.SuccessionPlanResponse
+	4,  // 40: human_resource.succession.v1.SuccessionService.UpdateSuccessionPlan:output_type -> human_resource.succession.v1.SuccessionPlanResponse
+	18, // 41: human_resource.succession.v1.SuccessionService.DeleteSuccessionPlan:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 42: human_resource.succession.v1.SuccessionService.GetSuccessionPlanByID:output_type -> human_resource.succession.v1.SuccessionPlanResponse
+	5,  // 43: human_resource.succession.v1.SuccessionService.GetAllSuccessionPlans:output_type -> human_resource.succession.v1.SuccessionPlansResponse
+	5,  // 44: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPositionID:output_type -> human_resource.succession.v1.SuccessionPlansResponse
+	5,  // 45: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByPlanCode:output_type -> human_resource.succession.v1.SuccessionPlansResponse
+	5,  // 46: human_resource.succession.v1.SuccessionService.FindSuccessionPlanByApprovedByPrincipalID:output_type -> human_resource.succession.v1.SuccessionPlansResponse
+	10, // 47: human_resource.succession.v1.SuccessionService.CreateSuccessionCandidate:output_type -> human_resource.succession.v1.SuccessionCandidateResponse
+	10, // 48: human_resource.succession.v1.SuccessionService.UpdateSuccessionCandidate:output_type -> human_resource.succession.v1.SuccessionCandidateResponse
+	18, // 49: human_resource.succession.v1.SuccessionService.DeleteSuccessionCandidate:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 50: human_resource.succession.v1.SuccessionService.GetSuccessionCandidateByID:output_type -> human_resource.succession.v1.SuccessionCandidateResponse
+	11, // 51: human_resource.succession.v1.SuccessionService.GetAllSuccessionCandidates:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
+	11, // 52: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateBySuccessionPlanID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
+	11, // 53: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByCandidateWorkerID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
+	11, // 54: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByReadinessCode:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
+	11, // 55: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByTalentAssessmentID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
+	11, // 56: human_resource.succession.v1.SuccessionService.FindSuccessionCandidateByDevelopmentPlanID:output_type -> human_resource.succession.v1.SuccessionCandidatesResponse
+	38, // [38:57] is the sub-list for method output_type
+	19, // [19:38] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_human_resource_succession_v1_succession_proto_init() }

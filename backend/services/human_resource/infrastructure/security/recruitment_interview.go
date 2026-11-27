@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -25,10 +26,12 @@ type interviewRequisitionReader interface {
 }
 
 type interviewReader interface {
+	HasCandidateScheduleOverlap(context.Context, string, string, time.Time, time.Time) (bool, error)
 	SelectWhere(context.Context, []domainrepo.Filter, int, int) ([]entity.Interview, error)
 }
 
-type interviewChildCounter interface {
+type interviewChildReader[T any] interface {
+	SelectWhere(context.Context, []domainrepo.Filter, int, int) ([]T, error)
 	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 }
 
@@ -37,8 +40,8 @@ type interviewValidator struct {
 	candidates   interviewCandidateReader
 	requisitions interviewRequisitionReader
 	interviews   interviewReader
-	panelists    interviewChildCounter
-	feedback     interviewChildCounter
+	panelists    interviewChildReader[entity.InterviewPanelist]
+	feedback     interviewChildReader[entity.InterviewFeedback]
 }
 
 // RecruitmentInterviewValidators membuka draf wawancara pada lamaran yang masih sah.
@@ -71,7 +74,67 @@ func (v *interviewValidator) ValidateMutation(ctx context.Context, table string,
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.Interview)
-		if !ok || previous == nil || previous.Status != "planned" {
+		if !ok || previous == nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+	}
+	if previous != nil {
+		if next, ok := after.(*entity.Interview); ok && next != nil && next.Status == "cancelled" {
+			if previous.Status != "planned" && previous.Status != "scheduled" {
+				return hrerrors.ErrWorkflowRequired
+			}
+			unchanged := *next
+			unchanged.Status = previous.Status
+			if !reflect.DeepEqual(previous, &unchanged) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			count, err := v.feedback.CountWhere(ctx, []domainrepo.Filter{{Column: "interview_id", Values: []any{previous.ID}}})
+			if err != nil {
+				return err
+			}
+			if count != 0 {
+				return hrerrors.ErrReferenceConflict
+			}
+			return nil
+		}
+		if next, ok := after.(*entity.Interview); ok && next != nil && next.Status == "in_progress" {
+			if (previous.Status != "planned" && previous.Status != "scheduled") ||
+				previous.ScheduledStart == nil || previous.ScheduledEnd == nil {
+				return hrerrors.ErrWorkflowRequired
+			}
+			unchanged := *next
+			unchanged.Status = previous.Status
+			if !reflect.DeepEqual(previous, &unchanged) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			application, _, _, err := lockRecruitmentApplicationContext(ctx, v.applications, v.candidates, v.requisitions, previous.ApplicationID, time.Now().UTC())
+			if err != nil {
+				return err
+			}
+			if application.Status != entity.ApplicationStatusInterview {
+				return hrerrors.ErrWorkflowRequired
+			}
+			count, err := v.panelists.CountWhere(ctx, []domainrepo.Filter{{Column: "interview_id", Values: []any{previous.ID}}})
+			if err != nil {
+				return err
+			}
+			if count == 0 {
+				return hrerrors.ErrReferenceConflict
+			}
+			return nil
+		}
+		if next, ok := after.(*entity.Interview); ok && next != nil && next.Status == "completed" {
+			if previous.Status != "in_progress" || previous.ScheduledStart == nil {
+				return hrerrors.ErrWorkflowRequired
+			}
+			unchanged := *next
+			unchanged.Status = previous.Status
+			if !reflect.DeepEqual(previous, &unchanged) {
+				return hrerrors.ErrWorkflowRequired
+			}
+			return v.validateCompletion(ctx, previous)
+		}
+		if previous.Status != "planned" {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -139,9 +202,7 @@ func (v *interviewValidator) ValidateMutation(ctx context.Context, table string,
 	if err != nil {
 		return err
 	}
-	if requisition == nil || requisition.Status != "open" || requisition.ApprovedAt == nil ||
-		requisition.ApprovedByPrincipalID == nil || requisition.OpenedAt == nil ||
-		requisition.ApprovedAt.After(*requisition.OpenedAt) || requisition.ClosedAt != nil {
+	if !recruitmentRequisitionOpenAt(requisition, now) {
 		return hrerrors.ErrReferenceConflict
 	}
 	if (interview.ScheduledStart == nil) != (interview.ScheduledEnd == nil) {
@@ -173,5 +234,58 @@ func (v *interviewValidator) ValidateMutation(ctx context.Context, table string,
 			return hrerrors.ErrAlreadyExists
 		}
 	}
+	if interview.ScheduledStart != nil {
+		// Lock kandidat menjaga konsistensi jadwal antar-lamaran.
+		overlaps, err := v.interviews.HasCandidateScheduleOverlap(ctx, candidate.ID, interview.ID, *interview.ScheduledStart, *interview.ScheduledEnd)
+		if err != nil {
+			return err
+		}
+		if overlaps {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
 	return nil
+}
+
+// validateCompletion memeriksa versi feedback terakhir setiap panelis saat wawancara terkunci.
+func (v *interviewValidator) validateCompletion(ctx context.Context, interview *entity.Interview) error {
+	filters := []domainrepo.Filter{{Column: "interview_id", Values: []any{interview.ID}}}
+	panelists, err := collectInterviewChildren(ctx, v.panelists, filters)
+	if err != nil {
+		return err
+	}
+	if len(panelists) == 0 {
+		return hrerrors.ErrReferenceConflict
+	}
+	feedback, err := collectInterviewChildren(ctx, v.feedback, filters)
+	if err != nil {
+		return err
+	}
+	latest := make(map[string]entity.InterviewFeedback, len(panelists))
+	for _, entry := range feedback {
+		principal := strings.ToLower(entry.InterviewerPrincipalID)
+		if entry.FeedbackVersion > latest[principal].FeedbackVersion {
+			latest[principal] = entry
+		}
+	}
+	now := time.Now().UTC()
+	for _, panelist := range panelists {
+		entry, found := latest[strings.ToLower(panelist.InterviewerPrincipalID)]
+		if !found || entry.SubmittedAt.Before(*interview.ScheduledStart) || entry.SubmittedAt.After(now) ||
+			strings.TrimSpace(entry.OverallRecommendation) == "" || !supportedFeedbackVisibilityClass(entry.VisibilityClass) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	}
+	return nil
+}
+
+func collectInterviewChildren[T any](ctx context.Context, reader interviewChildReader[T], filters []domainrepo.Filter) ([]T, error) {
+	count, err := reader.CountWhere(ctx, filters)
+	if err != nil {
+		return nil, err
+	}
+	return operation.CollectComplete(ctx, count, func(limit, offset int) (operation.Page[T], error) {
+		items, err := reader.SelectWhere(ctx, filters, limit, offset)
+		return operation.Page[T]{Items: items}, err
+	})
 }

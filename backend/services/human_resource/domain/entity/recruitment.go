@@ -164,9 +164,15 @@ type Offer struct {
 	IssuedAt                                       *time.Time `gorm:"column:issued_at;type:timestamptz" json:"issued_at"`
 	ExpiresAt                                      *time.Time `gorm:"column:expires_at;type:timestamptz" json:"expires_at"`
 	CandidateResponse                              *string    `gorm:"column:candidate_response;type:varchar(30)" json:"candidate_response"`
+	CandidateResponseEvidenceID                    *string    `gorm:"column:candidate_response_evidence_id;type:uuid" json:"candidate_response_evidence_id"`
 	RespondedAt                                    *time.Time `gorm:"column:responded_at;type:timestamptz" json:"responded_at"`
+	CreatedByPrincipalID                           *string    `gorm:"column:created_by_principal_id;type:uuid" json:"created_by_principal_id"`
+	CreatedAt                                      *time.Time `gorm:"column:created_at;type:timestamptz;autoCreateTime:false;autoUpdateTime:false" json:"created_at"`
 	ApprovedByPrincipalID                          *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
 	ApprovedAt                                     *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
+	WithdrawnAt                                    *time.Time `gorm:"column:withdrawn_at;type:timestamptz" json:"withdrawn_at"`
+	WithdrawnByPrincipalID                         *string    `gorm:"column:withdrawn_by_principal_id;type:uuid" json:"withdrawn_by_principal_id"`
+	WithdrawalReasonCode                           *string    `gorm:"column:withdrawal_reason_code;type:varchar(80)" json:"withdrawal_reason_code"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.

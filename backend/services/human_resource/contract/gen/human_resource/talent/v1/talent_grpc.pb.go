@@ -46,6 +46,9 @@ const (
 	TalentService_FindTalentReviewCycleByOrganizationUnitReferenceID_FullMethodName                 = "/human_resource.talent.v1.TalentService/FindTalentReviewCycleByOrganizationUnitReferenceID"
 	TalentService_FindTalentReviewCycleByStatus_FullMethodName                                      = "/human_resource.talent.v1.TalentService/FindTalentReviewCycleByStatus"
 	TalentService_FindTalentReviewCycleByOwnerPrincipalID_FullMethodName                            = "/human_resource.talent.v1.TalentService/FindTalentReviewCycleByOwnerPrincipalID"
+	TalentService_LaunchTalentReviewCycle_FullMethodName                                            = "/human_resource.talent.v1.TalentService/LaunchTalentReviewCycle"
+	TalentService_StartTalentReviewCycleCalibration_FullMethodName                                  = "/human_resource.talent.v1.TalentService/StartTalentReviewCycleCalibration"
+	TalentService_CloseTalentReviewCycle_FullMethodName                                             = "/human_resource.talent.v1.TalentService/CloseTalentReviewCycle"
 	TalentService_CreateTalentAssessment_FullMethodName                                             = "/human_resource.talent.v1.TalentService/CreateTalentAssessment"
 	TalentService_UpdateTalentAssessment_FullMethodName                                             = "/human_resource.talent.v1.TalentService/UpdateTalentAssessment"
 	TalentService_DeleteTalentAssessment_FullMethodName                                             = "/human_resource.talent.v1.TalentService/DeleteTalentAssessment"
@@ -60,6 +63,8 @@ const (
 	TalentService_FindTalentAssessmentByEvidenceDocumentVersionReferenceID_FullMethodName           = "/human_resource.talent.v1.TalentService/FindTalentAssessmentByEvidenceDocumentVersionReferenceID"
 	TalentService_FindTalentAssessmentBySegmentCode_FullMethodName                                  = "/human_resource.talent.v1.TalentService/FindTalentAssessmentBySegmentCode"
 	TalentService_FindTalentAssessmentByFinalizedByPrincipalID_FullMethodName                       = "/human_resource.talent.v1.TalentService/FindTalentAssessmentByFinalizedByPrincipalID"
+	TalentService_SubmitTalentAssessment_FullMethodName                                             = "/human_resource.talent.v1.TalentService/SubmitTalentAssessment"
+	TalentService_WithdrawTalentAssessment_FullMethodName                                           = "/human_resource.talent.v1.TalentService/WithdrawTalentAssessment"
 	TalentService_FinalizeTalentAssessment_FullMethodName                                           = "/human_resource.talent.v1.TalentService/FinalizeTalentAssessment"
 	TalentService_CreateTalentAssessmentScore_FullMethodName                                        = "/human_resource.talent.v1.TalentService/CreateTalentAssessmentScore"
 	TalentService_UpdateTalentAssessmentScore_FullMethodName                                        = "/human_resource.talent.v1.TalentService/UpdateTalentAssessmentScore"
@@ -79,6 +84,8 @@ const (
 	TalentService_FindTalentCalibrationSessionByChairPrincipalID_FullMethodName                     = "/human_resource.talent.v1.TalentService/FindTalentCalibrationSessionByChairPrincipalID"
 	TalentService_FindTalentCalibrationSessionByStatus_FullMethodName                               = "/human_resource.talent.v1.TalentService/FindTalentCalibrationSessionByStatus"
 	TalentService_FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID_FullMethodName    = "/human_resource.talent.v1.TalentService/FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID"
+	TalentService_OpenTalentCalibrationSession_FullMethodName                                       = "/human_resource.talent.v1.TalentService/OpenTalentCalibrationSession"
+	TalentService_RecordTalentCalibrationDecision_FullMethodName                                    = "/human_resource.talent.v1.TalentService/RecordTalentCalibrationDecision"
 	TalentService_CreateTalentCalibrationDecision_FullMethodName                                    = "/human_resource.talent.v1.TalentService/CreateTalentCalibrationDecision"
 	TalentService_UpdateTalentCalibrationDecision_FullMethodName                                    = "/human_resource.talent.v1.TalentService/UpdateTalentCalibrationDecision"
 	TalentService_DeleteTalentCalibrationDecision_FullMethodName                                    = "/human_resource.talent.v1.TalentService/DeleteTalentCalibrationDecision"
@@ -112,6 +119,9 @@ const (
 	TalentService_FindTalentPoolMembershipByStatus_FullMethodName                                   = "/human_resource.talent.v1.TalentService/FindTalentPoolMembershipByStatus"
 	TalentService_FindTalentPoolMembershipByApprovedByPrincipalID_FullMethodName                    = "/human_resource.talent.v1.TalentService/FindTalentPoolMembershipByApprovedByPrincipalID"
 	TalentService_FindTalentPoolMembershipByExitReasonCode_FullMethodName                           = "/human_resource.talent.v1.TalentService/FindTalentPoolMembershipByExitReasonCode"
+	TalentService_ApproveTalentPoolMembership_FullMethodName                                        = "/human_resource.talent.v1.TalentService/ApproveTalentPoolMembership"
+	TalentService_RejectTalentPoolMembership_FullMethodName                                         = "/human_resource.talent.v1.TalentService/RejectTalentPoolMembership"
+	TalentService_ExitTalentPoolMembership_FullMethodName                                           = "/human_resource.talent.v1.TalentService/ExitTalentPoolMembership"
 )
 
 // TalentServiceClient is the client API for TalentService service.
@@ -144,6 +154,9 @@ type TalentServiceClient interface {
 	FindTalentReviewCycleByOrganizationUnitReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentReviewCyclesResponse, error)
 	FindTalentReviewCycleByStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentReviewCyclesResponse, error)
 	FindTalentReviewCycleByOwnerPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentReviewCyclesResponse, error)
+	LaunchTalentReviewCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentReviewCycleResponse, error)
+	StartTalentReviewCycleCalibration(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentReviewCycleResponse, error)
+	CloseTalentReviewCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentReviewCycleResponse, error)
 	CreateTalentAssessment(ctx context.Context, in *CreateTalentAssessmentRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error)
 	UpdateTalentAssessment(ctx context.Context, in *UpdateTalentAssessmentRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error)
 	DeleteTalentAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -158,6 +171,8 @@ type TalentServiceClient interface {
 	FindTalentAssessmentByEvidenceDocumentVersionReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentAssessmentsResponse, error)
 	FindTalentAssessmentBySegmentCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentAssessmentsResponse, error)
 	FindTalentAssessmentByFinalizedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentAssessmentsResponse, error)
+	SubmitTalentAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error)
+	WithdrawTalentAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error)
 	FinalizeTalentAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error)
 	CreateTalentAssessmentScore(ctx context.Context, in *CreateTalentAssessmentScoreRequest, opts ...grpc.CallOption) (*TalentAssessmentScoreResponse, error)
 	UpdateTalentAssessmentScore(ctx context.Context, in *UpdateTalentAssessmentScoreRequest, opts ...grpc.CallOption) (*TalentAssessmentScoreResponse, error)
@@ -177,6 +192,8 @@ type TalentServiceClient interface {
 	FindTalentCalibrationSessionByChairPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentCalibrationSessionsResponse, error)
 	FindTalentCalibrationSessionByStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentCalibrationSessionsResponse, error)
 	FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentCalibrationSessionsResponse, error)
+	OpenTalentCalibrationSession(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentCalibrationSessionResponse, error)
+	RecordTalentCalibrationDecision(ctx context.Context, in *RecordTalentCalibrationDecisionRequest, opts ...grpc.CallOption) (*TalentCalibrationDecisionResponse, error)
 	CreateTalentCalibrationDecision(ctx context.Context, in *CreateTalentCalibrationDecisionRequest, opts ...grpc.CallOption) (*TalentCalibrationDecisionResponse, error)
 	UpdateTalentCalibrationDecision(ctx context.Context, in *UpdateTalentCalibrationDecisionRequest, opts ...grpc.CallOption) (*TalentCalibrationDecisionResponse, error)
 	DeleteTalentCalibrationDecision(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -210,6 +227,9 @@ type TalentServiceClient interface {
 	FindTalentPoolMembershipByStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentPoolMembershipsResponse, error)
 	FindTalentPoolMembershipByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentPoolMembershipsResponse, error)
 	FindTalentPoolMembershipByExitReasonCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*TalentPoolMembershipsResponse, error)
+	ApproveTalentPoolMembership(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentPoolMembershipResponse, error)
+	RejectTalentPoolMembership(ctx context.Context, in *TalentReasonActionRequest, opts ...grpc.CallOption) (*TalentPoolMembershipResponse, error)
+	ExitTalentPoolMembership(ctx context.Context, in *TalentReasonActionRequest, opts ...grpc.CallOption) (*TalentPoolMembershipResponse, error)
 }
 
 type talentServiceClient struct {
@@ -480,6 +500,36 @@ func (c *talentServiceClient) FindTalentReviewCycleByOwnerPrincipalID(ctx contex
 	return out, nil
 }
 
+func (c *talentServiceClient) LaunchTalentReviewCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentReviewCycleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentReviewCycleResponse)
+	err := c.cc.Invoke(ctx, TalentService_LaunchTalentReviewCycle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) StartTalentReviewCycleCalibration(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentReviewCycleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentReviewCycleResponse)
+	err := c.cc.Invoke(ctx, TalentService_StartTalentReviewCycleCalibration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) CloseTalentReviewCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentReviewCycleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentReviewCycleResponse)
+	err := c.cc.Invoke(ctx, TalentService_CloseTalentReviewCycle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *talentServiceClient) CreateTalentAssessment(ctx context.Context, in *CreateTalentAssessmentRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TalentAssessmentResponse)
@@ -614,6 +664,26 @@ func (c *talentServiceClient) FindTalentAssessmentByFinalizedByPrincipalID(ctx c
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TalentAssessmentsResponse)
 	err := c.cc.Invoke(ctx, TalentService_FindTalentAssessmentByFinalizedByPrincipalID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) SubmitTalentAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentAssessmentResponse)
+	err := c.cc.Invoke(ctx, TalentService_SubmitTalentAssessment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) WithdrawTalentAssessment(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentAssessmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentAssessmentResponse)
+	err := c.cc.Invoke(ctx, TalentService_WithdrawTalentAssessment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -804,6 +874,26 @@ func (c *talentServiceClient) FindTalentCalibrationSessionByMinutesDocumentVersi
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TalentCalibrationSessionsResponse)
 	err := c.cc.Invoke(ctx, TalentService_FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) OpenTalentCalibrationSession(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentCalibrationSessionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentCalibrationSessionResponse)
+	err := c.cc.Invoke(ctx, TalentService_OpenTalentCalibrationSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) RecordTalentCalibrationDecision(ctx context.Context, in *RecordTalentCalibrationDecisionRequest, opts ...grpc.CallOption) (*TalentCalibrationDecisionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentCalibrationDecisionResponse)
+	err := c.cc.Invoke(ctx, TalentService_RecordTalentCalibrationDecision_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1140,6 +1230,36 @@ func (c *talentServiceClient) FindTalentPoolMembershipByExitReasonCode(ctx conte
 	return out, nil
 }
 
+func (c *talentServiceClient) ApproveTalentPoolMembership(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*TalentPoolMembershipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentPoolMembershipResponse)
+	err := c.cc.Invoke(ctx, TalentService_ApproveTalentPoolMembership_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) RejectTalentPoolMembership(ctx context.Context, in *TalentReasonActionRequest, opts ...grpc.CallOption) (*TalentPoolMembershipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentPoolMembershipResponse)
+	err := c.cc.Invoke(ctx, TalentService_RejectTalentPoolMembership_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *talentServiceClient) ExitTalentPoolMembership(ctx context.Context, in *TalentReasonActionRequest, opts ...grpc.CallOption) (*TalentPoolMembershipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TalentPoolMembershipResponse)
+	err := c.cc.Invoke(ctx, TalentService_ExitTalentPoolMembership_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TalentServiceServer is the server API for TalentService service.
 // All implementations must embed UnimplementedTalentServiceServer
 // for forward compatibility.
@@ -1170,6 +1290,9 @@ type TalentServiceServer interface {
 	FindTalentReviewCycleByOrganizationUnitReferenceID(context.Context, *v1.StringFinderRequest) (*TalentReviewCyclesResponse, error)
 	FindTalentReviewCycleByStatus(context.Context, *v1.StringFinderRequest) (*TalentReviewCyclesResponse, error)
 	FindTalentReviewCycleByOwnerPrincipalID(context.Context, *v1.StringFinderRequest) (*TalentReviewCyclesResponse, error)
+	LaunchTalentReviewCycle(context.Context, *v1.IDRequest) (*TalentReviewCycleResponse, error)
+	StartTalentReviewCycleCalibration(context.Context, *v1.IDRequest) (*TalentReviewCycleResponse, error)
+	CloseTalentReviewCycle(context.Context, *v1.IDRequest) (*TalentReviewCycleResponse, error)
 	CreateTalentAssessment(context.Context, *CreateTalentAssessmentRequest) (*TalentAssessmentResponse, error)
 	UpdateTalentAssessment(context.Context, *UpdateTalentAssessmentRequest) (*TalentAssessmentResponse, error)
 	DeleteTalentAssessment(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -1184,6 +1307,8 @@ type TalentServiceServer interface {
 	FindTalentAssessmentByEvidenceDocumentVersionReferenceID(context.Context, *v1.StringFinderRequest) (*TalentAssessmentsResponse, error)
 	FindTalentAssessmentBySegmentCode(context.Context, *v1.StringFinderRequest) (*TalentAssessmentsResponse, error)
 	FindTalentAssessmentByFinalizedByPrincipalID(context.Context, *v1.StringFinderRequest) (*TalentAssessmentsResponse, error)
+	SubmitTalentAssessment(context.Context, *v1.IDRequest) (*TalentAssessmentResponse, error)
+	WithdrawTalentAssessment(context.Context, *v1.IDRequest) (*TalentAssessmentResponse, error)
 	FinalizeTalentAssessment(context.Context, *v1.IDRequest) (*TalentAssessmentResponse, error)
 	CreateTalentAssessmentScore(context.Context, *CreateTalentAssessmentScoreRequest) (*TalentAssessmentScoreResponse, error)
 	UpdateTalentAssessmentScore(context.Context, *UpdateTalentAssessmentScoreRequest) (*TalentAssessmentScoreResponse, error)
@@ -1203,6 +1328,8 @@ type TalentServiceServer interface {
 	FindTalentCalibrationSessionByChairPrincipalID(context.Context, *v1.StringFinderRequest) (*TalentCalibrationSessionsResponse, error)
 	FindTalentCalibrationSessionByStatus(context.Context, *v1.StringFinderRequest) (*TalentCalibrationSessionsResponse, error)
 	FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID(context.Context, *v1.StringFinderRequest) (*TalentCalibrationSessionsResponse, error)
+	OpenTalentCalibrationSession(context.Context, *v1.IDRequest) (*TalentCalibrationSessionResponse, error)
+	RecordTalentCalibrationDecision(context.Context, *RecordTalentCalibrationDecisionRequest) (*TalentCalibrationDecisionResponse, error)
 	CreateTalentCalibrationDecision(context.Context, *CreateTalentCalibrationDecisionRequest) (*TalentCalibrationDecisionResponse, error)
 	UpdateTalentCalibrationDecision(context.Context, *UpdateTalentCalibrationDecisionRequest) (*TalentCalibrationDecisionResponse, error)
 	DeleteTalentCalibrationDecision(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -1236,6 +1363,9 @@ type TalentServiceServer interface {
 	FindTalentPoolMembershipByStatus(context.Context, *v1.StringFinderRequest) (*TalentPoolMembershipsResponse, error)
 	FindTalentPoolMembershipByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*TalentPoolMembershipsResponse, error)
 	FindTalentPoolMembershipByExitReasonCode(context.Context, *v1.StringFinderRequest) (*TalentPoolMembershipsResponse, error)
+	ApproveTalentPoolMembership(context.Context, *v1.IDRequest) (*TalentPoolMembershipResponse, error)
+	RejectTalentPoolMembership(context.Context, *TalentReasonActionRequest) (*TalentPoolMembershipResponse, error)
+	ExitTalentPoolMembership(context.Context, *TalentReasonActionRequest) (*TalentPoolMembershipResponse, error)
 	mustEmbedUnimplementedTalentServiceServer()
 }
 
@@ -1324,6 +1454,15 @@ func (UnimplementedTalentServiceServer) FindTalentReviewCycleByStatus(context.Co
 func (UnimplementedTalentServiceServer) FindTalentReviewCycleByOwnerPrincipalID(context.Context, *v1.StringFinderRequest) (*TalentReviewCyclesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindTalentReviewCycleByOwnerPrincipalID not implemented")
 }
+func (UnimplementedTalentServiceServer) LaunchTalentReviewCycle(context.Context, *v1.IDRequest) (*TalentReviewCycleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LaunchTalentReviewCycle not implemented")
+}
+func (UnimplementedTalentServiceServer) StartTalentReviewCycleCalibration(context.Context, *v1.IDRequest) (*TalentReviewCycleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartTalentReviewCycleCalibration not implemented")
+}
+func (UnimplementedTalentServiceServer) CloseTalentReviewCycle(context.Context, *v1.IDRequest) (*TalentReviewCycleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CloseTalentReviewCycle not implemented")
+}
 func (UnimplementedTalentServiceServer) CreateTalentAssessment(context.Context, *CreateTalentAssessmentRequest) (*TalentAssessmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateTalentAssessment not implemented")
 }
@@ -1365,6 +1504,12 @@ func (UnimplementedTalentServiceServer) FindTalentAssessmentBySegmentCode(contex
 }
 func (UnimplementedTalentServiceServer) FindTalentAssessmentByFinalizedByPrincipalID(context.Context, *v1.StringFinderRequest) (*TalentAssessmentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindTalentAssessmentByFinalizedByPrincipalID not implemented")
+}
+func (UnimplementedTalentServiceServer) SubmitTalentAssessment(context.Context, *v1.IDRequest) (*TalentAssessmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitTalentAssessment not implemented")
+}
+func (UnimplementedTalentServiceServer) WithdrawTalentAssessment(context.Context, *v1.IDRequest) (*TalentAssessmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method WithdrawTalentAssessment not implemented")
 }
 func (UnimplementedTalentServiceServer) FinalizeTalentAssessment(context.Context, *v1.IDRequest) (*TalentAssessmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FinalizeTalentAssessment not implemented")
@@ -1422,6 +1567,12 @@ func (UnimplementedTalentServiceServer) FindTalentCalibrationSessionByStatus(con
 }
 func (UnimplementedTalentServiceServer) FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID(context.Context, *v1.StringFinderRequest) (*TalentCalibrationSessionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID not implemented")
+}
+func (UnimplementedTalentServiceServer) OpenTalentCalibrationSession(context.Context, *v1.IDRequest) (*TalentCalibrationSessionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method OpenTalentCalibrationSession not implemented")
+}
+func (UnimplementedTalentServiceServer) RecordTalentCalibrationDecision(context.Context, *RecordTalentCalibrationDecisionRequest) (*TalentCalibrationDecisionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordTalentCalibrationDecision not implemented")
 }
 func (UnimplementedTalentServiceServer) CreateTalentCalibrationDecision(context.Context, *CreateTalentCalibrationDecisionRequest) (*TalentCalibrationDecisionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateTalentCalibrationDecision not implemented")
@@ -1521,6 +1672,15 @@ func (UnimplementedTalentServiceServer) FindTalentPoolMembershipByApprovedByPrin
 }
 func (UnimplementedTalentServiceServer) FindTalentPoolMembershipByExitReasonCode(context.Context, *v1.StringFinderRequest) (*TalentPoolMembershipsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindTalentPoolMembershipByExitReasonCode not implemented")
+}
+func (UnimplementedTalentServiceServer) ApproveTalentPoolMembership(context.Context, *v1.IDRequest) (*TalentPoolMembershipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveTalentPoolMembership not implemented")
+}
+func (UnimplementedTalentServiceServer) RejectTalentPoolMembership(context.Context, *TalentReasonActionRequest) (*TalentPoolMembershipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RejectTalentPoolMembership not implemented")
+}
+func (UnimplementedTalentServiceServer) ExitTalentPoolMembership(context.Context, *TalentReasonActionRequest) (*TalentPoolMembershipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExitTalentPoolMembership not implemented")
 }
 func (UnimplementedTalentServiceServer) mustEmbedUnimplementedTalentServiceServer() {}
 func (UnimplementedTalentServiceServer) testEmbeddedByValue()                       {}
@@ -2011,6 +2171,60 @@ func _TalentService_FindTalentReviewCycleByOwnerPrincipalID_Handler(srv interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TalentService_LaunchTalentReviewCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).LaunchTalentReviewCycle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_LaunchTalentReviewCycle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).LaunchTalentReviewCycle(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_StartTalentReviewCycleCalibration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).StartTalentReviewCycleCalibration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_StartTalentReviewCycleCalibration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).StartTalentReviewCycleCalibration(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_CloseTalentReviewCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).CloseTalentReviewCycle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_CloseTalentReviewCycle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).CloseTalentReviewCycle(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TalentService_CreateTalentAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateTalentAssessmentRequest)
 	if err := dec(in); err != nil {
@@ -2259,6 +2473,42 @@ func _TalentService_FindTalentAssessmentByFinalizedByPrincipalID_Handler(srv int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TalentServiceServer).FindTalentAssessmentByFinalizedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_SubmitTalentAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).SubmitTalentAssessment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_SubmitTalentAssessment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).SubmitTalentAssessment(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_WithdrawTalentAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).WithdrawTalentAssessment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_WithdrawTalentAssessment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).WithdrawTalentAssessment(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2601,6 +2851,42 @@ func _TalentService_FindTalentCalibrationSessionByMinutesDocumentVersionReferenc
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TalentServiceServer).FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_OpenTalentCalibrationSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).OpenTalentCalibrationSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_OpenTalentCalibrationSession_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).OpenTalentCalibrationSession(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_RecordTalentCalibrationDecision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordTalentCalibrationDecisionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).RecordTalentCalibrationDecision(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_RecordTalentCalibrationDecision_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).RecordTalentCalibrationDecision(ctx, req.(*RecordTalentCalibrationDecisionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3199,6 +3485,60 @@ func _TalentService_FindTalentPoolMembershipByExitReasonCode_Handler(srv interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TalentService_ApproveTalentPoolMembership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).ApproveTalentPoolMembership(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_ApproveTalentPoolMembership_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).ApproveTalentPoolMembership(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_RejectTalentPoolMembership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TalentReasonActionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).RejectTalentPoolMembership(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_RejectTalentPoolMembership_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).RejectTalentPoolMembership(ctx, req.(*TalentReasonActionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TalentService_ExitTalentPoolMembership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TalentReasonActionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TalentServiceServer).ExitTalentPoolMembership(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TalentService_ExitTalentPoolMembership_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TalentServiceServer).ExitTalentPoolMembership(ctx, req.(*TalentReasonActionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TalentService_ServiceDesc is the grpc.ServiceDesc for TalentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3311,6 +3651,18 @@ var TalentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TalentService_FindTalentReviewCycleByOwnerPrincipalID_Handler,
 		},
 		{
+			MethodName: "LaunchTalentReviewCycle",
+			Handler:    _TalentService_LaunchTalentReviewCycle_Handler,
+		},
+		{
+			MethodName: "StartTalentReviewCycleCalibration",
+			Handler:    _TalentService_StartTalentReviewCycleCalibration_Handler,
+		},
+		{
+			MethodName: "CloseTalentReviewCycle",
+			Handler:    _TalentService_CloseTalentReviewCycle_Handler,
+		},
+		{
 			MethodName: "CreateTalentAssessment",
 			Handler:    _TalentService_CreateTalentAssessment_Handler,
 		},
@@ -3365,6 +3717,14 @@ var TalentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindTalentAssessmentByFinalizedByPrincipalID",
 			Handler:    _TalentService_FindTalentAssessmentByFinalizedByPrincipalID_Handler,
+		},
+		{
+			MethodName: "SubmitTalentAssessment",
+			Handler:    _TalentService_SubmitTalentAssessment_Handler,
+		},
+		{
+			MethodName: "WithdrawTalentAssessment",
+			Handler:    _TalentService_WithdrawTalentAssessment_Handler,
 		},
 		{
 			MethodName: "FinalizeTalentAssessment",
@@ -3441,6 +3801,14 @@ var TalentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID",
 			Handler:    _TalentService_FindTalentCalibrationSessionByMinutesDocumentVersionReferenceID_Handler,
+		},
+		{
+			MethodName: "OpenTalentCalibrationSession",
+			Handler:    _TalentService_OpenTalentCalibrationSession_Handler,
+		},
+		{
+			MethodName: "RecordTalentCalibrationDecision",
+			Handler:    _TalentService_RecordTalentCalibrationDecision_Handler,
 		},
 		{
 			MethodName: "CreateTalentCalibrationDecision",
@@ -3573,6 +3941,18 @@ var TalentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindTalentPoolMembershipByExitReasonCode",
 			Handler:    _TalentService_FindTalentPoolMembershipByExitReasonCode_Handler,
+		},
+		{
+			MethodName: "ApproveTalentPoolMembership",
+			Handler:    _TalentService_ApproveTalentPoolMembership_Handler,
+		},
+		{
+			MethodName: "RejectTalentPoolMembership",
+			Handler:    _TalentService_RejectTalentPoolMembership_Handler,
+		},
+		{
+			MethodName: "ExitTalentPoolMembership",
+			Handler:    _TalentService_ExitTalentPoolMembership_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

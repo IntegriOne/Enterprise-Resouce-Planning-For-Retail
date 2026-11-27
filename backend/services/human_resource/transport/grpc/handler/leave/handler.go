@@ -15,7 +15,8 @@ import (
 )
 
 type Handler struct {
-	pb.UnimplementedLeaveServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeLeaveServiceServer
 	service *service.Service
 }
 

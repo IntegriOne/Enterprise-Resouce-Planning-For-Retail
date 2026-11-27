@@ -123,8 +123,32 @@ func (p *Policy) authorize(ctx context.Context, access operation.Access) (operat
 	}
 	sensitive := permissionSensitive(state.Snapshot, permission)
 	grant, allowed := state.Snapshot.HasPermission(permission)
-	if !allowed && access.Resource == "hr_workers" && (access.Action == "read" || access.Action == "list") {
-		grant, allowed = workerScopedGrant(state.Snapshot, permission, access, state.Token, now, sensitive)
+	payslipSelfRead := access.Resource == "hr_payslips" && access.Action == "read_self"
+	requestSelfCancel := access.Resource == "hr_service_requests" && access.Action == "cancel"
+	if payslipSelfRead {
+		allowed = false
+	}
+	if !allowed && (payslipSelfRead || requestSelfCancel) {
+		for _, candidate := range state.Snapshot.Permissions {
+			if strings.EqualFold(candidate.Code, permission) && candidate.Scope.Type == authz.ScopeSelf &&
+				candidate.Scope.Matches(authz.ScopeGrant{Type: authz.ScopeSelf, ID: caller.PrincipalID}) &&
+				grantUsable(candidate, state.Token, access, now, sensitive) {
+				grant, allowed = candidate, true
+				break
+			}
+		}
+	}
+	if column := legalEntityReadColumn(access); !allowed && column != "" {
+		grant, allowed = scopedResourceGrant(state.Snapshot, permission, "legal_entity", column, access, state.Token, now, sensitive)
+	}
+	if access.Resource == "hr_requisitions" && access.Action == "approve" {
+		// Otorisasi awal mendahului pembacaan. Command memeriksa unit record di dalam transaksi.
+		grant, allowed = scopedResourceGrant(state.Snapshot, permission, "organization_unit",
+			"organization_unit_reference_id", access, state.Token, now, sensitive)
+	}
+	if access.Resource == "hr_payslips" && access.Action == "reissue" {
+		grant, allowed = scopedResourceGrant(state.Snapshot, permission, "legal_entity",
+			"employing_legal_entity_reference_id", access, state.Token, now, sensitive)
 	}
 	if !allowed {
 		return operation.Actor{}, nil, hrerrors.ErrForbidden
@@ -141,7 +165,7 @@ func (p *Policy) authorize(ctx context.Context, access operation.Access) (operat
 	}, state, nil
 }
 
-// ReadScope menghasilkan filter SQL sebelum pagination dan count untuk worker dalam legal entity.
+// ReadScope menghasilkan filter SQL sebelum pagination dan count untuk resource dengan scope badan hukum.
 func (p *Policy) ReadScope(ctx context.Context, access operation.Access) (operation.Scope, error) {
 	_, state, err := p.authorize(ctx, access)
 	if err != nil {
@@ -153,13 +177,14 @@ func (p *Policy) ReadScope(ctx context.Context, access operation.Access) (operat
 	if grant, ok := state.Snapshot.HasPermission(permission); ok && grantUsable(grant, state.Token, access, now, sensitive) {
 		return operation.Scope{All: true}, nil
 	}
-	if access.Resource != "hr_workers" || (access.Action != "read" && access.Action != "list") {
+	column := legalEntityReadColumn(access)
+	if column == "" {
 		return operation.Scope{}, hrerrors.ErrForbidden
 	}
 	ids := make([]any, 0)
 	seen := make(map[string]bool)
 	for _, grant := range state.Snapshot.Permissions {
-		id := strings.ToLower(strings.TrimSpace(grant.Scope.ID))
+		id := strings.ToLower(grant.Scope.ID)
 		if !strings.EqualFold(grant.Code, permission) || grant.Scope.Type != "legal_entity" ||
 			entity.ValidateUUID("scope_id", id) != nil || !grantUsable(grant, state.Token, access, now, sensitive) || seen[id] {
 			continue
@@ -173,21 +198,40 @@ func (p *Policy) ReadScope(ctx context.Context, access operation.Access) (operat
 	if len(ids) == 0 {
 		return operation.Scope{}, hrerrors.ErrForbidden
 	}
-	return operation.Scope{Filters: []domainrepo.Filter{{Column: "primary_legal_entity_reference_id", Values: ids}}}, nil
+	return operation.Scope{Filters: []domainrepo.Filter{{Column: column, Values: ids}}}, nil
 }
 
-func workerScopedGrant(snapshot *authz.AccessSnapshot, permission string, access operation.Access, token *authsession.SessionTokenRecord, now time.Time, sensitive bool) (authz.PermissionGrant, bool) {
+func legalEntityReadColumn(access operation.Access) string {
+	if access.Action != "read" && access.Action != "list" {
+		return ""
+	}
+	switch access.Resource {
+	case "hr_workers":
+		return "primary_legal_entity_reference_id"
+	case "hr_workforce_plans":
+		return "legal_entity_reference_id"
+	case "hr_workforce_plan_lines":
+		return "plan_legal_entity_reference_id"
+	default:
+		return ""
+	}
+}
+
+func scopedResourceGrant(snapshot *authz.AccessSnapshot, permission, scopeType, column string, access operation.Access, token *authsession.SessionTokenRecord, now time.Time, sensitive bool) (authz.PermissionGrant, bool) {
 	if snapshot == nil || !strings.EqualFold(snapshot.Status, authz.StatusActive) {
 		return authz.PermissionGrant{}, false
 	}
-	id, present := access.Attributes["primary_legal_entity_reference_id"]
+	id, present := access.Attributes[column]
+	if !present && len(access.Attributes) != 0 {
+		return authz.PermissionGrant{}, false
+	}
 	if present {
-		if entity.ValidateUUID("primary_legal_entity_reference_id", id) != nil {
+		if entity.ValidateUUID(column, id) != nil {
 			return authz.PermissionGrant{}, false
 		}
 	}
 	for _, grant := range snapshot.Permissions {
-		if !strings.EqualFold(grant.Code, permission) || grant.Scope.Type != "legal_entity" ||
+		if !strings.EqualFold(grant.Code, permission) || grant.Scope.Type != scopeType ||
 			entity.ValidateUUID("scope_id", grant.Scope.ID) != nil ||
 			(present && !strings.EqualFold(grant.Scope.ID, id)) || !grantUsable(grant, token, access, now, sensitive) {
 			continue

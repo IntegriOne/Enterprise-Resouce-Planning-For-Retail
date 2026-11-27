@@ -31,6 +31,7 @@ type EngagementSurveyRepository interface {
 
 // EngagementSurveyResultRepository adalah port persistensi hr_engagement_survey_results.
 type EngagementSurveyResultRepository interface {
+	CountStoredBySurveyID(context.Context, string) (int64, error)
 	Repository[entity.EngagementSurveyResult, string]
 	InsertEngagementSurveyResults(context.Context, *entity.EngagementSurveyResult) error
 	UpdateEngagementSurveyResults(context.Context, *entity.EngagementSurveyResult) error

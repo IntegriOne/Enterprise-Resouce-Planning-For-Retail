@@ -45,4 +45,20 @@ func TestApplyPrimaryAssignmentRequiresDedicatedHumanCommand(t *testing.T) {
 	if len(harness.Events) != 2 {
 		t.Fatalf("repeat command wrote event: %d", len(harness.Events))
 	}
+	history, err := svc.FindWorkerLifecycleEventByWorkerID(t.Context(), created.ID, 10, 0)
+	if err != nil || len(history.Items) != 0 {
+		t.Fatalf("initial assignment lifecycle = %+v, %v", history, err)
+	}
+	replacementID := mockdb.ID(91)
+	if _, err := svc.ApplyPrimaryAssignment(t.Context(), created.ID, replacementID); err != nil {
+		t.Fatalf("apply replacement assignment: %v", err)
+	}
+	history, err = svc.FindWorkerLifecycleEventByWorkerID(t.Context(), created.ID, 10, 0)
+	if err != nil || len(history.Items) != 1 {
+		t.Fatalf("replacement assignment lifecycle = %+v, %v", history, err)
+	}
+	transfer := history.Items[0]
+	if transfer.EventType != "transfer" || transfer.SourceReference == nil || *transfer.SourceReference != replacementID {
+		t.Fatalf("unexpected transfer event: %+v", transfer)
+	}
 }

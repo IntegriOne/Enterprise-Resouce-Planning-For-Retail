@@ -124,7 +124,7 @@ func (v *benefitEnrollmentValidator) ValidateMutation(ctx context.Context, table
 	if before != nil {
 		var ok bool
 		previous, ok = before.(*entity.BenefitEnrollment)
-		if !ok || previous == nil || previous.EnrollmentStatus != "pending" {
+		if !ok || previous == nil || (previous.EnrollmentStatus != "pending" && previous.EnrollmentStatus != "approved") {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -132,6 +132,7 @@ func (v *benefitEnrollmentValidator) ValidateMutation(ctx context.Context, table
 		return hrerrors.ErrInvalidInput
 	}
 	enrollment := previous
+	ending := false
 	if after != nil {
 		var ok bool
 		enrollment, ok = after.(*entity.BenefitEnrollment)
@@ -139,10 +140,34 @@ func (v *benefitEnrollmentValidator) ValidateMutation(ctx context.Context, table
 			previous.WorkerID != enrollment.WorkerID || previous.BenefitPlanID != enrollment.BenefitPlanID)) {
 			return hrerrors.ErrInvalidInput
 		}
-		if enrollment.EnrollmentStatus != "pending" || enrollment.EnrollmentReference != nil ||
+		if enrollment.EnrollmentReference != nil ||
 			enrollment.ProviderMemberReference != nil || enrollment.EmployeeContributionAmount != nil ||
 			enrollment.EmployerContributionAmount != nil || enrollment.CurrencyCode != nil ||
-			enrollment.ElectedAt != nil || enrollment.VerifiedAt != nil {
+			enrollment.ElectedAt != nil {
+			return hrerrors.ErrWorkflowRequired
+		}
+		ending = previous != nil && previous.EnrollmentStatus == "approved" && enrollment.EnrollmentStatus == "ended"
+		if ending {
+			expected := *previous
+			expected.EnrollmentStatus = "ended"
+			expected.EffectiveTo = enrollment.EffectiveTo
+			if previous.VerifiedAt == nil || enrollment.EffectiveTo == nil ||
+				(previous.EffectiveTo != nil && entity.CompareDates(*enrollment.EffectiveTo, *previous.EffectiveTo) > 0) ||
+				!reflect.DeepEqual(&expected, enrollment) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if previous != nil && previous.EnrollmentStatus == "approved" {
+			return hrerrors.ErrWorkflowRequired
+		} else if previous != nil && enrollment.EnrollmentStatus == "approved" {
+			expected := *previous
+			expected.EnrollmentStatus = "approved"
+			expected.VerifiedAt = enrollment.VerifiedAt
+			if previous.VerifiedAt != nil || enrollment.VerifiedAt == nil ||
+				(enrollment.EffectiveTo != nil && entity.CompareDates(enrollment.VerifiedAt.UTC(), *enrollment.EffectiveTo) > 0) ||
+				!reflect.DeepEqual(&expected, enrollment) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		} else if enrollment.EnrollmentStatus != "pending" || enrollment.VerifiedAt != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -161,9 +186,12 @@ func (v *benefitEnrollmentValidator) ValidateMutation(ctx context.Context, table
 		return hrerrors.ErrReferenceConflict
 	}
 	if after == nil {
+		if previous.EnrollmentStatus != "pending" {
+			return hrerrors.ErrWorkflowRequired
+		}
 		return nil
 	}
-	if worker.Status != entity.WorkerStatusActive || !plan.IsActive ||
+	if (!ending && (worker.Status != entity.WorkerStatusActive || !plan.IsActive)) ||
 		plan.ProviderPartyReferenceID != nil || plan.EmployeeContributionRuleReferenceID != nil ||
 		plan.EmployerContributionRuleReferenceID != nil ||
 		!bytes.Equal(bytes.TrimSpace(plan.EligibilityRule), []byte("{}")) ||

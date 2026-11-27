@@ -12,6 +12,7 @@ import (
 )
 
 type Dependencies struct {
+	Worker                 domainrepo.RecordRepository[entity.Worker, string]
 	Runtime                operation.Dependencies
 	DevelopmentPlan        domainrepo.RecordRepository[entity.DevelopmentPlan, string]
 	DevelopmentAction      domainrepo.RecordRepository[entity.DevelopmentAction, string]
@@ -22,6 +23,9 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain career.
 type Service struct {
+	workers                domainrepo.RecordRepository[entity.Worker, string]
+	plans                  domainrepo.RecordRepository[entity.DevelopmentPlan, string]
+	actions                domainrepo.RecordRepository[entity.DevelopmentAction, string]
 	developmentPlan        *operation.Resource[entity.DevelopmentPlan, string, *entity.DevelopmentPlan]
 	developmentAction      *operation.Resource[entity.DevelopmentAction, string, *entity.DevelopmentAction]
 	careerPath             *operation.Resource[entity.CareerPath, string, *entity.CareerPath]
@@ -31,7 +35,7 @@ type Service struct {
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{workers: deps.Worker, plans: deps.DevelopmentPlan, actions: deps.DevelopmentAction}
 	var err error
 	s.developmentPlan, err = operation.NewResource[entity.DevelopmentPlan, string, *entity.DevelopmentPlan](
 		deps.DevelopmentPlan,

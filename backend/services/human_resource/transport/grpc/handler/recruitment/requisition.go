@@ -86,7 +86,8 @@ func (h *Handler) CreateRequisition(ctx context.Context, r *pb.CreateRequisition
 	}
 	return requisitionResponse(h.service.CreateRequisition(ctx, service.CreateRequisitionInput{
 		RequisitionNumber: in.GetRequisitionNumber(), WorkforcePlanLineID: in.WorkforcePlanLineId, PositionID: in.PositionId, JobID: in.GetJobId(),
-		OrganizationUnitReferenceID: in.GetOrganizationUnitReferenceId(), HiringManagerPrincipalID: in.GetHiringManagerPrincipalId(), RecruiterPrincipalID: in.RecruiterPrincipalId,
+		OrganizationUnitReferenceID: in.GetOrganizationUnitReferenceId(), HiringManagerPrincipalID: in.GetHiringManagerPrincipalId(),
+		HiringManagerWorkerID: r.HiringManagerWorkerId, RecruiterPrincipalID: in.RecruiterPrincipalId,
 		RequisitionType: in.GetRequisitionType(), Status: in.Status, Headcount: in.Headcount, TargetStartDate: target, BudgetReferenceID: in.BudgetReferenceId,
 		WorkLocationReferenceID: in.WorkLocationReferenceId, EmploymentCategory: entity.WorkerCategory(in.GetEmploymentCategory()), MinimumQualifications: minimum, DesiredQualifications: desired,
 		ApprovedAt: approved, ApprovedByPrincipalID: in.ApprovedByPrincipalId, OpenedAt: opened, ClosedAt: closed, IdempotencyKey: in.GetIdempotencyKey(),
@@ -96,9 +97,13 @@ func (h *Handler) UpdateRequisition(ctx context.Context, r *pb.UpdateRequisition
 	if r == nil || r.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
-	m, err := response.ValidateMask(r.UpdateMask, "requisition_number", "workforce_plan_line_id", "position_id", "job_id", "organization_unit_reference_id", "hiring_manager_principal_id", "recruiter_principal_id", "requisition_type", "status", "headcount", "target_start_date", "budget_reference_id", "work_location_reference_id", "employment_category", "minimum_qualifications", "desired_qualifications", "approved_at", "approved_by_principal_id", "opened_at", "closed_at", "idempotency_key")
+	m, err := response.ValidateMask(r.UpdateMask, "requisition_number", "workforce_plan_line_id", "position_id", "job_id", "organization_unit_reference_id", "hiring_manager_principal_id", "hiring_manager_worker_id", "recruiter_principal_id", "requisition_type", "status", "headcount", "target_start_date", "budget_reference_id", "work_location_reference_id", "employment_category", "minimum_qualifications", "desired_qualifications", "approved_at", "approved_by_principal_id", "opened_at", "closed_at", "idempotency_key")
 	if err != nil {
 		return nil, response.Error(err)
+	}
+	if m["hiring_manager_worker_id"] != (r.HiringManagerWorkerId != nil) ||
+		(r.HiringManagerWorkerId != nil && (m["hiring_manager_principal_id"] || r.Input.HiringManagerPrincipalId != nil)) {
+		return nil, response.Error(hrerrors.Invalid("hiring_manager_worker_id", "provide one hiring manager reference with its update mask"))
 	}
 	in := r.Input
 	target, err := dateField(m["target_start_date"], in.TargetStartDate)
@@ -127,7 +132,7 @@ func (h *Handler) UpdateRequisition(ctx context.Context, r *pb.UpdateRequisition
 	}
 	return requisitionResponse(h.service.UpdateRequisition(ctx, r.Id, service.UpdateRequisitionInput{
 		RequisitionNumber: field(m["requisition_number"], in.RequisitionNumber), WorkforcePlanLineID: field(m["workforce_plan_line_id"], in.WorkforcePlanLineId), PositionID: field(m["position_id"], in.PositionId), JobID: field(m["job_id"], in.JobId),
-		OrganizationUnitReferenceID: field(m["organization_unit_reference_id"], in.OrganizationUnitReferenceId), HiringManagerPrincipalID: field(m["hiring_manager_principal_id"], in.HiringManagerPrincipalId), RecruiterPrincipalID: field(m["recruiter_principal_id"], in.RecruiterPrincipalId),
+		OrganizationUnitReferenceID: field(m["organization_unit_reference_id"], in.OrganizationUnitReferenceId), HiringManagerPrincipalID: field(m["hiring_manager_principal_id"], in.HiringManagerPrincipalId), HiringManagerWorkerID: r.HiringManagerWorkerId, RecruiterPrincipalID: field(m["recruiter_principal_id"], in.RecruiterPrincipalId),
 		RequisitionType: field(m["requisition_type"], in.RequisitionType), Status: field(m["status"], in.Status), Headcount: field(m["headcount"], in.Headcount), TargetStartDate: target,
 		BudgetReferenceID: field(m["budget_reference_id"], in.BudgetReferenceId), WorkLocationReferenceID: field(m["work_location_reference_id"], in.WorkLocationReferenceId), EmploymentCategory: field(m["employment_category"], enumPointer[entity.WorkerCategory](in.EmploymentCategory)),
 		MinimumQualifications: minimum, DesiredQualifications: desired, ApprovedAt: approved, ApprovedByPrincipalID: field(m["approved_by_principal_id"], in.ApprovedByPrincipalId), OpenedAt: opened, ClosedAt: closed, IdempotencyKey: field(m["idempotency_key"], in.IdempotencyKey),
@@ -175,7 +180,13 @@ func (h *Handler) GetRequisitionByID(ctx context.Context, r *common.IDRequest) (
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
-	return requisitionResponse(h.service.GetRequisitionByID(ctx, r.Id))
+	value, manager, err := h.service.GetRequisitionDetail(ctx, r.Id)
+	result, err := requisitionResponse(value, err)
+	if err != nil {
+		return nil, err
+	}
+	result.Item.HiringManagerWorkerId = manager
+	return result, nil
 }
 func (h *Handler) GetAllRequisitions(ctx context.Context, r *common.PageRequest) (*pb.RequisitionsResponse, error) {
 	if r == nil {

@@ -138,6 +138,19 @@ func (r *WorkforcePlanLineRepository) SelectBy(ctx context.Context, column strin
 	return r.SelectWhere(ctx, []domainrepo.Filter{{Column: column, Values: []any{value}}}, limit, offset)
 }
 
+// planLineReadScope mengambil badan hukum dari rencana induk ketika query memerlukan scope.
+func planLineReadScope(db *gorm.DB, filters []domainrepo.Filter) (*gorm.DB, error) {
+	for _, filter := range filters {
+		if filter.Column == "plan_legal_entity_reference_id" {
+			db = db.Table(`(SELECT line.*, plan.legal_entity_reference_id AS plan_legal_entity_reference_id
+				FROM hr_workforce_plan_lines AS line
+				JOIN hr_workforce_plans AS plan ON plan.id = line.workforce_plan_id) AS hr_workforce_plan_lines`)
+			break
+		}
+	}
+	return pgstore.ApplyFilters(db, filters)
+}
+
 // SelectWhere menambahkan filter sebelum pagination dengan urutan ID yang deterministik.
 func (r *WorkforcePlanLineRepository) SelectWhere(ctx context.Context, filters []domainrepo.Filter, limit, offset int) ([]entity.WorkforcePlanLine, error) {
 	limit, offset, err := pgstore.NormalizePage(limit, offset)
@@ -148,7 +161,7 @@ func (r *WorkforcePlanLineRepository) SelectWhere(ctx context.Context, filters [
 	if err != nil {
 		return nil, err
 	}
-	db, err = pgstore.ApplyFilters(db, filters)
+	db, err = planLineReadScope(db, filters)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +179,7 @@ func (r *WorkforcePlanLineRepository) CountWhere(ctx context.Context, filters []
 	if err != nil {
 		return 0, err
 	}
-	db, err = pgstore.ApplyFilters(db, filters)
+	db, err = planLineReadScope(db, filters)
 	if err != nil {
 		return 0, err
 	}

@@ -49,3 +49,26 @@ func (s *Service) StartOffboardingPlan(ctx context.Context, planID string) (*ent
 		return plan, nil
 	})
 }
+
+// WaiveOffboardingTask membebaskan tugas lokal dengan alasan dan pelaku yang tercatat.
+func (s *Service) WaiveOffboardingTask(ctx context.Context, taskID, reason string) (*entity.OffboardingTask, error) {
+	if s == nil {
+		return nil, hrerrors.ErrUnavailable
+	}
+	reason = strings.TrimSpace(reason)
+	if reason == "" {
+		return nil, hrerrors.Invalid("reason", "must not be blank")
+	}
+	return s.offboardingTask.Command(ctx, taskID, "waive", func(_ context.Context, task *entity.OffboardingTask, actor operation.Actor, _ time.Time) (*entity.OffboardingTask, error) {
+		if actor.Kind != "human" {
+			return nil, hrerrors.ErrForbidden
+		}
+		if task.Status != "pending" || task.OwnerManagement != "human_resource" {
+			return nil, hrerrors.ErrWorkflowRequired
+		}
+		task.Status = "waived"
+		task.WaiverReason = &reason
+		task.WaivedByPrincipalID = &actor.PrincipalID
+		return task, nil
+	})
+}

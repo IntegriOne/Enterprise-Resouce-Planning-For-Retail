@@ -138,6 +138,12 @@ func (h *Handler) GetJobByID(ctx context.Context, request *common.IDRequest) (*p
 	}
 	return jobResponse(h.service.GetJobByID(ctx, request.Id))
 }
+
+// GetJobsByIds membaca sekumpulan jabatan dengan izin baca yang sama.
+func (h *Handler) GetJobsByIds(ctx context.Context, request *pb.GetJobsByIdsRequest) (*pb.JobsResponse, error) {
+	return jobs(h.service.GetJobsByIDs(ctx, request.GetIds()))
+}
+
 func (h *Handler) GetAllJobs(ctx context.Context, request *common.PageRequest) (*pb.JobsResponse, error) {
 	if request == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

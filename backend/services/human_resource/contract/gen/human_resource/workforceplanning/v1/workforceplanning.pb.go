@@ -772,6 +772,50 @@ func (x *JobResponse) GetItem() *Job {
 	return nil
 }
 
+type GetJobsByIdsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ids           []string               `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetJobsByIdsRequest) Reset() {
+	*x = GetJobsByIdsRequest{}
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetJobsByIdsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetJobsByIdsRequest) ProtoMessage() {}
+
+func (x *GetJobsByIdsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetJobsByIdsRequest.ProtoReflect.Descriptor instead.
+func (*GetJobsByIdsRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetJobsByIdsRequest) GetIds() []string {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
 type JobsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*Job                 `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -782,7 +826,7 @@ type JobsResponse struct {
 
 func (x *JobsResponse) Reset() {
 	*x = JobsResponse{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[11]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -794,7 +838,7 @@ func (x *JobsResponse) String() string {
 func (*JobsResponse) ProtoMessage() {}
 
 func (x *JobsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[11]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -807,7 +851,7 @@ func (x *JobsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JobsResponse.ProtoReflect.Descriptor instead.
 func (*JobsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{11}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *JobsResponse) GetItems() []*Job {
@@ -845,7 +889,7 @@ type Position struct {
 
 func (x *Position) Reset() {
 	*x = Position{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[12]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -857,7 +901,7 @@ func (x *Position) String() string {
 func (*Position) ProtoMessage() {}
 
 func (x *Position) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[12]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -870,7 +914,7 @@ func (x *Position) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Position.ProtoReflect.Descriptor instead.
 func (*Position) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{12}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Position) GetId() string {
@@ -984,7 +1028,7 @@ type PositionInput struct {
 
 func (x *PositionInput) Reset() {
 	*x = PositionInput{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[13]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -996,7 +1040,7 @@ func (x *PositionInput) String() string {
 func (*PositionInput) ProtoMessage() {}
 
 func (x *PositionInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[13]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1009,7 +1053,7 @@ func (x *PositionInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PositionInput.ProtoReflect.Descriptor instead.
 func (*PositionInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{13}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *PositionInput) GetPositionCode() string {
@@ -1105,7 +1149,7 @@ type CreatePositionRequest struct {
 
 func (x *CreatePositionRequest) Reset() {
 	*x = CreatePositionRequest{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[14]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1117,7 +1161,7 @@ func (x *CreatePositionRequest) String() string {
 func (*CreatePositionRequest) ProtoMessage() {}
 
 func (x *CreatePositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[14]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1130,7 +1174,7 @@ func (x *CreatePositionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePositionRequest.ProtoReflect.Descriptor instead.
 func (*CreatePositionRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{14}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CreatePositionRequest) GetInput() *PositionInput {
@@ -1151,7 +1195,7 @@ type UpdatePositionRequest struct {
 
 func (x *UpdatePositionRequest) Reset() {
 	*x = UpdatePositionRequest{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[15]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1163,7 +1207,7 @@ func (x *UpdatePositionRequest) String() string {
 func (*UpdatePositionRequest) ProtoMessage() {}
 
 func (x *UpdatePositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[15]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1176,7 +1220,7 @@ func (x *UpdatePositionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePositionRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePositionRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{15}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UpdatePositionRequest) GetId() string {
@@ -1209,7 +1253,7 @@ type PositionResponse struct {
 
 func (x *PositionResponse) Reset() {
 	*x = PositionResponse{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[16]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1221,7 +1265,7 @@ func (x *PositionResponse) String() string {
 func (*PositionResponse) ProtoMessage() {}
 
 func (x *PositionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[16]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1234,7 +1278,7 @@ func (x *PositionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PositionResponse.ProtoReflect.Descriptor instead.
 func (*PositionResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{16}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *PositionResponse) GetItem() *Position {
@@ -1254,7 +1298,7 @@ type PositionsResponse struct {
 
 func (x *PositionsResponse) Reset() {
 	*x = PositionsResponse{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[17]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1266,7 +1310,7 @@ func (x *PositionsResponse) String() string {
 func (*PositionsResponse) ProtoMessage() {}
 
 func (x *PositionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[17]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1279,7 +1323,7 @@ func (x *PositionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PositionsResponse.ProtoReflect.Descriptor instead.
 func (*PositionsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{17}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *PositionsResponse) GetItems() []*Position {
@@ -1311,13 +1355,15 @@ type WorkforcePlan struct {
 	CreatedAt                *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	ApprovedByPrincipalId    *string                `protobuf:"bytes,12,opt,name=approved_by_principal_id,json=approvedByPrincipalId,proto3,oneof" json:"approved_by_principal_id,omitempty"`
 	ApprovedAt               *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=approved_at,json=approvedAt,proto3" json:"approved_at,omitempty"`
+	SupersededByPlanId       *string                `protobuf:"bytes,14,opt,name=superseded_by_plan_id,json=supersededByPlanId,proto3,oneof" json:"superseded_by_plan_id,omitempty"`
+	SupersessionReasonCode   *string                `protobuf:"bytes,15,opt,name=supersession_reason_code,json=supersessionReasonCode,proto3,oneof" json:"supersession_reason_code,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
 
 func (x *WorkforcePlan) Reset() {
 	*x = WorkforcePlan{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[18]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1329,7 +1375,7 @@ func (x *WorkforcePlan) String() string {
 func (*WorkforcePlan) ProtoMessage() {}
 
 func (x *WorkforcePlan) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[18]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1342,7 +1388,7 @@ func (x *WorkforcePlan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlan.ProtoReflect.Descriptor instead.
 func (*WorkforcePlan) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{18}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *WorkforcePlan) GetId() string {
@@ -1436,6 +1482,20 @@ func (x *WorkforcePlan) GetApprovedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *WorkforcePlan) GetSupersededByPlanId() string {
+	if x != nil && x.SupersededByPlanId != nil {
+		return *x.SupersededByPlanId
+	}
+	return ""
+}
+
+func (x *WorkforcePlan) GetSupersessionReasonCode() string {
+	if x != nil && x.SupersessionReasonCode != nil {
+		return *x.SupersessionReasonCode
+	}
+	return ""
+}
+
 type WorkforcePlanInput struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	PlanCode                 *string                `protobuf:"bytes,1,opt,name=plan_code,json=planCode,proto3,oneof" json:"plan_code,omitempty"`
@@ -1454,7 +1514,7 @@ type WorkforcePlanInput struct {
 
 func (x *WorkforcePlanInput) Reset() {
 	*x = WorkforcePlanInput{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[19]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1466,7 +1526,7 @@ func (x *WorkforcePlanInput) String() string {
 func (*WorkforcePlanInput) ProtoMessage() {}
 
 func (x *WorkforcePlanInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[19]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1479,7 +1539,7 @@ func (x *WorkforcePlanInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlanInput.ProtoReflect.Descriptor instead.
 func (*WorkforcePlanInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{19}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *WorkforcePlanInput) GetPlanCode() string {
@@ -1561,7 +1621,7 @@ type CreateWorkforcePlanRequest struct {
 
 func (x *CreateWorkforcePlanRequest) Reset() {
 	*x = CreateWorkforcePlanRequest{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[20]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1573,7 +1633,7 @@ func (x *CreateWorkforcePlanRequest) String() string {
 func (*CreateWorkforcePlanRequest) ProtoMessage() {}
 
 func (x *CreateWorkforcePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[20]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1586,7 +1646,7 @@ func (x *CreateWorkforcePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkforcePlanRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkforcePlanRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{20}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateWorkforcePlanRequest) GetInput() *WorkforcePlanInput {
@@ -1607,7 +1667,7 @@ type UpdateWorkforcePlanRequest struct {
 
 func (x *UpdateWorkforcePlanRequest) Reset() {
 	*x = UpdateWorkforcePlanRequest{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[21]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1619,7 +1679,7 @@ func (x *UpdateWorkforcePlanRequest) String() string {
 func (*UpdateWorkforcePlanRequest) ProtoMessage() {}
 
 func (x *UpdateWorkforcePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[21]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1632,7 +1692,7 @@ func (x *UpdateWorkforcePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkforcePlanRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkforcePlanRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{21}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdateWorkforcePlanRequest) GetId() string {
@@ -1665,7 +1725,7 @@ type WorkforcePlanResponse struct {
 
 func (x *WorkforcePlanResponse) Reset() {
 	*x = WorkforcePlanResponse{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[22]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1677,7 +1737,7 @@ func (x *WorkforcePlanResponse) String() string {
 func (*WorkforcePlanResponse) ProtoMessage() {}
 
 func (x *WorkforcePlanResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[22]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1690,7 +1750,7 @@ func (x *WorkforcePlanResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlanResponse.ProtoReflect.Descriptor instead.
 func (*WorkforcePlanResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{22}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *WorkforcePlanResponse) GetItem() *WorkforcePlan {
@@ -1710,7 +1770,7 @@ type WorkforcePlansResponse struct {
 
 func (x *WorkforcePlansResponse) Reset() {
 	*x = WorkforcePlansResponse{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[23]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1722,7 +1782,7 @@ func (x *WorkforcePlansResponse) String() string {
 func (*WorkforcePlansResponse) ProtoMessage() {}
 
 func (x *WorkforcePlansResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[23]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1735,7 +1795,7 @@ func (x *WorkforcePlansResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlansResponse.ProtoReflect.Descriptor instead.
 func (*WorkforcePlansResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{23}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *WorkforcePlansResponse) GetItems() []*WorkforcePlan {
@@ -1775,7 +1835,7 @@ type WorkforcePlanLine struct {
 
 func (x *WorkforcePlanLine) Reset() {
 	*x = WorkforcePlanLine{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[24]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1787,7 +1847,7 @@ func (x *WorkforcePlanLine) String() string {
 func (*WorkforcePlanLine) ProtoMessage() {}
 
 func (x *WorkforcePlanLine) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[24]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1800,7 +1860,7 @@ func (x *WorkforcePlanLine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlanLine.ProtoReflect.Descriptor instead.
 func (*WorkforcePlanLine) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{24}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *WorkforcePlanLine) GetId() string {
@@ -1930,7 +1990,7 @@ type WorkforcePlanLineInput struct {
 
 func (x *WorkforcePlanLineInput) Reset() {
 	*x = WorkforcePlanLineInput{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[25]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1942,7 +2002,7 @@ func (x *WorkforcePlanLineInput) String() string {
 func (*WorkforcePlanLineInput) ProtoMessage() {}
 
 func (x *WorkforcePlanLineInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[25]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1955,7 +2015,7 @@ func (x *WorkforcePlanLineInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlanLineInput.ProtoReflect.Descriptor instead.
 func (*WorkforcePlanLineInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{25}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *WorkforcePlanLineInput) GetWorkforcePlanId() string {
@@ -2065,7 +2125,7 @@ type CreateWorkforcePlanLineRequest struct {
 
 func (x *CreateWorkforcePlanLineRequest) Reset() {
 	*x = CreateWorkforcePlanLineRequest{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[26]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2077,7 +2137,7 @@ func (x *CreateWorkforcePlanLineRequest) String() string {
 func (*CreateWorkforcePlanLineRequest) ProtoMessage() {}
 
 func (x *CreateWorkforcePlanLineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[26]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2090,7 +2150,7 @@ func (x *CreateWorkforcePlanLineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkforcePlanLineRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkforcePlanLineRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{26}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *CreateWorkforcePlanLineRequest) GetInput() *WorkforcePlanLineInput {
@@ -2111,7 +2171,7 @@ type UpdateWorkforcePlanLineRequest struct {
 
 func (x *UpdateWorkforcePlanLineRequest) Reset() {
 	*x = UpdateWorkforcePlanLineRequest{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[27]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2123,7 +2183,7 @@ func (x *UpdateWorkforcePlanLineRequest) String() string {
 func (*UpdateWorkforcePlanLineRequest) ProtoMessage() {}
 
 func (x *UpdateWorkforcePlanLineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[27]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2136,7 +2196,7 @@ func (x *UpdateWorkforcePlanLineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkforcePlanLineRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkforcePlanLineRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{27}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *UpdateWorkforcePlanLineRequest) GetId() string {
@@ -2169,7 +2229,7 @@ type WorkforcePlanLineResponse struct {
 
 func (x *WorkforcePlanLineResponse) Reset() {
 	*x = WorkforcePlanLineResponse{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[28]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2181,7 +2241,7 @@ func (x *WorkforcePlanLineResponse) String() string {
 func (*WorkforcePlanLineResponse) ProtoMessage() {}
 
 func (x *WorkforcePlanLineResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[28]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2194,7 +2254,7 @@ func (x *WorkforcePlanLineResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlanLineResponse.ProtoReflect.Descriptor instead.
 func (*WorkforcePlanLineResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{28}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *WorkforcePlanLineResponse) GetItem() *WorkforcePlanLine {
@@ -2214,7 +2274,7 @@ type WorkforcePlanLinesResponse struct {
 
 func (x *WorkforcePlanLinesResponse) Reset() {
 	*x = WorkforcePlanLinesResponse{}
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[29]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2226,7 +2286,7 @@ func (x *WorkforcePlanLinesResponse) String() string {
 func (*WorkforcePlanLinesResponse) ProtoMessage() {}
 
 func (x *WorkforcePlanLinesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[29]
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2239,7 +2299,7 @@ func (x *WorkforcePlanLinesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkforcePlanLinesResponse.ProtoReflect.Descriptor instead.
 func (*WorkforcePlanLinesResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{29}
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *WorkforcePlanLinesResponse) GetItems() []*WorkforcePlanLine {
@@ -2254,6 +2314,66 @@ func (x *WorkforcePlanLinesResponse) GetPage() *v1.PageInfo {
 		return x.Page
 	}
 	return nil
+}
+
+type SupersedeWorkforcePlanRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ReplacementPlanId string                 `protobuf:"bytes,2,opt,name=replacement_plan_id,json=replacementPlanId,proto3" json:"replacement_plan_id,omitempty"`
+	ReasonCode        string                 `protobuf:"bytes,3,opt,name=reason_code,json=reasonCode,proto3" json:"reason_code,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *SupersedeWorkforcePlanRequest) Reset() {
+	*x = SupersedeWorkforcePlanRequest{}
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupersedeWorkforcePlanRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupersedeWorkforcePlanRequest) ProtoMessage() {}
+
+func (x *SupersedeWorkforcePlanRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupersedeWorkforcePlanRequest.ProtoReflect.Descriptor instead.
+func (*SupersedeWorkforcePlanRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *SupersedeWorkforcePlanRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SupersedeWorkforcePlanRequest) GetReplacementPlanId() string {
+	if x != nil {
+		return x.ReplacementPlanId
+	}
+	return ""
+}
+
+func (x *SupersedeWorkforcePlanRequest) GetReasonCode() string {
+	if x != nil {
+		return x.ReasonCode
+	}
+	return ""
 }
 
 var File_human_resource_workforceplanning_v1_workforceplanning_proto protoreflect.FileDescriptor
@@ -2347,7 +2467,9 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"\vupdate_mask\x18\x03 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\"K\n" +
 	"\vJobResponse\x12<\n" +
-	"\x04item\x18\x01 \x01(\v2(.human_resource.workforceplanning.v1.JobR\x04item\"\x86\x01\n" +
+	"\x04item\x18\x01 \x01(\v2(.human_resource.workforceplanning.v1.JobR\x04item\"'\n" +
+	"\x13GetJobsByIdsRequest\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"\x86\x01\n" +
 	"\fJobsResponse\x12>\n" +
 	"\x05items\x18\x01 \x03(\v2(.human_resource.workforceplanning.v1.JobR\x05items\x126\n" +
 	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xb6\x05\n" +
@@ -2410,7 +2532,7 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"\x04item\x18\x01 \x01(\v2-.human_resource.workforceplanning.v1.PositionR\x04item\"\x90\x01\n" +
 	"\x11PositionsResponse\x12C\n" +
 	"\x05items\x18\x01 \x03(\v2-.human_resource.workforceplanning.v1.PositionR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\x87\x05\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xb5\x06\n" +
 	"\rWorkforcePlan\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tplan_code\x18\x02 \x01(\tR\bplanCode\x12!\n" +
@@ -2428,9 +2550,13 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12<\n" +
 	"\x18approved_by_principal_id\x18\f \x01(\tH\x01R\x15approvedByPrincipalId\x88\x01\x01\x12;\n" +
 	"\vapproved_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"approvedAtB\x1e\n" +
+	"approvedAt\x126\n" +
+	"\x15superseded_by_plan_id\x18\x0e \x01(\tH\x02R\x12supersededByPlanId\x88\x01\x01\x12=\n" +
+	"\x18supersession_reason_code\x18\x0f \x01(\tH\x03R\x16supersessionReasonCode\x88\x01\x01B\x1e\n" +
 	"\x1c_finance_budget_reference_idB\x1b\n" +
-	"\x19_approved_by_principal_id\"\xa7\x05\n" +
+	"\x19_approved_by_principal_idB\x18\n" +
+	"\x16_superseded_by_plan_idB\x1b\n" +
+	"\x19_supersession_reason_code\"\xa7\x05\n" +
 	"\x12WorkforcePlanInput\x12 \n" +
 	"\tplan_code\x18\x01 \x01(\tH\x00R\bplanCode\x88\x01\x01\x12&\n" +
 	"\fplan_version\x18\x02 \x01(\x05H\x01R\vplanVersion\x88\x01\x01\x12>\n" +
@@ -2539,7 +2665,12 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"\x04item\x18\x01 \x01(\v26.human_resource.workforceplanning.v1.WorkforcePlanLineR\x04item\"\xa2\x01\n" +
 	"\x1aWorkforcePlanLinesResponse\x12L\n" +
 	"\x05items\x18\x01 \x03(\v26.human_resource.workforceplanning.v1.WorkforcePlanLineR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x906\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\x80\x01\n" +
+	"\x1dSupersedeWorkforcePlanRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
+	"\x13replacement_plan_id\x18\x02 \x01(\tR\x11replacementPlanId\x12\x1f\n" +
+	"\vreason_code\x18\x03 \x01(\tR\n" +
+	"reasonCode2\x91;\n" +
 	"\x18WorkforcePlanningService\x12\x86\x01\n" +
 	"\x0fCreateJobFamily\x12;.human_resource.workforceplanning.v1.CreateJobFamilyRequest\x1a6.human_resource.workforceplanning.v1.JobFamilyResponse\x12\x86\x01\n" +
 	"\x0fUpdateJobFamily\x12;.human_resource.workforceplanning.v1.UpdateJobFamilyRequest\x1a6.human_resource.workforceplanning.v1.JobFamilyResponse\x12_\n" +
@@ -2551,7 +2682,8 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"\tUpdateJob\x125.human_resource.workforceplanning.v1.UpdateJobRequest\x1a0.human_resource.workforceplanning.v1.JobResponse\x12Y\n" +
 	"\tDeleteJob\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12c\n" +
 	"\n" +
-	"GetJobByID\x12#.human_resource.common.v1.IDRequest\x1a0.human_resource.workforceplanning.v1.JobResponse\x12f\n" +
+	"GetJobByID\x12#.human_resource.common.v1.IDRequest\x1a0.human_resource.workforceplanning.v1.JobResponse\x12{\n" +
+	"\fGetJobsByIds\x128.human_resource.workforceplanning.v1.GetJobsByIdsRequest\x1a1.human_resource.workforceplanning.v1.JobsResponse\x12f\n" +
 	"\n" +
 	"GetAllJobs\x12%.human_resource.common.v1.PageRequest\x1a1.human_resource.workforceplanning.v1.JobsResponse\x12x\n" +
 	"\x14FindJobByJobFamilyID\x12-.human_resource.common.v1.StringFinderRequest\x1a1.human_resource.workforceplanning.v1.JobsResponse\x12t\n" +
@@ -2570,7 +2702,11 @@ const file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc =
 	"!FindPositionByReportsToPositionID\x12-.human_resource.common.v1.StringFinderRequest\x1a6.human_resource.workforceplanning.v1.PositionsResponse\x12\x85\x01\n" +
 	"\x1cFindPositionByPositionStatus\x12-.human_resource.common.v1.StringFinderRequest\x1a6.human_resource.workforceplanning.v1.PositionsResponse\x12\x8e\x01\n" +
 	"%FindPositionByWorkLocationReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a6.human_resource.workforceplanning.v1.PositionsResponse\x12\x8c\x01\n" +
-	"#FindPositionByCostCenterReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a6.human_resource.workforceplanning.v1.PositionsResponse\x12\x92\x01\n" +
+	"#FindPositionByCostCenterReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a6.human_resource.workforceplanning.v1.PositionsResponse\x12v\n" +
+	"\x13CancelWorkforcePlan\x12#.human_resource.common.v1.IDRequest\x1a:.human_resource.workforceplanning.v1.WorkforcePlanResponse\x12\x98\x01\n" +
+	"\x16SupersedeWorkforcePlan\x12B.human_resource.workforceplanning.v1.SupersedeWorkforcePlanRequest\x1a:.human_resource.workforceplanning.v1.WorkforcePlanResponse\x12w\n" +
+	"\x14ApproveWorkforcePlan\x12#.human_resource.common.v1.IDRequest\x1a:.human_resource.workforceplanning.v1.WorkforcePlanResponse\x12v\n" +
+	"\x13SubmitWorkforcePlan\x12#.human_resource.common.v1.IDRequest\x1a:.human_resource.workforceplanning.v1.WorkforcePlanResponse\x12\x92\x01\n" +
 	"\x13CreateWorkforcePlan\x12?.human_resource.workforceplanning.v1.CreateWorkforcePlanRequest\x1a:.human_resource.workforceplanning.v1.WorkforcePlanResponse\x12\x92\x01\n" +
 	"\x13UpdateWorkforcePlan\x12?.human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest\x1a:.human_resource.workforceplanning.v1.WorkforcePlanResponse\x12c\n" +
 	"\x13DeleteWorkforcePlan\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12w\n" +
@@ -2608,7 +2744,7 @@ func file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescGZI
 	return file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDescData
 }
 
-var file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_human_resource_workforceplanning_v1_workforceplanning_proto_goTypes = []any{
 	(*JobFamily)(nil),                      // 0: human_resource.workforceplanning.v1.JobFamily
 	(*JobFamilyInput)(nil),                 // 1: human_resource.workforceplanning.v1.JobFamilyInput
@@ -2621,179 +2757,191 @@ var file_human_resource_workforceplanning_v1_workforceplanning_proto_goTypes = [
 	(*CreateJobRequest)(nil),               // 8: human_resource.workforceplanning.v1.CreateJobRequest
 	(*UpdateJobRequest)(nil),               // 9: human_resource.workforceplanning.v1.UpdateJobRequest
 	(*JobResponse)(nil),                    // 10: human_resource.workforceplanning.v1.JobResponse
-	(*JobsResponse)(nil),                   // 11: human_resource.workforceplanning.v1.JobsResponse
-	(*Position)(nil),                       // 12: human_resource.workforceplanning.v1.Position
-	(*PositionInput)(nil),                  // 13: human_resource.workforceplanning.v1.PositionInput
-	(*CreatePositionRequest)(nil),          // 14: human_resource.workforceplanning.v1.CreatePositionRequest
-	(*UpdatePositionRequest)(nil),          // 15: human_resource.workforceplanning.v1.UpdatePositionRequest
-	(*PositionResponse)(nil),               // 16: human_resource.workforceplanning.v1.PositionResponse
-	(*PositionsResponse)(nil),              // 17: human_resource.workforceplanning.v1.PositionsResponse
-	(*WorkforcePlan)(nil),                  // 18: human_resource.workforceplanning.v1.WorkforcePlan
-	(*WorkforcePlanInput)(nil),             // 19: human_resource.workforceplanning.v1.WorkforcePlanInput
-	(*CreateWorkforcePlanRequest)(nil),     // 20: human_resource.workforceplanning.v1.CreateWorkforcePlanRequest
-	(*UpdateWorkforcePlanRequest)(nil),     // 21: human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest
-	(*WorkforcePlanResponse)(nil),          // 22: human_resource.workforceplanning.v1.WorkforcePlanResponse
-	(*WorkforcePlansResponse)(nil),         // 23: human_resource.workforceplanning.v1.WorkforcePlansResponse
-	(*WorkforcePlanLine)(nil),              // 24: human_resource.workforceplanning.v1.WorkforcePlanLine
-	(*WorkforcePlanLineInput)(nil),         // 25: human_resource.workforceplanning.v1.WorkforcePlanLineInput
-	(*CreateWorkforcePlanLineRequest)(nil), // 26: human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest
-	(*UpdateWorkforcePlanLineRequest)(nil), // 27: human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest
-	(*WorkforcePlanLineResponse)(nil),      // 28: human_resource.workforceplanning.v1.WorkforcePlanLineResponse
-	(*WorkforcePlanLinesResponse)(nil),     // 29: human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	(*fieldmaskpb.FieldMask)(nil),          // 30: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                    // 31: human_resource.common.v1.PageInfo
-	(*v1.JsonDocument)(nil),                // 32: human_resource.common.v1.JsonDocument
-	(*timestamppb.Timestamp)(nil),          // 33: google.protobuf.Timestamp
-	(*v1.IDRequest)(nil),                   // 34: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                 // 35: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),         // 36: human_resource.common.v1.StringFinderRequest
-	(*v1.Int32FinderRequest)(nil),          // 37: human_resource.common.v1.Int32FinderRequest
-	(*v1.EmptyResponse)(nil),               // 38: human_resource.common.v1.EmptyResponse
+	(*GetJobsByIdsRequest)(nil),            // 11: human_resource.workforceplanning.v1.GetJobsByIdsRequest
+	(*JobsResponse)(nil),                   // 12: human_resource.workforceplanning.v1.JobsResponse
+	(*Position)(nil),                       // 13: human_resource.workforceplanning.v1.Position
+	(*PositionInput)(nil),                  // 14: human_resource.workforceplanning.v1.PositionInput
+	(*CreatePositionRequest)(nil),          // 15: human_resource.workforceplanning.v1.CreatePositionRequest
+	(*UpdatePositionRequest)(nil),          // 16: human_resource.workforceplanning.v1.UpdatePositionRequest
+	(*PositionResponse)(nil),               // 17: human_resource.workforceplanning.v1.PositionResponse
+	(*PositionsResponse)(nil),              // 18: human_resource.workforceplanning.v1.PositionsResponse
+	(*WorkforcePlan)(nil),                  // 19: human_resource.workforceplanning.v1.WorkforcePlan
+	(*WorkforcePlanInput)(nil),             // 20: human_resource.workforceplanning.v1.WorkforcePlanInput
+	(*CreateWorkforcePlanRequest)(nil),     // 21: human_resource.workforceplanning.v1.CreateWorkforcePlanRequest
+	(*UpdateWorkforcePlanRequest)(nil),     // 22: human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest
+	(*WorkforcePlanResponse)(nil),          // 23: human_resource.workforceplanning.v1.WorkforcePlanResponse
+	(*WorkforcePlansResponse)(nil),         // 24: human_resource.workforceplanning.v1.WorkforcePlansResponse
+	(*WorkforcePlanLine)(nil),              // 25: human_resource.workforceplanning.v1.WorkforcePlanLine
+	(*WorkforcePlanLineInput)(nil),         // 26: human_resource.workforceplanning.v1.WorkforcePlanLineInput
+	(*CreateWorkforcePlanLineRequest)(nil), // 27: human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest
+	(*UpdateWorkforcePlanLineRequest)(nil), // 28: human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest
+	(*WorkforcePlanLineResponse)(nil),      // 29: human_resource.workforceplanning.v1.WorkforcePlanLineResponse
+	(*WorkforcePlanLinesResponse)(nil),     // 30: human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	(*SupersedeWorkforcePlanRequest)(nil),  // 31: human_resource.workforceplanning.v1.SupersedeWorkforcePlanRequest
+	(*fieldmaskpb.FieldMask)(nil),          // 32: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                    // 33: human_resource.common.v1.PageInfo
+	(*v1.JsonDocument)(nil),                // 34: human_resource.common.v1.JsonDocument
+	(*timestamppb.Timestamp)(nil),          // 35: google.protobuf.Timestamp
+	(*v1.IDRequest)(nil),                   // 36: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                 // 37: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),         // 38: human_resource.common.v1.StringFinderRequest
+	(*v1.Int32FinderRequest)(nil),          // 39: human_resource.common.v1.Int32FinderRequest
+	(*v1.EmptyResponse)(nil),               // 40: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_workforceplanning_v1_workforceplanning_proto_depIdxs = []int32{
 	1,  // 0: human_resource.workforceplanning.v1.CreateJobFamilyRequest.input:type_name -> human_resource.workforceplanning.v1.JobFamilyInput
 	1,  // 1: human_resource.workforceplanning.v1.UpdateJobFamilyRequest.input:type_name -> human_resource.workforceplanning.v1.JobFamilyInput
-	30, // 2: human_resource.workforceplanning.v1.UpdateJobFamilyRequest.update_mask:type_name -> google.protobuf.FieldMask
+	32, // 2: human_resource.workforceplanning.v1.UpdateJobFamilyRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 3: human_resource.workforceplanning.v1.JobFamilyResponse.item:type_name -> human_resource.workforceplanning.v1.JobFamily
 	0,  // 4: human_resource.workforceplanning.v1.JobFamiliesResponse.items:type_name -> human_resource.workforceplanning.v1.JobFamily
-	31, // 5: human_resource.workforceplanning.v1.JobFamiliesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	32, // 6: human_resource.workforceplanning.v1.Job.responsibilities:type_name -> human_resource.common.v1.JsonDocument
-	32, // 7: human_resource.workforceplanning.v1.Job.qualification_requirements:type_name -> human_resource.common.v1.JsonDocument
-	32, // 8: human_resource.workforceplanning.v1.JobInput.responsibilities:type_name -> human_resource.common.v1.JsonDocument
-	32, // 9: human_resource.workforceplanning.v1.JobInput.qualification_requirements:type_name -> human_resource.common.v1.JsonDocument
+	33, // 5: human_resource.workforceplanning.v1.JobFamiliesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	34, // 6: human_resource.workforceplanning.v1.Job.responsibilities:type_name -> human_resource.common.v1.JsonDocument
+	34, // 7: human_resource.workforceplanning.v1.Job.qualification_requirements:type_name -> human_resource.common.v1.JsonDocument
+	34, // 8: human_resource.workforceplanning.v1.JobInput.responsibilities:type_name -> human_resource.common.v1.JsonDocument
+	34, // 9: human_resource.workforceplanning.v1.JobInput.qualification_requirements:type_name -> human_resource.common.v1.JsonDocument
 	7,  // 10: human_resource.workforceplanning.v1.CreateJobRequest.input:type_name -> human_resource.workforceplanning.v1.JobInput
 	7,  // 11: human_resource.workforceplanning.v1.UpdateJobRequest.input:type_name -> human_resource.workforceplanning.v1.JobInput
-	30, // 12: human_resource.workforceplanning.v1.UpdateJobRequest.update_mask:type_name -> google.protobuf.FieldMask
+	32, // 12: human_resource.workforceplanning.v1.UpdateJobRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,  // 13: human_resource.workforceplanning.v1.JobResponse.item:type_name -> human_resource.workforceplanning.v1.Job
 	6,  // 14: human_resource.workforceplanning.v1.JobsResponse.items:type_name -> human_resource.workforceplanning.v1.Job
-	31, // 15: human_resource.workforceplanning.v1.JobsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	13, // 16: human_resource.workforceplanning.v1.CreatePositionRequest.input:type_name -> human_resource.workforceplanning.v1.PositionInput
-	13, // 17: human_resource.workforceplanning.v1.UpdatePositionRequest.input:type_name -> human_resource.workforceplanning.v1.PositionInput
-	30, // 18: human_resource.workforceplanning.v1.UpdatePositionRequest.update_mask:type_name -> google.protobuf.FieldMask
-	12, // 19: human_resource.workforceplanning.v1.PositionResponse.item:type_name -> human_resource.workforceplanning.v1.Position
-	12, // 20: human_resource.workforceplanning.v1.PositionsResponse.items:type_name -> human_resource.workforceplanning.v1.Position
-	31, // 21: human_resource.workforceplanning.v1.PositionsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	33, // 22: human_resource.workforceplanning.v1.WorkforcePlan.created_at:type_name -> google.protobuf.Timestamp
-	33, // 23: human_resource.workforceplanning.v1.WorkforcePlan.approved_at:type_name -> google.protobuf.Timestamp
-	33, // 24: human_resource.workforceplanning.v1.WorkforcePlanInput.approved_at:type_name -> google.protobuf.Timestamp
-	19, // 25: human_resource.workforceplanning.v1.CreateWorkforcePlanRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanInput
-	19, // 26: human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanInput
-	30, // 27: human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest.update_mask:type_name -> google.protobuf.FieldMask
-	18, // 28: human_resource.workforceplanning.v1.WorkforcePlanResponse.item:type_name -> human_resource.workforceplanning.v1.WorkforcePlan
-	18, // 29: human_resource.workforceplanning.v1.WorkforcePlansResponse.items:type_name -> human_resource.workforceplanning.v1.WorkforcePlan
-	31, // 30: human_resource.workforceplanning.v1.WorkforcePlansResponse.page:type_name -> human_resource.common.v1.PageInfo
-	25, // 31: human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLineInput
-	25, // 32: human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLineInput
-	30, // 33: human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest.update_mask:type_name -> google.protobuf.FieldMask
-	24, // 34: human_resource.workforceplanning.v1.WorkforcePlanLineResponse.item:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLine
-	24, // 35: human_resource.workforceplanning.v1.WorkforcePlanLinesResponse.items:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLine
-	31, // 36: human_resource.workforceplanning.v1.WorkforcePlanLinesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	33, // 15: human_resource.workforceplanning.v1.JobsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	14, // 16: human_resource.workforceplanning.v1.CreatePositionRequest.input:type_name -> human_resource.workforceplanning.v1.PositionInput
+	14, // 17: human_resource.workforceplanning.v1.UpdatePositionRequest.input:type_name -> human_resource.workforceplanning.v1.PositionInput
+	32, // 18: human_resource.workforceplanning.v1.UpdatePositionRequest.update_mask:type_name -> google.protobuf.FieldMask
+	13, // 19: human_resource.workforceplanning.v1.PositionResponse.item:type_name -> human_resource.workforceplanning.v1.Position
+	13, // 20: human_resource.workforceplanning.v1.PositionsResponse.items:type_name -> human_resource.workforceplanning.v1.Position
+	33, // 21: human_resource.workforceplanning.v1.PositionsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	35, // 22: human_resource.workforceplanning.v1.WorkforcePlan.created_at:type_name -> google.protobuf.Timestamp
+	35, // 23: human_resource.workforceplanning.v1.WorkforcePlan.approved_at:type_name -> google.protobuf.Timestamp
+	35, // 24: human_resource.workforceplanning.v1.WorkforcePlanInput.approved_at:type_name -> google.protobuf.Timestamp
+	20, // 25: human_resource.workforceplanning.v1.CreateWorkforcePlanRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanInput
+	20, // 26: human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanInput
+	32, // 27: human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest.update_mask:type_name -> google.protobuf.FieldMask
+	19, // 28: human_resource.workforceplanning.v1.WorkforcePlanResponse.item:type_name -> human_resource.workforceplanning.v1.WorkforcePlan
+	19, // 29: human_resource.workforceplanning.v1.WorkforcePlansResponse.items:type_name -> human_resource.workforceplanning.v1.WorkforcePlan
+	33, // 30: human_resource.workforceplanning.v1.WorkforcePlansResponse.page:type_name -> human_resource.common.v1.PageInfo
+	26, // 31: human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLineInput
+	26, // 32: human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest.input:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLineInput
+	32, // 33: human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest.update_mask:type_name -> google.protobuf.FieldMask
+	25, // 34: human_resource.workforceplanning.v1.WorkforcePlanLineResponse.item:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLine
+	25, // 35: human_resource.workforceplanning.v1.WorkforcePlanLinesResponse.items:type_name -> human_resource.workforceplanning.v1.WorkforcePlanLine
+	33, // 36: human_resource.workforceplanning.v1.WorkforcePlanLinesResponse.page:type_name -> human_resource.common.v1.PageInfo
 	2,  // 37: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJobFamily:input_type -> human_resource.workforceplanning.v1.CreateJobFamilyRequest
 	3,  // 38: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJobFamily:input_type -> human_resource.workforceplanning.v1.UpdateJobFamilyRequest
-	34, // 39: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJobFamily:input_type -> human_resource.common.v1.IDRequest
-	34, // 40: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobFamilyByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 41: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobFamilies:input_type -> human_resource.common.v1.PageRequest
-	36, // 42: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobFamilyByFamilyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 39: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJobFamily:input_type -> human_resource.common.v1.IDRequest
+	36, // 40: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobFamilyByID:input_type -> human_resource.common.v1.IDRequest
+	37, // 41: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobFamilies:input_type -> human_resource.common.v1.PageRequest
+	38, // 42: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobFamilyByFamilyCode:input_type -> human_resource.common.v1.StringFinderRequest
 	8,  // 43: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJob:input_type -> human_resource.workforceplanning.v1.CreateJobRequest
 	9,  // 44: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJob:input_type -> human_resource.workforceplanning.v1.UpdateJobRequest
-	34, // 45: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJob:input_type -> human_resource.common.v1.IDRequest
-	34, // 46: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 47: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobs:input_type -> human_resource.common.v1.PageRequest
-	36, // 48: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobFamilyID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 49: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 50: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobLevelCode:input_type -> human_resource.common.v1.StringFinderRequest
-	14, // 51: human_resource.workforceplanning.v1.WorkforcePlanningService.CreatePosition:input_type -> human_resource.workforceplanning.v1.CreatePositionRequest
-	34, // 52: human_resource.workforceplanning.v1.WorkforcePlanningService.ActivatePosition:input_type -> human_resource.common.v1.IDRequest
-	15, // 53: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:input_type -> human_resource.workforceplanning.v1.UpdatePositionRequest
-	34, // 54: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:input_type -> human_resource.common.v1.IDRequest
-	34, // 55: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 56: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:input_type -> human_resource.common.v1.PageRequest
-	36, // 57: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 58: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 59: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 60: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 61: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 62: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 63: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 64: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	20, // 65: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanRequest
-	21, // 66: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest
-	34, // 67: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:input_type -> human_resource.common.v1.IDRequest
-	34, // 68: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 69: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:input_type -> human_resource.common.v1.PageRequest
-	36, // 70: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 71: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 72: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 73: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 74: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 75: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 76: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	26, // 77: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest
-	27, // 78: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest
-	34, // 79: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:input_type -> human_resource.common.v1.IDRequest
-	34, // 80: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:input_type -> human_resource.common.v1.IDRequest
-	35, // 81: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:input_type -> human_resource.common.v1.PageRequest
-	36, // 82: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	37, // 83: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:input_type -> human_resource.common.v1.Int32FinderRequest
-	36, // 84: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 85: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 86: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 87: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	36, // 88: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 89: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
-	4,  // 90: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
-	38, // 91: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJobFamily:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 92: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobFamilyByID:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
-	5,  // 93: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobFamilies:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
-	5,  // 94: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobFamilyByFamilyCode:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
-	10, // 95: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
-	10, // 96: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
-	38, // 97: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJob:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 98: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobByID:output_type -> human_resource.workforceplanning.v1.JobResponse
-	11, // 99: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobs:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	11, // 100: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobFamilyID:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	11, // 101: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	11, // 102: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobLevelCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
-	16, // 103: human_resource.workforceplanning.v1.WorkforcePlanningService.CreatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
-	16, // 104: human_resource.workforceplanning.v1.WorkforcePlanningService.ActivatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
-	16, // 105: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
-	38, // 106: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:output_type -> human_resource.common.v1.EmptyResponse
-	16, // 107: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:output_type -> human_resource.workforceplanning.v1.PositionResponse
-	17, // 108: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 109: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 110: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 111: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 112: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 113: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 114: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 115: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	17, // 116: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
-	22, // 117: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
-	22, // 118: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
-	38, // 119: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:output_type -> human_resource.common.v1.EmptyResponse
-	22, // 120: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
-	23, // 121: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 122: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 123: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 124: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 125: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 126: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 127: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	23, // 128: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
-	28, // 129: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
-	28, // 130: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
-	38, // 131: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:output_type -> human_resource.common.v1.EmptyResponse
-	28, // 132: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
-	29, // 133: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 134: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 135: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 136: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 137: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 138: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 139: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	29, // 140: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
-	89, // [89:141] is the sub-list for method output_type
-	37, // [37:89] is the sub-list for method input_type
+	36, // 45: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJob:input_type -> human_resource.common.v1.IDRequest
+	36, // 46: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobByID:input_type -> human_resource.common.v1.IDRequest
+	11, // 47: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobsByIds:input_type -> human_resource.workforceplanning.v1.GetJobsByIdsRequest
+	37, // 48: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobs:input_type -> human_resource.common.v1.PageRequest
+	38, // 49: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobFamilyID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 50: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobCode:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 51: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobLevelCode:input_type -> human_resource.common.v1.StringFinderRequest
+	15, // 52: human_resource.workforceplanning.v1.WorkforcePlanningService.CreatePosition:input_type -> human_resource.workforceplanning.v1.CreatePositionRequest
+	36, // 53: human_resource.workforceplanning.v1.WorkforcePlanningService.ActivatePosition:input_type -> human_resource.common.v1.IDRequest
+	16, // 54: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:input_type -> human_resource.workforceplanning.v1.UpdatePositionRequest
+	36, // 55: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:input_type -> human_resource.common.v1.IDRequest
+	36, // 56: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:input_type -> human_resource.common.v1.IDRequest
+	37, // 57: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:input_type -> human_resource.common.v1.PageRequest
+	38, // 58: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 59: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 60: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 61: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 62: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 63: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 64: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 65: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36, // 66: human_resource.workforceplanning.v1.WorkforcePlanningService.CancelWorkforcePlan:input_type -> human_resource.common.v1.IDRequest
+	31, // 67: human_resource.workforceplanning.v1.WorkforcePlanningService.SupersedeWorkforcePlan:input_type -> human_resource.workforceplanning.v1.SupersedeWorkforcePlanRequest
+	36, // 68: human_resource.workforceplanning.v1.WorkforcePlanningService.ApproveWorkforcePlan:input_type -> human_resource.common.v1.IDRequest
+	36, // 69: human_resource.workforceplanning.v1.WorkforcePlanningService.SubmitWorkforcePlan:input_type -> human_resource.common.v1.IDRequest
+	21, // 70: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanRequest
+	22, // 71: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanRequest
+	36, // 72: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:input_type -> human_resource.common.v1.IDRequest
+	36, // 73: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:input_type -> human_resource.common.v1.IDRequest
+	37, // 74: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:input_type -> human_resource.common.v1.PageRequest
+	38, // 75: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 76: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 77: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 78: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 79: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 80: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 81: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	27, // 82: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.CreateWorkforcePlanLineRequest
+	28, // 83: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:input_type -> human_resource.workforceplanning.v1.UpdateWorkforcePlanLineRequest
+	36, // 84: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:input_type -> human_resource.common.v1.IDRequest
+	36, // 85: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:input_type -> human_resource.common.v1.IDRequest
+	37, // 86: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:input_type -> human_resource.common.v1.PageRequest
+	38, // 87: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	39, // 88: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:input_type -> human_resource.common.v1.Int32FinderRequest
+	38, // 89: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 90: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 91: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 92: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	38, // 93: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 94: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
+	4,  // 95: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJobFamily:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
+	40, // 96: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJobFamily:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 97: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobFamilyByID:output_type -> human_resource.workforceplanning.v1.JobFamilyResponse
+	5,  // 98: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobFamilies:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
+	5,  // 99: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobFamilyByFamilyCode:output_type -> human_resource.workforceplanning.v1.JobFamiliesResponse
+	10, // 100: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
+	10, // 101: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateJob:output_type -> human_resource.workforceplanning.v1.JobResponse
+	40, // 102: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteJob:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 103: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobByID:output_type -> human_resource.workforceplanning.v1.JobResponse
+	12, // 104: human_resource.workforceplanning.v1.WorkforcePlanningService.GetJobsByIds:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	12, // 105: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllJobs:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	12, // 106: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobFamilyID:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	12, // 107: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	12, // 108: human_resource.workforceplanning.v1.WorkforcePlanningService.FindJobByJobLevelCode:output_type -> human_resource.workforceplanning.v1.JobsResponse
+	17, // 109: human_resource.workforceplanning.v1.WorkforcePlanningService.CreatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	17, // 110: human_resource.workforceplanning.v1.WorkforcePlanningService.ActivatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	17, // 111: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdatePosition:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	40, // 112: human_resource.workforceplanning.v1.WorkforcePlanningService.DeletePosition:output_type -> human_resource.common.v1.EmptyResponse
+	17, // 113: human_resource.workforceplanning.v1.WorkforcePlanningService.GetPositionByID:output_type -> human_resource.workforceplanning.v1.PositionResponse
+	18, // 114: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllPositions:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 115: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionCode:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 116: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByJobID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 117: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 118: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 119: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByReportsToPositionID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 120: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByPositionStatus:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 121: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	18, // 122: human_resource.workforceplanning.v1.WorkforcePlanningService.FindPositionByCostCenterReferenceID:output_type -> human_resource.workforceplanning.v1.PositionsResponse
+	23, // 123: human_resource.workforceplanning.v1.WorkforcePlanningService.CancelWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	23, // 124: human_resource.workforceplanning.v1.WorkforcePlanningService.SupersedeWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	23, // 125: human_resource.workforceplanning.v1.WorkforcePlanningService.ApproveWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	23, // 126: human_resource.workforceplanning.v1.WorkforcePlanningService.SubmitWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	23, // 127: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	23, // 128: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlan:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	40, // 129: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlan:output_type -> human_resource.common.v1.EmptyResponse
+	23, // 130: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanResponse
+	24, // 131: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlans:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	24, // 132: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByPlanCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	24, // 133: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByLegalEntityReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	24, // 134: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByScenarioCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	24, // 135: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByStatus:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	24, // 136: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByFinanceBudgetReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	24, // 137: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByCreatedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	24, // 138: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanByApprovedByPrincipalID:output_type -> human_resource.workforceplanning.v1.WorkforcePlansResponse
+	29, // 139: human_resource.workforceplanning.v1.WorkforcePlanningService.CreateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
+	29, // 140: human_resource.workforceplanning.v1.WorkforcePlanningService.UpdateWorkforcePlanLine:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
+	40, // 141: human_resource.workforceplanning.v1.WorkforcePlanningService.DeleteWorkforcePlanLine:output_type -> human_resource.common.v1.EmptyResponse
+	29, // 142: human_resource.workforceplanning.v1.WorkforcePlanningService.GetWorkforcePlanLineByID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLineResponse
+	30, // 143: human_resource.workforceplanning.v1.WorkforcePlanningService.GetAllWorkforcePlanLines:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	30, // 144: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkforcePlanID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	30, // 145: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByLineNumber:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	30, // 146: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByOrganizationUnitReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	30, // 147: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByJobID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	30, // 148: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByWorkLocationReferenceID:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	30, // 149: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByCurrencyCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	30, // 150: human_resource.workforceplanning.v1.WorkforcePlanningService.FindWorkforcePlanLineByActionCode:output_type -> human_resource.workforceplanning.v1.WorkforcePlanLinesResponse
+	94, // [94:151] is the sub-list for method output_type
+	37, // [37:94] is the sub-list for method input_type
 	37, // [37:37] is the sub-list for extension type_name
 	37, // [37:37] is the sub-list for extension extendee
 	0,  // [0:37] is the sub-list for field type_name
@@ -2808,19 +2956,19 @@ func file_human_resource_workforceplanning_v1_workforceplanning_proto_init() {
 	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[1].OneofWrappers = []any{}
 	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[6].OneofWrappers = []any{}
 	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[7].OneofWrappers = []any{}
-	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[12].OneofWrappers = []any{}
 	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[13].OneofWrappers = []any{}
-	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[18].OneofWrappers = []any{}
+	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[14].OneofWrappers = []any{}
 	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[19].OneofWrappers = []any{}
-	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[24].OneofWrappers = []any{}
+	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[20].OneofWrappers = []any{}
 	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[25].OneofWrappers = []any{}
+	file_human_resource_workforceplanning_v1_workforceplanning_proto_msgTypes[26].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc), len(file_human_resource_workforceplanning_v1_workforceplanning_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   30,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

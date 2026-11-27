@@ -275,6 +275,31 @@ func (x *PayrollRun) Validate() error {
 			return hrerrors.Invalid("approved_at", "has invalid value")
 		}
 	}
+	if x.PostingRequestedByPrincipalID != nil {
+		if err := ValidateUUID("posting_requested_by_principal_id", (*x.PostingRequestedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("posting_requested_by_principal_id", "has invalid value")
+		}
+	}
+	if x.PostingRequestedAt != nil {
+		if err := validateTime("posting_requested_at", (*x.PostingRequestedAt)); err != nil {
+			return hrerrors.Invalid("posting_requested_at", "has invalid value")
+		}
+	}
+	if x.CancelledAt != nil {
+		if err := validateTime("cancelled_at", (*x.CancelledAt)); err != nil {
+			return hrerrors.Invalid("cancelled_at", "has invalid value")
+		}
+	}
+	if x.CancelledByPrincipalID != nil {
+		if err := ValidateUUID("cancelled_by_principal_id", (*x.CancelledByPrincipalID)); err != nil {
+			return hrerrors.Invalid("cancelled_by_principal_id", "has invalid value")
+		}
+	}
+	if x.CancellationReason != nil {
+		if err := validateText("cancellation_reason", string((*x.CancellationReason)), false, 300, 0); err != nil {
+			return hrerrors.Invalid("cancellation_reason", "has invalid value")
+		}
+	}
 	if x.FinanceJournalReferenceID != nil {
 		if err := ValidateUUID("finance_journal_reference_id", (*x.FinanceJournalReferenceID)); err != nil {
 			return hrerrors.Invalid("finance_journal_reference_id", "has invalid value")
@@ -327,6 +352,20 @@ func (x *PayrollRun) Validate() error {
 	}
 	if ruleOr(ruleNot(ruleOr(ruleOr(ruleKnown(string(x.Status) == string("approved")), ruleKnown(string(x.Status) == string("posted"))), ruleKnown(string(x.Status) == string("paid")))), ruleAnd(ruleKnown(x.ApprovedAt != nil), ruleKnown(x.ApprovedByPrincipalID != nil))) == ruleFalse {
 		return hrerrors.Invalid("hr_payroll_runs", "ck_hr_payroll_run_approval_state")
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) == string("cancelled")), ruleKnown(x.CancelledAt != nil)), ruleKnown(x.CancelledByPrincipalID != nil)), ruleKnown(string(func() string {
+		if x.CancellationReason != nil {
+			return string(strings.Trim(string((*x.CancellationReason)), " "))
+		}
+		return ""
+	}()) != string(""))), ruleAnd(ruleAnd(ruleAnd(ruleKnown(string(x.Status) != string("cancelled")), ruleKnown(x.CancelledAt == nil)), ruleKnown(x.CancelledByPrincipalID == nil)), ruleKnown(x.CancellationReason == nil))) == ruleFalse {
+		return hrerrors.Invalid("hr_payroll_runs", "ck_hr_payroll_cancel_evidence")
+	}
+	if ruleOr(ruleKnown(string(x.Status) != string("cancelled")), ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(x.CalculatedAt != nil), rulePresent(x.CalculatedAt != nil && x.CancelledAt != nil, func() bool { return ruleCompareResult((*x.CancelledAt).Compare((*x.CalculatedAt)), ">=") })), ruleKnown(x.ApprovedAt == nil)), ruleKnown(x.ApprovedByPrincipalID == nil)), rulePresent(x.CancelledByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.CancelledByPrincipalID), x.StartedByPrincipalID) }))) == ruleFalse {
+		return hrerrors.Invalid("hr_payroll_runs", "ck_hr_payroll_cancel_independent")
+	}
+	if ruleOr(ruleAnd(ruleKnown(x.PostingRequestedAt == nil), ruleKnown(x.PostingRequestedByPrincipalID == nil)), ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(x.PostingRequestedAt != nil), ruleKnown(x.PostingRequestedByPrincipalID != nil)), ruleOr(ruleOr(ruleKnown(string(x.Status) == string("approved")), ruleKnown(string(x.Status) == string("posted"))), ruleKnown(string(x.Status) == string("paid")))), ruleKnown(x.ApprovedAt != nil)), rulePresent(x.ApprovedAt != nil && x.PostingRequestedAt != nil, func() bool { return ruleCompareResult((*x.PostingRequestedAt).Compare((*x.ApprovedAt)), ">=") }))) == ruleFalse {
+		return hrerrors.Invalid("hr_payroll_runs", "ck_hr_payroll_posting_request")
 	}
 	if ruleOr(ruleNot(ruleOr(ruleKnown(string(x.Status) == string("posted")), ruleKnown(string(x.Status) == string("paid")))), ruleKnown(x.FinanceJournalReferenceID != nil)) == ruleFalse {
 		return hrerrors.Invalid("hr_payroll_runs", "ck_hr_payroll_run_posting_state")
@@ -395,11 +434,19 @@ func (x *PayrollResult) Validate() error {
 			return hrerrors.Invalid("payslip_document_reference_id", "has invalid value")
 		}
 	}
+	if x.PayslipPublicationReferenceID != nil {
+		if err := ValidateUUID("payslip_publication_reference_id", (*x.PayslipPublicationReferenceID)); err != nil {
+			return hrerrors.Invalid("payslip_publication_reference_id", "has invalid value")
+		}
+	}
 	if err := validateBytes("calculation_digest", x.CalculationDigest, true); err != nil {
 		return hrerrors.Invalid("calculation_digest", "has invalid value")
 	}
 	if err := validateTime("created_at", x.CreatedAt); err != nil {
 		return hrerrors.Invalid("created_at", "has invalid value")
+	}
+	if ruleOr(ruleKnown(x.PayslipPublicationReferenceID == nil), ruleKnown(x.PayslipDocumentReferenceID != nil)) == ruleFalse {
+		return hrerrors.Invalid("hr_payroll_results", "ck_hr_payslip_publication_document")
 	}
 	if ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.ReimbursementAmount)), ruleNumber("0"), ">=")), ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.GrossAmount)), ruleNumber("0"), ">="))), ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.TotalDeductions)), ruleNumber("0"), ">="))), ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.EmployerCostAmount)), ruleNumber("0"), ">="))), ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.NetPayAmount)), ruleNumber("0"), ">="))) == ruleFalse {
 		return hrerrors.Invalid("hr_payroll_results", "ck_hr_payroll_result_nonnegative")

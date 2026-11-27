@@ -3,6 +3,9 @@ module github.com/integrione/erp-retail/backend/services/human_resource
 go 1.27.4
 
 require (
+	github.com/go-pdf/fpdf v0.9.0
+	github.com/google/uuid v1.6.0
+	github.com/integrione/erp-retail/backend/services/enterprise_foundation v0.0.0
 	github.com/integrione/erp-retail/backend/services/iam v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authcontext v0.0.0
 	github.com/integrione/erp-retail/backend/shared/authsession v0.0.0
@@ -16,7 +19,6 @@ require (
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/google/uuid v1.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.13.0 // indirect
@@ -30,6 +32,8 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 )
+
+replace github.com/integrione/erp-retail/backend/services/enterprise_foundation => ../enterprise_foundation
 
 replace github.com/integrione/erp-retail/backend/shared/authcontext => ../../shared/authcontext
 

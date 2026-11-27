@@ -102,6 +102,24 @@ func (s *server) GetTalentPoolMembershipByID(ctx context.Context, r *commonv1.ID
 	}
 	return membershipResult(s.service.GetTalentPoolMembershipByID(ctx, r.Id))
 }
+func (s *server) ApproveTalentPoolMembership(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentPoolMembershipResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return membershipResult(s.service.ApproveTalentPoolMembership(ctx, r.Id))
+}
+func (s *server) RejectTalentPoolMembership(ctx context.Context, r *pb.TalentReasonActionRequest) (*pb.TalentPoolMembershipResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return membershipResult(s.service.RejectTalentPoolMembership(ctx, r.Id, r.ReasonCode))
+}
+func (s *server) ExitTalentPoolMembership(ctx context.Context, r *pb.TalentReasonActionRequest) (*pb.TalentPoolMembershipResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return membershipResult(s.service.ExitTalentPoolMembership(ctx, r.Id, r.ReasonCode))
+}
 func (s *server) GetAllTalentPoolMemberships(ctx context.Context, r *commonv1.PageRequest) (*pb.TalentPoolMembershipsResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

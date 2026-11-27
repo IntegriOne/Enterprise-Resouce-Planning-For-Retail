@@ -17,7 +17,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedAccessRequestServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeAccessRequestServiceServer
 	service *service.Service
 }
 

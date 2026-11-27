@@ -3,6 +3,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 )
@@ -141,6 +142,8 @@ type ApplicationStageHistoryRepository interface {
 
 // InterviewRepository adalah port persistensi hr_interviews.
 type InterviewRepository interface {
+	HasCandidateScheduleOverlap(context.Context, string, string, time.Time, time.Time) (bool, error)
+	HasInterviewerScheduleOverlap(context.Context, string, string, time.Time, time.Time) (bool, error)
 	Repository[entity.Interview, string]
 	InsertInterviews(context.Context, *entity.Interview) error
 	UpdateInterviews(context.Context, *entity.Interview) error

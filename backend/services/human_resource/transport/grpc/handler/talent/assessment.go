@@ -95,6 +95,18 @@ func (s *server) FinalizeTalentAssessment(ctx context.Context, r *commonv1.IDReq
 	}
 	return assessmentResult(s.service.FinalizeTalentAssessment(ctx, r.Id))
 }
+func (s *server) SubmitTalentAssessment(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentAssessmentResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return assessmentResult(s.service.SubmitTalentAssessment(ctx, r.Id))
+}
+func (s *server) WithdrawTalentAssessment(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentAssessmentResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return assessmentResult(s.service.WithdrawTalentAssessment(ctx, r.Id))
+}
 func (s *server) GetAllTalentAssessments(ctx context.Context, r *commonv1.PageRequest) (*pb.TalentAssessmentsResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

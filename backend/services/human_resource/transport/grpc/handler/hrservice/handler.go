@@ -17,7 +17,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedHRServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeHRServiceServer
 	service *service.Service
 }
 
@@ -307,4 +308,32 @@ func (s *server) FindServiceRequestEventByIdempotencyKey(ctx context.Context, re
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return events(s.service.FindServiceRequestEventByIdempotencyKey(ctx, request.GetValue(), int(request.Limit), int(request.Offset)))
+}
+
+func (s *server) AssignServiceRequest(ctx context.Context, request *commonv1.IDRequest) (*pb.ServiceRequestResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recordResponse(s.service.AssignServiceRequest(ctx, request.Id))
+}
+
+func (s *server) ResolveServiceRequest(ctx context.Context, request *pb.ResolveServiceRequestRequest) (*pb.ServiceRequestResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recordResponse(s.service.ResolveServiceRequest(ctx, request.Id, request.ResolutionDocumentVersionReferenceId))
+}
+
+func (s *server) CloseServiceRequest(ctx context.Context, request *commonv1.IDRequest) (*pb.ServiceRequestResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recordResponse(s.service.CloseServiceRequest(ctx, request.Id))
+}
+
+func (s *server) CancelServiceRequest(ctx context.Context, request *commonv1.IDRequest) (*pb.ServiceRequestResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return recordResponse(s.service.CancelServiceRequest(ctx, request.Id))
 }

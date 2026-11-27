@@ -20,6 +20,9 @@ func (s *Service) PostLedgerEntry(ctx context.Context, entitlementID string, in 
 		return nil, hrerrors.ErrUnavailable
 	}
 	return s.leaveEntitlement.Command(ctx, entitlementID, "post_leave_entry", func(txCtx context.Context, current *entity.LeaveEntitlement, actor operation.Actor, now time.Time) (*entity.LeaveEntitlement, error) {
+		if current.ClosedAt != nil {
+			return nil, hrerrors.ErrWorkflowRequired
+		}
 		if in.EntryType == "reversal" && actor.Kind != "human" {
 			return nil, hrerrors.ErrForbidden
 		}
@@ -54,6 +57,11 @@ func (s *Service) PostLedgerEntry(ctx context.Context, entitlementID string, in 
 		}
 		if expired {
 			return nil, hrerrors.ErrWorkflowRequired
+		}
+		if in.EntryType == "expiry" {
+			if err := s.requirePostedAdjustments(txCtx, entitlementID); err != nil {
+				return nil, err
+			}
 		}
 		id, err := s.leaveLedgerEntry.NewID()
 		if err != nil {

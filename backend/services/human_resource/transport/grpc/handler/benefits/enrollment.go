@@ -155,3 +155,21 @@ func (h *Handler) FindBenefitEnrollmentByCurrencyCode(ctx context.Context, reque
 	}
 	return enrollments(h.service.FindBenefitEnrollmentByCurrencyCode(ctx, request.Value, int(request.Limit), int(request.Offset)))
 }
+
+func (h *Handler) ApproveBenefitEnrollment(ctx context.Context, request *common.IDRequest) (*pb.BenefitEnrollmentResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return enrollmentResponse(h.service.ApproveBenefitEnrollment(ctx, request.Id))
+}
+
+func (h *Handler) EndBenefitEnrollment(ctx context.Context, request *pb.EndBenefitEnrollmentRequest) (*pb.BenefitEnrollmentResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	effectiveTo, err := response.Date(request.EffectiveTo)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return enrollmentResponse(h.service.EndBenefitEnrollment(ctx, request.Id, effectiveTo))
+}

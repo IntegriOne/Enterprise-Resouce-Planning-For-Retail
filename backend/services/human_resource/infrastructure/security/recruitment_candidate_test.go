@@ -29,6 +29,26 @@ func (s *candidateApplicationStub) CountWhere(_ context.Context, filters []domai
 	return s.count, nil
 }
 
+type candidateFoundationStub struct {
+	foundationVerifierStub
+	id         string
+	contactErr error
+}
+
+func (s *candidateFoundationStub) VerifyParty(_ context.Context, id string, requireIndividual bool) error {
+	if id != s.id || !requireIndividual {
+		return hrerrors.ErrInvalidInput
+	}
+	return s.partyErr
+}
+
+func (s *candidateFoundationStub) VerifyPartyContact(_ context.Context, contactID, partyID string) error {
+	if contactID == "" || partyID != s.id {
+		return hrerrors.ErrInvalidInput
+	}
+	return s.contactErr
+}
+
 func TestCandidateValidator(t *testing.T) {
 	t.Parallel()
 	now := time.Date(2026, 11, 17, 8, 0, 0, 0, time.UTC)
@@ -63,8 +83,34 @@ func TestCandidateValidator(t *testing.T) {
 	}
 	changed = *candidate
 	changed.ContactReferenceID = &actor
+	if err := v.ValidateMutation(t.Context(), "hr_candidates", nil, &changed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("Foundation contact without a party: %v", err)
+	}
+	changed = *candidate
+	changed.PersonPartyReferenceID = &actor
 	if err := v.ValidateMutation(t.Context(), "hr_candidates", nil, &changed); !errors.Is(err, hrerrors.ErrUnavailable) {
-		t.Fatalf("unverified Foundation contact: %v", err)
+		t.Fatalf("candidate linked without Foundation: %v", err)
+	}
+	foundation := &candidateFoundationStub{id: actor}
+	v.foundation = foundation
+	if err := v.ValidateMutation(t.Context(), "hr_candidates", nil, &changed); err != nil {
+		t.Fatalf("valid Foundation individual: %v", err)
+	}
+	changed.ContactReferenceID = &actor
+	if err := v.ValidateMutation(t.Context(), "hr_candidates", nil, &changed); err != nil {
+		t.Fatalf("valid Foundation contact: %v", err)
+	}
+	foundation.contactErr = hrerrors.ErrReferenceConflict
+	if err := v.ValidateMutation(t.Context(), "hr_candidates", nil, &changed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("Foundation rejected the candidate contact: %v", err)
+	}
+	changed.ContactReferenceID = nil
+	foundation.partyErr = hrerrors.ErrReferenceConflict
+	if err := v.ValidateMutation(t.Context(), "hr_candidates", nil, &changed); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("Foundation rejected the candidate party: %v", err)
+	}
+	if err := v.ValidateMutation(t.Context(), "hr_candidates", candidate, &changed); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
+		t.Fatalf("candidate relinked through general update: %v", err)
 	}
 	changed = *candidate
 	changed.PrivacyNoticeVersion = "v2"

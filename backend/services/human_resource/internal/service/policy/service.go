@@ -11,21 +11,24 @@ import (
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
+// Dependencies mendefinisikan repository dan komponen runtime untuk domain policy.
 type Dependencies struct {
 	Runtime               operation.Dependencies
 	Policy                domainrepo.RecordRepository[entity.Policy, string]
 	PolicyAcknowledgement domainrepo.RecordRepository[entity.PolicyAcknowledgement, string]
+	Worker                domainrepo.RecordRepository[entity.Worker, string]
 }
 
 // Service mengoordinasikan operasi domain policy.
 type Service struct {
+	dependencies          Dependencies
 	policy                *operation.Resource[entity.Policy, string, *entity.Policy]
 	policyAcknowledgement *operation.Resource[entity.PolicyAcknowledgement, string, *entity.PolicyAcknowledgement]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{dependencies: deps}
 	var err error
 	s.policy, err = operation.NewResource[entity.Policy, string, *entity.Policy](
 		deps.Policy,

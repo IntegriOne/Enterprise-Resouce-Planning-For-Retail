@@ -19,12 +19,15 @@ type EvidenceVerifier interface {
 type EvidenceRequest struct {
 	VersionID   string
 	TaskID      string
+	PlanID      string
 	PrincipalID string
 }
 
 // EvidenceResult adalah keputusan DRM untuk versi dokumen yang diminta.
 type EvidenceResult struct {
 	VersionID string
+	TaskID    string
+	PlanID    string
 	Verified  bool
 	Immutable bool
 }
@@ -46,12 +49,13 @@ func (s *Service) CompleteOnboardingTask(ctx context.Context, taskID, evidenceVe
 			return nil, hrerrors.ErrWorkflowRequired
 		}
 		proof, err := s.evidence.VerifyOnboardingEvidence(txCtx, EvidenceRequest{
-			VersionID: evidenceVersionID, TaskID: task.ID, PrincipalID: actor.PrincipalID,
+			VersionID: evidenceVersionID, TaskID: task.ID, PlanID: task.OnboardingPlanID, PrincipalID: actor.PrincipalID,
 		})
 		if err != nil {
-			return nil, err
+			return nil, operation.OwnerVerificationError(txCtx, err)
 		}
-		if !proof.Verified || !proof.Immutable || !strings.EqualFold(proof.VersionID, evidenceVersionID) {
+		if !proof.Verified || !proof.Immutable || !strings.EqualFold(proof.VersionID, evidenceVersionID) ||
+			!strings.EqualFold(proof.TaskID, task.ID) || !strings.EqualFold(proof.PlanID, task.OnboardingPlanID) {
 			return nil, hrerrors.ErrReferenceConflict
 		}
 		task.CompletedAt = &now

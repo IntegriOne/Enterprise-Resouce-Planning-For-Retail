@@ -1,4 +1,3 @@
-
 -- Dihasilkan oleh db/schema/generate.sh; jangan edit baseline secara manual.
 -- SQL dump generated using DBML (dbml.dbdiagram.io)
 -- Database: PostgreSQL
@@ -192,8 +191,28 @@ CREATE TABLE "hr_worker_assignments" (
   "assignment_reason" varchar(80),
   "approved_by_principal_id" uuid,
   "approved_at" timestamptz,
+  "cancelled_at" timestamptz,
+  CONSTRAINT "ck_hr_assignment_cancellation" CHECK (cancelled_at IS NULL OR (approved_at IS NOT NULL AND cancelled_at >= approved_at)),
   CONSTRAINT "ck_hr_assignment_not_self_manager" CHECK (manager_worker_id IS NULL OR manager_worker_id <> worker_id),
   CONSTRAINT "ck_hr_assignment_values" CHECK (fte_percent > 0 AND fte_percent <= 100 AND (valid_to IS NULL OR valid_to >= valid_from))
+);
+
+CREATE TABLE "hr_worker_assignment_transfers" (
+  "id" uuid PRIMARY KEY,
+  "worker_id" uuid NOT NULL,
+  "source_assignment_id" uuid NOT NULL,
+  "target_position_id" uuid NOT NULL,
+  "effective_date" date NOT NULL,
+  "reason_code" varchar(80) NOT NULL,
+  "idempotency_key" varchar(160) UNIQUE NOT NULL,
+  "status" varchar(30) NOT NULL DEFAULT 'submitted',
+  "requested_by_principal_id" uuid NOT NULL,
+  "requested_at" timestamptz NOT NULL,
+  "decided_by_principal_id" uuid,
+  "decided_at" timestamptz,
+  "applied_assignment_id" uuid UNIQUE,
+  CONSTRAINT "ck_hr_worker_assignment_transfer_input" CHECK (btrim(reason_code) <> '' AND btrim(idempotency_key) <> ''),
+  CONSTRAINT "ck_hr_worker_assignment_transfer_decision" CHECK ((status = 'submitted' AND decided_at IS NULL AND decided_by_principal_id IS NULL AND applied_assignment_id IS NULL) OR (status IN ('applied', 'rejected') AND decided_at IS NOT NULL AND decided_by_principal_id IS NOT NULL AND decided_by_principal_id <> requested_by_principal_id AND decided_at >= requested_at AND ((status = 'applied' AND applied_assignment_id IS NOT NULL AND applied_assignment_id <> source_assignment_id) OR (status = 'rejected' AND applied_assignment_id IS NULL))))
 );
 
 CREATE TABLE "hr_worker_lifecycle_events" (
@@ -372,8 +391,18 @@ CREATE TABLE "hr_offers" (
   "expires_at" timestamptz,
   "candidate_response" varchar(30),
   "responded_at" timestamptz,
+  "candidate_response_evidence_id" uuid UNIQUE,
+  "created_by_principal_id" uuid,
+  "created_at" timestamptz,
   "approved_by_principal_id" uuid,
   "approved_at" timestamptz,
+  "withdrawn_at" timestamptz,
+  "withdrawn_by_principal_id" uuid,
+  "withdrawal_reason_code" varchar(80),
+  CONSTRAINT "ck_hr_offer_creator_pair" CHECK ((created_by_principal_id IS NULL AND created_at IS NULL) OR (created_by_principal_id IS NOT NULL AND created_at IS NOT NULL)),
+  CONSTRAINT "ck_hr_offer_independent_approval" CHECK (created_by_principal_id IS NULL OR approved_by_principal_id IS NULL OR (approved_by_principal_id <> created_by_principal_id AND approved_at IS NOT NULL AND approved_at >= created_at)),
+  CONSTRAINT "ck_hr_offer_withdrawal" CHECK ((offer_status <> 'withdrawn' AND withdrawn_at IS NULL AND withdrawn_by_principal_id IS NULL AND withdrawal_reason_code IS NULL) OR (offer_status = 'withdrawn' AND withdrawn_at IS NOT NULL AND withdrawn_by_principal_id IS NOT NULL AND withdrawal_reason_code IS NOT NULL AND issued_at IS NOT NULL AND withdrawn_at >= issued_at AND candidate_response IS NULL AND responded_at IS NULL)),
+  CONSTRAINT "ck_hr_offer_candidate_response_evidence" CHECK ((offer_status NOT IN ('accepted', 'declined') AND candidate_response IS NULL AND responded_at IS NULL AND candidate_response_evidence_id IS NULL) OR (offer_status IN ('accepted', 'declined') AND candidate_response IS NOT NULL AND candidate_response = offer_status AND responded_at IS NOT NULL AND candidate_response_evidence_id IS NOT NULL AND issued_at IS NOT NULL AND expires_at IS NOT NULL AND responded_at >= issued_at AND responded_at < expires_at)),
   CONSTRAINT "ck_hr_offer_issued_evidence" CHECK (issued_at IS NULL OR (offer_document_version_reference_id IS NOT NULL AND offer_content_digest IS NOT NULL AND approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)),
   CONSTRAINT "ck_hr_offer_validity" CHECK (offer_version > 0 AND (expires_at IS NULL OR issued_at IS NULL OR expires_at > issued_at))
 );
@@ -561,6 +590,11 @@ CREATE TABLE "hr_payroll_runs" (
   "calculated_at" timestamptz,
   "approved_by_principal_id" uuid,
   "approved_at" timestamptz,
+  "posting_requested_by_principal_id" uuid,
+  "posting_requested_at" timestamptz,
+  "cancelled_at" timestamptz,
+  "cancelled_by_principal_id" uuid,
+  "cancellation_reason" varchar(300),
   "finance_journal_reference_id" uuid,
   "payment_batch_reference_id" uuid,
   "finance_settlement_event_reference_id" uuid,
@@ -576,6 +610,9 @@ CREATE TABLE "hr_payroll_runs" (
   CONSTRAINT "ck_hr_payroll_run_number" CHECK (run_number > 0),
   CONSTRAINT "ck_hr_payroll_run_calculation_state" CHECK ((status NOT IN ('calculated','review','approved','posted','paid') OR (calculated_at IS NOT NULL AND output_digest IS NOT NULL))),
   CONSTRAINT "ck_hr_payroll_run_approval_state" CHECK ((status NOT IN ('approved','posted','paid') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL))),
+  CONSTRAINT "ck_hr_payroll_cancel_evidence" CHECK ((status = 'cancelled' AND cancelled_at IS NOT NULL AND cancelled_by_principal_id IS NOT NULL AND coalesce(btrim(cancellation_reason), '') <> '') OR (status <> 'cancelled' AND cancelled_at IS NULL AND cancelled_by_principal_id IS NULL AND cancellation_reason IS NULL)),
+  CONSTRAINT "ck_hr_payroll_cancel_independent" CHECK (status <> 'cancelled' OR (calculated_at IS NOT NULL AND cancelled_at >= calculated_at AND approved_at IS NULL AND approved_by_principal_id IS NULL AND cancelled_by_principal_id <> started_by_principal_id)),
+  CONSTRAINT "ck_hr_payroll_posting_request" CHECK ((posting_requested_at IS NULL AND posting_requested_by_principal_id IS NULL) OR (posting_requested_at IS NOT NULL AND posting_requested_by_principal_id IS NOT NULL AND status IN ('approved','posted','paid') AND approved_at IS NOT NULL AND posting_requested_at >= approved_at)),
   CONSTRAINT "ck_hr_payroll_run_posting_state" CHECK ((status NOT IN ('posted','paid') OR finance_journal_reference_id IS NOT NULL))
 );
 
@@ -594,6 +631,8 @@ CREATE TABLE "hr_payroll_results" (
   "result_status" varchar(30) NOT NULL DEFAULT 'calculated',
   "payment_reference_id" uuid,
   "payslip_document_reference_id" uuid,
+  "payslip_publication_reference_id" uuid,
+  CONSTRAINT "ck_hr_payslip_publication_document" CHECK (payslip_publication_reference_id IS NULL OR payslip_document_reference_id IS NOT NULL),
   "calculation_digest" bytea NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   CONSTRAINT "ck_hr_payroll_result_nonnegative" CHECK (reimbursement_amount >= 0 AND gross_amount >= 0 AND total_deductions >= 0 AND employer_cost_amount >= 0 AND net_pay_amount >= 0),
@@ -670,6 +709,9 @@ CREATE TABLE "hr_leave_entitlements" (
   "revision" bigint NOT NULL DEFAULT 1,
   "calculated_at" timestamptz NOT NULL DEFAULT (now()),
   "source_workforce_snapshot_reference_id" uuid,
+  "closed_at" timestamptz,
+  "closed_by_principal_id" uuid,
+  CONSTRAINT "ck_hr_leave_entitlement_close" CHECK ((closed_at IS NULL AND closed_by_principal_id IS NULL) OR (closed_at IS NOT NULL AND closed_by_principal_id IS NOT NULL AND closing_balance_snapshot = 0 AND (closed_at AT TIME ZONE 'UTC')::date > entitlement_period_end)),
   CONSTRAINT "ck_hr_leave_balance_equation" CHECK (revision > 0 AND closing_balance_snapshot = opening_balance + accrued_quantity + adjusted_quantity - used_quantity_snapshot),
   CONSTRAINT "ck_hr_leave_entitlement_dates" CHECK (entitlement_period_end >= entitlement_period_start),
   CONSTRAINT "ck_hr_leave_entitlement_values" CHECK (opening_balance >= 0 AND accrued_quantity >= 0 AND used_quantity_snapshot >= 0 AND closing_balance_snapshot >= 0)
@@ -684,10 +726,14 @@ CREATE TABLE "hr_leave_adjustments" (
   "requested_by_principal_id" uuid NOT NULL,
   "approved_by_principal_id" uuid,
   "approved_at" timestamptz,
+  "rejected_at" timestamptz,
+  "rejected_by_principal_id" uuid,
+  "rejection_reason_code" varchar(80),
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "idempotency_key" varchar(160) UNIQUE NOT NULL,
   CONSTRAINT "ck_hr_leave_adjustment_nonzero" CHECK (quantity_delta <> 0),
-  CONSTRAINT "ck_hr_leave_adjustment_approval" CHECK ((approved_at IS NULL) = (approved_by_principal_id IS NULL))
+  CONSTRAINT "ck_hr_leave_adjustment_approval" CHECK ((approved_at IS NULL) = (approved_by_principal_id IS NULL)),
+  CONSTRAINT "ck_hr_leave_adjustment_rejection" CHECK ((rejected_at IS NULL AND rejected_by_principal_id IS NULL AND rejection_reason_code IS NULL) OR (rejected_at IS NOT NULL AND rejected_by_principal_id IS NOT NULL AND rejection_reason_code IS NOT NULL AND btrim(rejection_reason_code) <> '' AND approved_at IS NULL AND rejected_at >= created_at AND rejected_by_principal_id <> requested_by_principal_id))
 );
 
 CREATE TABLE "hr_performance_cycles" (
@@ -803,10 +849,16 @@ CREATE TABLE "hr_succession_plans" (
   "plan_version" integer NOT NULL,
   "review_date" date NOT NULL,
   "confidentiality_class" varchar(30) NOT NULL DEFAULT 'highly_restricted',
+  "created_by_principal_id" uuid,
+  "created_at" timestamptz,
   "approved_by_principal_id" uuid,
   "approved_at" timestamptz,
+  "approval_mandate_reference_id" uuid,
   "succession_risk" varchar(30),
-  CONSTRAINT "ck_hr_succession_plan_version" CHECK (plan_version > 0)
+  CONSTRAINT "ck_hr_succession_plan_version" CHECK (plan_version > 0),
+  CONSTRAINT "ck_hr_succession_creator_pair" CHECK ((created_by_principal_id IS NULL AND created_at IS NULL) OR (created_by_principal_id IS NOT NULL AND created_at IS NOT NULL)),
+  CONSTRAINT "ck_hr_succession_independent_approval" CHECK (approved_at IS NULL OR (created_by_principal_id IS NOT NULL AND created_at IS NOT NULL AND approved_by_principal_id <> created_by_principal_id AND approved_at >= created_at)),
+  CONSTRAINT "ck_hr_succession_approval_evidence" CHECK ((approved_at IS NULL AND approved_by_principal_id IS NULL AND approval_mandate_reference_id IS NULL) OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL AND approval_mandate_reference_id IS NOT NULL))
 );
 
 CREATE TABLE "hr_succession_candidates" (
@@ -895,6 +947,9 @@ CREATE TABLE "hr_workforce_plans" (
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "approved_by_principal_id" uuid,
   "approved_at" timestamptz,
+  "superseded_by_plan_id" uuid REFERENCES hr_workforce_plans (id) ON DELETE RESTRICT,
+  "supersession_reason_code" varchar(80),
+  CONSTRAINT "ck_hr_workforce_plan_supersession" CHECK ((status = 'superseded' AND superseded_by_plan_id IS NOT NULL AND superseded_by_plan_id <> id AND supersession_reason_code IS NOT NULL AND btrim(supersession_reason_code) <> '') OR (status <> 'superseded' AND superseded_by_plan_id IS NULL AND supersession_reason_code IS NULL)),
   CONSTRAINT "ck_hr_workforce_plan_period" CHECK (plan_version > 0 AND period_end >= period_start),
   CONSTRAINT "ck_hr_workforce_plan_status" CHECK (status IN ('draft','review','approved','superseded','cancelled')),
   CONSTRAINT "ck_hr_workforce_plan_approval" CHECK (status NOT IN ('approved','superseded') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL))
@@ -1013,12 +1068,16 @@ CREATE TABLE "hr_offboarding_plans" (
   "approved_by_principal_id" uuid,
   "approved_at" timestamptz,
   "completed_at" timestamptz,
+  "cancelled_at" timestamptz,
+  "cancelled_by_principal_id" uuid,
+  "cancellation_reason" varchar(300),
   "created_by_principal_id" uuid NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   CONSTRAINT "ck_hr_offboarding_dates" CHECK (last_working_date >= notice_date AND termination_effective_date >= last_working_date),
   CONSTRAINT "ck_hr_offboarding_status" CHECK (status IN ('draft','approved','in_progress','completed','cancelled')),
   CONSTRAINT "ck_hr_offboarding_approval" CHECK (status NOT IN ('approved','in_progress','completed') OR (approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL)),
-  CONSTRAINT "ck_hr_offboarding_completed" CHECK (status <> 'completed' OR completed_at IS NOT NULL)
+  CONSTRAINT "ck_hr_offboarding_completed" CHECK (status <> 'completed' OR completed_at IS NOT NULL),
+  CONSTRAINT "ck_hr_offboarding_cancellation" CHECK ((status = 'cancelled' AND approved_at IS NOT NULL AND approved_by_principal_id IS NOT NULL AND cancelled_at IS NOT NULL AND cancelled_at >= approved_at AND cancelled_by_principal_id IS NOT NULL AND cancellation_reason IS NOT NULL AND btrim(cancellation_reason) <> '') OR (status <> 'cancelled' AND cancelled_at IS NULL AND cancelled_by_principal_id IS NULL AND cancellation_reason IS NULL))
 );
 
 CREATE TABLE "hr_offboarding_tasks" (
@@ -1550,10 +1609,14 @@ CREATE INDEX "ix_hr_job_family_level" ON "hr_jobs" ("job_family_id", "job_level_
 CREATE INDEX "ix_hr_position_org_period" ON "hr_positions" ("organization_unit_reference_id", "valid_from");
 
 CREATE INDEX "ix_hr_worker_person_status" ON "hr_workers" ("person_party_reference_id", "status");
+CREATE INDEX ix_hr_worker_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_hr_worker_current_iam_principal ON hr_workers (iam_principal_reference_id)
+  WHERE iam_principal_reference_id IS NOT NULL AND status IN ('active', 'leave_of_absence', 'suspended', 'notice_period');
 
 CREATE INDEX "ix_hr_contract_worker_period" ON "hr_employment_contracts" ("worker_id", "effective_from");
 
-CREATE UNIQUE INDEX "uq_hr_worker_assignment_period" ON "hr_worker_assignments" ("worker_id", "position_id", "assignment_type", "valid_from");
+CREATE UNIQUE INDEX "uq_hr_worker_assignment_period" ON "hr_worker_assignments" ("worker_id", "position_id", "assignment_type", "valid_from") WHERE cancelled_at IS NULL;
 
 CREATE UNIQUE INDEX "uq_hr_assignment_worker_pair" ON "hr_worker_assignments" ("id", "worker_id");
 
@@ -1562,6 +1625,8 @@ CREATE UNIQUE INDEX ON "hr_worker_assignments" ("id", "worker_id", "position_id"
 CREATE INDEX "ix_hr_assignment_position_period" ON "hr_worker_assignments" ("position_id", "valid_from", "valid_to");
 
 CREATE INDEX "ix_hr_assignment_manager" ON "hr_worker_assignments" ("manager_worker_id", "valid_from");
+
+CREATE INDEX "ix_hr_worker_assignment_transfer_history" ON "hr_worker_assignment_transfers" ("worker_id", "status", "requested_at");
 
 CREATE INDEX "ix_hr_worker_lifecycle_history" ON "hr_worker_lifecycle_events" ("worker_id", "effective_date", "occurred_at");
 
@@ -1623,6 +1688,8 @@ CREATE UNIQUE INDEX "uq_hr_payroll_run_group" ON "hr_payroll_runs" ("id", "payro
 
 CREATE UNIQUE INDEX "uq_hr_payroll_worker_result" ON "hr_payroll_results" ("payroll_run_id", "worker_id");
 
+CREATE UNIQUE INDEX "uq_hr_payroll_result_payslip" ON "hr_payroll_results" ("payslip_document_reference_id");
+
 CREATE UNIQUE INDEX "uq_hr_payroll_result_line_sequence" ON "hr_payroll_result_lines" ("payroll_result_id", "line_sequence");
 
 CREATE INDEX "ix_hr_payroll_adjustment_worker_period" ON "hr_payroll_adjustments" ("worker_id", "payroll_period_id", "component_id");
@@ -1680,6 +1747,8 @@ CREATE UNIQUE INDEX ON "hr_job_postings" ("id", "requisition_id");
 CREATE UNIQUE INDEX ON "hr_application_assessments" ("application_id", "assessment_code", "attempt_number");
 
 CREATE INDEX ON "hr_offboarding_plans" ("worker_id", "termination_effective_date");
+CREATE UNIQUE INDEX uq_hr_offboarding_open_worker ON hr_offboarding_plans (worker_id)
+  WHERE status IN ('draft', 'approved', 'in_progress');
 
 CREATE UNIQUE INDEX ON "hr_offboarding_tasks" ("offboarding_plan_id", "task_code");
 
@@ -1969,6 +2038,12 @@ ALTER TABLE "hr_worker_assignments" ADD FOREIGN KEY ("position_id") REFERENCES "
 
 ALTER TABLE "hr_worker_assignments" ADD FOREIGN KEY ("manager_worker_id") REFERENCES "hr_workers" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
 
+ALTER TABLE "hr_worker_assignment_transfers" ADD FOREIGN KEY ("source_assignment_id", "worker_id") REFERENCES "hr_worker_assignments" ("id", "worker_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_worker_assignment_transfers" ADD FOREIGN KEY ("target_position_id") REFERENCES "hr_positions" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "hr_worker_assignment_transfers" ADD FOREIGN KEY ("applied_assignment_id", "worker_id", "target_position_id") REFERENCES "hr_worker_assignments" ("id", "worker_id", "position_id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
+
 ALTER TABLE "hr_worker_lifecycle_events" ADD FOREIGN KEY ("worker_id") REFERENCES "hr_workers" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "hr_worker_documents" ADD FOREIGN KEY ("worker_id") REFERENCES "hr_workers" ("id") ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE;
@@ -2217,9 +2292,13 @@ ALTER TABLE "hr_succession_candidates" ADD FOREIGN KEY ("talent_assessment_id", 
 -- Tanggal efektif inklusif; periode berikutnya dimulai sehari setelah akhir.
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
+-- Satu penawaran terbit atau diterima per lamaran, terlepas dari revisinya.
+CREATE UNIQUE INDEX uq_hr_offer_active_application ON hr_offers (application_id)
+  WHERE offer_status IN ('issued', 'accepted');
+
 ALTER TABLE hr_worker_assignments ADD CONSTRAINT ex_hr_primary_assignment_period
   EXCLUDE USING gist (worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
-  WHERE (assignment_type = 'primary');
+  WHERE (assignment_type = 'primary' AND cancelled_at IS NULL);
 ALTER TABLE hr_compensation_records ADD CONSTRAINT ex_hr_compensation_period
   EXCLUDE USING gist (worker_id WITH =, assignment_id WITH =,
     component_code_snapshot WITH =, daterange(effective_from, effective_to, '[]') WITH &&)
@@ -2261,15 +2340,28 @@ BEGIN
         WHERE id = (row_data->>'payroll_result_id')::uuid;
     END IF;
     SELECT status INTO run_status FROM hr_payroll_runs WHERE id = run_id FOR UPDATE;
+    IF TG_TABLE_NAME = 'hr_payroll_results' AND TG_OP IN ('INSERT','UPDATE')
+      AND to_jsonb(NEW)->>'payslip_document_reference_id' IS NOT NULL
+      AND (TG_OP = 'INSERT' OR to_jsonb(NEW)->>'payslip_document_reference_id'
+        IS DISTINCT FROM to_jsonb(OLD)->>'payslip_document_reference_id')
+      AND (run_status IS NULL OR run_status NOT IN ('posted','paid')) THEN
+      RAISE EXCEPTION 'Payroll must be posted before attaching a payslip' USING ERRCODE = '23514';
+    END IF;
+    IF run_status IN ('review','cancelled') THEN
+      RAISE EXCEPTION 'Payroll results under review are immutable' USING ERRCODE = '23514';
+    END IF;
     IF run_status IN ('approved','posted','paid') THEN
       -- Metadata bukti boleh dilengkapi; nilai perhitungan tetap immutable.
       IF TG_TABLE_NAME = 'hr_payroll_results' AND TG_OP = 'UPDATE'
-        AND (to_jsonb(NEW) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id'])
-          = (to_jsonb(OLD) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id'])
+        AND (to_jsonb(NEW) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id','payslip_publication_reference_id'])
+          = (to_jsonb(OLD) - ARRAY['result_status','payment_reference_id','payslip_document_reference_id','payslip_publication_reference_id'])
         AND (to_jsonb(OLD)->>'payment_reference_id' IS NULL
           OR to_jsonb(NEW)->>'payment_reference_id' IS NOT DISTINCT FROM to_jsonb(OLD)->>'payment_reference_id')
         AND (to_jsonb(OLD)->>'payslip_document_reference_id' IS NULL
-          OR to_jsonb(NEW)->>'payslip_document_reference_id' IS NOT DISTINCT FROM to_jsonb(OLD)->>'payslip_document_reference_id') THEN
+          OR to_jsonb(NEW)->>'payslip_document_reference_id' IS NOT DISTINCT FROM to_jsonb(OLD)->>'payslip_document_reference_id')
+        AND (to_jsonb(NEW)->>'payslip_publication_reference_id'
+          IS NOT DISTINCT FROM to_jsonb(OLD)->>'payslip_publication_reference_id'
+          OR to_jsonb(OLD)->>'payslip_document_reference_id' IS NULL) THEN
         CONTINUE;
       END IF;
       RAISE EXCEPTION 'Approved payroll result is immutable' USING ERRCODE = '23514';
@@ -2287,13 +2379,48 @@ CREATE TRIGGER tr_hr_payroll_line_guard BEFORE INSERT OR UPDATE OR DELETE ON hr_
 CREATE FUNCTION hr_guard_payroll_run() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   editable_fields text[] := ARRAY['status','finance_journal_reference_id',
-    'payment_batch_reference_id','finance_settlement_event_reference_id','finance_settled_at'];
+    'payment_batch_reference_id','finance_settlement_event_reference_id','finance_settled_at',
+    'posting_requested_at','posting_requested_by_principal_id'];
 BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NEW.status <> 'draft' THEN
       RAISE EXCEPTION 'Payroll run must start as draft' USING ERRCODE = '23514';
     END IF;
     RETURN NEW;
+  END IF;
+  IF OLD.status = 'cancelled' THEN
+    IF TG_OP = 'DELETE' OR NEW IS DISTINCT FROM OLD THEN
+      RAISE EXCEPTION 'Cancelled payroll run is immutable' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'UPDATE' AND NEW.status = 'cancelled' THEN
+    IF OLD.status <> 'review' OR NEW.cancelled_at IS NULL OR NEW.cancelled_by_principal_id IS NULL
+      OR NEW.cancelled_by_principal_id = OLD.started_by_principal_id
+      OR NEW.cancelled_at < OLD.calculated_at OR coalesce(btrim(NEW.cancellation_reason), '') = ''
+      OR (to_jsonb(NEW) - ARRAY['status','cancelled_at','cancelled_by_principal_id','cancellation_reason'])
+        IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['status','cancelled_at','cancelled_by_principal_id','cancellation_reason']) THEN
+      RAISE EXCEPTION 'Payroll cancellation requires an unchanged review snapshot and independent reviewer' USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'UPDATE' AND (NEW.cancelled_at IS NOT NULL OR NEW.cancelled_by_principal_id IS NOT NULL OR NEW.cancellation_reason IS NOT NULL) THEN
+    RAISE EXCEPTION 'Payroll cancellation evidence requires cancelled status' USING ERRCODE = '23514';
+  END IF;
+  IF OLD.status = 'review' THEN
+    IF TG_OP = 'DELETE' THEN
+      RAISE EXCEPTION 'Payroll run under review cannot be deleted' USING ERRCODE = '23514';
+    END IF;
+    IF (NEW.status = 'review' AND NEW IS DISTINCT FROM OLD)
+      OR (NEW.status NOT IN ('review','approved'))
+      OR (to_jsonb(NEW) - ARRAY['status','approved_at','approved_by_principal_id'])
+        IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['status','approved_at','approved_by_principal_id']) THEN
+      RAISE EXCEPTION 'Payroll snapshot under review cannot be overwritten' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF TG_OP = 'UPDATE' AND NEW.status = 'review' AND OLD.status <> 'review'
+    AND (OLD.status <> 'calculated' OR (to_jsonb(NEW) - 'status') IS DISTINCT FROM (to_jsonb(OLD) - 'status')) THEN
+    RAISE EXCEPTION 'Payroll review requires an unchanged calculated snapshot' USING ERRCODE = '23514';
   END IF;
   IF OLD.status IN ('approved','posted','paid') THEN
     IF TG_OP = 'DELETE' THEN
@@ -2302,6 +2429,9 @@ BEGIN
     IF (to_jsonb(NEW) - editable_fields) IS DISTINCT FROM (to_jsonb(OLD) - editable_fields)
       OR NOT (NEW.status = OLD.status OR (OLD.status = 'approved' AND NEW.status = 'posted')
         OR (OLD.status = 'posted' AND NEW.status = 'paid'))
+      OR ((OLD.status <> 'approved' OR NEW.status <> 'approved' OR OLD.posting_requested_at IS NOT NULL)
+        AND (NEW.posting_requested_at IS DISTINCT FROM OLD.posting_requested_at
+          OR NEW.posting_requested_by_principal_id IS DISTINCT FROM OLD.posting_requested_by_principal_id))
       OR (OLD.finance_journal_reference_id IS NOT NULL AND NEW.finance_journal_reference_id IS DISTINCT FROM OLD.finance_journal_reference_id)
       OR (OLD.payment_batch_reference_id IS NOT NULL AND NEW.payment_batch_reference_id IS DISTINCT FROM OLD.payment_batch_reference_id)
       OR (OLD.finance_settlement_event_reference_id IS NOT NULL AND NEW.finance_settlement_event_reference_id IS DISTINCT FROM OLD.finance_settlement_event_reference_id)
@@ -2309,10 +2439,13 @@ BEGIN
       RAISE EXCEPTION 'Approved payroll snapshot or settlement evidence cannot be overwritten' USING ERRCODE = '23514';
     END IF;
   ELSIF TG_OP = 'UPDATE' THEN
-    IF NEW.status IN ('posted','paid') THEN
+    IF NEW.status IN ('posted','paid') OR NEW.posting_requested_at IS NOT NULL THEN
       RAISE EXCEPTION 'Payroll must be approved before posting' USING ERRCODE = '23514';
     END IF;
     IF NEW.status = 'approved' THEN
+      IF OLD.status <> 'review' THEN
+        RAISE EXCEPTION 'Payroll approval requires review' USING ERRCODE = '23514';
+      END IF;
       IF NOT EXISTS (SELECT 1 FROM hr_payroll_results WHERE payroll_run_id = NEW.id) THEN
         RAISE EXCEPTION 'Payroll approval requires results' USING ERRCODE = '23514';
       END IF;
@@ -2515,6 +2648,7 @@ ALTER TABLE hr_talent_pool_memberships ADD CONSTRAINT ex_hr_talent_pool_membersh
   EXCLUDE USING gist (talent_pool_id WITH =, worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
   WHERE (status IN ('active','exited'));
 
+-- Constraint dan provenance workflow HRM.
 -- Simpan identitas pembuat dan pengusul tanpa mengubah baseline terpasang.
 ALTER TABLE hr_requisitions
   ADD COLUMN created_by_principal_id uuid,
@@ -2603,24 +2737,3 @@ ALTER TABLE hr_worker_assignments
 
 CREATE INDEX ix_hr_assignment_requester
   ON hr_worker_assignments (requested_by_principal_id, requested_at);
--- HRM assignment cancellation
-ALTER TABLE hr_worker_assignments
-  ADD COLUMN cancelled_at timestamptz,
-  ADD CONSTRAINT ck_hr_assignment_cancellation
-    CHECK (cancelled_at IS NULL OR (approved_at IS NOT NULL AND cancelled_at >= approved_at));
-
-DROP INDEX uq_hr_worker_assignment_period;
-CREATE UNIQUE INDEX uq_hr_worker_assignment_period
-  ON hr_worker_assignments (worker_id, position_id, assignment_type, valid_from)
-  WHERE cancelled_at IS NULL;
-
-ALTER TABLE hr_worker_assignments DROP CONSTRAINT ex_hr_primary_assignment_period;
-ALTER TABLE hr_worker_assignments ADD CONSTRAINT ex_hr_primary_assignment_period
-  EXCLUDE USING gist (worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
-  WHERE (assignment_type = 'primary' AND cancelled_at IS NULL);
--- HRM worker principal uniqueness
-CREATE INDEX ix_hr_worker_iam_principal ON hr_workers (iam_principal_reference_id)
-  WHERE iam_principal_reference_id IS NOT NULL;
-CREATE UNIQUE INDEX uq_hr_worker_current_iam_principal ON hr_workers (iam_principal_reference_id)
-  WHERE iam_principal_reference_id IS NOT NULL
-    AND status IN ('active', 'leave_of_absence', 'suspended', 'notice_period');

@@ -864,6 +864,58 @@ func (x *PolicyAcknowledgementsResponse) GetPage() *v1.PageInfo {
 	return nil
 }
 
+type AcknowledgePolicyRequest struct {
+	state                              protoimpl.MessageState `protogen:"open.v1"`
+	Id                                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	EvidenceDocumentVersionReferenceId *string                `protobuf:"bytes,2,opt,name=evidence_document_version_reference_id,json=evidenceDocumentVersionReferenceId,proto3,oneof" json:"evidence_document_version_reference_id,omitempty"`
+	unknownFields                      protoimpl.UnknownFields
+	sizeCache                          protoimpl.SizeCache
+}
+
+func (x *AcknowledgePolicyRequest) Reset() {
+	*x = AcknowledgePolicyRequest{}
+	mi := &file_human_resource_policy_v1_policy_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AcknowledgePolicyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AcknowledgePolicyRequest) ProtoMessage() {}
+
+func (x *AcknowledgePolicyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_policy_v1_policy_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AcknowledgePolicyRequest.ProtoReflect.Descriptor instead.
+func (*AcknowledgePolicyRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_policy_v1_policy_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *AcknowledgePolicyRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *AcknowledgePolicyRequest) GetEvidenceDocumentVersionReferenceId() string {
+	if x != nil && x.EvidenceDocumentVersionReferenceId != nil {
+		return *x.EvidenceDocumentVersionReferenceId
+	}
+	return ""
+}
+
 var File_human_resource_policy_v1_policy_proto protoreflect.FileDescriptor
 
 const file_human_resource_policy_v1_policy_proto_rawDesc = "" +
@@ -958,7 +1010,11 @@ const file_human_resource_policy_v1_policy_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v2/.human_resource.policy.v1.PolicyAcknowledgementR\x05value\"\x9f\x01\n" +
 	"\x1ePolicyAcknowledgementsResponse\x12E\n" +
 	"\x05items\x18\x01 \x03(\v2/.human_resource.policy.v1.PolicyAcknowledgementR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x80\x13\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xae\x01\n" +
+	"\x18AcknowledgePolicyRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12W\n" +
+	"&evidence_document_version_reference_id\x18\x02 \x01(\tH\x00R\"evidenceDocumentVersionReferenceId\x88\x01\x01B)\n" +
+	"'_evidence_document_version_reference_id2\x83\x14\n" +
 	"\rPolicyService\x12g\n" +
 	"\fCreatePolicy\x12-.human_resource.policy.v1.CreatePolicyRequest\x1a(.human_resource.policy.v1.PolicyResponse\x12g\n" +
 	"\fUpdatePolicy\x12-.human_resource.policy.v1.UpdatePolicyRequest\x1a(.human_resource.policy.v1.PolicyResponse\x12\\\n" +
@@ -978,7 +1034,8 @@ const file_human_resource_policy_v1_policy_proto_rawDesc = "" +
 	"#FindPolicyAcknowledgementByPolicyID\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.policy.v1.PolicyAcknowledgementsResponse\x12\x8e\x01\n" +
 	"#FindPolicyAcknowledgementByWorkerID\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.policy.v1.PolicyAcknowledgementsResponse\x12\x9f\x01\n" +
 	"4FindPolicyAcknowledgementByAcknowledgedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.policy.v1.PolicyAcknowledgementsResponse\x12\xa8\x01\n" +
-	"=FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.policy.v1.PolicyAcknowledgementsResponseBqZogithub.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/policy/v1;policyv1b\x06proto3"
+	"=FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a8.human_resource.policy.v1.PolicyAcknowledgementsResponse\x12\x80\x01\n" +
+	"\x11AcknowledgePolicy\x122.human_resource.policy.v1.AcknowledgePolicyRequest\x1a7.human_resource.policy.v1.PolicyAcknowledgementResponseBqZogithub.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/policy/v1;policyv1b\x06proto3"
 
 var (
 	file_human_resource_policy_v1_policy_proto_rawDescOnce sync.Once
@@ -992,7 +1049,7 @@ func file_human_resource_policy_v1_policy_proto_rawDescGZIP() []byte {
 	return file_human_resource_policy_v1_policy_proto_rawDescData
 }
 
-var file_human_resource_policy_v1_policy_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_human_resource_policy_v1_policy_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_human_resource_policy_v1_policy_proto_goTypes = []any{
 	(*Policy)(nil),                             // 0: human_resource.policy.v1.Policy
 	(*PolicyInput)(nil),                        // 1: human_resource.policy.v1.PolicyInput
@@ -1006,78 +1063,81 @@ var file_human_resource_policy_v1_policy_proto_goTypes = []any{
 	(*UpdatePolicyAcknowledgementRequest)(nil), // 9: human_resource.policy.v1.UpdatePolicyAcknowledgementRequest
 	(*PolicyAcknowledgementResponse)(nil),      // 10: human_resource.policy.v1.PolicyAcknowledgementResponse
 	(*PolicyAcknowledgementsResponse)(nil),     // 11: human_resource.policy.v1.PolicyAcknowledgementsResponse
-	(*timestamppb.Timestamp)(nil),              // 12: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),              // 13: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                        // 14: human_resource.common.v1.PageInfo
-	(*v1.IDRequest)(nil),                       // 15: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                     // 16: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),             // 17: human_resource.common.v1.StringFinderRequest
-	(*v1.EmptyResponse)(nil),                   // 18: human_resource.common.v1.EmptyResponse
+	(*AcknowledgePolicyRequest)(nil),           // 12: human_resource.policy.v1.AcknowledgePolicyRequest
+	(*timestamppb.Timestamp)(nil),              // 13: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),              // 14: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                        // 15: human_resource.common.v1.PageInfo
+	(*v1.IDRequest)(nil),                       // 16: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                     // 17: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),             // 18: human_resource.common.v1.StringFinderRequest
+	(*v1.EmptyResponse)(nil),                   // 19: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_policy_v1_policy_proto_depIdxs = []int32{
-	12, // 0: human_resource.policy.v1.Policy.effective_from:type_name -> google.protobuf.Timestamp
-	12, // 1: human_resource.policy.v1.Policy.effective_to:type_name -> google.protobuf.Timestamp
-	12, // 2: human_resource.policy.v1.Policy.approved_at:type_name -> google.protobuf.Timestamp
-	12, // 3: human_resource.policy.v1.PolicyInput.effective_from:type_name -> google.protobuf.Timestamp
-	12, // 4: human_resource.policy.v1.PolicyInput.effective_to:type_name -> google.protobuf.Timestamp
-	12, // 5: human_resource.policy.v1.PolicyInput.approved_at:type_name -> google.protobuf.Timestamp
+	13, // 0: human_resource.policy.v1.Policy.effective_from:type_name -> google.protobuf.Timestamp
+	13, // 1: human_resource.policy.v1.Policy.effective_to:type_name -> google.protobuf.Timestamp
+	13, // 2: human_resource.policy.v1.Policy.approved_at:type_name -> google.protobuf.Timestamp
+	13, // 3: human_resource.policy.v1.PolicyInput.effective_from:type_name -> google.protobuf.Timestamp
+	13, // 4: human_resource.policy.v1.PolicyInput.effective_to:type_name -> google.protobuf.Timestamp
+	13, // 5: human_resource.policy.v1.PolicyInput.approved_at:type_name -> google.protobuf.Timestamp
 	1,  // 6: human_resource.policy.v1.CreatePolicyRequest.input:type_name -> human_resource.policy.v1.PolicyInput
 	1,  // 7: human_resource.policy.v1.UpdatePolicyRequest.input:type_name -> human_resource.policy.v1.PolicyInput
-	13, // 8: human_resource.policy.v1.UpdatePolicyRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 8: human_resource.policy.v1.UpdatePolicyRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 9: human_resource.policy.v1.PolicyResponse.value:type_name -> human_resource.policy.v1.Policy
 	0,  // 10: human_resource.policy.v1.PoliciesResponse.items:type_name -> human_resource.policy.v1.Policy
-	14, // 11: human_resource.policy.v1.PoliciesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	12, // 12: human_resource.policy.v1.PolicyAcknowledgement.assigned_at:type_name -> google.protobuf.Timestamp
-	12, // 13: human_resource.policy.v1.PolicyAcknowledgement.due_at:type_name -> google.protobuf.Timestamp
-	12, // 14: human_resource.policy.v1.PolicyAcknowledgement.acknowledged_at:type_name -> google.protobuf.Timestamp
-	12, // 15: human_resource.policy.v1.PolicyAcknowledgementInput.due_at:type_name -> google.protobuf.Timestamp
-	12, // 16: human_resource.policy.v1.PolicyAcknowledgementInput.acknowledged_at:type_name -> google.protobuf.Timestamp
+	15, // 11: human_resource.policy.v1.PoliciesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	13, // 12: human_resource.policy.v1.PolicyAcknowledgement.assigned_at:type_name -> google.protobuf.Timestamp
+	13, // 13: human_resource.policy.v1.PolicyAcknowledgement.due_at:type_name -> google.protobuf.Timestamp
+	13, // 14: human_resource.policy.v1.PolicyAcknowledgement.acknowledged_at:type_name -> google.protobuf.Timestamp
+	13, // 15: human_resource.policy.v1.PolicyAcknowledgementInput.due_at:type_name -> google.protobuf.Timestamp
+	13, // 16: human_resource.policy.v1.PolicyAcknowledgementInput.acknowledged_at:type_name -> google.protobuf.Timestamp
 	7,  // 17: human_resource.policy.v1.CreatePolicyAcknowledgementRequest.input:type_name -> human_resource.policy.v1.PolicyAcknowledgementInput
 	7,  // 18: human_resource.policy.v1.UpdatePolicyAcknowledgementRequest.input:type_name -> human_resource.policy.v1.PolicyAcknowledgementInput
-	13, // 19: human_resource.policy.v1.UpdatePolicyAcknowledgementRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 19: human_resource.policy.v1.UpdatePolicyAcknowledgementRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,  // 20: human_resource.policy.v1.PolicyAcknowledgementResponse.value:type_name -> human_resource.policy.v1.PolicyAcknowledgement
 	6,  // 21: human_resource.policy.v1.PolicyAcknowledgementsResponse.items:type_name -> human_resource.policy.v1.PolicyAcknowledgement
-	14, // 22: human_resource.policy.v1.PolicyAcknowledgementsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	15, // 22: human_resource.policy.v1.PolicyAcknowledgementsResponse.page:type_name -> human_resource.common.v1.PageInfo
 	2,  // 23: human_resource.policy.v1.PolicyService.CreatePolicy:input_type -> human_resource.policy.v1.CreatePolicyRequest
 	3,  // 24: human_resource.policy.v1.PolicyService.UpdatePolicy:input_type -> human_resource.policy.v1.UpdatePolicyRequest
-	15, // 25: human_resource.policy.v1.PolicyService.DeletePolicy:input_type -> human_resource.common.v1.IDRequest
-	15, // 26: human_resource.policy.v1.PolicyService.GetPolicyByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 27: human_resource.policy.v1.PolicyService.GetAllPolicies:input_type -> human_resource.common.v1.PageRequest
-	17, // 28: human_resource.policy.v1.PolicyService.FindPolicyByPolicyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 29: human_resource.policy.v1.PolicyService.FindPolicyByCategoryCode:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 30: human_resource.policy.v1.PolicyService.FindPolicyByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 31: human_resource.policy.v1.PolicyService.FindPolicyByDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 32: human_resource.policy.v1.PolicyService.FindPolicyByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	16, // 25: human_resource.policy.v1.PolicyService.DeletePolicy:input_type -> human_resource.common.v1.IDRequest
+	16, // 26: human_resource.policy.v1.PolicyService.GetPolicyByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 27: human_resource.policy.v1.PolicyService.GetAllPolicies:input_type -> human_resource.common.v1.PageRequest
+	18, // 28: human_resource.policy.v1.PolicyService.FindPolicyByPolicyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 29: human_resource.policy.v1.PolicyService.FindPolicyByCategoryCode:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 30: human_resource.policy.v1.PolicyService.FindPolicyByLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 31: human_resource.policy.v1.PolicyService.FindPolicyByDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 32: human_resource.policy.v1.PolicyService.FindPolicyByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
 	8,  // 33: human_resource.policy.v1.PolicyService.CreatePolicyAcknowledgement:input_type -> human_resource.policy.v1.CreatePolicyAcknowledgementRequest
 	9,  // 34: human_resource.policy.v1.PolicyService.UpdatePolicyAcknowledgement:input_type -> human_resource.policy.v1.UpdatePolicyAcknowledgementRequest
-	15, // 35: human_resource.policy.v1.PolicyService.DeletePolicyAcknowledgement:input_type -> human_resource.common.v1.IDRequest
-	15, // 36: human_resource.policy.v1.PolicyService.GetPolicyAcknowledgementByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 37: human_resource.policy.v1.PolicyService.GetAllPolicyAcknowledgements:input_type -> human_resource.common.v1.PageRequest
-	17, // 38: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByPolicyID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 39: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 40: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByAcknowledgedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 41: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 42: human_resource.policy.v1.PolicyService.CreatePolicy:output_type -> human_resource.policy.v1.PolicyResponse
-	4,  // 43: human_resource.policy.v1.PolicyService.UpdatePolicy:output_type -> human_resource.policy.v1.PolicyResponse
-	18, // 44: human_resource.policy.v1.PolicyService.DeletePolicy:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 45: human_resource.policy.v1.PolicyService.GetPolicyByID:output_type -> human_resource.policy.v1.PolicyResponse
-	5,  // 46: human_resource.policy.v1.PolicyService.GetAllPolicies:output_type -> human_resource.policy.v1.PoliciesResponse
-	5,  // 47: human_resource.policy.v1.PolicyService.FindPolicyByPolicyCode:output_type -> human_resource.policy.v1.PoliciesResponse
-	5,  // 48: human_resource.policy.v1.PolicyService.FindPolicyByCategoryCode:output_type -> human_resource.policy.v1.PoliciesResponse
-	5,  // 49: human_resource.policy.v1.PolicyService.FindPolicyByLegalEntityReferenceID:output_type -> human_resource.policy.v1.PoliciesResponse
-	5,  // 50: human_resource.policy.v1.PolicyService.FindPolicyByDocumentVersionReferenceID:output_type -> human_resource.policy.v1.PoliciesResponse
-	5,  // 51: human_resource.policy.v1.PolicyService.FindPolicyByApprovedByPrincipalID:output_type -> human_resource.policy.v1.PoliciesResponse
-	10, // 52: human_resource.policy.v1.PolicyService.CreatePolicyAcknowledgement:output_type -> human_resource.policy.v1.PolicyAcknowledgementResponse
-	10, // 53: human_resource.policy.v1.PolicyService.UpdatePolicyAcknowledgement:output_type -> human_resource.policy.v1.PolicyAcknowledgementResponse
-	18, // 54: human_resource.policy.v1.PolicyService.DeletePolicyAcknowledgement:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 55: human_resource.policy.v1.PolicyService.GetPolicyAcknowledgementByID:output_type -> human_resource.policy.v1.PolicyAcknowledgementResponse
-	11, // 56: human_resource.policy.v1.PolicyService.GetAllPolicyAcknowledgements:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
-	11, // 57: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByPolicyID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
-	11, // 58: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByWorkerID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
-	11, // 59: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByAcknowledgedByPrincipalID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
-	11, // 60: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
-	42, // [42:61] is the sub-list for method output_type
-	23, // [23:42] is the sub-list for method input_type
+	16, // 35: human_resource.policy.v1.PolicyService.DeletePolicyAcknowledgement:input_type -> human_resource.common.v1.IDRequest
+	16, // 36: human_resource.policy.v1.PolicyService.GetPolicyAcknowledgementByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 37: human_resource.policy.v1.PolicyService.GetAllPolicyAcknowledgements:input_type -> human_resource.common.v1.PageRequest
+	18, // 38: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByPolicyID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 39: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 40: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByAcknowledgedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 41: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	12, // 42: human_resource.policy.v1.PolicyService.AcknowledgePolicy:input_type -> human_resource.policy.v1.AcknowledgePolicyRequest
+	4,  // 43: human_resource.policy.v1.PolicyService.CreatePolicy:output_type -> human_resource.policy.v1.PolicyResponse
+	4,  // 44: human_resource.policy.v1.PolicyService.UpdatePolicy:output_type -> human_resource.policy.v1.PolicyResponse
+	19, // 45: human_resource.policy.v1.PolicyService.DeletePolicy:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 46: human_resource.policy.v1.PolicyService.GetPolicyByID:output_type -> human_resource.policy.v1.PolicyResponse
+	5,  // 47: human_resource.policy.v1.PolicyService.GetAllPolicies:output_type -> human_resource.policy.v1.PoliciesResponse
+	5,  // 48: human_resource.policy.v1.PolicyService.FindPolicyByPolicyCode:output_type -> human_resource.policy.v1.PoliciesResponse
+	5,  // 49: human_resource.policy.v1.PolicyService.FindPolicyByCategoryCode:output_type -> human_resource.policy.v1.PoliciesResponse
+	5,  // 50: human_resource.policy.v1.PolicyService.FindPolicyByLegalEntityReferenceID:output_type -> human_resource.policy.v1.PoliciesResponse
+	5,  // 51: human_resource.policy.v1.PolicyService.FindPolicyByDocumentVersionReferenceID:output_type -> human_resource.policy.v1.PoliciesResponse
+	5,  // 52: human_resource.policy.v1.PolicyService.FindPolicyByApprovedByPrincipalID:output_type -> human_resource.policy.v1.PoliciesResponse
+	10, // 53: human_resource.policy.v1.PolicyService.CreatePolicyAcknowledgement:output_type -> human_resource.policy.v1.PolicyAcknowledgementResponse
+	10, // 54: human_resource.policy.v1.PolicyService.UpdatePolicyAcknowledgement:output_type -> human_resource.policy.v1.PolicyAcknowledgementResponse
+	19, // 55: human_resource.policy.v1.PolicyService.DeletePolicyAcknowledgement:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 56: human_resource.policy.v1.PolicyService.GetPolicyAcknowledgementByID:output_type -> human_resource.policy.v1.PolicyAcknowledgementResponse
+	11, // 57: human_resource.policy.v1.PolicyService.GetAllPolicyAcknowledgements:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
+	11, // 58: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByPolicyID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
+	11, // 59: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByWorkerID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
+	11, // 60: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByAcknowledgedByPrincipalID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
+	11, // 61: human_resource.policy.v1.PolicyService.FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID:output_type -> human_resource.policy.v1.PolicyAcknowledgementsResponse
+	10, // 62: human_resource.policy.v1.PolicyService.AcknowledgePolicy:output_type -> human_resource.policy.v1.PolicyAcknowledgementResponse
+	43, // [43:63] is the sub-list for method output_type
+	23, // [23:43] is the sub-list for method input_type
 	23, // [23:23] is the sub-list for extension type_name
 	23, // [23:23] is the sub-list for extension extendee
 	0,  // [0:23] is the sub-list for field type_name
@@ -1091,13 +1151,14 @@ func file_human_resource_policy_v1_policy_proto_init() {
 	file_human_resource_policy_v1_policy_proto_msgTypes[1].OneofWrappers = []any{}
 	file_human_resource_policy_v1_policy_proto_msgTypes[6].OneofWrappers = []any{}
 	file_human_resource_policy_v1_policy_proto_msgTypes[7].OneofWrappers = []any{}
+	file_human_resource_policy_v1_policy_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_policy_v1_policy_proto_rawDesc), len(file_human_resource_policy_v1_policy_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

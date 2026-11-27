@@ -17,7 +17,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedSuccessionServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeSuccessionServiceServer
 	service *service.Service
 }
 
@@ -56,7 +57,7 @@ func plan(value *entity.SuccessionPlan) *pb.SuccessionPlan {
 		Id: value.ID, PositionId: value.PositionID, PlanCode: value.PlanCode,
 		PlanVersion: value.PlanVersion, ReviewDate: timestamppb.New(value.ReviewDate),
 		ConfidentialityClass: value.ConfidentialityClass, ApprovedByPrincipalId: value.ApprovedByPrincipalID,
-		ApprovedAt: timestamp(value.ApprovedAt), SuccessionRisk: value.SuccessionRisk,
+		ApprovedAt: timestamp(value.ApprovedAt), ApprovalMandateReferenceId: value.ApprovalMandateReferenceID, CreatedByPrincipalId: value.CreatedByPrincipalID, CreatedAt: timestamp(value.CreatedAt), SuccessionRisk: value.SuccessionRisk,
 	}
 }
 
@@ -86,6 +87,18 @@ func candidates(page operation.Page[entity.SuccessionCandidate]) *pb.SuccessionC
 		items = append(items, candidate(&page.Items[index]))
 	}
 	return &pb.SuccessionCandidatesResponse{Items: items, Page: &commonv1.PageInfo{Total: page.Total, Limit: int32(page.Limit), Offset: int32(page.Offset)}}
+}
+
+// ApproveSuccessionPlan meneruskan keputusan panel ke service suksesi.
+func (s *server) ApproveSuccessionPlan(ctx context.Context, request *commonv1.IDRequest) (*pb.SuccessionPlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	result, err := s.service.ApproveSuccessionPlan(ctx, request.Id)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.SuccessionPlanResponse{Value: plan(result)}, nil
 }
 
 func (s *server) CreateSuccessionPlan(ctx context.Context, request *pb.CreateSuccessionPlanRequest) (*pb.SuccessionPlanResponse, error) {

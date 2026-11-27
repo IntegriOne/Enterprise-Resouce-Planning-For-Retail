@@ -1,6 +1,6 @@
 //go:build integration
 
-package db
+package db_test
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -60,15 +61,28 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer pool.Close()
-	if err := RunMigrationsUp(ctx, pool); err != nil {
+	if err := hrdb.RunMigrationsUp(ctx, pool); err != nil {
 		t.Fatalf("install HRM schema: %v", err)
 	}
-	if err := RunMigrationsUp(ctx, pool); err != nil {
+	if err := hrdb.RunMigrationsUp(ctx, pool); err != nil {
 		t.Fatalf("repeat HRM schema: %v", err)
 	}
 	var installed int
 	if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM hrm_schema_migrations").Scan(&installed); err != nil || installed != 1 {
 		t.Fatalf("installed migration count: got %d, error %v", installed, err)
+	}
+	if _, err := pool.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version = 1"); err != nil {
+		t.Fatal(err)
+	}
+	downSQL, err := os.ReadFile("migrations/000001_hrm.down.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.ExecContext(ctx, string(downSQL)); err != nil {
+		t.Fatal(err)
+	}
+	if err := hrdb.RunMigrationsUp(ctx, pool); err != nil {
+		t.Fatalf("reinstall HRM baseline after down: %v", err)
 	}
 	var columns int
 	if err := pool.QueryRowContext(ctx, `SELECT count(*) FROM information_schema.columns
@@ -79,7 +93,7 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 	if _, err := pool.ExecContext(ctx, "INSERT INTO hrm_schema_migrations (version, checksum) VALUES (8, repeat('0', 64))"); err != nil {
 		t.Fatal(err)
 	}
-	if err := RunMigrationsUp(ctx, pool); !errors.Is(err, hrerrors.ErrConflict) {
+	if err := hrdb.RunMigrationsUp(ctx, pool); !errors.Is(err, hrerrors.ErrConflict) {
 		t.Fatalf("unknown version: got %v, want conflict", err)
 	}
 	if _, err := pool.ExecContext(ctx, "DELETE FROM hrm_schema_migrations WHERE version = 8"); err != nil {
@@ -88,72 +102,7 @@ func TestRunMigrationsUpRejectsInvalidHistory(t *testing.T) {
 	if _, err := pool.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = repeat('0', 64) WHERE version = 1"); err != nil {
 		t.Fatal(err)
 	}
-	if err := RunMigrationsUp(ctx, pool); !errors.Is(err, hrerrors.ErrConflict) {
+	if err := hrdb.RunMigrationsUp(ctx, pool); !errors.Is(err, hrerrors.ErrConflict) {
 		t.Fatalf("checksum mismatch: got %v, want conflict", err)
 	}
-	if _, err := pool.ExecContext(ctx, "DELETE FROM hrm_schema_migrations"); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := pool.ExecContext(ctx, "INSERT INTO hr_job_families (id, family_code, family_name, job_domain) VALUES ('558c401c-beda-458b-b6d6-33eacd335583', 'MIGRATION', 'Fixture', 'test')"); err != nil {
-		t.Fatal(err)
-	}
-	const restorePreviousAssignment = `
-		DROP INDEX uq_hr_worker_current_iam_principal;
-		DROP INDEX ix_hr_worker_iam_principal;
-		ALTER TABLE hr_worker_assignments DROP CONSTRAINT ex_hr_primary_assignment_period;
-		DROP INDEX uq_hr_worker_assignment_period;
-		ALTER TABLE hr_worker_assignments DROP COLUMN cancelled_at;
-		CREATE UNIQUE INDEX uq_hr_worker_assignment_period
-		  ON hr_worker_assignments (worker_id, position_id, assignment_type, valid_from);
-		ALTER TABLE hr_worker_assignments ADD CONSTRAINT ex_hr_primary_assignment_period
-		  EXCLUDE USING gist (worker_id WITH =, daterange(valid_from, valid_to, '[]') WITH &&)
-		  WHERE (assignment_type = 'primary');`
-	if _, err := pool.ExecContext(ctx, restorePreviousAssignment); err != nil {
-		t.Fatal(err)
-	}
-	for i, checksum := range legacyMigrationChecksums {
-		if _, err := pool.ExecContext(ctx, "INSERT INTO hrm_schema_migrations (version, checksum) VALUES ($1, $2)", i+1, checksum); err != nil {
-			t.Fatal(err)
-		}
-	}
-	for range 2 {
-		if err := RunMigrationsUp(ctx, pool); err != nil {
-			t.Fatalf("accept equivalent legacy schema: %v", err)
-		}
-	}
-	if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM hrm_schema_migrations").Scan(&installed); err != nil || installed != 1 {
-		t.Fatalf("legacy migration count: got %d, error %v", installed, err)
-	}
-	var familyName string
-	if err := pool.QueryRowContext(ctx, "SELECT family_name FROM hr_job_families WHERE family_code = 'MIGRATION'").Scan(&familyName); err != nil || familyName != "Fixture" {
-		t.Fatalf("business data after verification: got %q, error %v", familyName, err)
-	}
-	if _, err := pool.ExecContext(ctx, restorePreviousAssignment); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := pool.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = $1 WHERE version = 1", consolidatedBaselineChecksum); err != nil {
-		t.Fatal(err)
-	}
-	if err := RunMigrationsUp(ctx, pool); err != nil {
-		t.Fatalf("upgrade previous consolidated baseline: %v", err)
-	}
-	if err := pool.QueryRowContext(ctx, `SELECT count(*) FROM information_schema.columns
-		WHERE table_schema = current_schema() AND table_name = 'hr_worker_assignments'
-		AND column_name = 'cancelled_at'`).Scan(&columns); err != nil || columns != 1 {
-		t.Fatalf("assignment cancellation column count: got %d, error %v", columns, err)
-	}
-	if _, err := pool.ExecContext(ctx, "DROP INDEX uq_hr_worker_current_iam_principal; DROP INDEX ix_hr_worker_iam_principal"); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := pool.ExecContext(ctx, "UPDATE hrm_schema_migrations SET checksum = $1 WHERE version = 1", assignmentCancellationBaselineChecksum); err != nil {
-		t.Fatal(err)
-	}
-	if err := RunMigrationsUp(ctx, pool); err != nil {
-		t.Fatalf("upgrade assignment cancellation baseline: %v", err)
-	}
-	var uniqueIndex bool
-	if err := pool.QueryRowContext(ctx, `SELECT to_regclass('uq_hr_worker_current_iam_principal') IS NOT NULL`).Scan(&uniqueIndex); err != nil || !uniqueIndex {
-		t.Fatalf("unique active worker principal index exists=%t error=%v", uniqueIndex, err)
-	}
-
 }

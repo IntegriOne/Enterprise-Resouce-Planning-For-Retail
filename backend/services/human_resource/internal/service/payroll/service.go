@@ -12,16 +12,24 @@ import (
 )
 
 type Dependencies struct {
-	Runtime           operation.Dependencies
-	PayrollProfile    domainrepo.RecordRepository[entity.PayrollProfile, string]
-	PayComponent      domainrepo.RecordRepository[entity.PayComponent, string]
-	PayrollPeriod     domainrepo.RecordRepository[entity.PayrollPeriod, string]
-	PayrollRun        domainrepo.RecordRepository[entity.PayrollRun, string]
-	PayrollResult     domainrepo.RecordRepository[entity.PayrollResult, string]
-	PayrollResultLine domainrepo.RecordRepository[entity.PayrollResultLine, string]
-	PayrollAdjustment domainrepo.RecordRepository[entity.PayrollAdjustment, string]
-	PayrollGroup      domainrepo.RecordRepository[entity.PayrollGroup, string]
-	PayrollRuleSet    domainrepo.RecordRepository[entity.PayrollRuleSet, string]
+	PayrollSettlement  PayrollSettlementVerifier
+	PayrollPayment     PayrollPaymentVerifier
+	PayrollPosting     PayrollPostingVerifier
+	PayslipPublication PayslipPublicationProcessor
+	PayslipReissue     PayslipReissueVerifier
+	Workers            PayslipWorkerReader
+	PayslipVerifier    PayslipVerifier
+	Calculator         Calculator
+	Runtime            operation.Dependencies
+	PayrollProfile     domainrepo.RecordRepository[entity.PayrollProfile, string]
+	PayComponent       domainrepo.RecordRepository[entity.PayComponent, string]
+	PayrollPeriod      domainrepo.RecordRepository[entity.PayrollPeriod, string]
+	PayrollRun         domainrepo.RecordRepository[entity.PayrollRun, string]
+	PayrollResult      domainrepo.RecordRepository[entity.PayrollResult, string]
+	PayrollResultLine  domainrepo.RecordRepository[entity.PayrollResultLine, string]
+	PayrollAdjustment  domainrepo.RecordRepository[entity.PayrollAdjustment, string]
+	PayrollGroup       domainrepo.RecordRepository[entity.PayrollGroup, string]
+	PayrollRuleSet     domainrepo.RecordRepository[entity.PayrollRuleSet, string]
 }
 
 // Service mengoordinasikan operasi domain payroll.
@@ -38,8 +46,26 @@ type Service struct {
 	payrollRuleSet    *operation.Resource[entity.PayrollRuleSet, string, *entity.PayrollRuleSet]
 }
 
+// PayrollEventsReady memastikan setidaknya satu tahap payroll dapat dilayani.
+func (s *Service) PayrollEventsReady() bool {
+	if s == nil {
+		return false
+	}
+	deps := s.dependencies
+	return operation.RequireDependency(deps.PayrollPosting) == nil ||
+		operation.RequireDependency(deps.PayslipPublication) == nil ||
+		operation.RequireDependency(deps.PayrollPayment) == nil ||
+		operation.RequireDependency(deps.PayrollSettlement) == nil
+}
+
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
+	if operation.RequireDependency(deps.Runtime.Clock) != nil {
+		deps.Runtime.Clock = operation.SystemClock{}
+	}
+	if operation.RequireDependency(deps.Runtime.IDs) != nil {
+		deps.Runtime.IDs = operation.UUIDGenerator{}
+	}
 	s := &Service{dependencies: deps}
 	var err error
 	s.payrollProfile, err = operation.NewResource[entity.PayrollProfile, string, *entity.PayrollProfile](

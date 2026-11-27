@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	PerformanceService_CreatePerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/CreatePerformanceCycle"
 	PerformanceService_LaunchPerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/LaunchPerformanceCycle"
+	PerformanceService_ClosePerformanceCycle_FullMethodName                                              = "/human_resource.performance.v1.PerformanceService/ClosePerformanceCycle"
 	PerformanceService_UpdatePerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/UpdatePerformanceCycle"
 	PerformanceService_DeletePerformanceCycle_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/DeletePerformanceCycle"
 	PerformanceService_GetPerformanceCycleByID_FullMethodName                                            = "/human_resource.performance.v1.PerformanceService/GetPerformanceCycleByID"
@@ -43,6 +44,9 @@ const (
 	PerformanceService_FindPerformanceGoalByUnitCode_FullMethodName                                      = "/human_resource.performance.v1.PerformanceService/FindPerformanceGoalByUnitCode"
 	PerformanceService_FindPerformanceGoalByGoalStatus_FullMethodName                                    = "/human_resource.performance.v1.PerformanceService/FindPerformanceGoalByGoalStatus"
 	PerformanceService_FindPerformanceGoalByApprovedByPrincipalID_FullMethodName                         = "/human_resource.performance.v1.PerformanceService/FindPerformanceGoalByApprovedByPrincipalID"
+	PerformanceService_SubmitPerformanceGoal_FullMethodName                                              = "/human_resource.performance.v1.PerformanceService/SubmitPerformanceGoal"
+	PerformanceService_ApprovePerformanceGoal_FullMethodName                                             = "/human_resource.performance.v1.PerformanceService/ApprovePerformanceGoal"
+	PerformanceService_RejectPerformanceGoal_FullMethodName                                              = "/human_resource.performance.v1.PerformanceService/RejectPerformanceGoal"
 	PerformanceService_CreatePerformanceReview_FullMethodName                                            = "/human_resource.performance.v1.PerformanceService/CreatePerformanceReview"
 	PerformanceService_UpdatePerformanceReview_FullMethodName                                            = "/human_resource.performance.v1.PerformanceService/UpdatePerformanceReview"
 	PerformanceService_DeletePerformanceReview_FullMethodName                                            = "/human_resource.performance.v1.PerformanceService/DeletePerformanceReview"
@@ -53,6 +57,8 @@ const (
 	PerformanceService_FindPerformanceReviewByReviewerPrincipalID_FullMethodName                         = "/human_resource.performance.v1.PerformanceService/FindPerformanceReviewByReviewerPrincipalID"
 	PerformanceService_FindPerformanceReviewByOverallRatingCode_FullMethodName                           = "/human_resource.performance.v1.PerformanceService/FindPerformanceReviewByOverallRatingCode"
 	PerformanceService_FindPerformanceReviewByDevelopmentPlanID_FullMethodName                           = "/human_resource.performance.v1.PerformanceService/FindPerformanceReviewByDevelopmentPlanID"
+	PerformanceService_SubmitPerformanceReview_FullMethodName                                            = "/human_resource.performance.v1.PerformanceService/SubmitPerformanceReview"
+	PerformanceService_FinalizePerformanceReview_FullMethodName                                          = "/human_resource.performance.v1.PerformanceService/FinalizePerformanceReview"
 	PerformanceService_CreatePerformanceGoalUpdate_FullMethodName                                        = "/human_resource.performance.v1.PerformanceService/CreatePerformanceGoalUpdate"
 	PerformanceService_UpdatePerformanceGoalUpdate_FullMethodName                                        = "/human_resource.performance.v1.PerformanceService/UpdatePerformanceGoalUpdate"
 	PerformanceService_DeletePerformanceGoalUpdate_FullMethodName                                        = "/human_resource.performance.v1.PerformanceService/DeletePerformanceGoalUpdate"
@@ -82,6 +88,7 @@ const (
 type PerformanceServiceClient interface {
 	CreatePerformanceCycle(ctx context.Context, in *CreatePerformanceCycleRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
 	LaunchPerformanceCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
+	ClosePerformanceCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
 	UpdatePerformanceCycle(ctx context.Context, in *UpdatePerformanceCycleRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
 	DeletePerformanceCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetPerformanceCycleByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error)
@@ -103,6 +110,9 @@ type PerformanceServiceClient interface {
 	FindPerformanceGoalByUnitCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PerformanceGoalsResponse, error)
 	FindPerformanceGoalByGoalStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PerformanceGoalsResponse, error)
 	FindPerformanceGoalByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PerformanceGoalsResponse, error)
+	SubmitPerformanceGoal(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceGoalResponse, error)
+	ApprovePerformanceGoal(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceGoalResponse, error)
+	RejectPerformanceGoal(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceGoalResponse, error)
 	CreatePerformanceReview(ctx context.Context, in *CreatePerformanceReviewRequest, opts ...grpc.CallOption) (*PerformanceReviewResponse, error)
 	UpdatePerformanceReview(ctx context.Context, in *UpdatePerformanceReviewRequest, opts ...grpc.CallOption) (*PerformanceReviewResponse, error)
 	DeletePerformanceReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -113,6 +123,8 @@ type PerformanceServiceClient interface {
 	FindPerformanceReviewByReviewerPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PerformanceReviewsResponse, error)
 	FindPerformanceReviewByOverallRatingCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PerformanceReviewsResponse, error)
 	FindPerformanceReviewByDevelopmentPlanID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PerformanceReviewsResponse, error)
+	SubmitPerformanceReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceReviewResponse, error)
+	FinalizePerformanceReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceReviewResponse, error)
 	CreatePerformanceGoalUpdate(ctx context.Context, in *CreatePerformanceGoalUpdateRequest, opts ...grpc.CallOption) (*PerformanceGoalUpdateResponse, error)
 	UpdatePerformanceGoalUpdate(ctx context.Context, in *UpdatePerformanceGoalUpdateRequest, opts ...grpc.CallOption) (*PerformanceGoalUpdateResponse, error)
 	DeletePerformanceGoalUpdate(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -158,6 +170,16 @@ func (c *performanceServiceClient) LaunchPerformanceCycle(ctx context.Context, i
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PerformanceCycleResponse)
 	err := c.cc.Invoke(ctx, PerformanceService_LaunchPerformanceCycle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *performanceServiceClient) ClosePerformanceCycle(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceCycleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceCycleResponse)
+	err := c.cc.Invoke(ctx, PerformanceService_ClosePerformanceCycle_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -374,6 +396,36 @@ func (c *performanceServiceClient) FindPerformanceGoalByApprovedByPrincipalID(ct
 	return out, nil
 }
 
+func (c *performanceServiceClient) SubmitPerformanceGoal(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceGoalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceGoalResponse)
+	err := c.cc.Invoke(ctx, PerformanceService_SubmitPerformanceGoal_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *performanceServiceClient) ApprovePerformanceGoal(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceGoalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceGoalResponse)
+	err := c.cc.Invoke(ctx, PerformanceService_ApprovePerformanceGoal_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *performanceServiceClient) RejectPerformanceGoal(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceGoalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceGoalResponse)
+	err := c.cc.Invoke(ctx, PerformanceService_RejectPerformanceGoal_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *performanceServiceClient) CreatePerformanceReview(ctx context.Context, in *CreatePerformanceReviewRequest, opts ...grpc.CallOption) (*PerformanceReviewResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PerformanceReviewResponse)
@@ -468,6 +520,26 @@ func (c *performanceServiceClient) FindPerformanceReviewByDevelopmentPlanID(ctx 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PerformanceReviewsResponse)
 	err := c.cc.Invoke(ctx, PerformanceService_FindPerformanceReviewByDevelopmentPlanID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *performanceServiceClient) SubmitPerformanceReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceReviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceReviewResponse)
+	err := c.cc.Invoke(ctx, PerformanceService_SubmitPerformanceReview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *performanceServiceClient) FinalizePerformanceReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PerformanceReviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PerformanceReviewResponse)
+	err := c.cc.Invoke(ctx, PerformanceService_FinalizePerformanceReview_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -690,6 +762,7 @@ func (c *performanceServiceClient) FindPerformanceReviewGoalScoreByEvidenceDocum
 type PerformanceServiceServer interface {
 	CreatePerformanceCycle(context.Context, *CreatePerformanceCycleRequest) (*PerformanceCycleResponse, error)
 	LaunchPerformanceCycle(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error)
+	ClosePerformanceCycle(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error)
 	UpdatePerformanceCycle(context.Context, *UpdatePerformanceCycleRequest) (*PerformanceCycleResponse, error)
 	DeletePerformanceCycle(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetPerformanceCycleByID(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error)
@@ -711,6 +784,9 @@ type PerformanceServiceServer interface {
 	FindPerformanceGoalByUnitCode(context.Context, *v1.StringFinderRequest) (*PerformanceGoalsResponse, error)
 	FindPerformanceGoalByGoalStatus(context.Context, *v1.StringFinderRequest) (*PerformanceGoalsResponse, error)
 	FindPerformanceGoalByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*PerformanceGoalsResponse, error)
+	SubmitPerformanceGoal(context.Context, *v1.IDRequest) (*PerformanceGoalResponse, error)
+	ApprovePerformanceGoal(context.Context, *v1.IDRequest) (*PerformanceGoalResponse, error)
+	RejectPerformanceGoal(context.Context, *v1.IDRequest) (*PerformanceGoalResponse, error)
 	CreatePerformanceReview(context.Context, *CreatePerformanceReviewRequest) (*PerformanceReviewResponse, error)
 	UpdatePerformanceReview(context.Context, *UpdatePerformanceReviewRequest) (*PerformanceReviewResponse, error)
 	DeletePerformanceReview(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -721,6 +797,8 @@ type PerformanceServiceServer interface {
 	FindPerformanceReviewByReviewerPrincipalID(context.Context, *v1.StringFinderRequest) (*PerformanceReviewsResponse, error)
 	FindPerformanceReviewByOverallRatingCode(context.Context, *v1.StringFinderRequest) (*PerformanceReviewsResponse, error)
 	FindPerformanceReviewByDevelopmentPlanID(context.Context, *v1.StringFinderRequest) (*PerformanceReviewsResponse, error)
+	SubmitPerformanceReview(context.Context, *v1.IDRequest) (*PerformanceReviewResponse, error)
+	FinalizePerformanceReview(context.Context, *v1.IDRequest) (*PerformanceReviewResponse, error)
 	CreatePerformanceGoalUpdate(context.Context, *CreatePerformanceGoalUpdateRequest) (*PerformanceGoalUpdateResponse, error)
 	UpdatePerformanceGoalUpdate(context.Context, *UpdatePerformanceGoalUpdateRequest) (*PerformanceGoalUpdateResponse, error)
 	DeletePerformanceGoalUpdate(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -757,6 +835,9 @@ func (UnimplementedPerformanceServiceServer) CreatePerformanceCycle(context.Cont
 }
 func (UnimplementedPerformanceServiceServer) LaunchPerformanceCycle(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method LaunchPerformanceCycle not implemented")
+}
+func (UnimplementedPerformanceServiceServer) ClosePerformanceCycle(context.Context, *v1.IDRequest) (*PerformanceCycleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ClosePerformanceCycle not implemented")
 }
 func (UnimplementedPerformanceServiceServer) UpdatePerformanceCycle(context.Context, *UpdatePerformanceCycleRequest) (*PerformanceCycleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdatePerformanceCycle not implemented")
@@ -821,6 +902,15 @@ func (UnimplementedPerformanceServiceServer) FindPerformanceGoalByGoalStatus(con
 func (UnimplementedPerformanceServiceServer) FindPerformanceGoalByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*PerformanceGoalsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindPerformanceGoalByApprovedByPrincipalID not implemented")
 }
+func (UnimplementedPerformanceServiceServer) SubmitPerformanceGoal(context.Context, *v1.IDRequest) (*PerformanceGoalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitPerformanceGoal not implemented")
+}
+func (UnimplementedPerformanceServiceServer) ApprovePerformanceGoal(context.Context, *v1.IDRequest) (*PerformanceGoalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApprovePerformanceGoal not implemented")
+}
+func (UnimplementedPerformanceServiceServer) RejectPerformanceGoal(context.Context, *v1.IDRequest) (*PerformanceGoalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RejectPerformanceGoal not implemented")
+}
 func (UnimplementedPerformanceServiceServer) CreatePerformanceReview(context.Context, *CreatePerformanceReviewRequest) (*PerformanceReviewResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreatePerformanceReview not implemented")
 }
@@ -850,6 +940,12 @@ func (UnimplementedPerformanceServiceServer) FindPerformanceReviewByOverallRatin
 }
 func (UnimplementedPerformanceServiceServer) FindPerformanceReviewByDevelopmentPlanID(context.Context, *v1.StringFinderRequest) (*PerformanceReviewsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindPerformanceReviewByDevelopmentPlanID not implemented")
+}
+func (UnimplementedPerformanceServiceServer) SubmitPerformanceReview(context.Context, *v1.IDRequest) (*PerformanceReviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitPerformanceReview not implemented")
+}
+func (UnimplementedPerformanceServiceServer) FinalizePerformanceReview(context.Context, *v1.IDRequest) (*PerformanceReviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FinalizePerformanceReview not implemented")
 }
 func (UnimplementedPerformanceServiceServer) CreatePerformanceGoalUpdate(context.Context, *CreatePerformanceGoalUpdateRequest) (*PerformanceGoalUpdateResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreatePerformanceGoalUpdate not implemented")
@@ -967,6 +1063,24 @@ func _PerformanceService_LaunchPerformanceCycle_Handler(srv interface{}, ctx con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PerformanceServiceServer).LaunchPerformanceCycle(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PerformanceService_ClosePerformanceCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerformanceServiceServer).ClosePerformanceCycle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PerformanceService_ClosePerformanceCycle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerformanceServiceServer).ClosePerformanceCycle(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1349,6 +1463,60 @@ func _PerformanceService_FindPerformanceGoalByApprovedByPrincipalID_Handler(srv 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PerformanceService_SubmitPerformanceGoal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerformanceServiceServer).SubmitPerformanceGoal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PerformanceService_SubmitPerformanceGoal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerformanceServiceServer).SubmitPerformanceGoal(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PerformanceService_ApprovePerformanceGoal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerformanceServiceServer).ApprovePerformanceGoal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PerformanceService_ApprovePerformanceGoal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerformanceServiceServer).ApprovePerformanceGoal(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PerformanceService_RejectPerformanceGoal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerformanceServiceServer).RejectPerformanceGoal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PerformanceService_RejectPerformanceGoal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerformanceServiceServer).RejectPerformanceGoal(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PerformanceService_CreatePerformanceReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreatePerformanceReviewRequest)
 	if err := dec(in); err != nil {
@@ -1525,6 +1693,42 @@ func _PerformanceService_FindPerformanceReviewByDevelopmentPlanID_Handler(srv in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PerformanceServiceServer).FindPerformanceReviewByDevelopmentPlanID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PerformanceService_SubmitPerformanceReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerformanceServiceServer).SubmitPerformanceReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PerformanceService_SubmitPerformanceReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerformanceServiceServer).SubmitPerformanceReview(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PerformanceService_FinalizePerformanceReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PerformanceServiceServer).FinalizePerformanceReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PerformanceService_FinalizePerformanceReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PerformanceServiceServer).FinalizePerformanceReview(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1923,6 +2127,10 @@ var PerformanceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PerformanceService_LaunchPerformanceCycle_Handler,
 		},
 		{
+			MethodName: "ClosePerformanceCycle",
+			Handler:    _PerformanceService_ClosePerformanceCycle_Handler,
+		},
+		{
 			MethodName: "UpdatePerformanceCycle",
 			Handler:    _PerformanceService_UpdatePerformanceCycle_Handler,
 		},
@@ -2007,6 +2215,18 @@ var PerformanceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PerformanceService_FindPerformanceGoalByApprovedByPrincipalID_Handler,
 		},
 		{
+			MethodName: "SubmitPerformanceGoal",
+			Handler:    _PerformanceService_SubmitPerformanceGoal_Handler,
+		},
+		{
+			MethodName: "ApprovePerformanceGoal",
+			Handler:    _PerformanceService_ApprovePerformanceGoal_Handler,
+		},
+		{
+			MethodName: "RejectPerformanceGoal",
+			Handler:    _PerformanceService_RejectPerformanceGoal_Handler,
+		},
+		{
 			MethodName: "CreatePerformanceReview",
 			Handler:    _PerformanceService_CreatePerformanceReview_Handler,
 		},
@@ -2045,6 +2265,14 @@ var PerformanceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindPerformanceReviewByDevelopmentPlanID",
 			Handler:    _PerformanceService_FindPerformanceReviewByDevelopmentPlanID_Handler,
+		},
+		{
+			MethodName: "SubmitPerformanceReview",
+			Handler:    _PerformanceService_SubmitPerformanceReview_Handler,
+		},
+		{
+			MethodName: "FinalizePerformanceReview",
+			Handler:    _PerformanceService_FinalizePerformanceReview_Handler,
 		},
 		{
 			MethodName: "CreatePerformanceGoalUpdate",

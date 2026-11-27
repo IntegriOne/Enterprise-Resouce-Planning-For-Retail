@@ -19,6 +19,7 @@ func leaveAdjustment(v *entity.LeaveAdjustment) *pb.LeaveAdjustment {
 		Id: v.ID, EntitlementId: v.EntitlementID, QuantityDelta: string(v.QuantityDelta), ReasonCode: v.ReasonCode, Reason: v.Reason,
 		RequestedByPrincipalId: v.RequestedByPrincipalID, ApprovedByPrincipalId: v.ApprovedByPrincipalID, ApprovedAt: timestamp(v.ApprovedAt),
 		CreatedAt: timestamppb.New(v.CreatedAt), IdempotencyKey: v.IdempotencyKey,
+		RejectedAt: timestamp(v.RejectedAt), RejectedByPrincipalId: v.RejectedByPrincipalID, RejectionReasonCode: v.RejectionReasonCode,
 	}
 }
 func leaveAdjustments(page operation.Page[entity.LeaveAdjustment], err error) (*pb.LeaveAdjustmentsResponse, error) {
@@ -141,4 +142,15 @@ func (h *Handler) FindLeaveAdjustmentByIdempotencyKey(ctx context.Context, r *co
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return leaveAdjustments(h.service.FindLeaveAdjustmentByIdempotencyKey(ctx, *r.Value, int(r.Limit), int(r.Offset)))
+}
+
+func (h *Handler) RejectLeaveAdjustment(ctx context.Context, request *pb.RejectLeaveAdjustmentRequest) (*pb.LeaveAdjustmentResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	rejected, err := h.service.RejectLeaveAdjustment(ctx, request.Id, request.ReasonCode)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.LeaveAdjustmentResponse{Item: leaveAdjustment(rejected)}, nil
 }

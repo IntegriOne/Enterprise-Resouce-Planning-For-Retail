@@ -11,7 +11,10 @@ func TestOpenRequisitionRechecksOwnerProofAndPreservesBudget(t *testing.T) {
 	t.Parallel()
 	verifier := &approvalVerifierStub{budgetID: "00000000-0000-4000-8000-000000000777"}
 	h, svc, store := setup(t, verifier)
-	created, err := svc.CreateRequisition(t.Context(), input())
+	draft := input()
+	locationID := "00000000-0000-4000-8000-000000000701"
+	draft.WorkLocationReferenceID = &locationID
+	created, err := svc.CreateRequisition(t.Context(), draft)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,10 +33,19 @@ func TestOpenRequisitionRechecksOwnerProofAndPreservesBudget(t *testing.T) {
 	if _, err := svc.OpenRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrUnavailable) {
 		t.Fatalf("owner outage: %v", err)
 	}
+	verifier.mandateErr = hrerrors.ErrForbidden
+	budgetCalls := verifier.calls
+	if _, err := svc.OpenRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrForbidden) || verifier.calls != budgetCalls {
+		t.Fatalf("revoked approver mandate: error %v, budget calls %d", err, verifier.calls-budgetCalls)
+	}
+	verifier.mandateErr = nil
 	verifier.err = nil
 	verifier.budgetID = "00000000-0000-4000-8000-000000000778"
 	if _, err := svc.OpenRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("changed budget proof: %v", err)
+	}
+	if verifier.check.ExpectedBudgetReferenceID != "00000000-0000-4000-8000-000000000777" {
+		t.Fatalf("expected original budget reference, got %q", verifier.check.ExpectedBudgetReferenceID)
 	}
 	if store.Rows[created.ID].Status != "approved" || len(h.Events) != 3 {
 		t.Fatal("failed opening changed requisition or outbox")
@@ -44,8 +56,10 @@ func TestOpenRequisitionRechecksOwnerProofAndPreservesBudget(t *testing.T) {
 		opened.BudgetReferenceID == nil || *opened.BudgetReferenceID != verifier.budgetID || len(h.Events) != 4 {
 		t.Fatalf("opened requisition = %+v, error = %v", opened, err)
 	}
-	if verifier.check.ApproverPrincipalID != "00000000-0000-4000-8000-000000000998" {
-		t.Fatalf("proof approver = %q", verifier.check.ApproverPrincipalID)
+	if verifier.mandatePrincipal != verifier.check.ApproverPrincipalID || verifier.mandateUnit != created.OrganizationUnitReferenceID ||
+		verifier.check.ApproverPrincipalID != "00000000-0000-4000-8000-000000000998" ||
+		verifier.check.WorkLocationReferenceID == nil || *verifier.check.WorkLocationReferenceID != locationID {
+		t.Fatalf("proof check = %+v", verifier.check)
 	}
 	if _, err := svc.OpenRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
 		t.Fatalf("repeated opening: %v", err)

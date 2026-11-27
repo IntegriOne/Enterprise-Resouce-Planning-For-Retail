@@ -35,6 +35,31 @@ func interviews(page operation.Page[entity.Interview], err error) (*pb.Interview
 	}
 	return &pb.InterviewsResponse{Items: items, Page: pageInfo(page)}, nil
 }
+
+// StartInterview meneruskan pembukaan sesi wawancara ke service.
+func (h *Handler) StartInterview(ctx context.Context, request *common.IDRequest) (*pb.InterviewResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return interviewResponse(h.service.StartInterview(ctx, request.Id))
+}
+
+// CompleteInterview meneruskan finalisasi wawancara ke service.
+func (h *Handler) CompleteInterview(ctx context.Context, request *common.IDRequest) (*pb.InterviewResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return interviewResponse(h.service.CompleteInterview(ctx, request.Id))
+}
+
+// CancelInterview membatalkan reservasi wawancara melalui command HRM.
+func (h *Handler) CancelInterview(ctx context.Context, request *common.IDRequest) (*pb.InterviewResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return interviewResponse(h.service.CancelInterview(ctx, request.Id))
+}
+
 func (h *Handler) CreateInterview(ctx context.Context, r *pb.CreateInterviewRequest) (*pb.InterviewResponse, error) {
 	if r == nil || r.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

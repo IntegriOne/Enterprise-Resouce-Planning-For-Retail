@@ -88,6 +88,24 @@ func (h *Handler) UpdatePerformanceGoal(ctx context.Context, req *pb.UpdatePerfo
 func (h *Handler) DeletePerformanceGoal(ctx context.Context, req *common.IDRequest) (*common.EmptyResponse, error) {
 	return remove(ctx, req, h.service.DeletePerformanceGoal)
 }
+func (h *Handler) SubmitPerformanceGoal(ctx context.Context, req *common.IDRequest) (*pb.PerformanceGoalResponse, error) {
+	if req == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return goalResponse(h.service.SubmitPerformanceGoal(ctx, req.Id))
+}
+func (h *Handler) ApprovePerformanceGoal(ctx context.Context, req *common.IDRequest) (*pb.PerformanceGoalResponse, error) {
+	if req == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return goalResponse(h.service.ApprovePerformanceGoal(ctx, req.Id))
+}
+func (h *Handler) RejectPerformanceGoal(ctx context.Context, req *common.IDRequest) (*pb.PerformanceGoalResponse, error) {
+	if req == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return goalResponse(h.service.RejectPerformanceGoal(ctx, req.Id))
+}
 func (h *Handler) GetPerformanceGoalByID(ctx context.Context, req *common.IDRequest) (*pb.PerformanceGoalResponse, error) {
 	if req == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

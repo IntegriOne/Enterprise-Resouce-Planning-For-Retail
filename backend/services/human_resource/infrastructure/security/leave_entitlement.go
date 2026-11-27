@@ -51,6 +51,23 @@ func (v *leaveEntitlementValidator) ValidateMutation(ctx context.Context, table 
 		}
 		entitlement = previous
 	}
+	if previous != nil && (previous.ClosedAt != nil || previous.ClosedByPrincipalID != nil) {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if entitlement.ClosedAt != nil || entitlement.ClosedByPrincipalID != nil {
+		if previous == nil || entitlement.ClosedAt == nil || entitlement.ClosedByPrincipalID == nil ||
+			entity.CompareDates(entitlement.ClosedAt.UTC(), entitlement.EntitlementPeriodEnd) <= 0 {
+			return hrerrors.ErrWorkflowRequired
+		}
+		expected := *previous
+		expected.ClosedAt = entitlement.ClosedAt
+		expected.ClosedByPrincipalID = entitlement.ClosedByPrincipalID
+		balance, err := previous.ClosingBalanceSnapshot.Rat()
+		if err != nil || balance.Sign() != 0 || !reflect.DeepEqual(&expected, entitlement) {
+			return hrerrors.ErrReferenceConflict
+		}
+		return nil
+	}
 	if entitlement.SourceWorkforceSnapshotReferenceID != nil || entitlement.UOMCode != "day" {
 		return hrerrors.ErrWorkflowRequired
 	}

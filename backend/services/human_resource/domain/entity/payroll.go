@@ -88,6 +88,11 @@ type PayrollRun struct {
 	CalculatedAt                      *time.Time       `gorm:"column:calculated_at;type:timestamptz" json:"calculated_at"`
 	ApprovedByPrincipalID             *string          `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
 	ApprovedAt                        *time.Time       `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
+	PostingRequestedByPrincipalID     *string          `gorm:"column:posting_requested_by_principal_id;type:uuid" json:"posting_requested_by_principal_id"`
+	PostingRequestedAt                *time.Time       `gorm:"column:posting_requested_at;type:timestamptz" json:"posting_requested_at"`
+	CancelledAt                       *time.Time       `gorm:"column:cancelled_at;type:timestamptz" json:"cancelled_at"`
+	CancelledByPrincipalID            *string          `gorm:"column:cancelled_by_principal_id;type:uuid" json:"cancelled_by_principal_id"`
+	CancellationReason                *string          `gorm:"column:cancellation_reason;type:varchar(300)" json:"cancellation_reason"`
 	FinanceJournalReferenceID         *string          `gorm:"column:finance_journal_reference_id;type:uuid" json:"finance_journal_reference_id"`
 	PaymentBatchReferenceID           *string          `gorm:"column:payment_batch_reference_id;type:uuid" json:"payment_batch_reference_id"`
 	FinanceSettlementEventReferenceID *string          `gorm:"column:finance_settlement_event_reference_id;type:uuid" json:"finance_settlement_event_reference_id"`
@@ -102,22 +107,23 @@ func (PayrollRun) TableName() string { return "hr_payroll_runs" }
 
 // PayrollResult memetakan baris hr_payroll_results.
 type PayrollResult struct {
-	ID                         string    `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
-	PayrollRunID               string    `gorm:"column:payroll_run_id;type:uuid" json:"payroll_run_id"`
-	PayrollGroupID             string    `gorm:"column:payroll_group_id;type:uuid" json:"payroll_group_id"`
-	WorkerID                   string    `gorm:"column:worker_id;type:uuid" json:"worker_id"`
-	PayrollProfileReferenceID  string    `gorm:"column:payroll_profile_reference_id;type:uuid" json:"payroll_profile_reference_id"`
-	CurrencyCode               string    `gorm:"column:currency_code;type:char(3)" json:"currency_code"`
-	GrossAmount                Decimal   `gorm:"column:gross_amount;type:numeric(20,6)" json:"gross_amount"`
-	ReimbursementAmount        Decimal   `gorm:"column:reimbursement_amount;type:numeric(20,6)" json:"reimbursement_amount"`
-	TotalDeductions            Decimal   `gorm:"column:total_deductions;type:numeric(20,6)" json:"total_deductions"`
-	EmployerCostAmount         Decimal   `gorm:"column:employer_cost_amount;type:numeric(20,6)" json:"employer_cost_amount"`
-	NetPayAmount               Decimal   `gorm:"column:net_pay_amount;type:numeric(20,6)" json:"net_pay_amount"`
-	ResultStatus               string    `gorm:"column:result_status;type:varchar(30)" json:"result_status"`
-	PaymentReferenceID         *string   `gorm:"column:payment_reference_id;type:uuid" json:"payment_reference_id"`
-	PayslipDocumentReferenceID *string   `gorm:"column:payslip_document_reference_id;type:uuid" json:"payslip_document_reference_id"`
-	CalculationDigest          []byte    `gorm:"column:calculation_digest;type:bytea" json:"calculation_digest"`
-	CreatedAt                  time.Time `gorm:"column:created_at;type:timestamptz;autoCreateTime:false;autoUpdateTime:false" json:"created_at"`
+	ID                            string    `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
+	PayrollRunID                  string    `gorm:"column:payroll_run_id;type:uuid" json:"payroll_run_id"`
+	PayrollGroupID                string    `gorm:"column:payroll_group_id;type:uuid" json:"payroll_group_id"`
+	WorkerID                      string    `gorm:"column:worker_id;type:uuid" json:"worker_id"`
+	PayrollProfileReferenceID     string    `gorm:"column:payroll_profile_reference_id;type:uuid" json:"payroll_profile_reference_id"`
+	CurrencyCode                  string    `gorm:"column:currency_code;type:char(3)" json:"currency_code"`
+	GrossAmount                   Decimal   `gorm:"column:gross_amount;type:numeric(20,6)" json:"gross_amount"`
+	ReimbursementAmount           Decimal   `gorm:"column:reimbursement_amount;type:numeric(20,6)" json:"reimbursement_amount"`
+	TotalDeductions               Decimal   `gorm:"column:total_deductions;type:numeric(20,6)" json:"total_deductions"`
+	EmployerCostAmount            Decimal   `gorm:"column:employer_cost_amount;type:numeric(20,6)" json:"employer_cost_amount"`
+	NetPayAmount                  Decimal   `gorm:"column:net_pay_amount;type:numeric(20,6)" json:"net_pay_amount"`
+	ResultStatus                  string    `gorm:"column:result_status;type:varchar(30)" json:"result_status"`
+	PaymentReferenceID            *string   `gorm:"column:payment_reference_id;type:uuid" json:"payment_reference_id"`
+	PayslipDocumentReferenceID    *string   `gorm:"column:payslip_document_reference_id;type:uuid" json:"payslip_document_reference_id"`
+	PayslipPublicationReferenceID *string   `gorm:"column:payslip_publication_reference_id;type:uuid" json:"payslip_publication_reference_id"`
+	CalculationDigest             []byte    `gorm:"column:calculation_digest;type:bytea" json:"calculation_digest"`
+	CreatedAt                     time.Time `gorm:"column:created_at;type:timestamptz;autoCreateTime:false;autoUpdateTime:false" json:"created_at"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.

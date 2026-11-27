@@ -51,7 +51,7 @@ func LeaveValidators(repos *repository.Registry) (map[string]MutationValidator, 
 			workers: repos.Worker, policies: repos.LeavePolicy, adjustments: repos.LeaveAdjustment, ledger: repos.LeaveLedgerEntry,
 		},
 		"hr_leave_adjustments": &leaveAdjustmentValidator{
-			entitlements: repos.LeaveEntitlement, adjustments: repos.LeaveAdjustment, ledger: repos.LeaveLedgerEntry,
+			entitlements: repos.LeaveEntitlement, policies: repos.LeavePolicy, adjustments: repos.LeaveAdjustment, ledger: repos.LeaveLedgerEntry,
 		},
 		"hr_leave_ledger_entries": &leaveLedgerValidator{
 			entitlements: repos.LeaveEntitlement, policies: repos.LeavePolicy,

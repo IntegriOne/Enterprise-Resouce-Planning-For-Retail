@@ -2,6 +2,7 @@ package security
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"testing"
 	"time"
@@ -49,13 +50,20 @@ func (s *workerAssignmentLookupStub) FindByID(_ context.Context, id string) (*en
 
 type workerPositionLookupStub struct{ row *entity.Position }
 
-func (s *workerPositionLookupStub) FindByID(context.Context, string) (*entity.Position, error) {
+func (s *workerPositionLookupStub) FindByIDForUpdate(context.Context, string) (*entity.Position, error) {
 	return s.row, nil
 }
 
 type workerOwnerStub struct {
-	check WorkerReferenceCheck
-	err   error
+	check         WorkerReferenceCheck
+	err           error
+	positionCheck PositionReferenceCheck
+	positionErr   error
+}
+
+func (s *workerOwnerStub) VerifyPositionReferences(_ context.Context, check PositionReferenceCheck) error {
+	s.positionCheck = check
+	return s.positionErr
 }
 
 func (s *workerOwnerStub) VerifyWorkerReferences(_ context.Context, check WorkerReferenceCheck) error {
@@ -154,7 +162,7 @@ func TestWorkerValidatorRequiresSignedEffectiveContractForActivation(t *testing.
 		EffectiveFrom: start, SignedAt: &start,
 		SignedDocumentReferenceID:        &worker.PersonPartyReferenceID,
 		SignedDocumentVersionReferenceID: &worker.PersonPartyReferenceID,
-		SignedContentDigest:              []byte{1}}
+		SignedContentDigest:              make([]byte, sha256.Size)}
 	lookup := &workerContractLookupStub{rows: []entity.EmploymentContract{contract}}
 	v := &workerValidator{workers: &workerNumberStub{}, contracts: count, contractLookup: lookup,
 		assignments: &workerChildStub{}, onboarding: &workerChildStub{}, owner: &workerOwnerStub{}}
@@ -174,6 +182,11 @@ func TestWorkerValidatorRequiresSignedEffectiveContractForActivation(t *testing.
 	lookup.rows[0].SignedContentDigest = nil
 	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("missing digest: %v", err)
+	}
+	lookup.rows[0] = contract
+	lookup.rows[0].SignedContentDigest = []byte{1}
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &active); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("invalid digest size: %v", err)
 	}
 	lookup.rows[0] = contract
 	lookup.rows[0].EmployingLegalEntityReferenceID = "00000000-0000-4000-8000-000000000099"
@@ -231,6 +244,19 @@ func TestWorkerValidatorAppliesOnlyApprovedCurrentPrimaryAssignment(t *testing.T
 	if owner.check.LegalEntityID != legalID {
 		t.Fatalf("owner proof missing: %+v", owner.check)
 	}
+	if owner.positionCheck.LegalEntityID != legalID || entity.CompareDates(owner.positionCheck.ValidFrom, start) != 0 {
+		t.Fatalf("position owner proof missing: %+v", owner.positionCheck)
+	}
+	worker.ServiceStartDate, applied.ServiceStartDate = &day, &day
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &applied); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("approved placement predates service start: %v", err)
+	}
+	worker.ServiceStartDate, applied.ServiceStartDate = nil, nil
+	owner.positionErr = hrerrors.ErrReferenceConflict
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &applied); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("position rejected by Foundation: %v", err)
+	}
+	owner.positionErr = nil
 	assignment.ApprovedAt = nil
 	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &applied); !errors.Is(err, hrerrors.ErrReferenceConflict) {
 		t.Fatalf("draft assignment: %v", err)
@@ -252,6 +278,16 @@ func TestWorkerValidatorAppliesOnlyApprovedCurrentPrimaryAssignment(t *testing.T
 		t.Fatalf("planned position: %v", err)
 	}
 	position.row.PositionStatus = "active"
+	positionEnd := day.AddDate(0, 0, 1)
+	position.row.ValidTo = &positionEnd
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &applied); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("open-ended assignment on position with end date: %v", err)
+	}
+	assignment.ValidTo = &positionEnd
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &applied); err != nil {
+		t.Fatalf("assignment ending with position: %v", err)
+	}
+	assignment.ValidTo, position.row.ValidTo = nil, nil
 	changed := applied
 	changed.WorkerNumber = "OTHER"
 	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &changed); !errors.Is(err, hrerrors.ErrWorkflowRequired) {
@@ -267,6 +303,9 @@ func TestWorkerValidatorAppliesOnlyApprovedCurrentPrimaryAssignment(t *testing.T
 	}
 	end := start
 	prior.ValidTo = &end
+	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &applied); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("replacement overlaps prior assignment on its final day: %v", err)
+	}
 	assignment.ValidFrom = day
 	if err := v.ValidateMutation(t.Context(), "hr_workers", worker, &applied); err != nil {
 		t.Fatalf("replace ended primary assignment: %v", err)

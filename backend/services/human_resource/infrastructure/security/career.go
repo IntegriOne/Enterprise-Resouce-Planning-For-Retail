@@ -45,6 +45,17 @@ type careerTransitionReader interface {
 	FindByIDForUpdate(context.Context, string) (*entity.CareerPathTransition, error)
 }
 
+type careerTransitionLookup interface {
+	SelectWhere(context.Context, []domainrepo.Filter, int, int) ([]entity.CareerPathTransition, error)
+}
+
+type careerPathTransitionValidator struct {
+	paths       careerPathReader
+	jobs        lockedJobReader
+	transitions careerTransitionLookup
+	aspirations positionReferenceCounter
+}
+
 type careerPathReader interface {
 	FindByIDForUpdate(context.Context, string) (*entity.CareerPath, error)
 }
@@ -71,7 +82,11 @@ func CareerValidators(repos *repository.Registry) (map[string]MutationValidator,
 	if repos == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	for _, dependency := range []any{repos.Worker, repos.Job, repos.DevelopmentPlan, repos.DevelopmentAction, repos.LearningCourse, repos.Competency, repos.CareerPathTransition, repos.CareerPath, repos.JobFamily} {
+	for _, dependency := range []any{
+		repos.Worker, repos.Job, repos.DevelopmentPlan, repos.DevelopmentAction,
+		repos.LearningCourse, repos.Competency, repos.CareerPathTransition,
+		repos.CareerPath, repos.JobFamily, repos.WorkerCareerAspiration,
+	} {
 		if operation.RequireDependency(dependency) != nil {
 			return nil, hrerrors.ErrUnavailable
 		}
@@ -86,6 +101,10 @@ func CareerValidators(repos *repository.Registry) (map[string]MutationValidator,
 		},
 		"hr_career_paths": &careerPathValidator{
 			families: repos.JobFamily, paths: repos.CareerPath, transitions: repos.CareerPathTransition,
+		},
+		"hr_career_path_transitions": &careerPathTransitionValidator{
+			paths: repos.CareerPath, jobs: repos.Job,
+			transitions: repos.CareerPathTransition, aspirations: repos.WorkerCareerAspiration,
 		},
 		"hr_worker_career_aspirations": &workerCareerAspirationValidator{
 			workers: repos.Worker, jobs: repos.Job,
@@ -283,6 +302,9 @@ func (v *developmentPlanValidator) ValidateMutation(ctx context.Context, table s
 		if previous == nil {
 			return hrerrors.ErrInvalidInput
 		}
+		if previous.Status != "draft" {
+			return hrerrors.ErrWorkflowRequired
+		}
 		count, err := v.actions.CountWhere(ctx, []domainrepo.Filter{{Column: "development_plan_id", Values: []any{previous.ID}}})
 		if err != nil {
 			return err
@@ -295,6 +317,52 @@ func (v *developmentPlanValidator) ValidateMutation(ctx context.Context, table s
 	plan, ok := after.(*entity.DevelopmentPlan)
 	if !ok || plan == nil || (previous != nil && (previous.ID != plan.ID || previous.WorkerID != plan.WorkerID)) {
 		return hrerrors.ErrInvalidInput
+	}
+	if previous != nil && previous.Status == "active" && plan.Status == "completed" {
+		expected := *previous
+		expected.Status = "completed"
+		if previous.ApprovedAt == nil || previous.ApprovedByPrincipalID == nil || previous.MentorWorkerID == nil ||
+			!reflect.DeepEqual(&expected, plan) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		filter := domainrepo.Filter{Column: "development_plan_id", Values: []any{plan.ID}}
+		total, err := v.actions.CountWhere(ctx, []domainrepo.Filter{filter})
+		if err != nil {
+			return err
+		}
+		pending, err := v.actions.CountWhere(ctx, []domainrepo.Filter{
+			filter, {Column: "completed_at", Values: []any{nil}},
+		})
+		if err != nil {
+			return err
+		}
+		if total == 0 || pending != 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+		return nil
+	}
+	if previous != nil && previous.Status != "draft" {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if plan.Status == "active" && previous != nil {
+		expected := *previous
+		expected.Status = "active"
+		expected.ApprovedAt = plan.ApprovedAt
+		expected.ApprovedByPrincipalID = plan.ApprovedByPrincipalID
+		if previous.ApprovedAt != nil || previous.ApprovedByPrincipalID != nil ||
+			plan.ApprovedAt == nil || plan.ApprovedByPrincipalID == nil || plan.MentorWorkerID == nil ||
+			entity.CompareDates(plan.ApprovedAt.UTC(), plan.TargetDate) > 0 || !reflect.DeepEqual(&expected, plan) {
+			return hrerrors.ErrWorkflowRequired
+		}
+	} else if plan.Status != "draft" || plan.ApprovedAt != nil || plan.ApprovedByPrincipalID != nil {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if previous != nil && (plan.Status == "active" ||
+		entity.CompareDates(previous.StartDate, plan.StartDate) != 0 ||
+		entity.CompareDates(previous.TargetDate, plan.TargetDate) != 0) {
+		if err := v.validateActionDates(ctx, plan); err != nil {
+			return err
+		}
 	}
 	if err := v.lockPeopleAndJob(ctx, plan); err != nil {
 		return err
@@ -315,6 +383,36 @@ func (v *developmentPlanValidator) ValidateMutation(ctx context.Context, table s
 	return nil
 }
 
+// validateActionDates memeriksa seluruh halaman tindakan selama rencana terkunci.
+func (v *developmentPlanValidator) validateActionDates(ctx context.Context, plan *entity.DevelopmentPlan) error {
+	filters := []domainrepo.Filter{{Column: "development_plan_id", Values: []any{plan.ID}}}
+	for offset := 0; ; offset += domainrepo.MaxLimit {
+		actions, err := v.actions.SelectWhere(ctx, filters, domainrepo.MaxLimit, offset)
+		if err != nil {
+			return err
+		}
+		if offset == 0 && plan.Status == "active" && len(actions) == 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+		for _, action := range actions {
+			if entity.CompareDates(action.DueDate, plan.StartDate) < 0 || entity.CompareDates(action.DueDate, plan.TargetDate) > 0 {
+				return hrerrors.ErrReferenceConflict
+			}
+			if plan.Status == "active" && (action.CompletedAt != nil || !canCompleteWithMentor(action)) {
+				return hrerrors.ErrWorkflowRequired
+			}
+		}
+		if len(actions) < domainrepo.MaxLimit {
+			return nil
+		}
+	}
+}
+
+func canCompleteWithMentor(action entity.DevelopmentAction) bool {
+	return (action.ActionType == "coaching" || action.ActionType == "mentoring") &&
+		action.CourseID == nil && action.TargetLevel == nil && action.EvidenceDocumentVersionReferenceID == nil
+}
+
 func (v *developmentPlanValidator) lockPeopleAndJob(ctx context.Context, plan *entity.DevelopmentPlan) error {
 	ids := []string{plan.WorkerID}
 	if plan.MentorWorkerID != nil {
@@ -328,6 +426,13 @@ func (v *developmentPlanValidator) lockPeopleAndJob(ctx context.Context, plan *e
 		}
 		if worker == nil || (worker.Status != entity.WorkerStatusActive && worker.Status != entity.WorkerStatusPreboarding) {
 			return hrerrors.ErrReferenceConflict
+		}
+		if plan.Status == "active" && plan.ApprovedByPrincipalID != nil {
+			isApprover := worker.IAMPrincipalReferenceID != nil && strings.EqualFold(*worker.IAMPrincipalReferenceID, *plan.ApprovedByPrincipalID)
+			if (id == plan.WorkerID && isApprover) ||
+				(id == *plan.MentorWorkerID && (!isApprover || worker.Status != entity.WorkerStatusActive)) {
+				return hrerrors.ErrForbidden
+			}
 		}
 	}
 	if plan.TargetJobID != nil {
@@ -381,6 +486,20 @@ func (v *developmentActionValidator) ValidateMutation(ctx context.Context, table
 	if err != nil {
 		return err
 	}
+	if after != nil && action.CompletedAt != nil {
+		if previous == nil || previous.CompletedAt != nil || plan == nil ||
+			plan.Status != "active" || plan.ApprovedAt == nil || action.CompletedAt.Before(*plan.ApprovedAt) ||
+			entity.CompareDates(action.CompletedAt.UTC(), plan.StartDate) < 0 ||
+			!canCompleteWithMentor(*action) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		expected := *previous
+		expected.CompletedAt = action.CompletedAt
+		if !reflect.DeepEqual(&expected, action) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		return nil
+	}
 	if plan == nil || plan.Status != "draft" {
 		return hrerrors.ErrReferenceConflict
 	}
@@ -425,4 +544,101 @@ func (v *developmentActionValidator) ValidateMutation(ctx context.Context, table
 		}
 	}
 	return nil
+}
+
+// ValidateMutation menjaga transisi karier hanya diubah pada jalur draf dengan job keluarga yang sama.
+func (v *careerPathTransitionValidator) ValidateMutation(ctx context.Context, table string, before, after entity.Validatable) error {
+	if v == nil || table != "hr_career_path_transitions" ||
+		operation.RequireDependency(v.paths) != nil || operation.RequireDependency(v.jobs) != nil ||
+		operation.RequireDependency(v.transitions) != nil || operation.RequireDependency(v.aspirations) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	var previous *entity.CareerPathTransition
+	if before != nil {
+		var ok bool
+		previous, ok = before.(*entity.CareerPathTransition)
+		if !ok || previous == nil {
+			return hrerrors.ErrInvalidInput
+		}
+	}
+	if previous == nil && after == nil {
+		return hrerrors.ErrInvalidInput
+	}
+	target := previous
+	var transition *entity.CareerPathTransition
+	if after != nil {
+		var ok bool
+		transition, ok = after.(*entity.CareerPathTransition)
+		if !ok || transition == nil {
+			return hrerrors.ErrInvalidInput
+		}
+		if previous != nil && (previous.ID != transition.ID || previous.CareerPathID != transition.CareerPathID) {
+			return hrerrors.ErrWorkflowRequired
+		}
+		if strings.EqualFold(transition.FromJobID, transition.ToJobID) {
+			return hrerrors.ErrInvalidInput
+		}
+		target = transition
+	}
+	path, err := v.paths.FindByIDForUpdate(ctx, target.CareerPathID)
+	if err != nil {
+		return workerAssessmentReferenceError(err)
+	}
+	if path == nil || path.Status != "draft" {
+		return hrerrors.ErrWorkflowRequired
+	}
+	if previous != nil && (after == nil || !reflect.DeepEqual(previous, transition)) {
+		count, err := v.aspirations.CountWhere(ctx, []domainrepo.Filter{{Column: "career_path_transition_id", Values: []any{target.ID}}})
+		if err != nil {
+			return err
+		}
+		if count > 0 {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
+	if after == nil {
+		return nil
+	}
+	jobIDs := []string{transition.FromJobID, transition.ToJobID}
+	sort.Strings(jobIDs)
+	for _, jobID := range jobIDs {
+		job, err := v.jobs.FindByIDForUpdate(ctx, jobID)
+		if err != nil {
+			return workerAssessmentReferenceError(err)
+		}
+		if job == nil || !job.IsActive || !strings.EqualFold(job.JobFamilyID, path.JobFamilyID) ||
+			!jobOverlapsCareerPath(job, path) {
+			return hrerrors.ErrReferenceConflict
+		}
+	}
+	matches, err := v.transitions.SelectWhere(ctx, []domainrepo.Filter{
+		{Column: "career_path_id", Values: []any{transition.CareerPathID}},
+		{Column: "from_job_id", Values: []any{transition.FromJobID}},
+		{Column: "to_job_id", Values: []any{transition.ToJobID}},
+	}, 2, 0)
+	if err != nil {
+		return err
+	}
+	for _, existing := range matches {
+		if existing.ID != transition.ID {
+			return hrerrors.ErrAlreadyExists
+		}
+	}
+	return nil
+}
+
+func jobOverlapsCareerPath(job *entity.Job, path *entity.CareerPath) bool {
+	if job == nil || path == nil {
+		return false
+	}
+	if job.ValidTo != nil && entity.CompareDates(*job.ValidTo, path.ValidFrom) < 0 {
+		return false
+	}
+	if path.ValidTo != nil && entity.CompareDates(job.ValidFrom, *path.ValidTo) > 0 {
+		return false
+	}
+	return true
 }

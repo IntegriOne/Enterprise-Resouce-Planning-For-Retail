@@ -10,16 +10,24 @@ import (
 )
 
 type approvalVerifierStub struct {
-	check    service.RequisitionApprovalCheck
-	budgetID string
-	err      error
-	calls    int
+	check            service.RequisitionApprovalCheck
+	budgetID         string
+	err              error
+	calls            int
+	mandateErr       error
+	mandatePrincipal string
+	mandateUnit      string
 }
 
 func (v *approvalVerifierStub) VerifyRequisitionApproval(_ context.Context, check service.RequisitionApprovalCheck) (string, error) {
 	v.calls++
 	v.check = check
 	return v.budgetID, v.err
+}
+
+func (v *approvalVerifierStub) VerifyRequisitionMandate(_ context.Context, principal, unit string) error {
+	v.mandatePrincipal, v.mandateUnit = principal, unit
+	return v.mandateErr
 }
 
 func TestApproveRequisitionRequiresIndependentActorAndOwnerProof(t *testing.T) {
@@ -59,7 +67,7 @@ func TestApproveRequisitionRequiresIndependentActorAndOwnerProof(t *testing.T) {
 	}
 	if verifier.check.RequisitionID != created.ID || verifier.check.CreatedByPrincipalID != creatorID ||
 		verifier.check.SubmittedByPrincipalID != creatorID || verifier.check.ApproverPrincipalID != h.Actor.PrincipalID ||
-		verifier.check.Headcount != 1 {
+		verifier.check.Headcount != 1 || verifier.check.ExpectedBudgetReferenceID != "" {
 		t.Fatalf("owner check = %+v", verifier.check)
 	}
 	if _, err := svc.ApproveRequisition(t.Context(), created.ID); !errors.Is(err, hrerrors.ErrWorkflowRequired) {

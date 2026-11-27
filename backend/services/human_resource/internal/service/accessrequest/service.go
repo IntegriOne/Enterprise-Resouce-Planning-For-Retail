@@ -12,18 +12,20 @@ import (
 )
 
 type Dependencies struct {
-	Runtime       operation.Dependencies
-	AccessRequest domainrepo.RecordRepository[entity.AccessRequest, string]
+	Runtime              operation.Dependencies
+	AccessRequest        domainrepo.RecordRepository[entity.AccessRequest, string]
+	WorkerLifecycleEvent domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
 }
 
 // Service mengoordinasikan operasi domain accessrequest.
 type Service struct {
-	accessRequest *operation.Resource[entity.AccessRequest, string, *entity.AccessRequest]
+	accessRequest   *operation.Resource[entity.AccessRequest, string, *entity.AccessRequest]
+	lifecycleEvents domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{lifecycleEvents: deps.WorkerLifecycleEvent}
 	var err error
 	s.accessRequest, err = operation.NewResource[entity.AccessRequest, string, *entity.AccessRequest](
 		deps.AccessRequest,
@@ -41,7 +43,28 @@ func (s *Service) CreateAccessRequest(ctx context.Context, in CreateAccessReques
 	if s == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	return s.accessRequest.Create(ctx, func() (*entity.AccessRequest, error) { return createAccessRequest(in) })
+	return s.accessRequest.Create(ctx, func() (*entity.AccessRequest, error) {
+		if in.RequestKind == "provision" && in.LifecycleEventID == 0 {
+			if err := entity.ValidateUUID("worker_id", in.WorkerID); err != nil {
+				return nil, err
+			}
+			if err := operation.RequireDependency(s.lifecycleEvents); err != nil {
+				return nil, err
+			}
+			events, err := s.lifecycleEvents.SelectWhere(ctx, []domainrepo.Filter{
+				{Column: "worker_id", Values: []any{in.WorkerID}},
+				{Column: "idempotency_key", Values: []any{"worker-activate:" + in.WorkerID}},
+			}, 1, 0)
+			if err != nil {
+				return nil, err
+			}
+			if len(events) != 1 {
+				return nil, hrerrors.ErrWorkflowRequired
+			}
+			in.LifecycleEventID = events[0].ID
+		}
+		return createAccessRequest(in)
+	})
 }
 
 // UpdateAccessRequest menjalankan operasi aplikasi dengan validasi dan scope server.

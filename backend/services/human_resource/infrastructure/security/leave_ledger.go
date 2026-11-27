@@ -42,7 +42,7 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 	if err != nil {
 		return err
 	}
-	if entitlement == nil ||
+	if entitlement == nil || entitlement.ClosedAt != nil ||
 		entity.CompareDates(entry.EffectiveDate, entitlement.EntitlementPeriodStart) < 0 ||
 		entity.CompareDates(entry.EffectiveDate, entitlement.EntitlementPeriodEnd) > 0 {
 		return hrerrors.ErrReferenceConflict
@@ -112,7 +112,7 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 		if actual.Cmp(expected) != 0 {
 			return hrerrors.Invalid("quantity_delta", "reversal must exactly negate the opening entry")
 		}
-		return nil
+		return checkLeaveBalanceWithPendingAdjustments(ctx, entitlement, entry.QuantityDelta, v.policies, v.adjustments, v.ledger)
 	}
 	if entry.EntryType == "opening" {
 		if count != 0 || !emptyLeaveBalance(entitlement) || entry.AdjustmentID != nil {
@@ -143,7 +143,7 @@ func (v *leaveLedgerValidator) ValidateMutation(ctx context.Context, table strin
 	if entry.EntryType == "expiry" {
 		if count == 0 || entry.AdjustmentID != nil ||
 			entity.CompareDates(entry.EffectiveDate, entitlement.EntitlementPeriodEnd) != 0 ||
-			entity.CompareDates(entry.RecordedAt, entry.EffectiveDate) < 0 {
+			entity.CompareDates(entry.RecordedAt.UTC(), entry.EffectiveDate) <= 0 {
 			return hrerrors.ErrWorkflowRequired
 		}
 		remaining, err := entitlement.ClosingBalanceSnapshot.Rat()

@@ -19,6 +19,7 @@ service WorkforcePlanningService {
   rpc UpdateJob(UpdateJobRequest) returns (JobResponse);
   rpc DeleteJob(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetJobByID(human_resource.common.v1.IDRequest) returns (JobResponse);
+  rpc GetJobsByIds(GetJobsByIdsRequest) returns (JobsResponse);
   rpc GetAllJobs(human_resource.common.v1.PageRequest) returns (JobsResponse);
   rpc FindJobByJobFamilyID(human_resource.common.v1.StringFinderRequest) returns (JobsResponse);
   rpc FindJobByJobCode(human_resource.common.v1.StringFinderRequest) returns (JobsResponse);
@@ -37,6 +38,10 @@ service WorkforcePlanningService {
   rpc FindPositionByPositionStatus(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
   rpc FindPositionByWorkLocationReferenceID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
   rpc FindPositionByCostCenterReferenceID(human_resource.common.v1.StringFinderRequest) returns (PositionsResponse);
+  rpc CancelWorkforcePlan(human_resource.common.v1.IDRequest) returns (WorkforcePlanResponse);
+  rpc SupersedeWorkforcePlan(SupersedeWorkforcePlanRequest) returns (WorkforcePlanResponse);
+  rpc ApproveWorkforcePlan(human_resource.common.v1.IDRequest) returns (WorkforcePlanResponse);
+  rpc SubmitWorkforcePlan(human_resource.common.v1.IDRequest) returns (WorkforcePlanResponse);
   rpc CreateWorkforcePlan(CreateWorkforcePlanRequest) returns (WorkforcePlanResponse);
   rpc UpdateWorkforcePlan(UpdateWorkforcePlanRequest) returns (WorkforcePlanResponse);
   rpc DeleteWorkforcePlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -122,6 +127,10 @@ message UpdateJobRequest {
   google.protobuf.FieldMask update_mask = 3;
 }
 message JobResponse { Job item = 1; }
+message GetJobsByIdsRequest {
+  repeated string ids = 1;
+}
+
 message JobsResponse {
   repeated Job items = 1;
   human_resource.common.v1.PageInfo page = 2;
@@ -182,6 +191,8 @@ message WorkforcePlan {
   google.protobuf.Timestamp created_at = 11;
   optional string approved_by_principal_id = 12;
   google.protobuf.Timestamp approved_at = 13;
+  optional string superseded_by_plan_id = 14;
+  optional string supersession_reason_code = 15;
 }
 message WorkforcePlanInput {
   optional string plan_code = 1;
@@ -250,4 +261,10 @@ message WorkforcePlanLineResponse { WorkforcePlanLine item = 1; }
 message WorkforcePlanLinesResponse {
   repeated WorkforcePlanLine items = 1;
   human_resource.common.v1.PageInfo page = 2;
+}
+
+message SupersedeWorkforcePlanRequest {
+  string id = 1;
+  string replacement_plan_id = 2;
+  string reason_code = 3;
 }

@@ -90,7 +90,7 @@ func TestDevelopmentPlanAndActionRPCWithPostgreSQL(t *testing.T) {
 		Policy: policy, Integrity: security.NewIntegrity(validators),
 	}
 	svc, err := service.NewService(service.Dependencies{
-		Runtime: runtime, DevelopmentPlan: repos.DevelopmentPlan, DevelopmentAction: repos.DevelopmentAction,
+		Runtime: runtime, Worker: repos.Worker, DevelopmentPlan: repos.DevelopmentPlan, DevelopmentAction: repos.DevelopmentAction,
 		CareerPath: repos.CareerPath, CareerPathTransition: repos.CareerPathTransition,
 		WorkerCareerAspiration: repos.WorkerCareerAspiration,
 	})
@@ -223,6 +223,17 @@ func TestDevelopmentPlanAndActionRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.DeleteDevelopmentPlan(ctx, &common.IDRequest{Id: planID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete plan with action: %v", err)
 	}
+	shorterTarget := timestamppb.New(target.AsTime().AddDate(0, 0, -1))
+	if _, err := client.UpdateDevelopmentPlan(ctx, &pb.UpdateDevelopmentPlanRequest{
+		Id: planID, Input: &pb.DevelopmentPlanInput{TargetDate: shorterTarget},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"target_date"}},
+	}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("shorten plan before action due date = %v", err)
+	}
+	storedPlan, err := client.GetDevelopmentPlanByID(ctx, &common.IDRequest{Id: planID})
+	if err != nil || !storedPlan.GetValue().GetTargetDate().AsTime().Equal(target.AsTime()) {
+		t.Fatalf("plan date after rejected update: %+v, %v", storedPlan, err)
+	}
 	updatedObjective := "Prepare for promotion"
 	updated, err := client.UpdateDevelopmentAction(ctx, &pb.UpdateDevelopmentActionRequest{
 		Id: actionID, Input: &pb.DevelopmentActionInput{Objective: &updatedObjective},
@@ -277,7 +288,151 @@ func TestDevelopmentPlanAndActionRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.ApproveCareerPath(ctx, &common.IDRequest{Id: pathID}); status.Code(err) != codes.PermissionDenied {
 		t.Fatalf("creator approved own path: %v", err)
 	}
+	mentorPrincipal := "00000000-0000-4000-8000-000000000003"
+	if err := db.WithContext(ctx).Table("hr_workers").Where("id = ?", mentorID).
+		Update("iam_principal_reference_id", mentorPrincipal).Error; err != nil {
+		t.Fatal(err)
+	}
+	approvalTarget := timestamppb.New(time.Now().UTC().AddDate(0, 1, 0))
+	approvalCode := "mentor-approval-" + workerID
+	approvalPlan, err := client.CreateDevelopmentPlan(ctx, &pb.CreateDevelopmentPlanRequest{Input: &pb.DevelopmentPlanInput{
+		WorkerId: &workerID, PlanCode: &approvalCode, PlanVersion: &version,
+		MentorWorkerId: &mentorID, StartDate: start, TargetDate: approvalTarget,
+	}})
+	if err != nil {
+		t.Fatalf("create plan for mentor approval: %v", err)
+	}
+	approvedPlanID := approvalPlan.GetValue().GetId()
+	var coachingID string
+	t.Cleanup(func() {
+		cleanup := db.WithContext(context.Background())
+		if coachingID != "" {
+			if err := cleanup.Exec("DELETE FROM hr_development_actions WHERE id = ?", coachingID).Error; err != nil {
+				t.Errorf("cleanup completed coaching: %v", err)
+			}
+			if err := cleanup.Exec("DELETE FROM hr_outbox_events WHERE aggregate_id = ?", coachingID).Error; err != nil {
+				t.Errorf("cleanup coaching outbox: %v", err)
+			}
+		}
+		if err := cleanup.Exec("DELETE FROM hr_development_plans WHERE id = ?", approvedPlanID).Error; err != nil {
+			t.Errorf("cleanup approved development plan: %v", err)
+		}
+		if err := cleanup.Exec("DELETE FROM hr_outbox_events WHERE aggregate_id = ?", approvedPlanID).Error; err != nil {
+			t.Errorf("cleanup development plan outbox: %v", err)
+		}
+	})
+	originalPrincipal := policy.principalID
+	policy.principalID = mentorPrincipal
+	if _, err := client.ApproveDevelopmentPlan(ctx, &common.IDRequest{Id: approvedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("approve plan without actions = %v, want FailedPrecondition", err)
+	}
+	independentStudy := "self_study"
+	draftAction, err := client.CreateDevelopmentAction(ctx, &pb.CreateDevelopmentActionRequest{Input: &pb.DevelopmentActionInput{
+		DevelopmentPlanId: &approvedPlanID, ActionNumber: &number, ActionType: &independentStudy,
+		Objective: &objective, DueDate: approvalTarget,
+	}})
+	if err != nil {
+		t.Fatalf("create draft self-study action: %v", err)
+	}
+	coachingID = draftAction.GetValue().GetId()
+	if _, err := client.ApproveDevelopmentPlan(ctx, &common.IDRequest{Id: approvedPlanID}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("approve plan with unsupported completion path = %v, want FailedPrecondition", err)
+	}
+	if _, err := client.DeleteDevelopmentAction(ctx, &common.IDRequest{Id: coachingID}); err != nil {
+		t.Fatalf("remove unsupported action while plan is still draft: %v", err)
+	}
+	if err := db.WithContext(ctx).Exec("DELETE FROM hr_outbox_events WHERE aggregate_id = ?", coachingID).Error; err != nil {
+		t.Fatal(err)
+	}
+	coachingID = ""
+	policy.principalID = originalPrincipal
+	coaching, err := client.CreateDevelopmentAction(ctx, &pb.CreateDevelopmentActionRequest{Input: &pb.DevelopmentActionInput{
+		DevelopmentPlanId: &approvedPlanID, ActionNumber: &number, ActionType: &actionType,
+		Objective: &objective, DueDate: approvalTarget,
+	}})
+	if err != nil {
+		t.Fatalf("create coaching for mentor confirmation: %v", err)
+	}
+	coachingID = coaching.GetValue().GetId()
+	completeRequest := &common.IDRequest{Id: coachingID}
+	if _, err := client.CompleteDevelopmentAction(ctx, completeRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("complete action on draft plan = %v", err)
+	}
+
+	approveRequest := &common.IDRequest{Id: approvedPlanID}
+	if _, err := client.ApproveDevelopmentPlan(ctx, approveRequest); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("non-mentor approval = %v", err)
+	}
 	policy.principalID = "00000000-0000-4000-8000-000000000003"
+	actionRow := db.WithContext(ctx).Table("hr_development_actions").Where("id = ?", coachingID)
+	if err := actionRow.Update("completed_at", time.Now().UTC().Add(-time.Minute)).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.ApproveDevelopmentPlan(ctx, approveRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("approve draft with a previously completed action: %v", err)
+	}
+	if err := actionRow.Update("completed_at", nil).Error; err != nil {
+		t.Fatal(err)
+	}
+	active, err := client.ApproveDevelopmentPlan(ctx, approveRequest)
+	if err != nil || active.GetValue().GetStatus() != "active" ||
+		active.GetValue().GetApprovedByPrincipalId() != mentorPrincipal || active.GetValue().GetApprovedAt() == nil {
+		t.Fatalf("mentor approval: %+v, %v", active, err)
+	}
+	if _, err := client.CompleteDevelopmentPlan(ctx, approveRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("complete plan with pending action = %v", err)
+	}
+	completed, err := client.CompleteDevelopmentAction(ctx, completeRequest)
+	if err != nil || completed.GetValue().GetCompletedAt() == nil ||
+		completed.GetValue().GetEvidenceDocumentVersionReferenceId() != "" {
+		t.Fatalf("complete coaching: %+v, %v", completed, err)
+	}
+	if _, err := client.CompleteDevelopmentAction(ctx, completeRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat coaching completion = %v", err)
+	}
+	if _, err := client.DeleteDevelopmentAction(ctx, completeRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete completed coaching = %v", err)
+	}
+	if _, err := client.DeleteDevelopmentPlan(ctx, approveRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete active development plan = %v", err)
+	}
+
+	actionCompletedAt := completed.GetValue().GetCompletedAt().AsTime()
+	// Tempatkan satu halaman tindakan valid sebelum tindakan yang diuji.
+	if err := db.WithContext(ctx).Exec(`
+		INSERT INTO hr_development_actions (id, development_plan_id, action_number, action_type, objective, due_date, completed_at)
+		SELECT CAST(lpad(to_hex(n), 32, '0') AS uuid), ?, n + 1, 'coaching', 'Pagination fixture', ?, ?
+		FROM generate_series(1, 100) AS n`, approvedPlanID, approvalTarget.AsTime(), actionCompletedAt).Error; err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := db.Exec("DELETE FROM hr_development_actions WHERE development_plan_id = ? AND action_number > 1", approvedPlanID).Error; err != nil {
+			t.Errorf("cleanup pagination fixture: %v", err)
+		}
+	})
+	if err := actionRow.Update("completed_at", actionCompletedAt.Add(time.Hour)).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.CompleteDevelopmentPlan(ctx, approveRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("complete plan before action completion time: %v", err)
+	}
+	if err := actionRow.Update("completed_at", actionCompletedAt).Error; err != nil {
+		t.Fatal(err)
+	}
+
+	finishedPlan, err := client.CompleteDevelopmentPlan(ctx, approveRequest)
+	if err != nil || finishedPlan.GetValue().GetStatus() != "completed" ||
+		finishedPlan.GetValue().GetApprovedByPrincipalId() != mentorPrincipal {
+		t.Fatalf("complete development plan: %+v, %v", finishedPlan, err)
+	}
+	if _, err := client.CompleteDevelopmentPlan(ctx, approveRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat plan completion = %v", err)
+	}
+	var planEvents int64
+	if err := db.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", approvedPlanID).Count(&planEvents).Error; err != nil || planEvents != 3 {
+		t.Fatalf("development plan events = %d, error = %v", planEvents, err)
+	}
+
 	approvedPath, err := client.ApproveCareerPath(ctx, &common.IDRequest{Id: pathID})
 	if err != nil || approvedPath.GetValue().GetStatus() != "approved" ||
 		approvedPath.GetValue().GetApprovedByPrincipalId() != policy.principalID {

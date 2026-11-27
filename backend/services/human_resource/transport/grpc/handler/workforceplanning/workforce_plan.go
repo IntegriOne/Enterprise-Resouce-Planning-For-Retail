@@ -17,7 +17,8 @@ func workforcePlan(value *entity.WorkforcePlan) *pb.WorkforcePlan {
 	item := &pb.WorkforcePlan{Id: value.ID, PlanCode: value.PlanCode, PlanVersion: value.PlanVersion, LegalEntityReferenceId: value.LegalEntityReferenceID,
 		PeriodStart: value.PeriodStart.Format("2006-01-02"), PeriodEnd: value.PeriodEnd.Format("2006-01-02"), ScenarioCode: value.ScenarioCode,
 		Status: value.Status, FinanceBudgetReferenceId: value.FinanceBudgetReferenceID, CreatedByPrincipalId: value.CreatedByPrincipalID,
-		CreatedAt: timestamppb.New(value.CreatedAt), ApprovedByPrincipalId: value.ApprovedByPrincipalID}
+		CreatedAt: timestamppb.New(value.CreatedAt), ApprovedByPrincipalId: value.ApprovedByPrincipalID,
+		SupersededByPlanId: value.SupersededByPlanID, SupersessionReasonCode: value.SupersessionReasonCode}
 	if value.ApprovedAt != nil {
 		item.ApprovedAt = timestamppb.New(*value.ApprovedAt)
 	}
@@ -154,4 +155,32 @@ func (h *Handler) FindWorkforcePlanByApprovedByPrincipalID(ctx context.Context, 
 		return nil, response.Error(hrerrors.ErrInvalidInput)
 	}
 	return workforcePlans(h.service.FindWorkforcePlanByApprovedByPrincipalID(ctx, request.Value, int(request.Limit), int(request.Offset)))
+}
+
+func (h *Handler) SubmitWorkforcePlan(ctx context.Context, request *common.IDRequest) (*pb.WorkforcePlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return workforcePlanResponse(h.service.SubmitWorkforcePlan(ctx, request.Id))
+}
+
+func (h *Handler) CancelWorkforcePlan(ctx context.Context, request *common.IDRequest) (*pb.WorkforcePlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return workforcePlanResponse(h.service.CancelWorkforcePlan(ctx, request.Id))
+}
+
+func (h *Handler) ApproveWorkforcePlan(ctx context.Context, request *common.IDRequest) (*pb.WorkforcePlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return workforcePlanResponse(h.service.ApproveWorkforcePlan(ctx, request.Id))
+}
+
+func (h *Handler) SupersedeWorkforcePlan(ctx context.Context, request *pb.SupersedeWorkforcePlanRequest) (*pb.WorkforcePlanResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return workforcePlanResponse(h.service.SupersedeWorkforcePlan(ctx, request.Id, request.ReplacementPlanId, request.ReasonCode))
 }

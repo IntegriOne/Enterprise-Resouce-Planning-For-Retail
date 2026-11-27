@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
@@ -19,6 +18,7 @@ type RequisitionApprovalCheck struct {
 	HiringManagerPrincipalID    string
 	JobID                       string
 	PositionID                  *string
+	WorkLocationReferenceID     *string
 	WorkforcePlanLineID         *string
 	Headcount                   int32
 	TargetStartDate             *time.Time
@@ -26,9 +26,15 @@ type RequisitionApprovalCheck struct {
 	CreatedByPrincipalID        string
 	SubmittedByPrincipalID      string
 	ApproverPrincipalID         string
+	ExpectedBudgetReferenceID   string
 }
 
-// RequisitionApprovalVerifier membuktikan mandat unit, headcount dan anggaran.
+// RequisitionMandateVerifier memeriksa grant peninjau melalui IAM.
+type RequisitionMandateVerifier interface {
+	VerifyRequisitionMandate(context.Context, string, string) error
+}
+
+// RequisitionApprovalVerifier membuktikan headcount dan anggaran.
 // Nilai kembali adalah referensi otorisasi anggaran milik Finance yang stabil.
 type RequisitionApprovalVerifier interface {
 	VerifyRequisitionApproval(context.Context, RequisitionApprovalCheck) (string, error)
@@ -36,7 +42,7 @@ type RequisitionApprovalVerifier interface {
 
 // ApproveRequisition memutuskan requisition submitted setelah bukti owner tersedia.
 func (s *Service) ApproveRequisition(ctx context.Context, requisitionID string) (*entity.Requisition, error) {
-	if s == nil || operation.RequireDependency(s.approvalVerifier) != nil {
+	if s == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return s.requisition.Command(ctx, requisitionID, "approve", func(txCtx context.Context, requisition *entity.Requisition, actor operation.Actor, now time.Time) (*entity.Requisition, error) {
@@ -53,15 +59,18 @@ func (s *Service) ApproveRequisition(ctx context.Context, requisitionID string) 
 			strings.EqualFold(actor.PrincipalID, *requisition.SubmittedByPrincipalID) {
 			return nil, hrerrors.ErrForbidden
 		}
+		if operation.RequireDependency(s.mandateVerifier) != nil {
+			return nil, hrerrors.ErrUnavailable
+		}
+		if err := s.mandateVerifier.VerifyRequisitionMandate(txCtx, actor.PrincipalID, requisition.OrganizationUnitReferenceID); err != nil {
+			return nil, operation.OwnerVerificationError(txCtx, err)
+		}
+		if operation.RequireDependency(s.approvalVerifier) != nil {
+			return nil, hrerrors.ErrUnavailable
+		}
 		budgetID, err := s.approvalVerifier.VerifyRequisitionApproval(txCtx, requisitionApprovalCheck(requisition, actor.PrincipalID))
 		if err != nil {
-			if txCtx.Err() != nil {
-				return nil, txCtx.Err()
-			}
-			if errors.Is(err, hrerrors.ErrReferenceConflict) {
-				return nil, hrerrors.ErrReferenceConflict
-			}
-			return nil, hrerrors.ErrUnavailable
+			return nil, operation.OwnerVerificationError(txCtx, err)
 		}
 		if err := entity.ValidateUUID("budget_reference_id", budgetID); err != nil {
 			return nil, hrerrors.ErrReferenceConflict
@@ -80,7 +89,8 @@ func requisitionApprovalCheck(requisition *entity.Requisition, approverID string
 		OrganizationUnitReferenceID: requisition.OrganizationUnitReferenceID,
 		HiringManagerPrincipalID:    requisition.HiringManagerPrincipalID,
 		JobID:                       requisition.JobID, PositionID: requisition.PositionID,
-		WorkforcePlanLineID: requisition.WorkforcePlanLineID, Headcount: requisition.Headcount,
+		WorkLocationReferenceID: requisition.WorkLocationReferenceID,
+		WorkforcePlanLineID:     requisition.WorkforcePlanLineID, Headcount: requisition.Headcount,
 		TargetStartDate: requisition.TargetStartDate, EmploymentCategory: requisition.EmploymentCategory,
 		CreatedByPrincipalID:   *requisition.CreatedByPrincipalID,
 		SubmittedByPrincipalID: *requisition.SubmittedByPrincipalID,

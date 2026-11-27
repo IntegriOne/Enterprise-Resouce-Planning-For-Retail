@@ -72,6 +72,17 @@ func (r *EngagementSurveyResultRepository) query(ctx context.Context) (*gorm.DB,
 	return pgstore.Query(ctx, r.db, &entity.EngagementSurveyResult{})
 }
 
+// reportableQuery menyaring hasil sebelum pembacaan, pagination, dan penghitungan.
+func (r *EngagementSurveyResultRepository) reportableQuery(ctx context.Context) (*gorm.DB, error) {
+	db, err := r.query(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return db.Where(`EXISTS (SELECT 1 FROM hr_engagement_surveys AS survey
+		WHERE survey.id = hr_engagement_survey_results.survey_id
+		AND hr_engagement_survey_results.respondent_count >= survey.minimum_reporting_population)`), nil
+}
+
 // Insert menyimpan record baru tanpa upsert.
 func (r *EngagementSurveyResultRepository) Insert(ctx context.Context, value *entity.EngagementSurveyResult) error {
 	if value == nil {
@@ -108,7 +119,7 @@ func (r *EngagementSurveyResultRepository) FindByIDForUpdate(ctx context.Context
 }
 
 func (r *EngagementSurveyResultRepository) find(ctx context.Context, key string, lock bool) (*entity.EngagementSurveyResult, error) {
-	db, err := r.query(ctx)
+	db, err := r.reportableQuery(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +157,7 @@ func (r *EngagementSurveyResultRepository) SelectWhere(ctx context.Context, filt
 	if err != nil {
 		return nil, err
 	}
-	db, err := r.query(ctx)
+	db, err := r.reportableQuery(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +179,7 @@ func (r *EngagementSurveyResultRepository) Count(ctx context.Context) (int64, er
 
 // CountWhere menghitung record dalam scope yang sama dengan list.
 func (r *EngagementSurveyResultRepository) CountWhere(ctx context.Context, filters []domainrepo.Filter) (int64, error) {
-	db, err := r.query(ctx)
+	db, err := r.reportableQuery(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -178,6 +189,17 @@ func (r *EngagementSurveyResultRepository) CountWhere(ctx context.Context, filte
 	}
 	var total int64
 	err = db.Count(&total).Error
+	return total, pgstore.MapError(err)
+}
+
+// CountStoredBySurveyID menghitung semua hasil tersimpan untuk menjaga survei tetap immutable.
+func (r *EngagementSurveyResultRepository) CountStoredBySurveyID(ctx context.Context, surveyID string) (int64, error) {
+	db, err := r.query(ctx)
+	if err != nil {
+		return 0, err
+	}
+	var total int64
+	err = db.Where("survey_id = ?", surveyID).Count(&total).Error
 	return total, pgstore.MapError(err)
 }
 

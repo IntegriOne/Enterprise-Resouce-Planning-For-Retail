@@ -84,7 +84,7 @@ Tidak ada Go service, kontrak HRM, endpoint atau worker baru dalam perubahan ini
 
 ## Generasi dan verifikasi
 
-Baseline historis [000001_hrm.up.sql](../db/migrations/000001_hrm.up.sql) dan [000001_hrm.down.sql](../db/migrations/000001_hrm.down.sql) sudah dilindungi checksum; jangan menulis ulang keduanya. Perubahan baru memakai migrasi aditif berurutan. [000002_hrm_requisition_provenance.up.sql](../db/migrations/000002_hrm_requisition_provenance.up.sql) menambah identitas pembuat dan pengusul requisition serta constraint pemisahan tugas. Data lama tetap nullable dan workflow harus menolak approval tanpa provenance yang terbukti.
+Baseline pra-rilis [000001_hrm.up.sql](../db/migrations/000001_hrm.up.sql) dan [000001_hrm.down.sql](../db/migrations/000001_hrm.down.sql) mencakup provenance dan aturan pemisahan tugas. Database yang menyimpan checksum baseline lama memerlukan persiapan ulang sesuai prosedur development. Pengajuan lama tanpa provenance yang terbukti tidak dapat disetujui.
 
 `generate.sh` sekarang memvalidasi DBML dengan CLI `@dbml/cli@12.0.0` tanpa menulis migrasi historis. Argumen path opsional mengekspor skema lengkap saat ini untuk inspeksi; output tidak boleh berada dalam folder migrasi. Skrip ini tidak menghasilkan migrasi delta.
 

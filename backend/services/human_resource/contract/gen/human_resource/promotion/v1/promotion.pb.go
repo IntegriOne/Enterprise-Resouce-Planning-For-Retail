@@ -952,6 +952,74 @@ func (x *PromotionDecisionsResponse) GetPage() *v1.PageInfo {
 	return nil
 }
 
+type DecidePromotionRecommendationRequest struct {
+	state                               protoimpl.MessageState `protogen:"open.v1"`
+	RecommendationId                    string                 `protobuf:"bytes,1,opt,name=recommendation_id,json=recommendationId,proto3" json:"recommendation_id,omitempty"`
+	RationaleDocumentVersionReferenceId string                 `protobuf:"bytes,2,opt,name=rationale_document_version_reference_id,json=rationaleDocumentVersionReferenceId,proto3" json:"rationale_document_version_reference_id,omitempty"`
+	RationaleDigest                     []byte                 `protobuf:"bytes,3,opt,name=rationale_digest,json=rationaleDigest,proto3" json:"rationale_digest,omitempty"`
+	IdempotencyKey                      string                 `protobuf:"bytes,4,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	unknownFields                       protoimpl.UnknownFields
+	sizeCache                           protoimpl.SizeCache
+}
+
+func (x *DecidePromotionRecommendationRequest) Reset() {
+	*x = DecidePromotionRecommendationRequest{}
+	mi := &file_human_resource_promotion_v1_promotion_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DecidePromotionRecommendationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DecidePromotionRecommendationRequest) ProtoMessage() {}
+
+func (x *DecidePromotionRecommendationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_promotion_v1_promotion_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DecidePromotionRecommendationRequest.ProtoReflect.Descriptor instead.
+func (*DecidePromotionRecommendationRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_promotion_v1_promotion_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *DecidePromotionRecommendationRequest) GetRecommendationId() string {
+	if x != nil {
+		return x.RecommendationId
+	}
+	return ""
+}
+
+func (x *DecidePromotionRecommendationRequest) GetRationaleDocumentVersionReferenceId() string {
+	if x != nil {
+		return x.RationaleDocumentVersionReferenceId
+	}
+	return ""
+}
+
+func (x *DecidePromotionRecommendationRequest) GetRationaleDigest() []byte {
+	if x != nil {
+		return x.RationaleDigest
+	}
+	return nil
+}
+
+func (x *DecidePromotionRecommendationRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
 var File_human_resource_promotion_v1_promotion_proto protoreflect.FileDescriptor
 
 const file_human_resource_promotion_v1_promotion_proto_rawDesc = "" +
@@ -1064,7 +1132,12 @@ const file_human_resource_promotion_v1_promotion_proto_rawDesc = "" +
 	"\x05value\x18\x01 \x01(\v2..human_resource.promotion.v1.PromotionDecisionR\x05value\"\x9a\x01\n" +
 	"\x1aPromotionDecisionsResponse\x12D\n" +
 	"\x05items\x18\x01 \x03(\v2..human_resource.promotion.v1.PromotionDecisionR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\x86!\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\xfd\x01\n" +
+	"$DecidePromotionRecommendationRequest\x12+\n" +
+	"\x11recommendation_id\x18\x01 \x01(\tR\x10recommendationId\x12T\n" +
+	"'rationale_document_version_reference_id\x18\x02 \x01(\tR#rationaleDocumentVersionReferenceId\x12)\n" +
+	"\x10rationale_digest\x18\x03 \x01(\fR\x0frationaleDigest\x12'\n" +
+	"\x0fidempotency_key\x18\x04 \x01(\tR\x0eidempotencyKey2\xf9&\n" +
 	"\x10PromotionService\x12\xa0\x01\n" +
 	"\x1dCreatePromotionRecommendation\x12A.human_resource.promotion.v1.CreatePromotionRecommendationRequest\x1a<.human_resource.promotion.v1.PromotionRecommendationResponse\x12\xa0\x01\n" +
 	"\x1dUpdatePromotionRecommendation\x12A.human_resource.promotion.v1.UpdatePromotionRecommendationRequest\x1a<.human_resource.promotion.v1.PromotionRecommendationResponse\x12m\n" +
@@ -1083,7 +1156,12 @@ const file_human_resource_promotion_v1_promotion_proto_rawDesc = "" +
 	"/FindPromotionRecommendationByApprovalDecisionID\x12-.human_resource.common.v1.StringFinderRequest\x1a=.human_resource.promotion.v1.PromotionRecommendationsResponse\x12\xa0\x01\n" +
 	"0FindPromotionRecommendationByAppliedAssignmentID\x12-.human_resource.common.v1.StringFinderRequest\x1a=.human_resource.promotion.v1.PromotionRecommendationsResponse\x12\xa3\x01\n" +
 	"4FindPromotionRecommendationByAppliedLifecycleEventID\x12,.human_resource.common.v1.Int64FinderRequest\x1a=.human_resource.promotion.v1.PromotionRecommendationsResponse\x12\x9b\x01\n" +
-	"+FindPromotionRecommendationByIdempotencyKey\x12-.human_resource.common.v1.StringFinderRequest\x1a=.human_resource.promotion.v1.PromotionRecommendationsResponse\x12\x8e\x01\n" +
+	"+FindPromotionRecommendationByIdempotencyKey\x12-.human_resource.common.v1.StringFinderRequest\x1a=.human_resource.promotion.v1.PromotionRecommendationsResponse\x12\x82\x01\n" +
+	"\x1dSubmitPromotionRecommendation\x12#.human_resource.common.v1.IDRequest\x1a<.human_resource.promotion.v1.PromotionRecommendationResponse\x12\xa1\x01\n" +
+	"\x1eApprovePromotionRecommendation\x12A.human_resource.promotion.v1.DecidePromotionRecommendationRequest\x1a<.human_resource.promotion.v1.PromotionRecommendationResponse\x12\xa0\x01\n" +
+	"\x1dRejectPromotionRecommendation\x12A.human_resource.promotion.v1.DecidePromotionRecommendationRequest\x1a<.human_resource.promotion.v1.PromotionRecommendationResponse\x12\xa0\x01\n" +
+	"\x1dReturnPromotionRecommendation\x12A.human_resource.promotion.v1.DecidePromotionRecommendationRequest\x1a<.human_resource.promotion.v1.PromotionRecommendationResponse\x12\x81\x01\n" +
+	"\x1cApplyPromotionRecommendation\x12#.human_resource.common.v1.IDRequest\x1a<.human_resource.promotion.v1.PromotionRecommendationResponse\x12\x8e\x01\n" +
 	"\x17CreatePromotionDecision\x12;.human_resource.promotion.v1.CreatePromotionDecisionRequest\x1a6.human_resource.promotion.v1.PromotionDecisionResponse\x12\x8e\x01\n" +
 	"\x17UpdatePromotionDecision\x12;.human_resource.promotion.v1.UpdatePromotionDecisionRequest\x1a6.human_resource.promotion.v1.PromotionDecisionResponse\x12g\n" +
 	"\x17DeletePromotionDecision\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12w\n" +
@@ -1107,7 +1185,7 @@ func file_human_resource_promotion_v1_promotion_proto_rawDescGZIP() []byte {
 	return file_human_resource_promotion_v1_promotion_proto_rawDescData
 }
 
-var file_human_resource_promotion_v1_promotion_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_human_resource_promotion_v1_promotion_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_human_resource_promotion_v1_promotion_proto_goTypes = []any{
 	(*PromotionRecommendation)(nil),              // 0: human_resource.promotion.v1.PromotionRecommendation
 	(*PromotionRecommendationInput)(nil),         // 1: human_resource.promotion.v1.PromotionRecommendationInput
@@ -1121,93 +1199,104 @@ var file_human_resource_promotion_v1_promotion_proto_goTypes = []any{
 	(*UpdatePromotionDecisionRequest)(nil),       // 9: human_resource.promotion.v1.UpdatePromotionDecisionRequest
 	(*PromotionDecisionResponse)(nil),            // 10: human_resource.promotion.v1.PromotionDecisionResponse
 	(*PromotionDecisionsResponse)(nil),           // 11: human_resource.promotion.v1.PromotionDecisionsResponse
-	(*timestamppb.Timestamp)(nil),                // 12: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),                // 13: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                          // 14: human_resource.common.v1.PageInfo
-	(*v1.IDRequest)(nil),                         // 15: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                       // 16: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),               // 17: human_resource.common.v1.StringFinderRequest
-	(*v1.Int64FinderRequest)(nil),                // 18: human_resource.common.v1.Int64FinderRequest
-	(*v1.Int32FinderRequest)(nil),                // 19: human_resource.common.v1.Int32FinderRequest
-	(*v1.EmptyResponse)(nil),                     // 20: human_resource.common.v1.EmptyResponse
+	(*DecidePromotionRecommendationRequest)(nil), // 12: human_resource.promotion.v1.DecidePromotionRecommendationRequest
+	(*timestamppb.Timestamp)(nil),                // 13: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),                // 14: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                          // 15: human_resource.common.v1.PageInfo
+	(*v1.IDRequest)(nil),                         // 16: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                       // 17: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),               // 18: human_resource.common.v1.StringFinderRequest
+	(*v1.Int64FinderRequest)(nil),                // 19: human_resource.common.v1.Int64FinderRequest
+	(*v1.Int32FinderRequest)(nil),                // 20: human_resource.common.v1.Int32FinderRequest
+	(*v1.EmptyResponse)(nil),                     // 21: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_promotion_v1_promotion_proto_depIdxs = []int32{
-	12, // 0: human_resource.promotion.v1.PromotionRecommendation.recommended_effective_date:type_name -> google.protobuf.Timestamp
-	12, // 1: human_resource.promotion.v1.PromotionRecommendation.recommended_at:type_name -> google.protobuf.Timestamp
-	12, // 2: human_resource.promotion.v1.PromotionRecommendation.applied_at:type_name -> google.protobuf.Timestamp
-	12, // 3: human_resource.promotion.v1.PromotionRecommendationInput.recommended_effective_date:type_name -> google.protobuf.Timestamp
-	12, // 4: human_resource.promotion.v1.PromotionRecommendationInput.applied_at:type_name -> google.protobuf.Timestamp
+	13, // 0: human_resource.promotion.v1.PromotionRecommendation.recommended_effective_date:type_name -> google.protobuf.Timestamp
+	13, // 1: human_resource.promotion.v1.PromotionRecommendation.recommended_at:type_name -> google.protobuf.Timestamp
+	13, // 2: human_resource.promotion.v1.PromotionRecommendation.applied_at:type_name -> google.protobuf.Timestamp
+	13, // 3: human_resource.promotion.v1.PromotionRecommendationInput.recommended_effective_date:type_name -> google.protobuf.Timestamp
+	13, // 4: human_resource.promotion.v1.PromotionRecommendationInput.applied_at:type_name -> google.protobuf.Timestamp
 	1,  // 5: human_resource.promotion.v1.CreatePromotionRecommendationRequest.input:type_name -> human_resource.promotion.v1.PromotionRecommendationInput
 	1,  // 6: human_resource.promotion.v1.UpdatePromotionRecommendationRequest.input:type_name -> human_resource.promotion.v1.PromotionRecommendationInput
-	13, // 7: human_resource.promotion.v1.UpdatePromotionRecommendationRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 7: human_resource.promotion.v1.UpdatePromotionRecommendationRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 8: human_resource.promotion.v1.PromotionRecommendationResponse.value:type_name -> human_resource.promotion.v1.PromotionRecommendation
 	0,  // 9: human_resource.promotion.v1.PromotionRecommendationsResponse.items:type_name -> human_resource.promotion.v1.PromotionRecommendation
-	14, // 10: human_resource.promotion.v1.PromotionRecommendationsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	12, // 11: human_resource.promotion.v1.PromotionDecision.decided_at:type_name -> google.protobuf.Timestamp
+	15, // 10: human_resource.promotion.v1.PromotionRecommendationsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	13, // 11: human_resource.promotion.v1.PromotionDecision.decided_at:type_name -> google.protobuf.Timestamp
 	7,  // 12: human_resource.promotion.v1.CreatePromotionDecisionRequest.input:type_name -> human_resource.promotion.v1.PromotionDecisionInput
 	7,  // 13: human_resource.promotion.v1.UpdatePromotionDecisionRequest.input:type_name -> human_resource.promotion.v1.PromotionDecisionInput
-	13, // 14: human_resource.promotion.v1.UpdatePromotionDecisionRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 14: human_resource.promotion.v1.UpdatePromotionDecisionRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,  // 15: human_resource.promotion.v1.PromotionDecisionResponse.value:type_name -> human_resource.promotion.v1.PromotionDecision
 	6,  // 16: human_resource.promotion.v1.PromotionDecisionsResponse.items:type_name -> human_resource.promotion.v1.PromotionDecision
-	14, // 17: human_resource.promotion.v1.PromotionDecisionsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	15, // 17: human_resource.promotion.v1.PromotionDecisionsResponse.page:type_name -> human_resource.common.v1.PageInfo
 	2,  // 18: human_resource.promotion.v1.PromotionService.CreatePromotionRecommendation:input_type -> human_resource.promotion.v1.CreatePromotionRecommendationRequest
 	3,  // 19: human_resource.promotion.v1.PromotionService.UpdatePromotionRecommendation:input_type -> human_resource.promotion.v1.UpdatePromotionRecommendationRequest
-	15, // 20: human_resource.promotion.v1.PromotionService.DeletePromotionRecommendation:input_type -> human_resource.common.v1.IDRequest
-	15, // 21: human_resource.promotion.v1.PromotionService.GetPromotionRecommendationByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 22: human_resource.promotion.v1.PromotionService.GetAllPromotionRecommendations:input_type -> human_resource.common.v1.PageRequest
-	17, // 23: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendationNumber:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 24: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 25: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySourceAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 26: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByTargetPositionID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 27: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 28: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySupersedesRecommendationID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 29: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRationaleDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 30: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 31: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 32: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByApprovalDecisionID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 33: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 34: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedLifecycleEventID:input_type -> human_resource.common.v1.Int64FinderRequest
-	17, // 35: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 36: human_resource.promotion.v1.PromotionService.CreatePromotionDecision:input_type -> human_resource.promotion.v1.CreatePromotionDecisionRequest
-	9,  // 37: human_resource.promotion.v1.PromotionService.UpdatePromotionDecision:input_type -> human_resource.promotion.v1.UpdatePromotionDecisionRequest
-	15, // 38: human_resource.promotion.v1.PromotionService.DeletePromotionDecision:input_type -> human_resource.common.v1.IDRequest
-	15, // 39: human_resource.promotion.v1.PromotionService.GetPromotionDecisionByID:input_type -> human_resource.common.v1.IDRequest
-	16, // 40: human_resource.promotion.v1.PromotionService.GetAllPromotionDecisions:input_type -> human_resource.common.v1.PageRequest
-	17, // 41: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRecommendationID:input_type -> human_resource.common.v1.StringFinderRequest
-	19, // 42: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByStepNumber:input_type -> human_resource.common.v1.Int32FinderRequest
-	17, // 43: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByDecidedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 44: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRationaleDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	17, // 45: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 46: human_resource.promotion.v1.PromotionService.CreatePromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
-	4,  // 47: human_resource.promotion.v1.PromotionService.UpdatePromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
-	20, // 48: human_resource.promotion.v1.PromotionService.DeletePromotionRecommendation:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 49: human_resource.promotion.v1.PromotionService.GetPromotionRecommendationByID:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
-	5,  // 50: human_resource.promotion.v1.PromotionService.GetAllPromotionRecommendations:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 51: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendationNumber:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 52: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByWorkerID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 53: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySourceAssignmentID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 54: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByTargetPositionID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 55: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAssessmentID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 56: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySupersedesRecommendationID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 57: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRationaleDocumentVersionReferenceID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 58: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendedByPrincipalID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 59: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByStatus:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 60: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByApprovalDecisionID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 61: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedAssignmentID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 62: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedLifecycleEventID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	5,  // 63: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByIdempotencyKey:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
-	10, // 64: human_resource.promotion.v1.PromotionService.CreatePromotionDecision:output_type -> human_resource.promotion.v1.PromotionDecisionResponse
-	10, // 65: human_resource.promotion.v1.PromotionService.UpdatePromotionDecision:output_type -> human_resource.promotion.v1.PromotionDecisionResponse
-	20, // 66: human_resource.promotion.v1.PromotionService.DeletePromotionDecision:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 67: human_resource.promotion.v1.PromotionService.GetPromotionDecisionByID:output_type -> human_resource.promotion.v1.PromotionDecisionResponse
-	11, // 68: human_resource.promotion.v1.PromotionService.GetAllPromotionDecisions:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
-	11, // 69: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRecommendationID:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
-	11, // 70: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByStepNumber:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
-	11, // 71: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByDecidedByPrincipalID:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
-	11, // 72: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRationaleDocumentVersionReferenceID:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
-	11, // 73: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByIdempotencyKey:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
-	46, // [46:74] is the sub-list for method output_type
-	18, // [18:46] is the sub-list for method input_type
+	16, // 20: human_resource.promotion.v1.PromotionService.DeletePromotionRecommendation:input_type -> human_resource.common.v1.IDRequest
+	16, // 21: human_resource.promotion.v1.PromotionService.GetPromotionRecommendationByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 22: human_resource.promotion.v1.PromotionService.GetAllPromotionRecommendations:input_type -> human_resource.common.v1.PageRequest
+	18, // 23: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendationNumber:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 24: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 25: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySourceAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 26: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByTargetPositionID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 27: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAssessmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 28: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySupersedesRecommendationID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 29: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRationaleDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 30: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 31: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 32: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByApprovalDecisionID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 33: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedAssignmentID:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 34: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedLifecycleEventID:input_type -> human_resource.common.v1.Int64FinderRequest
+	18, // 35: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	16, // 36: human_resource.promotion.v1.PromotionService.SubmitPromotionRecommendation:input_type -> human_resource.common.v1.IDRequest
+	12, // 37: human_resource.promotion.v1.PromotionService.ApprovePromotionRecommendation:input_type -> human_resource.promotion.v1.DecidePromotionRecommendationRequest
+	12, // 38: human_resource.promotion.v1.PromotionService.RejectPromotionRecommendation:input_type -> human_resource.promotion.v1.DecidePromotionRecommendationRequest
+	12, // 39: human_resource.promotion.v1.PromotionService.ReturnPromotionRecommendation:input_type -> human_resource.promotion.v1.DecidePromotionRecommendationRequest
+	16, // 40: human_resource.promotion.v1.PromotionService.ApplyPromotionRecommendation:input_type -> human_resource.common.v1.IDRequest
+	8,  // 41: human_resource.promotion.v1.PromotionService.CreatePromotionDecision:input_type -> human_resource.promotion.v1.CreatePromotionDecisionRequest
+	9,  // 42: human_resource.promotion.v1.PromotionService.UpdatePromotionDecision:input_type -> human_resource.promotion.v1.UpdatePromotionDecisionRequest
+	16, // 43: human_resource.promotion.v1.PromotionService.DeletePromotionDecision:input_type -> human_resource.common.v1.IDRequest
+	16, // 44: human_resource.promotion.v1.PromotionService.GetPromotionDecisionByID:input_type -> human_resource.common.v1.IDRequest
+	17, // 45: human_resource.promotion.v1.PromotionService.GetAllPromotionDecisions:input_type -> human_resource.common.v1.PageRequest
+	18, // 46: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRecommendationID:input_type -> human_resource.common.v1.StringFinderRequest
+	20, // 47: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByStepNumber:input_type -> human_resource.common.v1.Int32FinderRequest
+	18, // 48: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByDecidedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 49: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRationaleDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	18, // 50: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 51: human_resource.promotion.v1.PromotionService.CreatePromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	4,  // 52: human_resource.promotion.v1.PromotionService.UpdatePromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	21, // 53: human_resource.promotion.v1.PromotionService.DeletePromotionRecommendation:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 54: human_resource.promotion.v1.PromotionService.GetPromotionRecommendationByID:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	5,  // 55: human_resource.promotion.v1.PromotionService.GetAllPromotionRecommendations:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 56: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendationNumber:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 57: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByWorkerID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 58: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySourceAssignmentID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 59: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByTargetPositionID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 60: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAssessmentID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 61: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationBySupersedesRecommendationID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 62: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRationaleDocumentVersionReferenceID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 63: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByRecommendedByPrincipalID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 64: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByStatus:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 65: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByApprovalDecisionID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 66: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedAssignmentID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 67: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByAppliedLifecycleEventID:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	5,  // 68: human_resource.promotion.v1.PromotionService.FindPromotionRecommendationByIdempotencyKey:output_type -> human_resource.promotion.v1.PromotionRecommendationsResponse
+	4,  // 69: human_resource.promotion.v1.PromotionService.SubmitPromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	4,  // 70: human_resource.promotion.v1.PromotionService.ApprovePromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	4,  // 71: human_resource.promotion.v1.PromotionService.RejectPromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	4,  // 72: human_resource.promotion.v1.PromotionService.ReturnPromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	4,  // 73: human_resource.promotion.v1.PromotionService.ApplyPromotionRecommendation:output_type -> human_resource.promotion.v1.PromotionRecommendationResponse
+	10, // 74: human_resource.promotion.v1.PromotionService.CreatePromotionDecision:output_type -> human_resource.promotion.v1.PromotionDecisionResponse
+	10, // 75: human_resource.promotion.v1.PromotionService.UpdatePromotionDecision:output_type -> human_resource.promotion.v1.PromotionDecisionResponse
+	21, // 76: human_resource.promotion.v1.PromotionService.DeletePromotionDecision:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 77: human_resource.promotion.v1.PromotionService.GetPromotionDecisionByID:output_type -> human_resource.promotion.v1.PromotionDecisionResponse
+	11, // 78: human_resource.promotion.v1.PromotionService.GetAllPromotionDecisions:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
+	11, // 79: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRecommendationID:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
+	11, // 80: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByStepNumber:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
+	11, // 81: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByDecidedByPrincipalID:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
+	11, // 82: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByRationaleDocumentVersionReferenceID:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
+	11, // 83: human_resource.promotion.v1.PromotionService.FindPromotionDecisionByIdempotencyKey:output_type -> human_resource.promotion.v1.PromotionDecisionsResponse
+	51, // [51:84] is the sub-list for method output_type
+	18, // [18:51] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
@@ -1227,7 +1316,7 @@ func file_human_resource_promotion_v1_promotion_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_promotion_v1_promotion_proto_rawDesc), len(file_human_resource_promotion_v1_promotion_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

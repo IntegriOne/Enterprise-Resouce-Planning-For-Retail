@@ -9,6 +9,7 @@ import "human_resource/common/v1/common.proto";
 service PerformanceService {
   rpc CreatePerformanceCycle(CreatePerformanceCycleRequest) returns (PerformanceCycleResponse);
   rpc LaunchPerformanceCycle(human_resource.common.v1.IDRequest) returns (PerformanceCycleResponse);
+  rpc ClosePerformanceCycle(human_resource.common.v1.IDRequest) returns (PerformanceCycleResponse);
   rpc UpdatePerformanceCycle(UpdatePerformanceCycleRequest) returns (PerformanceCycleResponse);
   rpc DeletePerformanceCycle(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetPerformanceCycleByID(human_resource.common.v1.IDRequest) returns (PerformanceCycleResponse);
@@ -30,6 +31,9 @@ service PerformanceService {
   rpc FindPerformanceGoalByUnitCode(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
   rpc FindPerformanceGoalByGoalStatus(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
   rpc FindPerformanceGoalByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceGoalsResponse);
+  rpc SubmitPerformanceGoal(human_resource.common.v1.IDRequest) returns (PerformanceGoalResponse);
+  rpc ApprovePerformanceGoal(human_resource.common.v1.IDRequest) returns (PerformanceGoalResponse);
+  rpc RejectPerformanceGoal(human_resource.common.v1.IDRequest) returns (PerformanceGoalResponse);
   rpc CreatePerformanceReview(CreatePerformanceReviewRequest) returns (PerformanceReviewResponse);
   rpc UpdatePerformanceReview(UpdatePerformanceReviewRequest) returns (PerformanceReviewResponse);
   rpc DeletePerformanceReview(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -40,6 +44,8 @@ service PerformanceService {
   rpc FindPerformanceReviewByReviewerPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
   rpc FindPerformanceReviewByOverallRatingCode(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
   rpc FindPerformanceReviewByDevelopmentPlanID(human_resource.common.v1.StringFinderRequest) returns (PerformanceReviewsResponse);
+  rpc SubmitPerformanceReview(human_resource.common.v1.IDRequest) returns (PerformanceReviewResponse);
+  rpc FinalizePerformanceReview(human_resource.common.v1.IDRequest) returns (PerformanceReviewResponse);
   rpc CreatePerformanceGoalUpdate(CreatePerformanceGoalUpdateRequest) returns (PerformanceGoalUpdateResponse);
   rpc UpdatePerformanceGoalUpdate(UpdatePerformanceGoalUpdateRequest) returns (PerformanceGoalUpdateResponse);
   rpc DeletePerformanceGoalUpdate(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);

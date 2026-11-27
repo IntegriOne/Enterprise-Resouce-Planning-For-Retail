@@ -14,7 +14,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedCareerServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeCareerServiceServer
 	service *service.Service
 }
 

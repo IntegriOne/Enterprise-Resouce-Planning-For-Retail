@@ -62,6 +62,18 @@ func TestEmploymentContractValidatorDraft(t *testing.T) {
 		t.Fatalf("wrong employer = %v", err)
 	}
 	worker.worker.PrimaryLegalEntityReferenceID = "legal-1"
+	terminationDate := time.Now()
+	worker.worker.TerminationDate = &terminationDate
+	if err := validator.ValidateMutation(t.Context(), "hr_employment_contracts", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("create with active status but recorded termination: %v", err)
+	}
+	if err := validator.ValidateMutation(t.Context(), "hr_employment_contracts", draft, &updated); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("update with active status but recorded termination: %v", err)
+	}
+	if err := validator.ValidateMutation(t.Context(), "hr_employment_contracts", draft, nil); err != nil {
+		t.Fatalf("remove unused draft after termination: %v", err)
+	}
+	worker.worker.TerminationDate = nil
 	contracts.matches = []entity.EmploymentContract{{ID: "another-contract"}}
 	if err := validator.ValidateMutation(t.Context(), "hr_employment_contracts", nil, draft); !errors.Is(err, hrerrors.ErrAlreadyExists) {
 		t.Fatalf("duplicate number = %v", err)
@@ -117,5 +129,54 @@ func TestEmploymentContractValidatorRejectsWorkflowFields(t *testing.T) {
 	cancel()
 	if err := validator.ValidateMutation(ctx, "hr_employment_contracts", nil, draft); !errors.Is(err, context.Canceled) {
 		t.Fatalf("canceled context = %v", err)
+	}
+}
+
+type contractAgreementStub struct {
+	agreement *entity.CollectiveAgreement
+	err       error
+}
+
+func (s *contractAgreementStub) FindByIDForUpdate(context.Context, string) (*entity.CollectiveAgreement, error) {
+	return s.agreement, s.err
+}
+
+func TestEmploymentContractValidatorCollectiveAgreement(t *testing.T) {
+	t.Parallel()
+	agreementID := "agreement-1"
+	from := time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC)
+	end := time.Date(2027, 12, 31, 0, 0, 0, 0, time.UTC)
+	agreements := &contractAgreementStub{
+		agreement: &entity.CollectiveAgreement{
+			ID:                     agreementID,
+			LegalEntityReferenceID: "legal-1",
+			EffectiveFrom:          from,
+			EffectiveTo:            &end,
+		},
+	}
+	validator := &employmentContractValidator{
+		workers:    &contractWorkerStub{worker: &entity.Worker{Status: entity.WorkerStatusActive, PrimaryLegalEntityReferenceID: "legal-1"}},
+		contracts:  &contractNumberStub{},
+		agreements: agreements,
+	}
+	draft := &entity.EmploymentContract{
+		ID: "contract-1", WorkerID: "worker-1", ContractNumber: "CON-CBA-1",
+		ContractType: "collective_agreement", ContractStatus: "draft",
+		EmployingLegalEntityReferenceID: "legal-1",
+		EffectiveFrom:                   time.Date(2027, 6, 1, 0, 0, 0, 0, time.UTC),
+		CollectiveAgreementID:           &agreementID,
+		CreatedAt:                       time.Now(),
+	}
+	if err := validator.ValidateMutation(t.Context(), "hr_employment_contracts", nil, draft); err != nil {
+		t.Fatalf("valid local collective agreement rejected: %v", err)
+	}
+	agreements.agreement.LegalEntityReferenceID = "legal-2"
+	if err := validator.ValidateMutation(t.Context(), "hr_employment_contracts", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("wrong legal entity agreement = %v", err)
+	}
+	agreements.agreement.LegalEntityReferenceID = "legal-1"
+	draft.EffectiveFrom = time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := validator.ValidateMutation(t.Context(), "hr_employment_contracts", nil, draft); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("expired collective agreement = %v", err)
 	}
 }

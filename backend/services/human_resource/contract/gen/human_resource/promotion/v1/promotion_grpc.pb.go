@@ -38,6 +38,11 @@ const (
 	PromotionService_FindPromotionRecommendationByAppliedAssignmentID_FullMethodName                 = "/human_resource.promotion.v1.PromotionService/FindPromotionRecommendationByAppliedAssignmentID"
 	PromotionService_FindPromotionRecommendationByAppliedLifecycleEventID_FullMethodName             = "/human_resource.promotion.v1.PromotionService/FindPromotionRecommendationByAppliedLifecycleEventID"
 	PromotionService_FindPromotionRecommendationByIdempotencyKey_FullMethodName                      = "/human_resource.promotion.v1.PromotionService/FindPromotionRecommendationByIdempotencyKey"
+	PromotionService_SubmitPromotionRecommendation_FullMethodName                                    = "/human_resource.promotion.v1.PromotionService/SubmitPromotionRecommendation"
+	PromotionService_ApprovePromotionRecommendation_FullMethodName                                   = "/human_resource.promotion.v1.PromotionService/ApprovePromotionRecommendation"
+	PromotionService_RejectPromotionRecommendation_FullMethodName                                    = "/human_resource.promotion.v1.PromotionService/RejectPromotionRecommendation"
+	PromotionService_ReturnPromotionRecommendation_FullMethodName                                    = "/human_resource.promotion.v1.PromotionService/ReturnPromotionRecommendation"
+	PromotionService_ApplyPromotionRecommendation_FullMethodName                                     = "/human_resource.promotion.v1.PromotionService/ApplyPromotionRecommendation"
 	PromotionService_CreatePromotionDecision_FullMethodName                                          = "/human_resource.promotion.v1.PromotionService/CreatePromotionDecision"
 	PromotionService_UpdatePromotionDecision_FullMethodName                                          = "/human_resource.promotion.v1.PromotionService/UpdatePromotionDecision"
 	PromotionService_DeletePromotionDecision_FullMethodName                                          = "/human_resource.promotion.v1.PromotionService/DeletePromotionDecision"
@@ -72,6 +77,11 @@ type PromotionServiceClient interface {
 	FindPromotionRecommendationByAppliedAssignmentID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PromotionRecommendationsResponse, error)
 	FindPromotionRecommendationByAppliedLifecycleEventID(ctx context.Context, in *v1.Int64FinderRequest, opts ...grpc.CallOption) (*PromotionRecommendationsResponse, error)
 	FindPromotionRecommendationByIdempotencyKey(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PromotionRecommendationsResponse, error)
+	SubmitPromotionRecommendation(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error)
+	ApprovePromotionRecommendation(ctx context.Context, in *DecidePromotionRecommendationRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error)
+	RejectPromotionRecommendation(ctx context.Context, in *DecidePromotionRecommendationRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error)
+	ReturnPromotionRecommendation(ctx context.Context, in *DecidePromotionRecommendationRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error)
+	ApplyPromotionRecommendation(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error)
 	CreatePromotionDecision(ctx context.Context, in *CreatePromotionDecisionRequest, opts ...grpc.CallOption) (*PromotionDecisionResponse, error)
 	UpdatePromotionDecision(ctx context.Context, in *UpdatePromotionDecisionRequest, opts ...grpc.CallOption) (*PromotionDecisionResponse, error)
 	DeletePromotionDecision(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -272,6 +282,56 @@ func (c *promotionServiceClient) FindPromotionRecommendationByIdempotencyKey(ctx
 	return out, nil
 }
 
+func (c *promotionServiceClient) SubmitPromotionRecommendation(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PromotionRecommendationResponse)
+	err := c.cc.Invoke(ctx, PromotionService_SubmitPromotionRecommendation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *promotionServiceClient) ApprovePromotionRecommendation(ctx context.Context, in *DecidePromotionRecommendationRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PromotionRecommendationResponse)
+	err := c.cc.Invoke(ctx, PromotionService_ApprovePromotionRecommendation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *promotionServiceClient) RejectPromotionRecommendation(ctx context.Context, in *DecidePromotionRecommendationRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PromotionRecommendationResponse)
+	err := c.cc.Invoke(ctx, PromotionService_RejectPromotionRecommendation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *promotionServiceClient) ReturnPromotionRecommendation(ctx context.Context, in *DecidePromotionRecommendationRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PromotionRecommendationResponse)
+	err := c.cc.Invoke(ctx, PromotionService_ReturnPromotionRecommendation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *promotionServiceClient) ApplyPromotionRecommendation(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PromotionRecommendationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PromotionRecommendationResponse)
+	err := c.cc.Invoke(ctx, PromotionService_ApplyPromotionRecommendation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *promotionServiceClient) CreatePromotionDecision(ctx context.Context, in *CreatePromotionDecisionRequest, opts ...grpc.CallOption) (*PromotionDecisionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PromotionDecisionResponse)
@@ -394,6 +454,11 @@ type PromotionServiceServer interface {
 	FindPromotionRecommendationByAppliedAssignmentID(context.Context, *v1.StringFinderRequest) (*PromotionRecommendationsResponse, error)
 	FindPromotionRecommendationByAppliedLifecycleEventID(context.Context, *v1.Int64FinderRequest) (*PromotionRecommendationsResponse, error)
 	FindPromotionRecommendationByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*PromotionRecommendationsResponse, error)
+	SubmitPromotionRecommendation(context.Context, *v1.IDRequest) (*PromotionRecommendationResponse, error)
+	ApprovePromotionRecommendation(context.Context, *DecidePromotionRecommendationRequest) (*PromotionRecommendationResponse, error)
+	RejectPromotionRecommendation(context.Context, *DecidePromotionRecommendationRequest) (*PromotionRecommendationResponse, error)
+	ReturnPromotionRecommendation(context.Context, *DecidePromotionRecommendationRequest) (*PromotionRecommendationResponse, error)
+	ApplyPromotionRecommendation(context.Context, *v1.IDRequest) (*PromotionRecommendationResponse, error)
 	CreatePromotionDecision(context.Context, *CreatePromotionDecisionRequest) (*PromotionDecisionResponse, error)
 	UpdatePromotionDecision(context.Context, *UpdatePromotionDecisionRequest) (*PromotionDecisionResponse, error)
 	DeletePromotionDecision(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -467,6 +532,21 @@ func (UnimplementedPromotionServiceServer) FindPromotionRecommendationByAppliedL
 }
 func (UnimplementedPromotionServiceServer) FindPromotionRecommendationByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*PromotionRecommendationsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindPromotionRecommendationByIdempotencyKey not implemented")
+}
+func (UnimplementedPromotionServiceServer) SubmitPromotionRecommendation(context.Context, *v1.IDRequest) (*PromotionRecommendationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitPromotionRecommendation not implemented")
+}
+func (UnimplementedPromotionServiceServer) ApprovePromotionRecommendation(context.Context, *DecidePromotionRecommendationRequest) (*PromotionRecommendationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApprovePromotionRecommendation not implemented")
+}
+func (UnimplementedPromotionServiceServer) RejectPromotionRecommendation(context.Context, *DecidePromotionRecommendationRequest) (*PromotionRecommendationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RejectPromotionRecommendation not implemented")
+}
+func (UnimplementedPromotionServiceServer) ReturnPromotionRecommendation(context.Context, *DecidePromotionRecommendationRequest) (*PromotionRecommendationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReturnPromotionRecommendation not implemented")
+}
+func (UnimplementedPromotionServiceServer) ApplyPromotionRecommendation(context.Context, *v1.IDRequest) (*PromotionRecommendationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApplyPromotionRecommendation not implemented")
 }
 func (UnimplementedPromotionServiceServer) CreatePromotionDecision(context.Context, *CreatePromotionDecisionRequest) (*PromotionDecisionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreatePromotionDecision not implemented")
@@ -843,6 +923,96 @@ func _PromotionService_FindPromotionRecommendationByIdempotencyKey_Handler(srv i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PromotionService_SubmitPromotionRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PromotionServiceServer).SubmitPromotionRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PromotionService_SubmitPromotionRecommendation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PromotionServiceServer).SubmitPromotionRecommendation(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PromotionService_ApprovePromotionRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DecidePromotionRecommendationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PromotionServiceServer).ApprovePromotionRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PromotionService_ApprovePromotionRecommendation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PromotionServiceServer).ApprovePromotionRecommendation(ctx, req.(*DecidePromotionRecommendationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PromotionService_RejectPromotionRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DecidePromotionRecommendationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PromotionServiceServer).RejectPromotionRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PromotionService_RejectPromotionRecommendation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PromotionServiceServer).RejectPromotionRecommendation(ctx, req.(*DecidePromotionRecommendationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PromotionService_ReturnPromotionRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DecidePromotionRecommendationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PromotionServiceServer).ReturnPromotionRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PromotionService_ReturnPromotionRecommendation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PromotionServiceServer).ReturnPromotionRecommendation(ctx, req.(*DecidePromotionRecommendationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PromotionService_ApplyPromotionRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PromotionServiceServer).ApplyPromotionRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PromotionService_ApplyPromotionRecommendation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PromotionServiceServer).ApplyPromotionRecommendation(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PromotionService_CreatePromotionDecision_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreatePromotionDecisionRequest)
 	if err := dec(in); err != nil {
@@ -1101,6 +1271,26 @@ var PromotionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindPromotionRecommendationByIdempotencyKey",
 			Handler:    _PromotionService_FindPromotionRecommendationByIdempotencyKey_Handler,
+		},
+		{
+			MethodName: "SubmitPromotionRecommendation",
+			Handler:    _PromotionService_SubmitPromotionRecommendation_Handler,
+		},
+		{
+			MethodName: "ApprovePromotionRecommendation",
+			Handler:    _PromotionService_ApprovePromotionRecommendation_Handler,
+		},
+		{
+			MethodName: "RejectPromotionRecommendation",
+			Handler:    _PromotionService_RejectPromotionRecommendation_Handler,
+		},
+		{
+			MethodName: "ReturnPromotionRecommendation",
+			Handler:    _PromotionService_ReturnPromotionRecommendation_Handler,
+		},
+		{
+			MethodName: "ApplyPromotionRecommendation",
+			Handler:    _PromotionService_ApplyPromotionRecommendation_Handler,
 		},
 		{
 			MethodName: "CreatePromotionDecision",

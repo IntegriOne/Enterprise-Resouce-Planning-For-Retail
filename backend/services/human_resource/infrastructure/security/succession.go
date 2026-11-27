@@ -125,7 +125,7 @@ func (v *successionCandidateValidator) ValidateMutation(ctx context.Context, tab
 		default:
 			return hrerrors.ErrWorkflowRequired
 		}
-		if entity.CompareDates(candidate.ReadinessAssessedAt, time.Now()) > 0 ||
+		if entity.CompareDates(candidate.ReadinessAssessedAt, time.Now().UTC()) > 0 ||
 			(candidate.ReadinessCode != "development_needed" && candidate.TalentAssessmentID == nil) {
 			return hrerrors.ErrReferenceConflict
 		}
@@ -137,17 +137,23 @@ func (v *successionCandidateValidator) ValidateMutation(ctx context.Context, tab
 	if plan == nil {
 		return hrerrors.ErrReferenceConflict
 	}
-	if plan.ApprovedAt != nil || plan.ApprovedByPrincipalID != nil ||
+	if plan.ApprovedAt != nil || plan.ApprovedByPrincipalID != nil || plan.ApprovalMandateReferenceID != nil || plan.SuccessionRisk != nil ||
 		plan.ConfidentialityClass != "highly_restricted" {
 		return hrerrors.ErrWorkflowRequired
+	}
+	// Penghapusan draf tetap tersedia setelah kelayakan kandidat berubah.
+	if after == nil {
+		return nil
+	}
+	if entity.CompareDates(candidate.ReadinessAssessedAt, plan.ReviewDate) > 0 {
+		return hrerrors.ErrReferenceConflict
 	}
 	position, err := v.positions.FindByIDForUpdate(ctx, plan.PositionID)
 	if err != nil {
 		return workerAssessmentReferenceError(err)
 	}
-	if position == nil || (after != nil && (position.PositionStatus != "active" ||
-		entity.CompareDates(candidate.ReadinessAssessedAt, position.ValidFrom) < 0 ||
-		(position.ValidTo != nil && entity.CompareDates(candidate.ReadinessAssessedAt, *position.ValidTo) > 0))) {
+	if !successionPositionAvailableOn(position, plan.ReviewDate) ||
+		!successionPositionAvailableOn(position, candidate.ReadinessAssessedAt) {
 		return hrerrors.ErrReferenceConflict
 	}
 	worker, err := v.workers.FindByIDForUpdate(ctx, candidate.CandidateWorkerID)
@@ -155,11 +161,10 @@ func (v *successionCandidateValidator) ValidateMutation(ctx context.Context, tab
 		return workerAssessmentReferenceError(err)
 	}
 	if worker == nil || worker.PrimaryLegalEntityReferenceID != position.LegalEntityReferenceID ||
-		(after != nil && worker.Status != entity.WorkerStatusActive) {
+		worker.Status != entity.WorkerStatusActive ||
+		!successionEmploymentIncludes(worker, candidate.ReadinessAssessedAt) ||
+		!successionEmploymentIncludes(worker, plan.ReviewDate) {
 		return hrerrors.ErrReferenceConflict
-	}
-	if after == nil {
-		return nil
 	}
 	if candidate.TalentAssessmentID != nil {
 		assessment, err := v.assessments.FindByIDForUpdate(ctx, *candidate.TalentAssessmentID)
@@ -168,7 +173,7 @@ func (v *successionCandidateValidator) ValidateMutation(ctx context.Context, tab
 		}
 		if assessment == nil || assessment.WorkerID != worker.ID || assessment.Status != "finalized" ||
 			assessment.FinalizedAt == nil || assessment.FinalizedByPrincipalID == nil ||
-			entity.CompareDates(*assessment.FinalizedAt, candidate.ReadinessAssessedAt) > 0 {
+			entity.CompareDates(assessment.FinalizedAt.UTC(), candidate.ReadinessAssessedAt) > 0 {
 			return hrerrors.ErrReferenceConflict
 		}
 	}
@@ -180,7 +185,7 @@ func (v *successionCandidateValidator) ValidateMutation(ctx context.Context, tab
 		if development == nil || development.WorkerID != worker.ID ||
 			(development.Status != "active" && development.Status != "completed") ||
 			development.ApprovedAt == nil || development.ApprovedByPrincipalID == nil ||
-			entity.CompareDates(*development.ApprovedAt, candidate.ReadinessAssessedAt) > 0 {
+			entity.CompareDates(development.ApprovedAt.UTC(), candidate.ReadinessAssessedAt) > 0 {
 			return hrerrors.ErrReferenceConflict
 		}
 	}
@@ -215,7 +220,7 @@ func (v *successionPlanValidator) ValidateMutation(ctx context.Context, table st
 		if !ok || previous == nil {
 			return hrerrors.ErrInvalidInput
 		}
-		if previous.ApprovedByPrincipalID != nil || previous.ApprovedAt != nil || previous.SuccessionRisk != nil {
+		if previous.ApprovedByPrincipalID != nil || previous.ApprovedAt != nil || previous.ApprovalMandateReferenceID != nil || previous.SuccessionRisk != nil {
 			return hrerrors.ErrWorkflowRequired
 		}
 	}
@@ -225,10 +230,19 @@ func (v *successionPlanValidator) ValidateMutation(ctx context.Context, table st
 		plan, ok = after.(*entity.SuccessionPlan)
 		if !ok || plan == nil || (previous != nil && (previous.ID != plan.ID ||
 			previous.PositionID != plan.PositionID || previous.PlanCode != plan.PlanCode ||
-			previous.PlanVersion != plan.PlanVersion)) {
+			previous.PlanVersion != plan.PlanVersion ||
+			!reflect.DeepEqual(previous.CreatedByPrincipalID, plan.CreatedByPrincipalID) || !reflect.DeepEqual(previous.CreatedAt, plan.CreatedAt))) {
 			return hrerrors.ErrWorkflowRequired
 		}
-		if plan.ApprovedByPrincipalID != nil || plan.ApprovedAt != nil || plan.SuccessionRisk != nil ||
+		if previous != nil && plan.ApprovedAt != nil && plan.ApprovedByPrincipalID != nil && plan.ApprovalMandateReferenceID != nil {
+			unchanged := *plan
+			unchanged.ApprovedAt, unchanged.ApprovedByPrincipalID, unchanged.ApprovalMandateReferenceID = nil, nil, nil
+			if reflect.DeepEqual(previous, &unchanged) && previous.ConfidentialityClass == "highly_restricted" {
+				return nil
+			}
+			return hrerrors.ErrWorkflowRequired
+		}
+		if plan.ApprovedByPrincipalID != nil || plan.ApprovedAt != nil || plan.ApprovalMandateReferenceID != nil || plan.SuccessionRisk != nil ||
 			plan.ConfidentialityClass != "highly_restricted" {
 			return hrerrors.ErrWorkflowRequired
 		}
@@ -240,9 +254,7 @@ func (v *successionPlanValidator) ValidateMutation(ctx context.Context, table st
 	if err != nil {
 		return workerAssessmentReferenceError(err)
 	}
-	if position == nil || (after != nil && (position.PositionStatus != "active" ||
-		entity.CompareDates(plan.ReviewDate, position.ValidFrom) < 0 ||
-		(position.ValidTo != nil && entity.CompareDates(plan.ReviewDate, *position.ValidTo) > 0))) {
+	if position == nil || (after != nil && !successionPositionAvailableOn(position, plan.ReviewDate)) {
 		return hrerrors.ErrReferenceConflict
 	}
 	count, err := v.candidates.CountWhere(ctx, []domainrepo.Filter{{Column: "succession_plan_id", Values: []any{plan.ID}}})
@@ -269,4 +281,15 @@ func (v *successionPlanValidator) ValidateMutation(ctx context.Context, table st
 		}
 	}
 	return nil
+}
+
+func successionPositionAvailableOn(position *entity.Position, date time.Time) bool {
+	return position != nil && position.PositionStatus == "active" && !date.IsZero() &&
+		entity.CompareDates(date, position.ValidFrom) >= 0 &&
+		(position.ValidTo == nil || entity.CompareDates(date, *position.ValidTo) <= 0)
+}
+
+func successionEmploymentIncludes(worker *entity.Worker, date time.Time) bool {
+	return (worker.HireDate == nil || entity.CompareDates(date, *worker.HireDate) >= 0) &&
+		(worker.TerminationDate == nil || entity.CompareDates(date, *worker.TerminationDate) <= 0)
 }

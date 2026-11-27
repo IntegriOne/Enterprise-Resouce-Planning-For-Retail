@@ -84,6 +84,17 @@ func (h *Handler) UpdateApplicationAssessment(ctx context.Context, r *pb.UpdateA
 func (h *Handler) DeleteApplicationAssessment(ctx context.Context, r *common.IDRequest) (*common.EmptyResponse, error) {
 	return deleteRecord(ctx, r, h.service.DeleteApplicationAssessment)
 }
+func (h *Handler) CompleteApplicationAssessment(ctx context.Context, r *pb.CompleteApplicationAssessmentRequest) (*pb.ApplicationAssessmentResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return applicationAssessmentResponse(h.service.CompleteApplicationAssessment(ctx, r.Id, service.CompleteApplicationAssessmentInput{
+		NormalizedScore:                    decimalPointer(r.NormalizedScore),
+		RecommendationCode:                 r.RecommendationCode,
+		EvidenceDocumentVersionReferenceID: r.EvidenceDocumentVersionReferenceId,
+		EvidenceDigest:                     append([]byte(nil), r.EvidenceDigest...),
+	}))
+}
 func (h *Handler) GetApplicationAssessmentByID(ctx context.Context, r *common.IDRequest) (*pb.ApplicationAssessmentResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

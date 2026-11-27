@@ -11,8 +11,10 @@ import (
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
+// Dependencies mendefinisikan repository dan komponen runtime untuk domain performance.
 type Dependencies struct {
 	Runtime                    operation.Dependencies
+	Worker                     domainrepo.RecordRepository[entity.Worker, string]
 	PerformanceCycle           domainrepo.RecordRepository[entity.PerformanceCycle, string]
 	PerformanceGoal            domainrepo.RecordRepository[entity.PerformanceGoal, string]
 	PerformanceReview          domainrepo.RecordRepository[entity.PerformanceReview, string]
@@ -22,6 +24,7 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain performance.
 type Service struct {
+	dependencies               Dependencies
 	performanceCycle           *operation.Resource[entity.PerformanceCycle, string, *entity.PerformanceCycle]
 	performanceGoal            *operation.Resource[entity.PerformanceGoal, string, *entity.PerformanceGoal]
 	performanceReview          *operation.Resource[entity.PerformanceReview, string, *entity.PerformanceReview]
@@ -31,7 +34,7 @@ type Service struct {
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{dependencies: deps}
 	var err error
 	s.performanceCycle, err = operation.NewResource[entity.PerformanceCycle, string, *entity.PerformanceCycle](
 		deps.PerformanceCycle,

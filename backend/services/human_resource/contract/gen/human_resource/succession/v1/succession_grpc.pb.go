@@ -20,6 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	SuccessionService_ApproveSuccessionPlan_FullMethodName                       = "/human_resource.succession.v1.SuccessionService/ApproveSuccessionPlan"
 	SuccessionService_CreateSuccessionPlan_FullMethodName                        = "/human_resource.succession.v1.SuccessionService/CreateSuccessionPlan"
 	SuccessionService_UpdateSuccessionPlan_FullMethodName                        = "/human_resource.succession.v1.SuccessionService/UpdateSuccessionPlan"
 	SuccessionService_DeleteSuccessionPlan_FullMethodName                        = "/human_resource.succession.v1.SuccessionService/DeleteSuccessionPlan"
@@ -44,6 +45,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SuccessionServiceClient interface {
+	ApproveSuccessionPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*SuccessionPlanResponse, error)
 	CreateSuccessionPlan(ctx context.Context, in *CreateSuccessionPlanRequest, opts ...grpc.CallOption) (*SuccessionPlanResponse, error)
 	UpdateSuccessionPlan(ctx context.Context, in *UpdateSuccessionPlanRequest, opts ...grpc.CallOption) (*SuccessionPlanResponse, error)
 	DeleteSuccessionPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -70,6 +72,16 @@ type successionServiceClient struct {
 
 func NewSuccessionServiceClient(cc grpc.ClientConnInterface) SuccessionServiceClient {
 	return &successionServiceClient{cc}
+}
+
+func (c *successionServiceClient) ApproveSuccessionPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*SuccessionPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SuccessionPlanResponse)
+	err := c.cc.Invoke(ctx, SuccessionService_ApproveSuccessionPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *successionServiceClient) CreateSuccessionPlan(ctx context.Context, in *CreateSuccessionPlanRequest, opts ...grpc.CallOption) (*SuccessionPlanResponse, error) {
@@ -256,6 +268,7 @@ func (c *successionServiceClient) FindSuccessionCandidateByDevelopmentPlanID(ctx
 // All implementations must embed UnimplementedSuccessionServiceServer
 // for forward compatibility.
 type SuccessionServiceServer interface {
+	ApproveSuccessionPlan(context.Context, *v1.IDRequest) (*SuccessionPlanResponse, error)
 	CreateSuccessionPlan(context.Context, *CreateSuccessionPlanRequest) (*SuccessionPlanResponse, error)
 	UpdateSuccessionPlan(context.Context, *UpdateSuccessionPlanRequest) (*SuccessionPlanResponse, error)
 	DeleteSuccessionPlan(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -284,6 +297,9 @@ type SuccessionServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedSuccessionServiceServer struct{}
 
+func (UnimplementedSuccessionServiceServer) ApproveSuccessionPlan(context.Context, *v1.IDRequest) (*SuccessionPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveSuccessionPlan not implemented")
+}
 func (UnimplementedSuccessionServiceServer) CreateSuccessionPlan(context.Context, *CreateSuccessionPlanRequest) (*SuccessionPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateSuccessionPlan not implemented")
 }
@@ -357,6 +373,24 @@ func RegisterSuccessionServiceServer(s grpc.ServiceRegistrar, srv SuccessionServ
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&SuccessionService_ServiceDesc, srv)
+}
+
+func _SuccessionService_ApproveSuccessionPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuccessionServiceServer).ApproveSuccessionPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuccessionService_ApproveSuccessionPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuccessionServiceServer).ApproveSuccessionPlan(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _SuccessionService_CreateSuccessionPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -690,6 +724,10 @@ var SuccessionService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "human_resource.succession.v1.SuccessionService",
 	HandlerType: (*SuccessionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ApproveSuccessionPlan",
+			Handler:    _SuccessionService_ApproveSuccessionPlan_Handler,
+		},
 		{
 			MethodName: "CreateSuccessionPlan",
 			Handler:    _SuccessionService_CreateSuccessionPlan_Handler,

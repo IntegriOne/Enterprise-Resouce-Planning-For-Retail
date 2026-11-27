@@ -30,6 +30,7 @@ const (
 	CompensationService_FindCompensationBandByJurisdictionCode_FullMethodName          = "/human_resource.compensation.v1.CompensationService/FindCompensationBandByJurisdictionCode"
 	CompensationService_FindCompensationBandByCurrencyCode_FullMethodName              = "/human_resource.compensation.v1.CompensationService/FindCompensationBandByCurrencyCode"
 	CompensationService_FindCompensationBandByApprovalReferenceID_FullMethodName       = "/human_resource.compensation.v1.CompensationService/FindCompensationBandByApprovalReferenceID"
+	CompensationService_ApproveCompensationRecord_FullMethodName                       = "/human_resource.compensation.v1.CompensationService/ApproveCompensationRecord"
 	CompensationService_CreateCompensationRecord_FullMethodName                        = "/human_resource.compensation.v1.CompensationService/CreateCompensationRecord"
 	CompensationService_UpdateCompensationRecord_FullMethodName                        = "/human_resource.compensation.v1.CompensationService/UpdateCompensationRecord"
 	CompensationService_DeleteCompensationRecord_FullMethodName                        = "/human_resource.compensation.v1.CompensationService/DeleteCompensationRecord"
@@ -61,6 +62,7 @@ type CompensationServiceClient interface {
 	FindCompensationBandByJurisdictionCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CompensationBandsResponse, error)
 	FindCompensationBandByCurrencyCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CompensationBandsResponse, error)
 	FindCompensationBandByApprovalReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*CompensationBandsResponse, error)
+	ApproveCompensationRecord(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*CompensationRecordResponse, error)
 	CreateCompensationRecord(ctx context.Context, in *CreateCompensationRecordRequest, opts ...grpc.CallOption) (*CompensationRecordResponse, error)
 	UpdateCompensationRecord(ctx context.Context, in *UpdateCompensationRecordRequest, opts ...grpc.CallOption) (*CompensationRecordResponse, error)
 	DeleteCompensationRecord(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -180,6 +182,16 @@ func (c *compensationServiceClient) FindCompensationBandByApprovalReferenceID(ct
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CompensationBandsResponse)
 	err := c.cc.Invoke(ctx, CompensationService_FindCompensationBandByApprovalReferenceID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compensationServiceClient) ApproveCompensationRecord(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*CompensationRecordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompensationRecordResponse)
+	err := c.cc.Invoke(ctx, CompensationService_ApproveCompensationRecord_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -350,6 +362,7 @@ type CompensationServiceServer interface {
 	FindCompensationBandByJurisdictionCode(context.Context, *v1.StringFinderRequest) (*CompensationBandsResponse, error)
 	FindCompensationBandByCurrencyCode(context.Context, *v1.StringFinderRequest) (*CompensationBandsResponse, error)
 	FindCompensationBandByApprovalReferenceID(context.Context, *v1.StringFinderRequest) (*CompensationBandsResponse, error)
+	ApproveCompensationRecord(context.Context, *v1.IDRequest) (*CompensationRecordResponse, error)
 	CreateCompensationRecord(context.Context, *CreateCompensationRecordRequest) (*CompensationRecordResponse, error)
 	UpdateCompensationRecord(context.Context, *UpdateCompensationRecordRequest) (*CompensationRecordResponse, error)
 	DeleteCompensationRecord(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -404,6 +417,9 @@ func (UnimplementedCompensationServiceServer) FindCompensationBandByCurrencyCode
 }
 func (UnimplementedCompensationServiceServer) FindCompensationBandByApprovalReferenceID(context.Context, *v1.StringFinderRequest) (*CompensationBandsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindCompensationBandByApprovalReferenceID not implemented")
+}
+func (UnimplementedCompensationServiceServer) ApproveCompensationRecord(context.Context, *v1.IDRequest) (*CompensationRecordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveCompensationRecord not implemented")
 }
 func (UnimplementedCompensationServiceServer) CreateCompensationRecord(context.Context, *CreateCompensationRecordRequest) (*CompensationRecordResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateCompensationRecord not implemented")
@@ -647,6 +663,24 @@ func _CompensationService_FindCompensationBandByApprovalReferenceID_Handler(srv 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompensationServiceServer).FindCompensationBandByApprovalReferenceID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompensationService_ApproveCompensationRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompensationServiceServer).ApproveCompensationRecord(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CompensationService_ApproveCompensationRecord_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompensationServiceServer).ApproveCompensationRecord(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -967,6 +1001,10 @@ var CompensationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindCompensationBandByApprovalReferenceID",
 			Handler:    _CompensationService_FindCompensationBandByApprovalReferenceID_Handler,
+		},
+		{
+			MethodName: "ApproveCompensationRecord",
+			Handler:    _CompensationService_ApproveCompensationRecord_Handler,
 		},
 		{
 			MethodName: "CreateCompensationRecord",

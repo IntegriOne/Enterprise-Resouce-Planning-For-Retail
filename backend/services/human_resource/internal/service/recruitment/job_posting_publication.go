@@ -3,7 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
-	"errors"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -20,7 +20,7 @@ type PostingDocumentRequest struct {
 	PrincipalID   string
 }
 
-// PostingDocumentProof mengikat keputusan DRM pada versi, pemilik, dan tujuan dokumen.
+// PostingDocumentProof mengikat keputusan DRM pada versi, pemilik, tujuan, dan objek publikasi.
 type PostingDocumentProof struct {
 	VersionID       string
 	Digest          []byte
@@ -28,6 +28,8 @@ type PostingDocumentProof struct {
 	Immutable       bool
 	OwnerManagement string
 	Purpose         string
+	PostingID       string
+	RequisitionID   string
 }
 
 // PostingDocumentVerifier adalah port pembuktian versi konten milik DRM.
@@ -53,16 +55,11 @@ func (s *Service) PublishJobPosting(ctx context.Context, postingID string) (*ent
 			PostingID: posting.ID, RequisitionID: posting.RequisitionID, PrincipalID: actor.PrincipalID,
 		})
 		if err != nil {
-			if txCtx.Err() != nil {
-				return nil, txCtx.Err()
-			}
-			if errors.Is(err, hrerrors.ErrReferenceConflict) {
-				return nil, hrerrors.ErrReferenceConflict
-			}
-			return nil, hrerrors.ErrUnavailable
+			return nil, operation.OwnerVerificationError(txCtx, err)
 		}
 		if !proof.Verified || !proof.Immutable || proof.VersionID != posting.ContentDocumentVersionReferenceID ||
 			!bytes.Equal(proof.Digest, posting.ContentDigest) || proof.OwnerManagement != "human_resource" ||
+			!strings.EqualFold(proof.PostingID, posting.ID) || !strings.EqualFold(proof.RequisitionID, posting.RequisitionID) ||
 			proof.Purpose != "recruitment_job_posting" {
 			return nil, hrerrors.ErrReferenceConflict
 		}

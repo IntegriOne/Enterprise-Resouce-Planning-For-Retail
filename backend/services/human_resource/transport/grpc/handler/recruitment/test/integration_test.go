@@ -15,18 +15,22 @@ import (
 
 	common "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/common/v1"
 	pb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/recruitment/v1"
+	workforcepb "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/workforceplanning/v1"
 	hrdb "github.com/integrione/erp-retail/backend/services/human_resource/db"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
 	"github.com/integrione/erp-retail/backend/services/human_resource/infrastructure/security"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/recruitment"
+	workforceservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/workforceplanning"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
 	handler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/recruitment"
+	workforcehandler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/workforceplanning"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
@@ -53,7 +57,12 @@ func (postingDocumentIntegrationVerifier) VerifyJobPostingDocument(_ context.Con
 	return service.PostingDocumentProof{
 		VersionID: request.VersionID, Digest: append([]byte(nil), request.Digest...),
 		Verified: true, Immutable: true, OwnerManagement: "human_resource", Purpose: "recruitment_job_posting",
+		PostingID: request.PostingID, RequisitionID: request.RequisitionID,
 	}, nil
+}
+
+func (v *requisitionApprovalIntegrationVerifier) VerifyRequisitionMandate(context.Context, string, string) error {
+	return nil
 }
 
 func (v *requisitionApprovalIntegrationVerifier) VerifyRequisitionApproval(_ context.Context, check service.RequisitionApprovalCheck) (string, error) {
@@ -108,7 +117,7 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	validators, err := security.RecruitmentCandidateValidators(repos)
+	validators, err := security.RecruitmentCandidateValidators(repos, recDetailFoundationStub{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,8 +155,9 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
 			Policy: policy, Integrity: security.NewIntegrity(validators)},
 		ApprovalVerifier: approvalVerifier,
+		MandateVerifier:  approvalVerifier,
 		PostingVerifier:  postingDocumentIntegrationVerifier{},
-		Requisition:      repos.Requisition, Candidate: repos.Candidate, Application: repos.Application,
+		Requisition:      repos.Requisition, Candidate: repos.Candidate, Application: repos.Application, Workers: repos.Worker,
 		ApplicationStageHistory: repos.ApplicationStageHistory, Interview: repos.Interview,
 		InterviewPanelist: repos.InterviewPanelist, InterviewFeedback: repos.InterviewFeedback,
 		Offer: repos.Offer, JobPosting: repos.JobPosting, ApplicationAssessment: repos.ApplicationAssessment,
@@ -158,6 +168,22 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	listener := bufconn.Listen(1 << 20)
 	server := grpc.NewServer()
 	if err := handler.Register(server, svc); err != nil {
+		t.Fatal(err)
+	}
+	workforceValidators, err := security.WorkforcePlanValidators(repos, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	workforce, err := workforceservice.NewService(workforceservice.Dependencies{
+		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
+			Policy: policy, Integrity: security.NewIntegrity(workforceValidators)},
+		JobFamily: repos.JobFamily, Job: repos.Job, Position: repos.Position,
+		WorkforcePlan: repos.WorkforcePlan, WorkforcePlanLine: repos.WorkforcePlanLine,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := workforcehandler.Register(server, workforce); err != nil {
 		t.Fatal(err)
 	}
 	served := make(chan error, 1)
@@ -174,14 +200,18 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	ack := timestamppb.New(time.Now().Add(-time.Minute))
 	retention := time.Now().AddDate(0, 1, 0).Format("2006-01-02")
 	name := "Candidate A"
+	partyID := "00000000-0000-4000-8000-000000000003"
+	contactID := "00000000-0000-4000-8000-000000000004"
 	create := func(number string) (*pb.CandidateResponse, error) {
 		return client.CreateCandidate(ctx, &pb.CreateCandidateRequest{Input: &pb.CandidateInput{
 			CandidateNumber: &number, PreferredName: &name, PrivacyNoticeVersion: text("v1"),
+			PersonPartyReferenceId: &partyID, ContactReferenceId: &contactID,
 			NoticeAcknowledgedAt: ack, DataRetentionUntil: &retention,
 		}})
 	}
 	created, err := create("CAND-DRAFT-1")
-	if err != nil || created.GetItem().GetId() == "" {
+	if err != nil || created.GetItem().GetId() == "" || created.GetItem().GetPersonPartyReferenceId() != partyID ||
+		created.GetItem().GetContactReferenceId() != contactID {
 		t.Fatalf("create candidate: %v", err)
 	}
 	id := created.GetItem().GetId()
@@ -203,8 +233,8 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		NoticeAcknowledgedAt: ack, DataRetentionUntil: &retention,
 		ContactReferenceId: text("00000000-0000-4000-8000-000000000003"),
 	}})
-	if status.Code(err) != codes.Unavailable {
-		t.Fatalf("unverified Foundation contact reference: %v", err)
+	if status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("Foundation contact without a party: %v", err)
 	}
 	page, err := client.GetAllCandidates(ctx, &common.PageRequest{Limit: 1})
 	if err != nil || page.GetPage().GetTotal() != 1 || len(page.GetItems()) != 1 {
@@ -259,11 +289,37 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	draftInput := &pb.RequisitionInput{RequisitionNumber: &draftNumber, JobId: text(jobID),
 		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),
 		RequisitionType: &draftType, EmploymentCategory: &category, IdempotencyKey: &draftKey}
-	draft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: draftInput})
-	if err != nil || draft.GetItem().GetStatus() != "draft" || draft.GetItem().GetId() == "" {
+	if _, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: draftInput, HiringManagerWorkerId: text(managerWorkerID)}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("create requisition with both manager references: %v", err)
+	}
+	workerInput := proto.CloneOf(draftInput)
+	workerInput.HiringManagerPrincipalId = nil
+	draft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: workerInput, HiringManagerWorkerId: text(managerWorkerID)})
+	if err != nil || draft.GetItem().GetStatus() != "draft" || draft.GetItem().GetId() == "" ||
+		draft.GetItem().GetHiringManagerPrincipalId() != managerPrincipalID {
 		t.Fatalf("create requisition draft: %+v, %v", draft, err)
 	}
 	draftID := draft.GetItem().GetId()
+	managerMask := &fieldmaskpb.FieldMask{Paths: []string{"hiring_manager_worker_id"}}
+	managerUpdate := &pb.UpdateRequisitionRequest{Id: draftID, Input: &pb.RequisitionInput{}, UpdateMask: managerMask, HiringManagerWorkerId: text(managerWorkerID)}
+	changedManager, err := client.UpdateRequisition(ctx, managerUpdate)
+	if err != nil || changedManager.GetItem().GetHiringManagerPrincipalId() != managerPrincipalID {
+		t.Fatalf("update hiring manager with worker ID: %+v, %v", changedManager, err)
+	}
+	managerDetail, err := client.GetRequisitionByID(ctx, &common.IDRequest{Id: draftID})
+	if err != nil || managerDetail.GetItem().GetHiringManagerWorkerId() != managerWorkerID {
+		t.Fatalf("read hiring manager worker reference: %+v, %v", managerDetail, err)
+	}
+	conflictingManager := proto.CloneOf(managerUpdate)
+	conflictingManager.Input.HiringManagerPrincipalId = text(managerPrincipalID)
+	if _, err := client.UpdateRequisition(ctx, conflictingManager); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("update with conflicting hiring manager references: %v", err)
+	}
+	if _, err := client.UpdateRequisition(ctx, &pb.UpdateRequisitionRequest{Id: draftID,
+		Input:      &pb.RequisitionInput{HiringManagerPrincipalId: text("00000000-0000-4000-8000-000000000099")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"hiring_manager_principal_id"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("replace hiring manager by direct principal: %v", err)
+	}
 	var creatorID string
 	if err := database.WithContext(ctx).Raw("SELECT created_by_principal_id FROM hr_requisitions WHERE id = ?", draftID).Scan(&creatorID).Error; err != nil || creatorID != "00000000-0000-4000-8000-000000000001" {
 		t.Fatalf("requisition creator = %q, error %v", creatorID, err)
@@ -303,13 +359,29 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("delete requisition draft: %v", err)
 	}
 	var requisitionOutboxCount int64
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", draftID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 3 {
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", draftID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 4 {
 		t.Fatalf("requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
+	const workforcePlanID = "00000000-0000-4000-8000-000000000211"
+	const workforceLineID = "00000000-0000-4000-8000-000000000212"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_workforce_plans
+		(id, plan_code, plan_version, legal_entity_reference_id, period_start, period_end, status, created_by_principal_id,
+		 approved_at, approved_by_principal_id, finance_budget_reference_id)
+		VALUES (?, 'RECRUIT-PLAN', 1, ?, CURRENT_DATE - 1, CURRENT_DATE + 365, 'approved', ?, NOW(), ?, ?)`,
+		workforcePlanID, familyID, managerPrincipalID, familyID, familyID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_workforce_plan_lines
+		(id, workforce_plan_id, line_number, organization_unit_reference_id, job_id, worker_category,
+		 current_fte, required_fte, needed_from, action_code, rationale)
+		VALUES (?, ?, 1, ?, ?, 'employee', 0, 1, CURRENT_DATE - 1, 'recruit', 'Recruitment need')`,
+		workforceLineID, workforcePlanID, familyID, jobID).Error; err != nil {
+		t.Fatal(err)
 	}
 	submittedNumber, submittedKey := "REQ-SUBMITTED-1", "REQ-SUBMITTED-1"
 	submittedInput := &pb.RequisitionInput{RequisitionNumber: &submittedNumber, JobId: text(jobID),
 		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),
-		RequisitionType: &draftType, EmploymentCategory: &category, IdempotencyKey: &submittedKey}
+		RequisitionType: &draftType, EmploymentCategory: &category, IdempotencyKey: &submittedKey, WorkforcePlanLineId: text(workforceLineID)}
 	submissionDraft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: submittedInput})
 	if err != nil {
 		t.Fatalf("create requisition for submission: %v", err)
@@ -398,7 +470,8 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err != nil || approved.GetItem().GetStatus() != "approved" || approved.GetItem().GetApprovedAt() == nil ||
 		approved.GetItem().GetApprovedByPrincipalId() != policy.principalID ||
 		approved.GetItem().GetBudgetReferenceId() != approvalVerifier.budgetID ||
-		approvalVerifier.check.RequisitionID != submittedID || approvalVerifier.check.Headcount != 1 {
+		approvalVerifier.check.RequisitionID != submittedID || approvalVerifier.check.Headcount != 1 ||
+		approvalVerifier.check.WorkforcePlanLineID == nil || *approvalVerifier.check.WorkforcePlanLineID != workforceLineID {
 		t.Fatalf("approve requisition: %+v, %v, check %+v", approved, err, approvalVerifier.check)
 	}
 	if _, err := client.ApproveRequisition(ctx, &common.IDRequest{Id: submittedID}); status.Code(err) != codes.FailedPrecondition {
@@ -419,6 +492,41 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", submittedID).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 4 {
 		t.Fatalf("opened requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
 	}
+	staleNumber, staleKey := "REQ-STALE-WORKFORCE", "REQ-STALE-WORKFORCE"
+	staleDraft, err := client.CreateRequisition(ctx, &pb.CreateRequisitionRequest{Input: &pb.RequisitionInput{
+		RequisitionNumber: &staleNumber, IdempotencyKey: &staleKey, JobId: text(jobID),
+		OrganizationUnitReferenceId: text(familyID), HiringManagerPrincipalId: text(managerPrincipalID),
+		RequisitionType: &draftType, EmploymentCategory: &category, WorkforcePlanLineId: text(workforceLineID),
+	}})
+	if err != nil {
+		t.Fatalf("create draft before workforce replacement: %v", err)
+	}
+	const replacementPlanID = "00000000-0000-4000-8000-000000000213"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_workforce_plans
+		(id, plan_code, plan_version, legal_entity_reference_id, period_start, period_end, scenario_code, status,
+		 created_by_principal_id, approved_at, approved_by_principal_id, finance_budget_reference_id)
+		SELECT ?, plan_code, 2, legal_entity_reference_id, period_start, period_end, scenario_code, 'approved',
+		 created_by_principal_id, approved_at, approved_by_principal_id, finance_budget_reference_id
+		FROM hr_workforce_plans WHERE id = ?`, replacementPlanID, workforcePlanID).Error; err != nil {
+		t.Fatal(err)
+	}
+	workforceClient := workforcepb.NewWorkforcePlanningServiceClient(connection)
+	if _, err := workforceClient.SupersedeWorkforcePlan(ctx, &workforcepb.SupersedeWorkforcePlanRequest{
+		Id: workforcePlanID, ReplacementPlanId: replacementPlanID, ReasonCode: "NEW_VERSION",
+	}); err != nil {
+		t.Fatalf("supersede originating workforce plan: %v", err)
+	}
+	staleID := &common.IDRequest{Id: staleDraft.GetItem().GetId()}
+	if _, err := client.SubmitRequisition(ctx, staleID); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("submit against superseded plan = %v", err)
+	}
+	stillDraft, err := client.GetRequisitionByID(ctx, staleID)
+	if err != nil || stillDraft.GetItem().GetStatus() != "draft" || stillDraft.GetItem().GetSubmittedAt() != nil {
+		t.Fatalf("read requisition after rejected submit: %+v, %v", stillDraft, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", staleID.Id).Count(&requisitionOutboxCount).Error; err != nil || requisitionOutboxCount != 1 {
+		t.Fatalf("stale requisition outbox count = %d, err = %v", requisitionOutboxCount, err)
+	}
 	postingVersion := int32(1)
 	postingInput := &pb.JobPostingInput{RequisitionId: text(submittedID), ChannelCode: text("career_site"),
 		PostingVersion: &postingVersion, ContentDocumentVersionReferenceId: text("00000000-0000-4000-8000-000000000200"),
@@ -426,6 +534,11 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	posting, err := client.CreateJobPosting(ctx, &pb.CreateJobPostingRequest{Input: postingInput})
 	if err != nil || posting.GetItem().GetStatus() != "draft" || posting.GetItem().GetCreatedByPrincipalId() != policy.principalID {
 		t.Fatalf("create draft posting: %+v, %v", posting, err)
+	}
+	if _, err := client.UpdateJobPosting(ctx, &pb.UpdateJobPostingRequest{Id: posting.GetItem().GetId(),
+		Input:      &pb.JobPostingInput{ContentDocumentVersionReferenceId: text("00000000-0000-4000-8000-000000000206")},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"content_document_version_reference_id"}}}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("change posting content version without digest = %v, want InvalidArgument", err)
 	}
 	published, err := client.PublishJobPosting(ctx, &common.IDRequest{Id: posting.GetItem().GetId()})
 	if err != nil || published.GetItem().GetStatus() != "published" || published.GetItem().GetPublishedAt() == nil {
@@ -624,12 +737,21 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if _, err := client.DeleteRequisition(ctx, &common.IDRequest{Id: requisitionID}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("delete open requisition through CRUD = %v", err)
 	}
+	sourcePostingID := "00000000-0000-4000-8000-000000000201"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_job_postings
+		(id, requisition_id, channel_code, posting_version, content_document_version_reference_id,
+		content_digest, status, published_at, created_by_principal_id)
+		VALUES (?, ?, 'career_site', 1, ?, ?, 'published', NOW() - INTERVAL '30 minutes', ?)`,
+		sourcePostingID, requisitionID, familyID, bytes.Repeat([]byte{0x42}, 32), familyID).Error; err != nil {
+		t.Fatal(err)
+	}
 	applicationNumber := "APP-DRAFT-1"
 	idempotencyKey := "APP-DRAFT-1"
 	applicationInput := &pb.ApplicationInput{CandidateId: text(linkedCandidate.GetItem().GetId()),
-		RequisitionId: text(requisitionID), ApplicationNumber: &applicationNumber, IdempotencyKey: &idempotencyKey}
+		RequisitionId: text(requisitionID), ApplicationNumber: &applicationNumber, IdempotencyKey: &idempotencyKey,
+		SourcePostingId: &sourcePostingID}
 	application, err := client.CreateApplication(ctx, &pb.CreateApplicationRequest{Input: applicationInput})
-	if err != nil || application.GetItem().GetStatus() != "received" {
+	if err != nil || application.GetItem().GetStatus() != "received" || application.GetItem().GetSourcePostingId() != sourcePostingID {
 		t.Fatalf("create received application: %v", err)
 	}
 	applicationID := application.GetItem().GetId()
@@ -690,13 +812,32 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	interviewType, timezone := "screening", "Asia/Jakarta"
 	round := int32(1)
-	start := timestamppb.New(time.Now().Add(48 * time.Hour))
+	start := timestamppb.New(time.Now().Add(48 * time.Hour).Truncate(time.Microsecond))
 	end := timestamppb.New(start.AsTime().Add(time.Hour))
 	createInterview := &pb.InterviewInput{ApplicationId: &applicationID, InterviewRound: &round,
-		InterviewType: &interviewType, ScheduledStart: start, ScheduledEnd: end, CandidateTimezone: &timezone}
+		InterviewType: &interviewType, ScheduledStart: timestamppb.New(start.AsTime().Add(123 * time.Nanosecond)), ScheduledEnd: end, CandidateTimezone: &timezone}
+	var originalOpening time.Time
+	if err := database.WithContext(ctx).Table("hr_requisitions").Where("id = ?", requisitionID).
+		Select("opened_at").Scan(&originalOpening).Error; err != nil {
+		t.Fatalf("read requisition opening: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_requisitions").Where("id = ?", requisitionID).
+		Update("opened_at", time.Now().Add(time.Hour)).Error; err != nil {
+		t.Fatalf("set future opening on requisition fixture: %v", err)
+	}
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: createInterview}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("create interview before requisition opens: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_requisitions").Where("id = ?", requisitionID).
+		Update("opened_at", originalOpening).Error; err != nil {
+		t.Fatalf("restore requisition opening: %v", err)
+	}
 	createdInterview, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: createInterview})
 	if err != nil || createdInterview.GetItem().GetId() == "" || createdInterview.GetItem().GetStatus() != "planned" {
 		t.Fatalf("create planned interview: %+v, %v", createdInterview, err)
+	}
+	if !createdInterview.GetItem().GetScheduledStart().AsTime().Equal(start.AsTime()) {
+		t.Fatalf("created interview must report persisted timestamp precision: %v", createdInterview.GetItem().GetScheduledStart())
 	}
 	interviewID := createdInterview.GetItem().GetId()
 	if createdInterview.GetItem().GetCreatedByPrincipalId() != "00000000-0000-4000-8000-000000000001" {
@@ -706,6 +847,33 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("duplicate interview round status = %v, want AlreadyExists", status.Code(err))
 	}
 	otherRound := int32(2)
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
+		ScheduledStart: end, ScheduledEnd: timestamppb.New(end.AsTime().Add(time.Nanosecond)), CandidateTimezone: &timezone,
+	}}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("interview interval below database precision = %v, want InvalidArgument", err)
+	}
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
+		ScheduledStart: timestamppb.New(start.AsTime().Add(30 * time.Minute)),
+		ScheduledEnd:   timestamppb.New(end.AsTime().Add(30 * time.Minute)), CandidateTimezone: &timezone,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("overlapping interview status = %v, want FailedPrecondition", status.Code(err))
+	}
+	if err := database.WithContext(ctx).Table("hr_interviews").Where("id = ?", interviewID).
+		Update("status", "in_progress").Error; err != nil {
+		t.Fatalf("set current interview in progress: %v", err)
+	}
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
+		ScheduledStart: start, ScheduledEnd: end, CandidateTimezone: &timezone,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("overlap with in-progress interview = %v, want FailedPrecondition", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_interviews").Where("id = ?", interviewID).
+		Update("status", "planned").Error; err != nil {
+		t.Fatalf("restore planned interview fixture: %v", err)
+	}
 	invalidTimezone := "Invalid/Timezone"
 	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
 		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
@@ -742,6 +910,97 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	interviewPage, err = client.GetAllInterviews(ctx, &common.PageRequest{Limit: 1, Offset: 1})
 	if err != nil || interviewPage.GetPage().GetTotal() != 1 || len(interviewPage.GetItems()) != 0 {
 		t.Fatalf("interview offset: %+v, %v", interviewPage, err)
+	}
+	const alternativeRequisition = "00000000-0000-4000-8000-000000000490"
+	const alternativeApplication = "00000000-0000-4000-8000-000000000491"
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_requisitions
+		(id, requisition_number, job_id, organization_unit_reference_id, hiring_manager_principal_id,
+		requisition_type, status, employment_category, approved_at, approved_by_principal_id, opened_at, idempotency_key)
+		SELECT ?, 'REQ-INTERVIEW-ALT', job_id, organization_unit_reference_id, hiring_manager_principal_id,
+		requisition_type, status, employment_category, approved_at, approved_by_principal_id, opened_at, 'REQ-INTERVIEW-ALT'
+		FROM hr_requisitions WHERE id = ?`, alternativeRequisition, requisitionID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_applications
+		(id, candidate_id, requisition_id, application_number, idempotency_key)
+		VALUES (?, ?, ?, 'APP-INTERVIEW-ALT', 'APP-INTERVIEW-ALT')`,
+		alternativeApplication, linkedCandidate.GetItem().GetId(), alternativeRequisition).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: text(alternativeApplication), InterviewRound: &round, InterviewType: &interviewType,
+		ScheduledStart: start, ScheduledEnd: end, CandidateTimezone: &timezone,
+	}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("schedule overlap for candidate across applications = %v, want FailedPrecondition", status.Code(err))
+	}
+	type scheduleResult struct {
+		id  string
+		err error
+	}
+	beginScheduling := make(chan struct{})
+	scheduled := make(chan scheduleResult, 2)
+	for _, application := range []string{applicationID, alternativeApplication} {
+		go func() {
+			<-beginScheduling
+			result, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+				ApplicationId: &application, InterviewRound: &otherRound, InterviewType: &interviewType,
+				ScheduledStart: end, ScheduledEnd: timestamppb.New(end.AsTime().Add(time.Hour)), CandidateTimezone: &timezone,
+			}})
+			scheduled <- scheduleResult{id: result.GetItem().GetId(), err: err}
+		}()
+	}
+	close(beginScheduling)
+	var adjacentID string
+	var rejectedSchedules int
+	for range 2 {
+		result := <-scheduled
+		switch {
+		case result.err == nil && result.id != "":
+			adjacentID = result.id
+		case status.Code(result.err) == codes.FailedPrecondition:
+			rejectedSchedules++
+		default:
+			t.Errorf("schedule adjacent interview: %+v", result)
+		}
+	}
+	if adjacentID == "" || rejectedSchedules != 1 {
+		t.Fatalf("concurrent scheduling: accepted interview %q, rejected %d requests", adjacentID, rejectedSchedules)
+	}
+	if _, err := client.UpdateInterview(ctx, &pb.UpdateInterviewRequest{Id: interviewID,
+		Input:      &pb.InterviewInput{ScheduledEnd: timestamppb.New(end.AsTime().Add(time.Minute))},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"scheduled_end"}}}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("reschedule over adjacent interview = %v, want FailedPrecondition", err)
+	}
+	if _, err := client.DeleteInterview(ctx, &common.IDRequest{Id: adjacentID}); err != nil {
+		t.Fatalf("delete adjacent interview fixture: %v", err)
+	}
+	const withdrawnInterview = "00000000-0000-4000-8000-000000000492"
+	if err := database.WithContext(ctx).Exec("UPDATE hr_applications SET status = 'withdrawn' WHERE id = ?", alternativeApplication).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_interviews
+		(id, application_id, interview_round, interview_type, scheduled_start, scheduled_end)
+		VALUES (?, ?, 1, 'screening', ?, ?)`, withdrawnInterview, alternativeApplication,
+		end.AsTime(), end.AsTime().Add(time.Hour)).Error; err != nil {
+		t.Fatal(err)
+	}
+	released, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &otherRound, InterviewType: &interviewType,
+		ScheduledStart: end, ScheduledEnd: timestamppb.New(end.AsTime().Add(time.Hour)), CandidateTimezone: &timezone,
+	}})
+	if err != nil {
+		t.Fatalf("reuse planned slot from withdrawn application: %v", err)
+	}
+	for _, fixtureID := range []string{released.GetItem().GetId(), withdrawnInterview} {
+		if _, err := client.DeleteInterview(ctx, &common.IDRequest{Id: fixtureID}); err != nil {
+			t.Fatalf("delete interview fixture %s: %v", fixtureID, err)
+		}
+	}
+	if err := database.WithContext(ctx).Exec("DELETE FROM hr_applications WHERE id = ?", alternativeApplication).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := database.WithContext(ctx).Exec("DELETE FROM hr_requisitions WHERE id = ?", alternativeRequisition).Error; err != nil {
+		t.Fatal(err)
 	}
 	newStart := timestamppb.New(start.AsTime().Add(30 * time.Minute))
 	updatedInterview, err := client.UpdateInterview(ctx, &pb.UpdateInterviewRequest{Id: interviewID,
@@ -785,6 +1044,45 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	}
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", interviewID).Count(&outboxCount).Error; err != nil || outboxCount != 3 {
 		t.Fatalf("interview outbox count after delete = %d, err = %v", outboxCount, err)
+	}
+	cancelRound := int32(20)
+	cancelInput := &pb.InterviewInput{
+		ApplicationId: &applicationID, InterviewRound: &cancelRound, InterviewType: &interviewType,
+		ScheduledStart: newStart, ScheduledEnd: end, CandidateTimezone: &timezone,
+	}
+	toCancel, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: cancelInput})
+	if err != nil {
+		t.Fatalf("create interview for cancellation: %v", err)
+	}
+	cancelID := toCancel.GetItem().GetId()
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_interview_panelists
+		(id, interview_id, interviewer_principal_id) VALUES (?, ?, ?)`,
+		panelistID, cancelID, "00000000-0000-4000-8000-000000000001").Error; err != nil {
+		t.Fatal(err)
+	}
+	cancelRequest := &common.IDRequest{Id: cancelID}
+	policy.principalID = "00000000-0000-4000-8000-000000000098"
+	if _, err := client.CancelInterview(ctx, cancelRequest); status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("unassigned recruiter cancellation: %v", err)
+	}
+	policy.principalID = "00000000-0000-4000-8000-000000000001"
+	cancelled, err := client.CancelInterview(ctx, cancelRequest)
+	if err != nil || cancelled.GetItem().GetStatus() != "cancelled" {
+		t.Fatalf("cancel interview: %+v, %v", cancelled, err)
+	}
+	if _, err := client.CancelInterview(ctx, cancelRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("cancel already cancelled interview: %v", err)
+	}
+	cancelRound++
+	if _, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: cancelInput}); err != nil {
+		t.Fatalf("reuse cancelled interview slot: %v", err)
+	}
+	var retainedPanelists int64
+	if err := database.WithContext(ctx).Table("hr_interview_panelists").Where("interview_id = ?", cancelID).Count(&retainedPanelists).Error; err != nil || retainedPanelists != 1 {
+		t.Fatalf("preserve panelist after cancellation: count=%d err=%v", retainedPanelists, err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ? AND event_type = ?", cancelID, "hr_interviews.cancel").Count(&outboxCount).Error; err != nil || outboxCount != 1 {
+		t.Fatalf("interview cancellation outbox count = %d, err = %v", outboxCount, err)
 	}
 	policy.principalID = "00000000-0000-4000-8000-000000000098"
 	if _, err := client.RejectApplication(ctx, &pb.RejectApplicationRequest{Id: applicationID, ReasonCode: "NOT_ELIGIBLE"}); status.Code(err) != codes.PermissionDenied {
@@ -869,4 +1167,92 @@ func TestRecruitmentDraftRPCWithPostgreSQL(t *testing.T) {
 	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ?", shortlistID).Count(&outboxCount).Error; err != nil || outboxCount != 4 {
 		t.Fatalf("shortlist rejection outbox count = %d, err = %v", outboxCount, err)
 	}
+	interviewCandidate, err := create("CAND-INTERVIEW-START")
+	if err != nil {
+		t.Fatal(err)
+	}
+	interviewNumber := "APP-INTERVIEW-START"
+	interviewApplication, err := client.CreateApplication(ctx, &pb.CreateApplicationRequest{Input: &pb.ApplicationInput{
+		CandidateId: text(interviewCandidate.GetItem().GetId()), RequisitionId: text(requisitionID),
+		ApplicationNumber: &interviewNumber, IdempotencyKey: &interviewNumber,
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	interviewApplicationID := interviewApplication.GetItem().GetId()
+	if _, err := client.StartApplicationScreening(ctx, &common.IDRequest{Id: interviewApplicationID}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.ShortlistApplication(ctx, &pb.ShortlistApplicationRequest{Id: interviewApplicationID, ReasonCode: "MEETS_REQUIREMENTS"}); err != nil {
+		t.Fatal(err)
+	}
+	toStart, err := client.CreateInterview(ctx, &pb.CreateInterviewRequest{Input: &pb.InterviewInput{
+		ApplicationId: &interviewApplicationID, InterviewRound: &cancelRound, InterviewType: &interviewType,
+		ScheduledStart: newStart, ScheduledEnd: end, CandidateTimezone: &timezone,
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	startRequest := &common.IDRequest{Id: toStart.GetItem().GetId()}
+	if _, err := client.StartInterview(ctx, startRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("start interview before schedule: %v", err)
+	}
+	if err := database.WithContext(ctx).Exec("UPDATE hr_interviews SET scheduled_start = NOW() - INTERVAL '1 minute' WHERE id = ?", startRequest.Id).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.StartInterview(ctx, startRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("start interview without panelists: %v", err)
+	}
+	stillShortlisted, err := client.GetApplicationByID(ctx, &common.IDRequest{Id: interviewApplicationID})
+	if err != nil || stillShortlisted.GetItem().GetStatus() != "shortlisted" {
+		t.Fatalf("failed interview start did not roll back application: %+v, %v", stillShortlisted, err)
+	}
+	if err := database.WithContext(ctx).Exec("INSERT INTO hr_interview_panelists (id, interview_id, interviewer_principal_id) VALUES (?, ?, ?)",
+		"00000000-0000-4000-8000-000000000396", startRequest.Id, policy.principalID).Error; err != nil {
+		t.Fatal(err)
+	}
+	startedInterview, err := client.StartInterview(ctx, startRequest)
+	if err != nil || startedInterview.GetItem().GetStatus() != "in_progress" {
+		t.Fatalf("start interview: %+v, %v", startedInterview, err)
+	}
+	startedApplication, err := client.GetApplicationByID(ctx, &common.IDRequest{Id: interviewApplicationID})
+	if err != nil || startedApplication.GetItem().GetStatus() != "interview" {
+		t.Fatalf("start interview did not advance the application: %+v, %v", startedApplication, err)
+	}
+	if _, err := client.StartInterview(ctx, startRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat interview start: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_application_stage_history").
+		Where("application_id = ? AND new_status = ?", interviewApplicationID, "interview").Count(&stageCount).Error; err != nil || stageCount != 1 {
+		t.Fatalf("interview stage history count = %d, %v", stageCount, err)
+	}
+	if _, err := client.CompleteInterview(ctx, startRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("complete without panel feedback: %v", err)
+	}
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_interview_feedback
+		(id, interview_id, interviewer_principal_id, feedback_version, submitted_at, overall_recommendation, competency_scores)
+		VALUES (?, ?, ?, 1, NOW() - INTERVAL '2 minutes', 'yes', '{}'::jsonb)`,
+		"00000000-0000-4000-8000-000000000397", startRequest.Id, policy.principalID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.CompleteInterview(ctx, startRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("complete with feedback predating the slot: %v", err)
+	}
+	if err := database.WithContext(ctx).Exec(`INSERT INTO hr_interview_feedback
+		(id, interview_id, interviewer_principal_id, feedback_version, overall_recommendation, competency_scores)
+		VALUES (?, ?, ?, 2, 'yes', '{}'::jsonb)`,
+		"00000000-0000-4000-8000-000000000398", startRequest.Id, policy.principalID).Error; err != nil {
+		t.Fatal(err)
+	}
+	completed, err := client.CompleteInterview(ctx, startRequest)
+	if err != nil || completed.GetItem().GetStatus() != "completed" {
+		t.Fatalf("complete interview with current panel feedback: %+v, %v", completed, err)
+	}
+	if _, err := client.CompleteInterview(ctx, startRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat interview completion: %v", err)
+	}
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id = ? AND event_type = ?", startRequest.Id, "hr_interviews.complete").Count(&outboxCount).Error; err != nil || outboxCount != 1 {
+		t.Fatalf("interview completion outbox count = %d, err = %v", outboxCount, err)
+	}
+
 }

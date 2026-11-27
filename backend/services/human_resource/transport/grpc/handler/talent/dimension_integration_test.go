@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -120,9 +121,9 @@ func TestTalentDimensionRPCWithPostgreSQL(t *testing.T) {
 	input := &pb.TalentDimensionInput{FrameworkId: &frameworkID, DimensionCode: &code,
 		DimensionName: &name, Definition: &definition, WeightPercent: &weight,
 		RatingAnchors: &common.JsonDocument{Utf8: []byte(`{"1":"basic","2":"developing","3":"capable","4":"strong","5":"expert"}`)}}
-	invalidInput := *input
+	invalidInput := proto.CloneOf(input)
 	invalidInput.RatingAnchors = &common.JsonDocument{Utf8: []byte(`{"1":"basic"}`)}
-	if _, err := client.CreateTalentDimension(ctx, &pb.CreateTalentDimensionRequest{Input: &invalidInput}); status.Code(err) != codes.InvalidArgument {
+	if _, err := client.CreateTalentDimension(ctx, &pb.CreateTalentDimensionRequest{Input: invalidInput}); status.Code(err) != codes.InvalidArgument {
 		t.Fatalf("incomplete anchors status = %v, want InvalidArgument", status.Code(err))
 	}
 	created, err := client.CreateTalentDimension(ctx, &pb.CreateTalentDimensionRequest{Input: input})
@@ -144,9 +145,9 @@ func TestTalentDimensionRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("get updated dimension: %+v, %v", loaded, err)
 	}
 	secondCode := "EXECUTION"
-	secondInput := *input
+	secondInput := proto.CloneOf(input)
 	secondInput.DimensionCode = &secondCode
-	second, err := client.CreateTalentDimension(ctx, &pb.CreateTalentDimensionRequest{Input: &secondInput})
+	second, err := client.CreateTalentDimension(ctx, &pb.CreateTalentDimensionRequest{Input: secondInput})
 	if err != nil || second.GetValue().GetId() == "" {
 		t.Fatalf("create second dimension: %+v, %v", second, err)
 	}
@@ -176,7 +177,7 @@ func TestTalentDimensionRPCWithPostgreSQL(t *testing.T) {
 		t.Fatalf("used framework delete status = %v, want FailedPrecondition", status.Code(err))
 	}
 	secondInput.DimensionCode = &secondCode
-	if _, err := client.CreateTalentDimension(ctx, &pb.CreateTalentDimensionRequest{Input: &secondInput}); status.Code(err) != codes.FailedPrecondition {
+	if _, err := client.CreateTalentDimension(ctx, &pb.CreateTalentDimensionRequest{Input: secondInput}); status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("used framework create status = %v, want FailedPrecondition", status.Code(err))
 	}
 }

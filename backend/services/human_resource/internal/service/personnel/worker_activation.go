@@ -14,7 +14,7 @@ func (s *Service) ActivateWorker(ctx context.Context, workerID string) (*entity.
 	if s == nil {
 		return nil, hrerrors.ErrUnavailable
 	}
-	return s.worker.Command(ctx, workerID, "activate", func(_ context.Context, worker *entity.Worker, actor operation.Actor, now time.Time) (*entity.Worker, error) {
+	return s.worker.Command(ctx, workerID, "activate", func(txCtx context.Context, worker *entity.Worker, actor operation.Actor, now time.Time) (*entity.Worker, error) {
 		if actor.Kind != "human" {
 			return nil, hrerrors.ErrForbidden
 		}
@@ -26,7 +26,19 @@ func (s *Service) ActivateWorker(ctx context.Context, workerID string) (*entity.
 			entity.CompareDates(*worker.ServiceStartDate, now) > 0 || now.Before(worker.UpdatedAt) {
 			return nil, hrerrors.ErrReferenceConflict
 		}
-		worker.Status = entity.WorkerStatusActive
+		previousStatus, nextStatus := worker.Status, entity.WorkerStatusActive
+		event, err := entity.NewWorkerLifecycleEvent(entity.WorkerLifecycleEvent{
+			WorkerID: worker.ID, EventType: "hire", OccurredAt: now, EffectiveDate: *worker.HireDate,
+			PreviousStatus: &previousStatus, NewStatus: &nextStatus, ActorPrincipalID: &actor.PrincipalID,
+			EventPayload: entity.JSON("{}"), IdempotencyKey: "worker-activate:" + worker.ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if err := s.lifecycleEvents.Insert(txCtx, event); err != nil {
+			return nil, err
+		}
+		worker.Status = nextStatus
 		worker.UpdatedAt = now
 		return worker, nil
 	})

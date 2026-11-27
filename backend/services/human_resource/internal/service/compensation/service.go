@@ -19,13 +19,14 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain compensation.
 type Service struct {
+	outbox             operation.Outbox
 	compensationBand   *operation.Resource[entity.CompensationBand, string, *entity.CompensationBand]
 	compensationRecord *operation.Resource[entity.CompensationRecord, string, *entity.CompensationRecord]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{outbox: deps.Runtime.Outbox}
 	var err error
 	s.compensationBand, err = operation.NewResource[entity.CompensationBand, string, *entity.CompensationBand](
 		deps.CompensationBand,

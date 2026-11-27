@@ -104,6 +104,8 @@ func TestPolicyRequiresRecentAuthenticationForSensitiveOperations(t *testing.T) 
 		missingTime   bool
 		mfa           bool
 		catalogAction string
+		resource      string
+		scope         authz.ScopeGrant
 		grantFlag     bool
 		wantForbidden bool
 	}{
@@ -115,9 +117,26 @@ func TestPolicyRequiresRecentAuthenticationForSensitiveOperations(t *testing.T) 
 		{name: "recent sensitive grant", authAge: 5 * time.Minute, mfa: true, catalogAction: "read", grantFlag: true},
 		{name: "expired sensitive grant", authAge: 11 * time.Minute, mfa: true, catalogAction: "read", grantFlag: true, wantForbidden: true},
 		{name: "ordinary read keeps working", authAge: 11 * time.Minute, catalogAction: "read"},
+		{name: "recent staff payroll read", authAge: time.Minute, mfa: true, resource: "payroll_results", catalogAction: "read"},
+		{name: "staff payroll read without MFA", authAge: time.Minute, resource: "payroll_results", catalogAction: "read", wantForbidden: true},
+		{name: "own request cancel scope", resource: "service_requests", catalogAction: "cancel", authAge: time.Minute, mfa: true, scope: authz.ScopeGrant{Type: authz.ScopeSelf, ID: "principal"}},
+		{name: "wrong request cancel scope", resource: "service_requests", catalogAction: "cancel", authAge: time.Minute, mfa: true, scope: authz.ScopeGrant{Type: authz.ScopeSelf, ID: "other"}, wantForbidden: true},
+		{name: "request cancel global grant", resource: "service_requests", catalogAction: "cancel", authAge: time.Minute, mfa: true},
+		{name: "own payslip scope", resource: "payslips", catalogAction: "read_self", scope: authz.ScopeGrant{Type: authz.ScopeSelf, ID: "principal"}},
+		{name: "wrong payslip self scope", resource: "payslips", catalogAction: "read_self", scope: authz.ScopeGrant{Type: authz.ScopeSelf, ID: "other"}, wantForbidden: true},
+		{name: "global permission cannot read payslip as self", resource: "payslips", catalogAction: "read_self", wantForbidden: true},
+		{name: "self scope cannot read staff payroll results", authAge: time.Minute, mfa: true, resource: "payroll_results", catalogAction: "read", scope: authz.ScopeGrant{Type: authz.ScopeSelf, ID: "principal"}, wantForbidden: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			resource, scope := test.resource, test.scope
+			if resource == "" {
+				resource = "jobs"
+			}
+			if scope.Type == "" {
+				scope.Type = authz.ScopeGlobal
+			}
+			permission := "human_resource." + resource + "." + test.catalogAction
 			now := time.Now()
 			issuedAt := now.Add(-test.authAge).Unix()
 			if test.missingTime {
@@ -130,11 +149,11 @@ func TestPolicyRequiresRecentAuthenticationForSensitiveOperations(t *testing.T) 
 				Snapshot: &authz.AccessSnapshot{
 					PrincipalID: "principal", UserKind: "employee", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
 					SyncedAtUnix: now.Unix(), FreshUntilUnix: now.Unix() + 30,
-					Permissions: []authz.PermissionGrant{{Code: "human_resource.jobs." + test.catalogAction, IsSensitive: test.grantFlag, Scope: authz.ScopeGrant{Type: "global"}}},
+					Permissions: []authz.PermissionGrant{{Code: permission, IsSensitive: test.grantFlag, Scope: scope}},
 				},
 			}}
 			policy, err := security.NewPolicy(reader, map[string]string{
-				"hr_jobs." + test.catalogAction: "human_resource.jobs." + test.catalogAction,
+				"hr_" + resource + "." + test.catalogAction: permission,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -143,7 +162,7 @@ func TestPolicyRequiresRecentAuthenticationForSensitiveOperations(t *testing.T) 
 			ctx = authcontext.WithCaller(ctx, authcontext.CallerContext{
 				Authenticated: true, PrincipalID: "principal", SessionID: "session", UserKind: "employee", AuthEpoch: 1, PermRevision: 2,
 			})
-			_, err = policy.Authorize(ctx, operation.Access{Resource: "hr_jobs", Action: test.catalogAction})
+			_, err = policy.Authorize(ctx, operation.Access{Resource: "hr_" + resource, Action: test.catalogAction})
 			if test.wantForbidden && !errors.Is(err, hrerrors.ErrForbidden) {
 				t.Fatalf("authorize error = %v, want forbidden", err)
 			}
@@ -170,6 +189,10 @@ func TestPolicyWorkerLegalEntityScope(t *testing.T) {
 			Permissions: []authz.PermissionGrant{
 				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
 				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalB}},
+				{Code: "human_resource.workers.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: " " + legalC}},
+				{Code: "human_resource.workforce_plans.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
+				{Code: "human_resource.workforce_plan_lines.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
+				{Code: "human_resource.workforce_plans.submit", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
 				{Code: "human_resource.jobs.read", Scope: authz.ScopeGrant{Type: "legal_entity", ID: legalA}},
 			},
 		},
@@ -200,6 +223,32 @@ func TestPolicyWorkerLegalEntityScope(t *testing.T) {
 	scope, err := policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"})
 	if err != nil || scope.All || len(scope.Filters) != 1 || scope.Filters[0].Column != "primary_legal_entity_reference_id" || len(scope.Filters[0].Values) != 2 {
 		t.Fatalf("worker scope = %+v, error = %v", scope, err)
+	}
+	planScope, err := policy.ReadScope(ctx, operation.Access{Resource: "hr_workforce_plans", Action: "list"})
+	if err != nil || planScope.All || len(planScope.Filters) != 1 ||
+		planScope.Filters[0].Column != "legal_entity_reference_id" ||
+		len(planScope.Filters[0].Values) != 1 || planScope.Filters[0].Values[0] != legalA {
+		t.Fatalf("workforce plan scope = %+v, error = %v", planScope, err)
+	}
+	if _, err := policy.Authorize(ctx, operation.Access{
+		Resource: "hr_workforce_plans", Action: "read", Attributes: map[string]string{"legal_entity_reference_id": legalA},
+	}); err != nil {
+		t.Fatalf("authorize workforce plan in scope: %v", err)
+	}
+	for _, access := range []operation.Access{
+		{Resource: "hr_workforce_plans", Action: "read", Attributes: map[string]string{"legal_entity_reference_id": legalB}},
+		{Resource: "hr_workforce_plans", Action: "submit", Attributes: map[string]string{"legal_entity_reference_id": legalA}},
+		{Resource: "hr_workforce_plan_lines", Action: "read", Attributes: map[string]string{"workforce_plan_id": legalA}},
+	} {
+		if _, err := policy.Authorize(ctx, access); !errors.Is(err, hrerrors.ErrForbidden) {
+			t.Fatalf("unsupported workforce scope %+v: %v", access, err)
+		}
+	}
+	lineScope, err := policy.ReadScope(ctx, operation.Access{Resource: "hr_workforce_plan_lines", Action: "list"})
+	if err != nil || lineScope.All || len(lineScope.Filters) != 1 ||
+		lineScope.Filters[0].Column != "plan_legal_entity_reference_id" || len(lineScope.Filters[0].Values) != 1 ||
+		lineScope.Filters[0].Values[0] != legalA {
+		t.Fatalf("workforce line scope = %+v, error = %v", lineScope, err)
 	}
 	reader.state.Snapshot.Permissions[0].IsSensitive = true
 	if _, err := policy.Authorize(ctx, operation.Access{Resource: "hr_workers", Action: "read", Attributes: map[string]string{"primary_legal_entity_reference_id": legalA}}); !errors.Is(err, hrerrors.ErrForbidden) {
@@ -240,5 +289,64 @@ func TestPolicyWorkerLegalEntityScope(t *testing.T) {
 	scope, err = policy.ReadScope(ctx, operation.Access{Resource: "hr_workers", Action: "list"})
 	if err != nil || !scope.All || len(scope.Filters) != 0 {
 		t.Fatalf("global worker scope = %+v, error = %v", scope, err)
+	}
+}
+
+func TestRequisitionApprovalRequiresMatchingUnitGrant(t *testing.T) {
+	testSensitiveScopedAction(t, "hr_requisitions", "approve", "human_resource.requisitions.approve",
+		"organization_unit", "organization_unit_reference_id")
+}
+
+func TestPayslipReissueRequiresMatchingLegalEntityGrant(t *testing.T) {
+	testSensitiveScopedAction(t, "hr_payslips", "reissue", "human_resource.payslips.reissue",
+		"legal_entity", "employing_legal_entity_reference_id")
+}
+
+func testSensitiveScopedAction(t *testing.T, resource, action, permission, scope, column string) {
+	t.Helper()
+	t.Parallel()
+	const unit = "00000000-0000-4000-8000-000000000001"
+	const otherUnit = "00000000-0000-4000-8000-000000000002"
+	global := authz.PermissionGrant{Code: permission, Scope: authz.ScopeGrant{Type: "global"}}
+	scoped := authz.PermissionGrant{Code: permission, Scope: authz.ScopeGrant{Type: scope, ID: unit}}
+	for _, tc := range []struct {
+		name       string
+		grants     []authz.PermissionGrant
+		attributes map[string]string
+		mfa        bool
+		want       error
+	}{
+		{name: "precheck with a scoped grant", grants: []authz.PermissionGrant{scoped}, mfa: true},
+		{name: "global alone", grants: []authz.PermissionGrant{global}, mfa: true, want: hrerrors.ErrForbidden},
+		{name: "match despite global", grants: []authz.PermissionGrant{global, scoped}, attributes: map[string]string{column: unit}, mfa: true},
+		{name: "other scope", grants: []authz.PermissionGrant{global, scoped}, attributes: map[string]string{column: otherUnit}, mfa: true, want: hrerrors.ErrForbidden},
+		{name: "record missing scope", grants: []authz.PermissionGrant{scoped}, attributes: map[string]string{"id": otherUnit}, mfa: true, want: hrerrors.ErrForbidden},
+		{name: "no mfa", grants: []authz.PermissionGrant{scoped}, attributes: map[string]string{column: unit}, want: hrerrors.ErrForbidden},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			now := time.Now().Unix()
+			reader := &sessionReader{state: &authsession.SessionValidationContext{
+				Gate:     &authsession.SecurityGateRecord{Open: true, RecoveryEpoch: 1},
+				Token:    &authsession.SessionTokenRecord{UserID: "principal", SessionID: "session", UserKind: "employee", MFAAuthenticated: tc.mfa, IssuedAtUnix: now},
+				Security: &authsession.UserSecurityRecord{UserID: "principal", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1},
+				Snapshot: &authz.AccessSnapshot{
+					PrincipalID: "principal", UserKind: "employee", Status: "active", AuthEpoch: 1, PermRevision: 2, RecoveryEpoch: 1,
+					SyncedAtUnix: now, FreshUntilUnix: now + 30, Permissions: tc.grants,
+				},
+			}}
+			policy, err := security.NewPolicy(reader, map[string]string{resource + "." + action: permission})
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx := metadata.NewIncomingContext(t.Context(), metadata.Pairs("x-ig-session-token-hash", strings.Repeat("a", 64)))
+			ctx = authcontext.WithCaller(ctx, authcontext.CallerContext{
+				Authenticated: true, PrincipalID: "principal", SessionID: "session", UserKind: "employee", AuthEpoch: 1, PermRevision: 2,
+			})
+			_, err = policy.Authorize(ctx, operation.Access{Resource: resource, Action: action, Attributes: tc.attributes})
+			if !errors.Is(err, tc.want) {
+				t.Fatalf("authorize: got %v, want %v", err, tc.want)
+			}
+		})
 	}
 }

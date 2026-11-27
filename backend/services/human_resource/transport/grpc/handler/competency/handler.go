@@ -13,7 +13,8 @@ import (
 )
 
 type Handler struct {
-	pb.UnimplementedCompetencyServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeCompetencyServiceServer
 	service *service.Service
 }
 

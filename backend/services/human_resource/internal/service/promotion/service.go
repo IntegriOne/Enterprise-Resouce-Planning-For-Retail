@@ -11,21 +11,28 @@ import (
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
+// Dependencies mendefinisikan repository dan komponen runtime untuk domain promotion.
 type Dependencies struct {
 	Runtime                 operation.Dependencies
 	PromotionRecommendation domainrepo.RecordRepository[entity.PromotionRecommendation, string]
 	PromotionDecision       domainrepo.RecordRepository[entity.PromotionDecision, string]
+	Worker                  domainrepo.RecordRepository[entity.Worker, string]
+	WorkerAssignment        domainrepo.RecordRepository[entity.WorkerAssignment, string]
+	WorkerLifecycleEvent    domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
+	Position                domainrepo.RecordRepository[entity.Position, string]
+	TalentAssessment        domainrepo.RecordRepository[entity.TalentAssessment, string]
 }
 
 // Service mengoordinasikan operasi domain promotion.
 type Service struct {
+	dependencies            Dependencies
 	promotionRecommendation *operation.Resource[entity.PromotionRecommendation, string, *entity.PromotionRecommendation]
 	promotionDecision       *operation.Resource[entity.PromotionDecision, string, *entity.PromotionDecision]
 }
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{dependencies: deps}
 	var err error
 	s.promotionRecommendation, err = operation.NewResource[
 		entity.PromotionRecommendation,

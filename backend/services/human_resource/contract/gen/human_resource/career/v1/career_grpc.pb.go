@@ -20,6 +20,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	CareerService_CompleteDevelopmentPlan_FullMethodName                                          = "/human_resource.career.v1.CareerService/CompleteDevelopmentPlan"
+	CareerService_ApproveDevelopmentPlan_FullMethodName                                           = "/human_resource.career.v1.CareerService/ApproveDevelopmentPlan"
 	CareerService_CreateDevelopmentPlan_FullMethodName                                            = "/human_resource.career.v1.CareerService/CreateDevelopmentPlan"
 	CareerService_UpdateDevelopmentPlan_FullMethodName                                            = "/human_resource.career.v1.CareerService/UpdateDevelopmentPlan"
 	CareerService_DeleteDevelopmentPlan_FullMethodName                                            = "/human_resource.career.v1.CareerService/DeleteDevelopmentPlan"
@@ -31,6 +33,7 @@ const (
 	CareerService_FindDevelopmentPlanByStatus_FullMethodName                                      = "/human_resource.career.v1.CareerService/FindDevelopmentPlanByStatus"
 	CareerService_FindDevelopmentPlanByMentorWorkerID_FullMethodName                              = "/human_resource.career.v1.CareerService/FindDevelopmentPlanByMentorWorkerID"
 	CareerService_FindDevelopmentPlanByApprovedByPrincipalID_FullMethodName                       = "/human_resource.career.v1.CareerService/FindDevelopmentPlanByApprovedByPrincipalID"
+	CareerService_CompleteDevelopmentAction_FullMethodName                                        = "/human_resource.career.v1.CareerService/CompleteDevelopmentAction"
 	CareerService_CreateDevelopmentAction_FullMethodName                                          = "/human_resource.career.v1.CareerService/CreateDevelopmentAction"
 	CareerService_UpdateDevelopmentAction_FullMethodName                                          = "/human_resource.career.v1.CareerService/UpdateDevelopmentAction"
 	CareerService_DeleteDevelopmentAction_FullMethodName                                          = "/human_resource.career.v1.CareerService/DeleteDevelopmentAction"
@@ -79,6 +82,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CareerServiceClient interface {
+	CompleteDevelopmentPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*DevelopmentPlanResponse, error)
+	ApproveDevelopmentPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*DevelopmentPlanResponse, error)
 	CreateDevelopmentPlan(ctx context.Context, in *CreateDevelopmentPlanRequest, opts ...grpc.CallOption) (*DevelopmentPlanResponse, error)
 	UpdateDevelopmentPlan(ctx context.Context, in *UpdateDevelopmentPlanRequest, opts ...grpc.CallOption) (*DevelopmentPlanResponse, error)
 	DeleteDevelopmentPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -90,6 +95,7 @@ type CareerServiceClient interface {
 	FindDevelopmentPlanByStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*DevelopmentPlansResponse, error)
 	FindDevelopmentPlanByMentorWorkerID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*DevelopmentPlansResponse, error)
 	FindDevelopmentPlanByApprovedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*DevelopmentPlansResponse, error)
+	CompleteDevelopmentAction(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*DevelopmentActionResponse, error)
 	CreateDevelopmentAction(ctx context.Context, in *CreateDevelopmentActionRequest, opts ...grpc.CallOption) (*DevelopmentActionResponse, error)
 	UpdateDevelopmentAction(ctx context.Context, in *UpdateDevelopmentActionRequest, opts ...grpc.CallOption) (*DevelopmentActionResponse, error)
 	DeleteDevelopmentAction(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -140,6 +146,26 @@ type careerServiceClient struct {
 
 func NewCareerServiceClient(cc grpc.ClientConnInterface) CareerServiceClient {
 	return &careerServiceClient{cc}
+}
+
+func (c *careerServiceClient) CompleteDevelopmentPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*DevelopmentPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DevelopmentPlanResponse)
+	err := c.cc.Invoke(ctx, CareerService_CompleteDevelopmentPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *careerServiceClient) ApproveDevelopmentPlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*DevelopmentPlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DevelopmentPlanResponse)
+	err := c.cc.Invoke(ctx, CareerService_ApproveDevelopmentPlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *careerServiceClient) CreateDevelopmentPlan(ctx context.Context, in *CreateDevelopmentPlanRequest, opts ...grpc.CallOption) (*DevelopmentPlanResponse, error) {
@@ -246,6 +272,16 @@ func (c *careerServiceClient) FindDevelopmentPlanByApprovedByPrincipalID(ctx con
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DevelopmentPlansResponse)
 	err := c.cc.Invoke(ctx, CareerService_FindDevelopmentPlanByApprovedByPrincipalID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *careerServiceClient) CompleteDevelopmentAction(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*DevelopmentActionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DevelopmentActionResponse)
+	err := c.cc.Invoke(ctx, CareerService_CompleteDevelopmentAction_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -676,6 +712,8 @@ func (c *careerServiceClient) FindWorkerCareerAspirationByPreferredLocationRefer
 // All implementations must embed UnimplementedCareerServiceServer
 // for forward compatibility.
 type CareerServiceServer interface {
+	CompleteDevelopmentPlan(context.Context, *v1.IDRequest) (*DevelopmentPlanResponse, error)
+	ApproveDevelopmentPlan(context.Context, *v1.IDRequest) (*DevelopmentPlanResponse, error)
 	CreateDevelopmentPlan(context.Context, *CreateDevelopmentPlanRequest) (*DevelopmentPlanResponse, error)
 	UpdateDevelopmentPlan(context.Context, *UpdateDevelopmentPlanRequest) (*DevelopmentPlanResponse, error)
 	DeleteDevelopmentPlan(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -687,6 +725,7 @@ type CareerServiceServer interface {
 	FindDevelopmentPlanByStatus(context.Context, *v1.StringFinderRequest) (*DevelopmentPlansResponse, error)
 	FindDevelopmentPlanByMentorWorkerID(context.Context, *v1.StringFinderRequest) (*DevelopmentPlansResponse, error)
 	FindDevelopmentPlanByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*DevelopmentPlansResponse, error)
+	CompleteDevelopmentAction(context.Context, *v1.IDRequest) (*DevelopmentActionResponse, error)
 	CreateDevelopmentAction(context.Context, *CreateDevelopmentActionRequest) (*DevelopmentActionResponse, error)
 	UpdateDevelopmentAction(context.Context, *UpdateDevelopmentActionRequest) (*DevelopmentActionResponse, error)
 	DeleteDevelopmentAction(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -739,6 +778,12 @@ type CareerServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCareerServiceServer struct{}
 
+func (UnimplementedCareerServiceServer) CompleteDevelopmentPlan(context.Context, *v1.IDRequest) (*DevelopmentPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteDevelopmentPlan not implemented")
+}
+func (UnimplementedCareerServiceServer) ApproveDevelopmentPlan(context.Context, *v1.IDRequest) (*DevelopmentPlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveDevelopmentPlan not implemented")
+}
 func (UnimplementedCareerServiceServer) CreateDevelopmentPlan(context.Context, *CreateDevelopmentPlanRequest) (*DevelopmentPlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateDevelopmentPlan not implemented")
 }
@@ -771,6 +816,9 @@ func (UnimplementedCareerServiceServer) FindDevelopmentPlanByMentorWorkerID(cont
 }
 func (UnimplementedCareerServiceServer) FindDevelopmentPlanByApprovedByPrincipalID(context.Context, *v1.StringFinderRequest) (*DevelopmentPlansResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindDevelopmentPlanByApprovedByPrincipalID not implemented")
+}
+func (UnimplementedCareerServiceServer) CompleteDevelopmentAction(context.Context, *v1.IDRequest) (*DevelopmentActionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteDevelopmentAction not implemented")
 }
 func (UnimplementedCareerServiceServer) CreateDevelopmentAction(context.Context, *CreateDevelopmentActionRequest) (*DevelopmentActionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateDevelopmentAction not implemented")
@@ -917,6 +965,42 @@ func RegisterCareerServiceServer(s grpc.ServiceRegistrar, srv CareerServiceServe
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&CareerService_ServiceDesc, srv)
+}
+
+func _CareerService_CompleteDevelopmentPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CareerServiceServer).CompleteDevelopmentPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CareerService_CompleteDevelopmentPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CareerServiceServer).CompleteDevelopmentPlan(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CareerService_ApproveDevelopmentPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CareerServiceServer).ApproveDevelopmentPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CareerService_ApproveDevelopmentPlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CareerServiceServer).ApproveDevelopmentPlan(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _CareerService_CreateDevelopmentPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1113,6 +1197,24 @@ func _CareerService_FindDevelopmentPlanByApprovedByPrincipalID_Handler(srv inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CareerServiceServer).FindDevelopmentPlanByApprovedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CareerService_CompleteDevelopmentAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CareerServiceServer).CompleteDevelopmentAction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CareerService_CompleteDevelopmentAction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CareerServiceServer).CompleteDevelopmentAction(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1881,6 +1983,14 @@ var CareerService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CareerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "CompleteDevelopmentPlan",
+			Handler:    _CareerService_CompleteDevelopmentPlan_Handler,
+		},
+		{
+			MethodName: "ApproveDevelopmentPlan",
+			Handler:    _CareerService_ApproveDevelopmentPlan_Handler,
+		},
+		{
 			MethodName: "CreateDevelopmentPlan",
 			Handler:    _CareerService_CreateDevelopmentPlan_Handler,
 		},
@@ -1923,6 +2033,10 @@ var CareerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindDevelopmentPlanByApprovedByPrincipalID",
 			Handler:    _CareerService_FindDevelopmentPlanByApprovedByPrincipalID_Handler,
+		},
+		{
+			MethodName: "CompleteDevelopmentAction",
+			Handler:    _CareerService_CompleteDevelopmentAction_Handler,
 		},
 		{
 			MethodName: "CreateDevelopmentAction",

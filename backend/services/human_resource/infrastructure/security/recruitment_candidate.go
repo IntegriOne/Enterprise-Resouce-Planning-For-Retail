@@ -19,19 +19,25 @@ type candidateApplicationCounter interface {
 	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 }
 
+type CandidateFoundationVerifier interface {
+	FoundationVerifier
+	VerifyPartyContact(context.Context, string, string) error
+}
+
 type candidateValidator struct {
 	candidates   candidateReader
 	applications candidateApplicationCounter
+	foundation   CandidateFoundationVerifier
 }
 
-// RecruitmentCandidateValidators membuka pencatatan kandidat lokal tanpa menganggap referensi eksternal telah diverifikasi.
-func RecruitmentCandidateValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
+// RecruitmentCandidateValidators memeriksa referensi identitas kandidat melalui Enterprise Foundation.
+func RecruitmentCandidateValidators(repos *repository.Registry, foundation CandidateFoundationVerifier) (map[string]MutationValidator, error) {
 	if repos == nil || operation.RequireDependency(repos.Candidate) != nil ||
 		operation.RequireDependency(repos.Application) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
-		"hr_candidates": &candidateValidator{candidates: repos.Candidate, applications: repos.Application},
+		"hr_candidates": &candidateValidator{candidates: repos.Candidate, applications: repos.Application, foundation: foundation},
 	}, nil
 }
 
@@ -61,12 +67,13 @@ func (v *candidateValidator) ValidateMutation(ctx context.Context, table string,
 		if !ok || candidate == nil || candidate.CandidateStatus != "active" {
 			return hrerrors.ErrWorkflowRequired
 		}
-		if candidate.PersonPartyReferenceID != nil || candidate.ContactReferenceID != nil ||
-			candidate.SourceType != nil || candidate.SourceReference != nil {
+		if candidate.SourceType != nil || candidate.SourceReference != nil {
 			return hrerrors.ErrUnavailable
 		}
 		if old != nil && (old.ID != candidate.ID || old.CandidateNumber != candidate.CandidateNumber ||
 			old.PrivacyNoticeVersion != candidate.PrivacyNoticeVersion ||
+			!reflect.DeepEqual(old.PersonPartyReferenceID, candidate.PersonPartyReferenceID) ||
+			!reflect.DeepEqual(old.ContactReferenceID, candidate.ContactReferenceID) ||
 			!reflect.DeepEqual(old.NoticeAcknowledgedAt, candidate.NoticeAcknowledgedAt) ||
 			!reflect.DeepEqual(old.DataRetentionUntil, candidate.DataRetentionUntil) ||
 			!reflect.DeepEqual(old.CreatedByPrincipalID, candidate.CreatedByPrincipalID) ||
@@ -96,6 +103,19 @@ func (v *candidateValidator) ValidateMutation(ctx context.Context, table string,
 		}
 		if len(rows) != 0 {
 			return hrerrors.ErrAlreadyExists
+		}
+		if candidate.PersonPartyReferenceID == nil {
+			if candidate.ContactReferenceID != nil {
+				return hrerrors.ErrReferenceConflict
+			}
+			return nil
+		}
+		partyID := *candidate.PersonPartyReferenceID
+		if err := verifyFoundationParty(ctx, v.foundation, partyID, true); err != nil {
+			return err
+		}
+		if candidate.ContactReferenceID != nil {
+			return v.foundation.VerifyPartyContact(ctx, *candidate.ContactReferenceID, partyID)
 		}
 	}
 	return nil

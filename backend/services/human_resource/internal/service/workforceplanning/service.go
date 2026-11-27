@@ -12,6 +12,7 @@ import (
 )
 
 type Dependencies struct {
+	BudgetVerifier    WorkforceBudgetVerifier
 	Runtime           operation.Dependencies
 	JobFamily         domainrepo.RecordRepository[entity.JobFamily, string]
 	Job               domainrepo.RecordRepository[entity.Job, string]
@@ -22,6 +23,8 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain workforceplanning.
 type Service struct {
+	budget            WorkforceBudgetVerifier
+	planLines         domainrepo.RecordRepository[entity.WorkforcePlanLine, string]
 	jobFamily         *operation.Resource[entity.JobFamily, string, *entity.JobFamily]
 	job               *operation.Resource[entity.Job, string, *entity.Job]
 	position          *operation.Resource[entity.Position, string, *entity.Position]
@@ -31,7 +34,7 @@ type Service struct {
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	s := &Service{budget: deps.BudgetVerifier, planLines: deps.WorkforcePlanLine}
 	var err error
 	s.jobFamily, err = operation.NewResource[entity.JobFamily, string, *entity.JobFamily](
 		deps.JobFamily,
@@ -154,6 +157,24 @@ func (s *Service) GetJobByID(ctx context.Context, key string) (*entity.Job, erro
 		return nil, hrerrors.ErrUnavailable
 	}
 	return s.job.Get(ctx, key)
+}
+
+// GetJobsByIDs membaca pilihan jabatan yang dirujuk oleh daftar lain.
+func (s *Service) GetJobsByIDs(ctx context.Context, ids []string) (operation.Page[entity.Job], error) {
+	if s == nil {
+		return operation.Page[entity.Job]{}, hrerrors.ErrUnavailable
+	}
+	if len(ids) == 0 || len(ids) > 100 {
+		return operation.Page[entity.Job]{}, hrerrors.ErrInvalidInput
+	}
+	values := make([]any, 0, len(ids))
+	for _, id := range ids {
+		if err := entity.ValidateUUID("job_id", id); err != nil {
+			return operation.Page[entity.Job]{}, err
+		}
+		values = append(values, id)
+	}
+	return s.job.List(ctx, []domainrepo.Filter{{Column: "id", Values: values}}, len(values), 0)
 }
 
 // GetAllJobs menjalankan operasi aplikasi dengan validasi dan scope server.

@@ -30,6 +30,7 @@ const (
 	WorkforcePlanningService_UpdateJob_FullMethodName                                          = "/human_resource.workforceplanning.v1.WorkforcePlanningService/UpdateJob"
 	WorkforcePlanningService_DeleteJob_FullMethodName                                          = "/human_resource.workforceplanning.v1.WorkforcePlanningService/DeleteJob"
 	WorkforcePlanningService_GetJobByID_FullMethodName                                         = "/human_resource.workforceplanning.v1.WorkforcePlanningService/GetJobByID"
+	WorkforcePlanningService_GetJobsByIds_FullMethodName                                       = "/human_resource.workforceplanning.v1.WorkforcePlanningService/GetJobsByIds"
 	WorkforcePlanningService_GetAllJobs_FullMethodName                                         = "/human_resource.workforceplanning.v1.WorkforcePlanningService/GetAllJobs"
 	WorkforcePlanningService_FindJobByJobFamilyID_FullMethodName                               = "/human_resource.workforceplanning.v1.WorkforcePlanningService/FindJobByJobFamilyID"
 	WorkforcePlanningService_FindJobByJobCode_FullMethodName                                   = "/human_resource.workforceplanning.v1.WorkforcePlanningService/FindJobByJobCode"
@@ -48,6 +49,10 @@ const (
 	WorkforcePlanningService_FindPositionByPositionStatus_FullMethodName                       = "/human_resource.workforceplanning.v1.WorkforcePlanningService/FindPositionByPositionStatus"
 	WorkforcePlanningService_FindPositionByWorkLocationReferenceID_FullMethodName              = "/human_resource.workforceplanning.v1.WorkforcePlanningService/FindPositionByWorkLocationReferenceID"
 	WorkforcePlanningService_FindPositionByCostCenterReferenceID_FullMethodName                = "/human_resource.workforceplanning.v1.WorkforcePlanningService/FindPositionByCostCenterReferenceID"
+	WorkforcePlanningService_CancelWorkforcePlan_FullMethodName                                = "/human_resource.workforceplanning.v1.WorkforcePlanningService/CancelWorkforcePlan"
+	WorkforcePlanningService_SupersedeWorkforcePlan_FullMethodName                             = "/human_resource.workforceplanning.v1.WorkforcePlanningService/SupersedeWorkforcePlan"
+	WorkforcePlanningService_ApproveWorkforcePlan_FullMethodName                               = "/human_resource.workforceplanning.v1.WorkforcePlanningService/ApproveWorkforcePlan"
+	WorkforcePlanningService_SubmitWorkforcePlan_FullMethodName                                = "/human_resource.workforceplanning.v1.WorkforcePlanningService/SubmitWorkforcePlan"
 	WorkforcePlanningService_CreateWorkforcePlan_FullMethodName                                = "/human_resource.workforceplanning.v1.WorkforcePlanningService/CreateWorkforcePlan"
 	WorkforcePlanningService_UpdateWorkforcePlan_FullMethodName                                = "/human_resource.workforceplanning.v1.WorkforcePlanningService/UpdateWorkforcePlan"
 	WorkforcePlanningService_DeleteWorkforcePlan_FullMethodName                                = "/human_resource.workforceplanning.v1.WorkforcePlanningService/DeleteWorkforcePlan"
@@ -88,6 +93,7 @@ type WorkforcePlanningServiceClient interface {
 	UpdateJob(ctx context.Context, in *UpdateJobRequest, opts ...grpc.CallOption) (*JobResponse, error)
 	DeleteJob(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
 	GetJobByID(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*JobResponse, error)
+	GetJobsByIds(ctx context.Context, in *GetJobsByIdsRequest, opts ...grpc.CallOption) (*JobsResponse, error)
 	GetAllJobs(ctx context.Context, in *v1.PageRequest, opts ...grpc.CallOption) (*JobsResponse, error)
 	FindJobByJobFamilyID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobsResponse, error)
 	FindJobByJobCode(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*JobsResponse, error)
@@ -106,6 +112,10 @@ type WorkforcePlanningServiceClient interface {
 	FindPositionByPositionStatus(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PositionsResponse, error)
 	FindPositionByWorkLocationReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PositionsResponse, error)
 	FindPositionByCostCenterReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PositionsResponse, error)
+	CancelWorkforcePlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error)
+	SupersedeWorkforcePlan(ctx context.Context, in *SupersedeWorkforcePlanRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error)
+	ApproveWorkforcePlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error)
+	SubmitWorkforcePlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error)
 	CreateWorkforcePlan(ctx context.Context, in *CreateWorkforcePlanRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error)
 	UpdateWorkforcePlan(ctx context.Context, in *UpdateWorkforcePlanRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error)
 	DeleteWorkforcePlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -234,6 +244,16 @@ func (c *workforcePlanningServiceClient) GetJobByID(ctx context.Context, in *v1.
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(JobResponse)
 	err := c.cc.Invoke(ctx, WorkforcePlanningService_GetJobByID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workforcePlanningServiceClient) GetJobsByIds(ctx context.Context, in *GetJobsByIdsRequest, opts ...grpc.CallOption) (*JobsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobsResponse)
+	err := c.cc.Invoke(ctx, WorkforcePlanningService_GetJobsByIds_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -414,6 +434,46 @@ func (c *workforcePlanningServiceClient) FindPositionByCostCenterReferenceID(ctx
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PositionsResponse)
 	err := c.cc.Invoke(ctx, WorkforcePlanningService_FindPositionByCostCenterReferenceID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workforcePlanningServiceClient) CancelWorkforcePlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkforcePlanResponse)
+	err := c.cc.Invoke(ctx, WorkforcePlanningService_CancelWorkforcePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workforcePlanningServiceClient) SupersedeWorkforcePlan(ctx context.Context, in *SupersedeWorkforcePlanRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkforcePlanResponse)
+	err := c.cc.Invoke(ctx, WorkforcePlanningService_SupersedeWorkforcePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workforcePlanningServiceClient) ApproveWorkforcePlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkforcePlanResponse)
+	err := c.cc.Invoke(ctx, WorkforcePlanningService_ApproveWorkforcePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workforcePlanningServiceClient) SubmitWorkforcePlan(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkforcePlanResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WorkforcePlanResponse)
+	err := c.cc.Invoke(ctx, WorkforcePlanningService_SubmitWorkforcePlan_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -674,6 +734,7 @@ type WorkforcePlanningServiceServer interface {
 	UpdateJob(context.Context, *UpdateJobRequest) (*JobResponse, error)
 	DeleteJob(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
 	GetJobByID(context.Context, *v1.IDRequest) (*JobResponse, error)
+	GetJobsByIds(context.Context, *GetJobsByIdsRequest) (*JobsResponse, error)
 	GetAllJobs(context.Context, *v1.PageRequest) (*JobsResponse, error)
 	FindJobByJobFamilyID(context.Context, *v1.StringFinderRequest) (*JobsResponse, error)
 	FindJobByJobCode(context.Context, *v1.StringFinderRequest) (*JobsResponse, error)
@@ -692,6 +753,10 @@ type WorkforcePlanningServiceServer interface {
 	FindPositionByPositionStatus(context.Context, *v1.StringFinderRequest) (*PositionsResponse, error)
 	FindPositionByWorkLocationReferenceID(context.Context, *v1.StringFinderRequest) (*PositionsResponse, error)
 	FindPositionByCostCenterReferenceID(context.Context, *v1.StringFinderRequest) (*PositionsResponse, error)
+	CancelWorkforcePlan(context.Context, *v1.IDRequest) (*WorkforcePlanResponse, error)
+	SupersedeWorkforcePlan(context.Context, *SupersedeWorkforcePlanRequest) (*WorkforcePlanResponse, error)
+	ApproveWorkforcePlan(context.Context, *v1.IDRequest) (*WorkforcePlanResponse, error)
+	SubmitWorkforcePlan(context.Context, *v1.IDRequest) (*WorkforcePlanResponse, error)
 	CreateWorkforcePlan(context.Context, *CreateWorkforcePlanRequest) (*WorkforcePlanResponse, error)
 	UpdateWorkforcePlan(context.Context, *UpdateWorkforcePlanRequest) (*WorkforcePlanResponse, error)
 	DeleteWorkforcePlan(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -756,6 +821,9 @@ func (UnimplementedWorkforcePlanningServiceServer) DeleteJob(context.Context, *v
 func (UnimplementedWorkforcePlanningServiceServer) GetJobByID(context.Context, *v1.IDRequest) (*JobResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetJobByID not implemented")
 }
+func (UnimplementedWorkforcePlanningServiceServer) GetJobsByIds(context.Context, *GetJobsByIdsRequest) (*JobsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetJobsByIds not implemented")
+}
 func (UnimplementedWorkforcePlanningServiceServer) GetAllJobs(context.Context, *v1.PageRequest) (*JobsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllJobs not implemented")
 }
@@ -809,6 +877,18 @@ func (UnimplementedWorkforcePlanningServiceServer) FindPositionByWorkLocationRef
 }
 func (UnimplementedWorkforcePlanningServiceServer) FindPositionByCostCenterReferenceID(context.Context, *v1.StringFinderRequest) (*PositionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindPositionByCostCenterReferenceID not implemented")
+}
+func (UnimplementedWorkforcePlanningServiceServer) CancelWorkforcePlan(context.Context, *v1.IDRequest) (*WorkforcePlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelWorkforcePlan not implemented")
+}
+func (UnimplementedWorkforcePlanningServiceServer) SupersedeWorkforcePlan(context.Context, *SupersedeWorkforcePlanRequest) (*WorkforcePlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SupersedeWorkforcePlan not implemented")
+}
+func (UnimplementedWorkforcePlanningServiceServer) ApproveWorkforcePlan(context.Context, *v1.IDRequest) (*WorkforcePlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApproveWorkforcePlan not implemented")
+}
+func (UnimplementedWorkforcePlanningServiceServer) SubmitWorkforcePlan(context.Context, *v1.IDRequest) (*WorkforcePlanResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitWorkforcePlan not implemented")
 }
 func (UnimplementedWorkforcePlanningServiceServer) CreateWorkforcePlan(context.Context, *CreateWorkforcePlanRequest) (*WorkforcePlanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateWorkforcePlan not implemented")
@@ -1080,6 +1160,24 @@ func _WorkforcePlanningService_GetJobByID_Handler(srv interface{}, ctx context.C
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WorkforcePlanningServiceServer).GetJobByID(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WorkforcePlanningService_GetJobsByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetJobsByIdsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkforcePlanningServiceServer).GetJobsByIds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WorkforcePlanningService_GetJobsByIds_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkforcePlanningServiceServer).GetJobsByIds(ctx, req.(*GetJobsByIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1404,6 +1502,78 @@ func _WorkforcePlanningService_FindPositionByCostCenterReferenceID_Handler(srv i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WorkforcePlanningServiceServer).FindPositionByCostCenterReferenceID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WorkforcePlanningService_CancelWorkforcePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkforcePlanningServiceServer).CancelWorkforcePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WorkforcePlanningService_CancelWorkforcePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkforcePlanningServiceServer).CancelWorkforcePlan(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WorkforcePlanningService_SupersedeWorkforcePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SupersedeWorkforcePlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkforcePlanningServiceServer).SupersedeWorkforcePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WorkforcePlanningService_SupersedeWorkforcePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkforcePlanningServiceServer).SupersedeWorkforcePlan(ctx, req.(*SupersedeWorkforcePlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WorkforcePlanningService_ApproveWorkforcePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkforcePlanningServiceServer).ApproveWorkforcePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WorkforcePlanningService_ApproveWorkforcePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkforcePlanningServiceServer).ApproveWorkforcePlan(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WorkforcePlanningService_SubmitWorkforcePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkforcePlanningServiceServer).SubmitWorkforcePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WorkforcePlanningService_SubmitWorkforcePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkforcePlanningServiceServer).SubmitWorkforcePlan(ctx, req.(*v1.IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1888,6 +2058,10 @@ var WorkforcePlanningService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _WorkforcePlanningService_GetJobByID_Handler,
 		},
 		{
+			MethodName: "GetJobsByIds",
+			Handler:    _WorkforcePlanningService_GetJobsByIds_Handler,
+		},
+		{
 			MethodName: "GetAllJobs",
 			Handler:    _WorkforcePlanningService_GetAllJobs_Handler,
 		},
@@ -1958,6 +2132,22 @@ var WorkforcePlanningService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindPositionByCostCenterReferenceID",
 			Handler:    _WorkforcePlanningService_FindPositionByCostCenterReferenceID_Handler,
+		},
+		{
+			MethodName: "CancelWorkforcePlan",
+			Handler:    _WorkforcePlanningService_CancelWorkforcePlan_Handler,
+		},
+		{
+			MethodName: "SupersedeWorkforcePlan",
+			Handler:    _WorkforcePlanningService_SupersedeWorkforcePlan_Handler,
+		},
+		{
+			MethodName: "ApproveWorkforcePlan",
+			Handler:    _WorkforcePlanningService_ApproveWorkforcePlan_Handler,
+		},
+		{
+			MethodName: "SubmitWorkforcePlan",
+			Handler:    _WorkforcePlanningService_SubmitWorkforcePlan_Handler,
 		},
 		{
 			MethodName: "CreateWorkforcePlan",

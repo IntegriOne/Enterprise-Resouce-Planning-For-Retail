@@ -92,6 +92,12 @@ func (h *Handler) LaunchPerformanceCycle(ctx context.Context, req *common.IDRequ
 	}
 	return cycleResponse(h.service.LaunchPerformanceCycle(ctx, req.Id))
 }
+func (h *Handler) ClosePerformanceCycle(ctx context.Context, req *common.IDRequest) (*pb.PerformanceCycleResponse, error) {
+	if req == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return cycleResponse(h.service.ClosePerformanceCycle(ctx, req.Id))
+}
 func (h *Handler) UpdatePerformanceCycle(ctx context.Context, req *pb.UpdatePerformanceCycleRequest) (*pb.PerformanceCycleResponse, error) {
 	if req == nil || req.Input == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

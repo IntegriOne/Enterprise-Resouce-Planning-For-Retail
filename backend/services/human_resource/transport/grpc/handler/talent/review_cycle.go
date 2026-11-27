@@ -94,6 +94,24 @@ func (s *server) DeleteTalentReviewCycle(ctx context.Context, r *commonv1.IDRequ
 	}
 	return &commonv1.EmptyResponse{}, nil
 }
+func (s *server) LaunchTalentReviewCycle(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentReviewCycleResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return cycleResult(s.service.LaunchTalentReviewCycle(ctx, r.Id))
+}
+func (s *server) StartTalentReviewCycleCalibration(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentReviewCycleResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return cycleResult(s.service.StartTalentReviewCycleCalibration(ctx, r.Id))
+}
+func (s *server) CloseTalentReviewCycle(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentReviewCycleResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return cycleResult(s.service.CloseTalentReviewCycle(ctx, r.Id))
+}
 func (s *server) GetTalentReviewCycleByID(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentReviewCycleResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

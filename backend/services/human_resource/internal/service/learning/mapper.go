@@ -237,8 +237,8 @@ func specLearningEnrollment() operation.Specification[entity.LearningEnrollment,
 				return hrerrors.ErrWorkflowRequired
 			}
 			if action != "create" {
-				switch string(old.EnrollmentStatus) {
-				case "approved", "posted", "paid", "finalized", "applied", "closed", "archived", "terminated", "deceased", "completed", "accepted", "issued", "signed", "hired", "processed", "rejected", "cancelled", "withdrawn", "superseded":
+				switch old.EnrollmentStatus {
+				case entity.LearningStatusCompleted, entity.LearningStatusFailed, entity.LearningStatusWithdrawn, entity.LearningStatusExpired:
 					return hrerrors.ErrWorkflowRequired
 				}
 			}

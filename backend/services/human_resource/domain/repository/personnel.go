@@ -170,3 +170,13 @@ type EmergencyContactRepository interface {
 	FindByContactPartyReferenceID(ctx context.Context, value string, limit, offset int) ([]entity.EmergencyContact, error)
 	FindByRelationshipCode(ctx context.Context, value string, limit, offset int) ([]entity.EmergencyContact, error)
 }
+
+// WorkerAssignmentTransferRepository menyimpan permintaan dan keputusan transfer.
+type WorkerAssignmentTransferRepository interface {
+	Insert(context.Context, *entity.WorkerAssignmentTransfer) error
+	FindByIdempotencyKey(context.Context, string) (*entity.WorkerAssignmentTransfer, error)
+	FindByID(context.Context, string) (*entity.WorkerAssignmentTransfer, error)
+	ListByWorkerID(context.Context, string, int, int) ([]entity.WorkerAssignmentTransfer, int64, error)
+	FindByIDForUpdate(context.Context, string) (*entity.WorkerAssignmentTransfer, error)
+	UpdateDecision(context.Context, *entity.WorkerAssignmentTransfer) error
+}

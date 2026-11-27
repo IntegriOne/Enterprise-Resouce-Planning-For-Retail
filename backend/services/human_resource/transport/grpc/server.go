@@ -46,6 +46,9 @@ func NewServer(cfg Config, services *appservice.Registry, logger *slog.Logger) (
 	if err != nil {
 		return nil, err
 	}
+	if logger == nil {
+		logger = slog.Default()
+	}
 	key := append([]byte{}, cfg.GatewayHMACSecret...)
 	server := stdgrpc.NewServer(
 		stdgrpc.Creds(credentials.NewTLS(tlsConfig)),
@@ -94,14 +97,19 @@ func (s *Server) Stop(ctx context.Context) error {
 	}
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+	return DrainServer(ctx, s.server)
+}
+
+// DrainServer memberi RPC aktif waktu selesai hingga batas context pemanggil.
+func DrainServer(ctx context.Context, server *stdgrpc.Server) error {
 	done := make(chan struct{})
-	go func() { s.server.GracefulStop(); close(done) }()
+	go func() { server.GracefulStop(); close(done) }()
 	select {
 	case <-done:
 		return nil
 	case <-ctx.Done():
-		s.server.Stop()
-		<-done
+		server.Stop()
+		// GracefulStop masih dapat menunggu handler yang mengabaikan pembatalan.
 		return fmt.Errorf("force HRM gRPC shutdown: %w", ctx.Err())
 	}
 }

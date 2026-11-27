@@ -4,7 +4,6 @@ package service
 
 import (
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -110,7 +109,7 @@ func specServiceRequest() operation.Specification[entity.ServiceRequest, string]
 			return a
 		},
 		Guard: func(action string, old, next *entity.ServiceRequest) error {
-			if action == "update" && !reflect.DeepEqual(old.Status, next.Status) {
+			if action == "update" && (old.Status != "open" || next.Status != "open") {
 				return hrerrors.ErrWorkflowRequired
 			}
 			if action == "create" && string(next.Status) != "open" {

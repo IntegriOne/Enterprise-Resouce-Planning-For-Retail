@@ -42,12 +42,18 @@ func (r *Resource[T, K, P]) emit(ctx context.Context, action string, value *T, a
 	if err != nil {
 		return err
 	}
-	payload, err := json.Marshal(map[string]string{
+	envelope := map[string]any{
 		"aggregate_id":       aggregateID,
 		"record_key":         r.spec.KeyString(r.spec.Key(value)),
 		"change_kind":        action,
 		"actor_principal_id": actor.PrincipalID,
-	})
+	}
+	if r.spec.EventDetails != nil {
+		if details := r.spec.EventDetails(action, value); len(details) != 0 {
+			envelope["details"] = details
+		}
+	}
+	payload, err := json.Marshal(envelope)
 	if err != nil {
 		return err
 	}

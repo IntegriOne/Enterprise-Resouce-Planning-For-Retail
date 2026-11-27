@@ -17,7 +17,8 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedPolicyServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafePolicyServiceServer
 	service *service.Service
 }
 
@@ -101,9 +102,12 @@ func (s *server) CreatePolicy(ctx context.Context, request *pb.CreatePolicyReque
 	if err != nil {
 		return nil, response.Error(err)
 	}
-	approved, err := response.Timestamp(in.ApprovedAt)
-	if err != nil {
-		return nil, response.Error(err)
+	var approved time.Time
+	if in.ApprovedAt != nil {
+		approved, err = response.Timestamp(in.ApprovedAt)
+		if err != nil {
+			return nil, response.Error(err)
+		}
 	}
 	value, err := s.service.CreatePolicy(ctx, service.CreatePolicyInput{
 		PolicyCode: in.GetPolicyCode(), PolicyVersion: in.GetPolicyVersion(), PolicyName: in.GetPolicyName(),
@@ -356,4 +360,14 @@ func (s *server) FindPolicyAcknowledgementByEvidenceDocumentVersionReferenceID(c
 		return nil, response.Error(err)
 	}
 	return acknowledgements(page), nil
+}
+func (s *server) AcknowledgePolicy(ctx context.Context, request *pb.AcknowledgePolicyRequest) (*pb.PolicyAcknowledgementResponse, error) {
+	if request == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	value, err := s.service.AcknowledgePolicy(ctx, request.Id, request.EvidenceDocumentVersionReferenceId)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.PolicyAcknowledgementResponse{Value: acknowledgement(value)}, nil
 }

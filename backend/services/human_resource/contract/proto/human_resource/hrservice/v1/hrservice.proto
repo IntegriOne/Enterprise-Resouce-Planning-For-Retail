@@ -6,6 +6,10 @@ import "google/protobuf/timestamp.proto";
 import "human_resource/common/v1/common.proto";
 
 service HRService {
+  rpc ResolveServiceRequest(ResolveServiceRequestRequest) returns (ServiceRequestResponse);
+  rpc CloseServiceRequest(human_resource.common.v1.IDRequest) returns (ServiceRequestResponse);
+  rpc CancelServiceRequest(human_resource.common.v1.IDRequest) returns (ServiceRequestResponse);
+  rpc AssignServiceRequest(human_resource.common.v1.IDRequest) returns (ServiceRequestResponse);
   rpc CreateServiceRequest(CreateServiceRequestRequest) returns (ServiceRequestResponse);
   rpc UpdateServiceRequest(UpdateServiceRequestRequest) returns (ServiceRequestResponse);
   rpc DeleteServiceRequest(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -84,3 +88,8 @@ message CreateServiceRequestEventRequest { ServiceRequestEventInput input = 1; }
 message UpdateServiceRequestEventRequest { string id = 1; ServiceRequestEventInput input = 2; google.protobuf.FieldMask update_mask = 3; }
 message ServiceRequestEventResponse { ServiceRequestEvent value = 1; }
 message ServiceRequestEventsResponse { repeated ServiceRequestEvent items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message ResolveServiceRequestRequest {
+  string id = 1;
+  string resolution_document_version_reference_id = 2;
+}

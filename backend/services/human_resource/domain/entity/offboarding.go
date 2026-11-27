@@ -20,6 +20,9 @@ type OffboardingPlan struct {
 	ApprovedByPrincipalID                   *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
 	ApprovedAt                              *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
 	CompletedAt                             *time.Time `gorm:"column:completed_at;type:timestamptz" json:"completed_at"`
+	CancelledAt                             *time.Time `gorm:"column:cancelled_at;type:timestamptz" json:"cancelled_at"`
+	CancelledByPrincipalID                  *string    `gorm:"column:cancelled_by_principal_id;type:uuid" json:"cancelled_by_principal_id"`
+	CancellationReason                      *string    `gorm:"column:cancellation_reason;type:varchar(300)" json:"cancellation_reason"`
 	CreatedByPrincipalID                    string     `gorm:"column:created_by_principal_id;type:uuid" json:"created_by_principal_id"`
 	CreatedAt                               time.Time  `gorm:"column:created_at;type:timestamptz;autoCreateTime:false;autoUpdateTime:false" json:"created_at"`
 }

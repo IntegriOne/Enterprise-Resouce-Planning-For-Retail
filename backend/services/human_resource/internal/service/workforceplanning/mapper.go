@@ -9,6 +9,7 @@ import (
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
 	hrerrors "github.com/integrione/erp-retail/backend/services/human_resource/domain/errors"
+	domainrepo "github.com/integrione/erp-retail/backend/services/human_resource/domain/repository"
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
@@ -392,6 +393,7 @@ func patchWorkforcePlan(v *entity.WorkforcePlan, in UpdateWorkforcePlanInput) er
 func specWorkforcePlan() operation.Specification[entity.WorkforcePlan, string] {
 	return operation.Specification[entity.WorkforcePlan, string]{
 		Domain: "workforceplanning", Table: "hr_workforce_plans",
+		KeyFilters:  func(key string) []domainrepo.Filter { return []domainrepo.Filter{{Column: "id", Values: []any{key}}} },
 		Key:         func(v *entity.WorkforcePlan) string { return v.ID },
 		KeyString:   func(key string) string { return fmt.Sprint(key) },
 		ValidateKey: func(key string) error { return entity.ValidateUUID("id", key) },
@@ -407,6 +409,9 @@ func specWorkforcePlan() operation.Specification[entity.WorkforcePlan, string] {
 			a["id"] = fmt.Sprint(v.ID)
 			a["legal_entity_reference_id"] = fmt.Sprint(v.LegalEntityReferenceID)
 			a["status"] = fmt.Sprint(v.Status)
+			if v.SupersededByPlanID != nil {
+				a["superseded_by_plan_id"] = *v.SupersededByPlanID
+			}
 			if v.FinanceBudgetReferenceID != nil {
 				a["finance_budget_reference_id"] = fmt.Sprint(*v.FinanceBudgetReferenceID)
 			}
@@ -541,6 +546,7 @@ func patchWorkforcePlanLine(v *entity.WorkforcePlanLine, in UpdateWorkforcePlanL
 func specWorkforcePlanLine() operation.Specification[entity.WorkforcePlanLine, string] {
 	return operation.Specification[entity.WorkforcePlanLine, string]{
 		Domain: "workforceplanning", Table: "hr_workforce_plan_lines",
+		KeyFilters:  func(key string) []domainrepo.Filter { return []domainrepo.Filter{{Column: "id", Values: []any{key}}} },
 		Key:         func(v *entity.WorkforcePlanLine) string { return v.ID },
 		KeyString:   func(key string) string { return fmt.Sprint(key) },
 		ValidateKey: func(key string) error { return entity.ValidateUUID("id", key) },
@@ -553,6 +559,9 @@ func specWorkforcePlanLine() operation.Specification[entity.WorkforcePlanLine, s
 			a := map[string]string{}
 			a["id"] = fmt.Sprint(v.ID)
 			a["workforce_plan_id"] = fmt.Sprint(v.WorkforcePlanID)
+			if v.PlanLegalEntityReferenceID != nil {
+				a["plan_legal_entity_reference_id"] = *v.PlanLegalEntityReferenceID
+			}
 			a["organization_unit_reference_id"] = fmt.Sprint(v.OrganizationUnitReferenceID)
 			a["job_id"] = fmt.Sprint(v.JobID)
 			if v.WorkLocationReferenceID != nil {

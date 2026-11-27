@@ -7,6 +7,8 @@ import "google/protobuf/timestamp.proto";
 import "human_resource/common/v1/common.proto";
 
 service BenefitsService {
+  rpc EndBenefitEnrollment(EndBenefitEnrollmentRequest) returns (BenefitEnrollmentResponse);
+  rpc ApproveBenefitEnrollment(human_resource.common.v1.IDRequest) returns (BenefitEnrollmentResponse);
   rpc CreateBenefitPlan(CreateBenefitPlanRequest) returns (BenefitPlanResponse);
   rpc UpdateBenefitPlan(UpdateBenefitPlanRequest) returns (BenefitPlanResponse);
   rpc DeleteBenefitPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -96,3 +98,8 @@ message CreateBenefitEnrollmentRequest { BenefitEnrollmentInput input = 1; }
 message UpdateBenefitEnrollmentRequest { string id = 1; BenefitEnrollmentInput input = 2; google.protobuf.FieldMask update_mask = 3; }
 message BenefitEnrollmentResponse { BenefitEnrollment item = 1; }
 message BenefitEnrollmentsResponse { repeated BenefitEnrollment items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message EndBenefitEnrollmentRequest {
+  string id = 1;
+  string effective_to = 2;
+}

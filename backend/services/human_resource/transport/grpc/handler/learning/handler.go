@@ -14,7 +14,8 @@ import (
 )
 
 type Handler struct {
-	pb.UnimplementedLearningServiceServer
+	// Kontrak privat wajib memiliki implementasi eksplisit untuk setiap RPC.
+	pb.UnsafeLearningServiceServer
 	service *service.Service
 }
 

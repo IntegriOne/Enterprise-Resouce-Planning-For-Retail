@@ -91,6 +91,12 @@ func (s *server) GetTalentCalibrationSessionByID(ctx context.Context, r *commonv
 	}
 	return sessionResult(s.service.GetTalentCalibrationSessionByID(ctx, r.Id))
 }
+func (s *server) OpenTalentCalibrationSession(ctx context.Context, r *commonv1.IDRequest) (*pb.TalentCalibrationSessionResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	return sessionResult(s.service.OpenTalentCalibrationSession(ctx, r.Id))
+}
 func (s *server) GetAllTalentCalibrationSessions(ctx context.Context, r *commonv1.PageRequest) (*pb.TalentCalibrationSessionsResponse, error) {
 	if r == nil {
 		return nil, response.Error(hrerrors.ErrInvalidInput)

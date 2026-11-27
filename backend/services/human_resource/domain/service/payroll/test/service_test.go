@@ -41,6 +41,19 @@ func TestPayrollRunScope(t *testing.T) {
 	if err := service.ValidateRunResults(&run, []entity.PayrollResult{result}, lines); err != nil {
 		t.Fatal(err)
 	}
+	second := result
+	second.ID, second.WorkerID, second.PayrollProfileReferenceID = f.ID(50), f.ID(51), f.ID(52)
+	secondLines := append([]entity.PayrollResultLine(nil), lines...)
+	for i := range secondLines {
+		secondLines[i].PayrollResultID = second.ID
+	}
+	if err := service.ValidateResultTotals(&second, secondLines); err != nil {
+		t.Fatalf("second result must be valid independently: %v", err)
+	}
+	if err := service.ValidateRunResults(&run, []entity.PayrollResult{result, second}, append(lines, secondLines...)); err == nil {
+		t.Fatal("duplicate line identities across separate results accepted")
+	}
+
 	result.CurrencyCode = "USD"
 	if err := service.ValidateRunResults(&run, []entity.PayrollResult{result}, lines); err == nil {
 		t.Fatal("cross-currency result accepted")

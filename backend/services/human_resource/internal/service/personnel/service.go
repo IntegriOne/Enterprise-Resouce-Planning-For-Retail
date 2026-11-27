@@ -11,26 +11,33 @@ import (
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 )
 
+type transferPositionReader interface {
+	FindByIDForUpdate(context.Context, string) (*entity.Position, error)
+}
+
 type Dependencies struct {
-	PrincipalLinkVerifier PrincipalLinkVerifier
-	Runtime               operation.Dependencies
-	Worker                domainrepo.RecordRepository[entity.Worker, string]
-	EmploymentContract    domainrepo.RecordRepository[entity.EmploymentContract, string]
-	WorkerAssignment      domainrepo.RecordRepository[entity.WorkerAssignment, string]
-	WorkerLifecycleEvent  domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
-	WorkerDocument        domainrepo.RecordRepository[entity.WorkerDocument, string]
-	EmergencyContact      domainrepo.RecordRepository[entity.EmergencyContact, string]
-	OffboardingPlan       domainrepo.RecordRepository[entity.OffboardingPlan, string]
+	ContractSignatureVerifier ContractSignatureVerifier
+	PrincipalLinkVerifier     PrincipalLinkVerifier
+	OffboardingPlan           domainrepo.RecordRepository[entity.OffboardingPlan, string]
+	WorkerAssignmentTransfer  domainrepo.WorkerAssignmentTransferRepository
+	TransferPosition          transferPositionReader
+	Runtime                   operation.Dependencies
+	Worker                    domainrepo.RecordRepository[entity.Worker, string]
+	EmploymentContract        domainrepo.RecordRepository[entity.EmploymentContract, string]
+	WorkerAssignment          domainrepo.RecordRepository[entity.WorkerAssignment, string]
+	WorkerLifecycleEvent      domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
+	WorkerDocument            domainrepo.RecordRepository[entity.WorkerDocument, string]
+	EmergencyContact          domainrepo.RecordRepository[entity.EmergencyContact, string]
 }
 
 // Service mengoordinasikan operasi domain personnel.
 type Service struct {
 	transferDependencies Dependencies
-	lifecycleEvents      domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
 	worker               *operation.Resource[entity.Worker, string, *entity.Worker]
 	employmentContract   *operation.Resource[entity.EmploymentContract, string, *entity.EmploymentContract]
 	workerAssignment     *operation.Resource[entity.WorkerAssignment, string, *entity.WorkerAssignment]
 	workerLifecycleEvent *operation.Resource[entity.WorkerLifecycleEvent, int64, *entity.WorkerLifecycleEvent]
+	lifecycleEvents      domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
 	workerDocument       *operation.Resource[entity.WorkerDocument, string, *entity.WorkerDocument]
 	emergencyContact     *operation.Resource[entity.EmergencyContact, string, *entity.EmergencyContact]
 }

@@ -1,7 +1,9 @@
 package service
 
 import (
+	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"reflect"
 	"time"
@@ -44,4 +46,19 @@ func RequireDependency(value any) error {
 		return hrerrors.ErrUnavailable
 	}
 	return nil
+}
+
+// OwnerVerificationError menjaga kegagalan verifier pada kontrak error HRM.
+func OwnerVerificationError(ctx context.Context, err error) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	switch {
+	case errors.Is(err, hrerrors.ErrForbidden):
+		return hrerrors.ErrForbidden
+	case errors.Is(err, hrerrors.ErrReferenceConflict), errors.Is(err, hrerrors.ErrNotFound):
+		return hrerrors.ErrReferenceConflict
+	default:
+		return hrerrors.ErrUnavailable
+	}
 }

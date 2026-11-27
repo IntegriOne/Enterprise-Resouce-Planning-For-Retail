@@ -30,6 +30,12 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+type benefitsIntegrationClock struct{}
+
+func (benefitsIntegrationClock) Now() time.Time {
+	return time.Date(2026, 11, 25, 12, 0, 0, 0, time.UTC)
+}
+
 type benefitsIntegrationPolicy struct{}
 
 func (benefitsIntegrationPolicy) Authorize(context.Context, operation.Access) (operation.Actor, error) {
@@ -77,7 +83,7 @@ func TestBenefitRequestRPCWithPostgreSQL(t *testing.T) {
 	}
 	svc, err := service.NewService(service.Dependencies{
 		Runtime: operation.Dependencies{Transactor: repos.Transactor, Outbox: repos.OutboxEvent,
-			Policy: benefitsIntegrationPolicy{}, Integrity: security.NewIntegrity(validators)},
+			Clock: benefitsIntegrationClock{}, Policy: benefitsIntegrationPolicy{}, Integrity: security.NewIntegrity(validators)},
 		BenefitPlan: repos.BenefitPlan, BenefitEnrollment: repos.BenefitEnrollment,
 	})
 	if err != nil {
@@ -110,13 +116,18 @@ func TestBenefitRequestRPCWithPostgreSQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var planID, enrollmentID string
+	var planID, enrollmentID, approvedEnrollmentID string
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
 		if enrollmentID != "" {
 			if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_benefit_enrollments WHERE id = ?", enrollmentID).Error; err != nil {
 				t.Errorf("cleanup HRM benefit enrollment: %v", err)
+			}
+		}
+		if approvedEnrollmentID != "" {
+			if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_benefit_enrollments WHERE id = ?", approvedEnrollmentID).Error; err != nil {
+				t.Errorf("cleanup approved enrollment: %v", err)
 			}
 		}
 		if planID != "" {
@@ -127,7 +138,7 @@ func TestBenefitRequestRPCWithPostgreSQL(t *testing.T) {
 		if err := database.WithContext(cleanupCtx).Exec("DELETE FROM hr_workers WHERE id = ?", workerID).Error; err != nil {
 			t.Errorf("cleanup HRM benefit worker: %v", err)
 		}
-		if err := database.WithContext(cleanupCtx).Table("hr_outbox_events").Where("aggregate_id IN ?", []string{planID, enrollmentID}).Delete(nil).Error; err != nil {
+		if err := database.WithContext(cleanupCtx).Table("hr_outbox_events").Where("aggregate_id IN ?", []string{planID, enrollmentID, approvedEnrollmentID}).Delete(nil).Error; err != nil {
 			t.Errorf("cleanup HRM benefit outbox: %v", err)
 		}
 	})
@@ -233,17 +244,48 @@ func TestBenefitRequestRPCWithPostgreSQL(t *testing.T) {
 		Input: &pb.BenefitPlanInput{PlanName: &changedName}, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"plan_name"}}}); err != nil {
 		t.Fatalf("update unused plan: %v", err)
 	}
-	if _, err := client.DeleteBenefitPlan(ctx, &common.IDRequest{Id: planID}); err != nil {
-		t.Fatalf("delete unused plan: %v", err)
+	pending, err := client.CreateBenefitEnrollment(ctx, &pb.CreateBenefitEnrollmentRequest{Input: request})
+	if err != nil {
+		t.Fatalf("create enrollment for approval: %v", err)
 	}
-	if _, err := client.GetBenefitPlanByID(ctx, &common.IDRequest{Id: planID}); status.Code(err) != codes.NotFound {
-		t.Fatalf("deleted plan read status = %v, want NotFound", status.Code(err))
+	approvedEnrollmentID = pending.GetItem().GetId()
+	approvalRequest := &common.IDRequest{Id: approvedEnrollmentID}
+	endRequest := &pb.EndBenefitEnrollmentRequest{Id: approvedEnrollmentID, EffectiveTo: "2026-11-25"}
+	if _, err := client.EndBenefitEnrollment(ctx, endRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("end pending enrollment = %v", err)
+	}
+	approvalResult, err := client.ApproveBenefitEnrollment(ctx, approvalRequest)
+	if err != nil || approvalResult.GetItem().GetEnrollmentStatus() != "approved" ||
+		approvalResult.GetItem().GetVerifiedAt() == nil || approvalResult.GetItem().GetProviderMemberReference() != "" {
+		t.Fatalf("approve local enrollment: %+v, %v", approvalResult, err)
+	}
+	if _, err := client.ApproveBenefitEnrollment(ctx, approvalRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat benefit approval = %v", err)
+	}
+	if _, err := client.DeleteBenefitEnrollment(ctx, approvalRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete approved enrollment = %v", err)
+	}
+	futureEnd := &pb.EndBenefitEnrollmentRequest{Id: approvedEnrollmentID, EffectiveTo: "2026-11-26"}
+	if _, err := client.EndBenefitEnrollment(ctx, futureEnd); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("end enrollment in the future = %v", err)
+	}
+	ended, err := client.EndBenefitEnrollment(ctx, endRequest)
+	if err != nil || ended.GetItem().GetEnrollmentStatus() != "ended" ||
+		ended.GetItem().GetEffectiveTo() != endRequest.EffectiveTo ||
+		!ended.GetItem().GetVerifiedAt().AsTime().Equal(approvalResult.GetItem().GetVerifiedAt().AsTime()) {
+		t.Fatalf("end local enrollment: %+v, %v", ended, err)
+	}
+	if _, err := client.EndBenefitEnrollment(ctx, endRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("repeat benefit end = %v", err)
+	}
+	if _, err := client.DeleteBenefitEnrollment(ctx, approvalRequest); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("delete ended enrollment = %v", err)
 	}
 	var eventCount int64
-	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id IN ?", []string{planID, enrollmentID}).Count(&eventCount).Error; err != nil {
+	if err := database.WithContext(ctx).Table("hr_outbox_events").Where("aggregate_id IN ?", []string{planID, enrollmentID, approvedEnrollmentID}).Count(&eventCount).Error; err != nil {
 		t.Fatal(err)
 	}
-	if eventCount < 6 {
-		t.Fatalf("benefits outbox events = %d, want at least 6", eventCount)
+	if eventCount != 8 {
+		t.Fatalf("benefits outbox events = %d, want 8", eventCount)
 	}
 }

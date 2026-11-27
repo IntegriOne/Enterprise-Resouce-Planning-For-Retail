@@ -35,6 +35,7 @@ service LeaveService {
   rpc FindLeaveAdjustmentByRequestedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
   rpc FindLeaveAdjustmentByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
   rpc FindLeaveAdjustmentByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (LeaveAdjustmentsResponse);
+  rpc RejectLeaveAdjustment(RejectLeaveAdjustmentRequest) returns (LeaveAdjustmentResponse);
   rpc ApproveLeaveAdjustment(human_resource.common.v1.IDRequest) returns (LeaveAdjustmentResponse);
   rpc CreateLeaveLedgerEntry(CreateLeaveLedgerEntryRequest) returns (LeaveLedgerEntryResponse);
   rpc UpdateLeaveLedgerEntry(UpdateLeaveLedgerEntryRequest) returns (LeaveLedgerEntryResponse);
@@ -49,6 +50,7 @@ service LeaveService {
   rpc FindLeaveLedgerEntryBySourceEventID(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
   rpc FindLeaveLedgerEntryByReasonCode(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
   rpc FindLeaveLedgerEntryByActorPrincipalID(human_resource.common.v1.StringFinderRequest) returns (LeaveLedgerEntriesResponse);
+  rpc CloseLeaveEntitlement(human_resource.common.v1.IDRequest) returns (LeaveEntitlementResponse);
   rpc PostLedgerEntry(PostLedgerEntryRequest) returns (LeaveEntitlementResponse);
 }
 
@@ -117,6 +119,8 @@ message LeaveEntitlement {
   int64 revision = 13;
   google.protobuf.Timestamp calculated_at = 14;
   optional string source_workforce_snapshot_reference_id = 15;
+  google.protobuf.Timestamp closed_at = 16;
+  optional string closed_by_principal_id = 17;
 }
 message LeaveEntitlementInput {
   optional string worker_id = 1;
@@ -160,6 +164,9 @@ message LeaveAdjustment {
   google.protobuf.Timestamp approved_at = 8;
   google.protobuf.Timestamp created_at = 9;
   string idempotency_key = 10;
+  google.protobuf.Timestamp rejected_at = 11;
+  optional string rejected_by_principal_id = 12;
+  optional string rejection_reason_code = 13;
 }
 message LeaveAdjustmentInput {
   optional string entitlement_id = 1;
@@ -250,4 +257,9 @@ message PostLedgerEntryInput {
 message PostLedgerEntryRequest {
   string entitlement_id = 1;
   PostLedgerEntryInput input = 2;
+}
+
+message RejectLeaveAdjustmentRequest {
+  string id = 1;
+  string reason_code = 2;
 }

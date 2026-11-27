@@ -2,6 +2,8 @@ package security
 
 import (
 	"context"
+	"crypto/sha256"
+	"reflect"
 	"strings"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -18,22 +20,30 @@ type contractNumberReader interface {
 	FindByContractNumber(context.Context, string, int, int) ([]entity.EmploymentContract, error)
 }
 
+type contractCollectiveAgreementReader interface {
+	FindByIDForUpdate(context.Context, string) (*entity.CollectiveAgreement, error)
+}
+
 type employmentContractValidator struct {
-	workers   contractWorkerReader
-	contracts contractNumberReader
+	workers    contractWorkerReader
+	contracts  contractNumberReader
+	agreements contractCollectiveAgreementReader
 }
 
 // PersonnelValidators mengaktifkan aturan kontrak dan permintaan penempatan draf HRM.
 func PersonnelValidators(repos *repository.Registry) (map[string]MutationValidator, error) {
 	if repos == nil || operation.RequireDependency(repos.Worker) != nil ||
 		operation.RequireDependency(repos.EmploymentContract) != nil ||
+		operation.RequireDependency(repos.CollectiveAgreement) != nil ||
 		operation.RequireDependency(repos.Position) != nil ||
 		operation.RequireDependency(repos.WorkerAssignment) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
 		"hr_employment_contracts": &employmentContractValidator{
-			workers: repos.Worker, contracts: repos.EmploymentContract,
+			workers:    repos.Worker,
+			contracts:  repos.EmploymentContract,
+			agreements: repos.CollectiveAgreement,
 		},
 		"hr_worker_assignments": &workerAssignmentValidator{
 			workers: repos.Worker, positions: repos.Position, assignments: repos.WorkerAssignment,
@@ -68,7 +78,7 @@ func (v *employmentContractValidator) ValidateMutation(ctx context.Context, tabl
 		if !ok || contract == nil {
 			return hrerrors.ErrInvalidInput
 		}
-		if !draftUnsignedContract(contract) || !supportedContractType(contract.ContractType) {
+		if (!draftUnsignedContract(contract) && !validContractSignature(previous, contract)) || !supportedContractType(contract.ContractType) {
 			return hrerrors.ErrWorkflowRequired
 		}
 		if previous != nil && (previous.ID != contract.ID || previous.WorkerID != contract.WorkerID ||
@@ -80,7 +90,20 @@ func (v *employmentContractValidator) ValidateMutation(ctx context.Context, tabl
 		return hrerrors.ErrInvalidInput
 	}
 	if contract.CollectiveAgreementID != nil {
-		return hrerrors.ErrUnavailable
+		if operation.RequireDependency(v.agreements) != nil {
+			return hrerrors.ErrUnavailable
+		}
+		agreement, err := v.agreements.FindByIDForUpdate(ctx, *contract.CollectiveAgreementID)
+		if err != nil {
+			return workerAssessmentReferenceError(err)
+		}
+		if agreement == nil || !strings.EqualFold(agreement.LegalEntityReferenceID, contract.EmployingLegalEntityReferenceID) {
+			return hrerrors.ErrReferenceConflict
+		}
+		if (agreement.EffectiveTo != nil && entity.CompareDates(contract.EffectiveFrom, *agreement.EffectiveTo) > 0) ||
+			(contract.EffectiveTo != nil && entity.CompareDates(*contract.EffectiveTo, agreement.EffectiveFrom) < 0) {
+			return hrerrors.ErrReferenceConflict
+		}
 	}
 	worker, err := v.workers.FindByIDForUpdate(ctx, contract.WorkerID)
 	if err != nil {
@@ -92,7 +115,7 @@ func (v *employmentContractValidator) ValidateMutation(ctx context.Context, tabl
 	if after == nil {
 		return nil
 	}
-	if worker.Status != entity.WorkerStatusPreboarding && worker.Status != entity.WorkerStatusActive {
+	if worker.TerminationDate != nil || (worker.Status != entity.WorkerStatusPreboarding && worker.Status != entity.WorkerStatusActive) {
 		return hrerrors.ErrReferenceConflict
 	}
 	matches, err := v.contracts.FindByContractNumber(ctx, contract.ContractNumber, 2, 0)
@@ -120,4 +143,16 @@ func supportedContractType(value string) bool {
 	default:
 		return false
 	}
+}
+
+func validContractSignature(previous, signed *entity.EmploymentContract) bool {
+	if !draftUnsignedContract(previous) || signed.ContractStatus != "signed" || signed.SignedAt == nil ||
+		signed.SignedAt.Before(previous.CreatedAt) || signed.SignedDocumentReferenceID == nil ||
+		signed.SignedDocumentVersionReferenceID == nil || len(signed.SignedContentDigest) != sha256.Size {
+		return false
+	}
+	draft := *signed
+	draft.ContractStatus = "draft"
+	draft.SignedAt, draft.SignedDocumentReferenceID, draft.SignedDocumentVersionReferenceID, draft.SignedContentDigest = nil, nil, nil, nil
+	return reflect.DeepEqual(previous, &draft)
 }

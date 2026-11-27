@@ -24,6 +24,10 @@ const (
 	PersonnelService_ActivateWorker_FullMethodName                                           = "/human_resource.personnel.v1.PersonnelService/ActivateWorker"
 	PersonnelService_LinkWorkerPrincipal_FullMethodName                                      = "/human_resource.personnel.v1.PersonnelService/LinkWorkerPrincipal"
 	PersonnelService_TerminateWorker_FullMethodName                                          = "/human_resource.personnel.v1.PersonnelService/TerminateWorker"
+	PersonnelService_SubmitWorkerAssignmentTransfer_FullMethodName                           = "/human_resource.personnel.v1.PersonnelService/SubmitWorkerAssignmentTransfer"
+	PersonnelService_ListWorkerAssignmentTransfers_FullMethodName                            = "/human_resource.personnel.v1.PersonnelService/ListWorkerAssignmentTransfers"
+	PersonnelService_GetWorkerAssignmentTransfer_FullMethodName                              = "/human_resource.personnel.v1.PersonnelService/GetWorkerAssignmentTransfer"
+	PersonnelService_DecideWorkerAssignmentTransfer_FullMethodName                           = "/human_resource.personnel.v1.PersonnelService/DecideWorkerAssignmentTransfer"
 	PersonnelService_ApplyPrimaryAssignment_FullMethodName                                   = "/human_resource.personnel.v1.PersonnelService/ApplyPrimaryAssignment"
 	PersonnelService_UpdateWorker_FullMethodName                                             = "/human_resource.personnel.v1.PersonnelService/UpdateWorker"
 	PersonnelService_DeleteWorker_FullMethodName                                             = "/human_resource.personnel.v1.PersonnelService/DeleteWorker"
@@ -37,6 +41,7 @@ const (
 	PersonnelService_FindWorkerByPrimaryAssignmentID_FullMethodName                          = "/human_resource.personnel.v1.PersonnelService/FindWorkerByPrimaryAssignmentID"
 	PersonnelService_FindWorkerByIAMPrincipalReferenceID_FullMethodName                      = "/human_resource.personnel.v1.PersonnelService/FindWorkerByIAMPrincipalReferenceID"
 	PersonnelService_FindWorkerByCreatedByPrincipalID_FullMethodName                         = "/human_resource.personnel.v1.PersonnelService/FindWorkerByCreatedByPrincipalID"
+	PersonnelService_RecordSignedEmploymentContract_FullMethodName                           = "/human_resource.personnel.v1.PersonnelService/RecordSignedEmploymentContract"
 	PersonnelService_CreateEmploymentContract_FullMethodName                                 = "/human_resource.personnel.v1.PersonnelService/CreateEmploymentContract"
 	PersonnelService_UpdateEmploymentContract_FullMethodName                                 = "/human_resource.personnel.v1.PersonnelService/UpdateEmploymentContract"
 	PersonnelService_DeleteEmploymentContract_FullMethodName                                 = "/human_resource.personnel.v1.PersonnelService/DeleteEmploymentContract"
@@ -105,6 +110,10 @@ type PersonnelServiceClient interface {
 	ActivateWorker(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
 	LinkWorkerPrincipal(ctx context.Context, in *LinkWorkerPrincipalRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
 	TerminateWorker(ctx context.Context, in *TerminateWorkerRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
+	SubmitWorkerAssignmentTransfer(ctx context.Context, in *SubmitWorkerAssignmentTransferRequest, opts ...grpc.CallOption) (*SubmitWorkerAssignmentTransferResponse, error)
+	ListWorkerAssignmentTransfers(ctx context.Context, in *ListWorkerAssignmentTransfersRequest, opts ...grpc.CallOption) (*ListWorkerAssignmentTransfersResponse, error)
+	GetWorkerAssignmentTransfer(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*GetWorkerAssignmentTransferResponse, error)
+	DecideWorkerAssignmentTransfer(ctx context.Context, in *DecideWorkerAssignmentTransferRequest, opts ...grpc.CallOption) (*DecideWorkerAssignmentTransferResponse, error)
 	ApplyPrimaryAssignment(ctx context.Context, in *ApplyPrimaryAssignmentRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
 	UpdateWorker(ctx context.Context, in *UpdateWorkerRequest, opts ...grpc.CallOption) (*WorkerResponse, error)
 	DeleteWorker(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -118,6 +127,7 @@ type PersonnelServiceClient interface {
 	FindWorkerByPrimaryAssignmentID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkersResponse, error)
 	FindWorkerByIAMPrincipalReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkersResponse, error)
 	FindWorkerByCreatedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*WorkersResponse, error)
+	RecordSignedEmploymentContract(ctx context.Context, in *RecordSignedEmploymentContractRequest, opts ...grpc.CallOption) (*EmploymentContractResponse, error)
 	CreateEmploymentContract(ctx context.Context, in *CreateEmploymentContractRequest, opts ...grpc.CallOption) (*EmploymentContractResponse, error)
 	UpdateEmploymentContract(ctx context.Context, in *UpdateEmploymentContractRequest, opts ...grpc.CallOption) (*EmploymentContractResponse, error)
 	DeleteEmploymentContract(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*v1.EmptyResponse, error)
@@ -220,6 +230,46 @@ func (c *personnelServiceClient) TerminateWorker(ctx context.Context, in *Termin
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkerResponse)
 	err := c.cc.Invoke(ctx, PersonnelService_TerminateWorker_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *personnelServiceClient) SubmitWorkerAssignmentTransfer(ctx context.Context, in *SubmitWorkerAssignmentTransferRequest, opts ...grpc.CallOption) (*SubmitWorkerAssignmentTransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SubmitWorkerAssignmentTransferResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_SubmitWorkerAssignmentTransfer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *personnelServiceClient) ListWorkerAssignmentTransfers(ctx context.Context, in *ListWorkerAssignmentTransfersRequest, opts ...grpc.CallOption) (*ListWorkerAssignmentTransfersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListWorkerAssignmentTransfersResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_ListWorkerAssignmentTransfers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *personnelServiceClient) GetWorkerAssignmentTransfer(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*GetWorkerAssignmentTransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetWorkerAssignmentTransferResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_GetWorkerAssignmentTransfer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *personnelServiceClient) DecideWorkerAssignmentTransfer(ctx context.Context, in *DecideWorkerAssignmentTransferRequest, opts ...grpc.CallOption) (*DecideWorkerAssignmentTransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DecideWorkerAssignmentTransferResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_DecideWorkerAssignmentTransfer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -350,6 +400,16 @@ func (c *personnelServiceClient) FindWorkerByCreatedByPrincipalID(ctx context.Co
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(WorkersResponse)
 	err := c.cc.Invoke(ctx, PersonnelService_FindWorkerByCreatedByPrincipalID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *personnelServiceClient) RecordSignedEmploymentContract(ctx context.Context, in *RecordSignedEmploymentContractRequest, opts ...grpc.CallOption) (*EmploymentContractResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EmploymentContractResponse)
+	err := c.cc.Invoke(ctx, PersonnelService_RecordSignedEmploymentContract_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -944,6 +1004,10 @@ type PersonnelServiceServer interface {
 	ActivateWorker(context.Context, *v1.IDRequest) (*WorkerResponse, error)
 	LinkWorkerPrincipal(context.Context, *LinkWorkerPrincipalRequest) (*WorkerResponse, error)
 	TerminateWorker(context.Context, *TerminateWorkerRequest) (*WorkerResponse, error)
+	SubmitWorkerAssignmentTransfer(context.Context, *SubmitWorkerAssignmentTransferRequest) (*SubmitWorkerAssignmentTransferResponse, error)
+	ListWorkerAssignmentTransfers(context.Context, *ListWorkerAssignmentTransfersRequest) (*ListWorkerAssignmentTransfersResponse, error)
+	GetWorkerAssignmentTransfer(context.Context, *v1.IDRequest) (*GetWorkerAssignmentTransferResponse, error)
+	DecideWorkerAssignmentTransfer(context.Context, *DecideWorkerAssignmentTransferRequest) (*DecideWorkerAssignmentTransferResponse, error)
 	ApplyPrimaryAssignment(context.Context, *ApplyPrimaryAssignmentRequest) (*WorkerResponse, error)
 	UpdateWorker(context.Context, *UpdateWorkerRequest) (*WorkerResponse, error)
 	DeleteWorker(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -957,6 +1021,7 @@ type PersonnelServiceServer interface {
 	FindWorkerByPrimaryAssignmentID(context.Context, *v1.StringFinderRequest) (*WorkersResponse, error)
 	FindWorkerByIAMPrincipalReferenceID(context.Context, *v1.StringFinderRequest) (*WorkersResponse, error)
 	FindWorkerByCreatedByPrincipalID(context.Context, *v1.StringFinderRequest) (*WorkersResponse, error)
+	RecordSignedEmploymentContract(context.Context, *RecordSignedEmploymentContractRequest) (*EmploymentContractResponse, error)
 	CreateEmploymentContract(context.Context, *CreateEmploymentContractRequest) (*EmploymentContractResponse, error)
 	UpdateEmploymentContract(context.Context, *UpdateEmploymentContractRequest) (*EmploymentContractResponse, error)
 	DeleteEmploymentContract(context.Context, *v1.IDRequest) (*v1.EmptyResponse, error)
@@ -1037,6 +1102,18 @@ func (UnimplementedPersonnelServiceServer) LinkWorkerPrincipal(context.Context, 
 func (UnimplementedPersonnelServiceServer) TerminateWorker(context.Context, *TerminateWorkerRequest) (*WorkerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method TerminateWorker not implemented")
 }
+func (UnimplementedPersonnelServiceServer) SubmitWorkerAssignmentTransfer(context.Context, *SubmitWorkerAssignmentTransferRequest) (*SubmitWorkerAssignmentTransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitWorkerAssignmentTransfer not implemented")
+}
+func (UnimplementedPersonnelServiceServer) ListWorkerAssignmentTransfers(context.Context, *ListWorkerAssignmentTransfersRequest) (*ListWorkerAssignmentTransfersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListWorkerAssignmentTransfers not implemented")
+}
+func (UnimplementedPersonnelServiceServer) GetWorkerAssignmentTransfer(context.Context, *v1.IDRequest) (*GetWorkerAssignmentTransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWorkerAssignmentTransfer not implemented")
+}
+func (UnimplementedPersonnelServiceServer) DecideWorkerAssignmentTransfer(context.Context, *DecideWorkerAssignmentTransferRequest) (*DecideWorkerAssignmentTransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DecideWorkerAssignmentTransfer not implemented")
+}
 func (UnimplementedPersonnelServiceServer) ApplyPrimaryAssignment(context.Context, *ApplyPrimaryAssignmentRequest) (*WorkerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ApplyPrimaryAssignment not implemented")
 }
@@ -1075,6 +1152,9 @@ func (UnimplementedPersonnelServiceServer) FindWorkerByIAMPrincipalReferenceID(c
 }
 func (UnimplementedPersonnelServiceServer) FindWorkerByCreatedByPrincipalID(context.Context, *v1.StringFinderRequest) (*WorkersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindWorkerByCreatedByPrincipalID not implemented")
+}
+func (UnimplementedPersonnelServiceServer) RecordSignedEmploymentContract(context.Context, *RecordSignedEmploymentContractRequest) (*EmploymentContractResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordSignedEmploymentContract not implemented")
 }
 func (UnimplementedPersonnelServiceServer) CreateEmploymentContract(context.Context, *CreateEmploymentContractRequest) (*EmploymentContractResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateEmploymentContract not implemented")
@@ -1343,6 +1423,78 @@ func _PersonnelService_TerminateWorker_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PersonnelService_SubmitWorkerAssignmentTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubmitWorkerAssignmentTransferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).SubmitWorkerAssignmentTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_SubmitWorkerAssignmentTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).SubmitWorkerAssignmentTransfer(ctx, req.(*SubmitWorkerAssignmentTransferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PersonnelService_ListWorkerAssignmentTransfers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListWorkerAssignmentTransfersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).ListWorkerAssignmentTransfers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_ListWorkerAssignmentTransfers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).ListWorkerAssignmentTransfers(ctx, req.(*ListWorkerAssignmentTransfersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PersonnelService_GetWorkerAssignmentTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.IDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).GetWorkerAssignmentTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_GetWorkerAssignmentTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).GetWorkerAssignmentTransfer(ctx, req.(*v1.IDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PersonnelService_DecideWorkerAssignmentTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DecideWorkerAssignmentTransferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).DecideWorkerAssignmentTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_DecideWorkerAssignmentTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).DecideWorkerAssignmentTransfer(ctx, req.(*DecideWorkerAssignmentTransferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PersonnelService_ApplyPrimaryAssignment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ApplyPrimaryAssignmentRequest)
 	if err := dec(in); err != nil {
@@ -1573,6 +1725,24 @@ func _PersonnelService_FindWorkerByCreatedByPrincipalID_Handler(srv interface{},
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PersonnelServiceServer).FindWorkerByCreatedByPrincipalID(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PersonnelService_RecordSignedEmploymentContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordSignedEmploymentContractRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PersonnelServiceServer).RecordSignedEmploymentContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PersonnelService_RecordSignedEmploymentContract_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PersonnelServiceServer).RecordSignedEmploymentContract(ctx, req.(*RecordSignedEmploymentContractRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2645,6 +2815,22 @@ var PersonnelService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PersonnelService_TerminateWorker_Handler,
 		},
 		{
+			MethodName: "SubmitWorkerAssignmentTransfer",
+			Handler:    _PersonnelService_SubmitWorkerAssignmentTransfer_Handler,
+		},
+		{
+			MethodName: "ListWorkerAssignmentTransfers",
+			Handler:    _PersonnelService_ListWorkerAssignmentTransfers_Handler,
+		},
+		{
+			MethodName: "GetWorkerAssignmentTransfer",
+			Handler:    _PersonnelService_GetWorkerAssignmentTransfer_Handler,
+		},
+		{
+			MethodName: "DecideWorkerAssignmentTransfer",
+			Handler:    _PersonnelService_DecideWorkerAssignmentTransfer_Handler,
+		},
+		{
 			MethodName: "ApplyPrimaryAssignment",
 			Handler:    _PersonnelService_ApplyPrimaryAssignment_Handler,
 		},
@@ -2695,6 +2881,10 @@ var PersonnelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindWorkerByCreatedByPrincipalID",
 			Handler:    _PersonnelService_FindWorkerByCreatedByPrincipalID_Handler,
+		},
+		{
+			MethodName: "RecordSignedEmploymentContract",
+			Handler:    _PersonnelService_RecordSignedEmploymentContract_Handler,
 		},
 		{
 			MethodName: "CreateEmploymentContract",

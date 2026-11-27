@@ -6,15 +6,18 @@ import "time"
 
 // SuccessionPlan memetakan baris hr_succession_plans.
 type SuccessionPlan struct {
-	ID                    string     `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
-	PositionID            string     `gorm:"column:position_id;type:uuid" json:"position_id"`
-	PlanCode              string     `gorm:"column:plan_code;type:varchar(100)" json:"plan_code"`
-	PlanVersion           int32      `gorm:"column:plan_version;type:integer" json:"plan_version"`
-	ReviewDate            time.Time  `gorm:"column:review_date;type:date" json:"review_date"`
-	ConfidentialityClass  string     `gorm:"column:confidentiality_class;type:varchar(30)" json:"confidentiality_class"`
-	ApprovedByPrincipalID *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
-	ApprovedAt            *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
-	SuccessionRisk        *string    `gorm:"column:succession_risk;type:varchar(30)" json:"succession_risk"`
+	ID                         string     `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
+	PositionID                 string     `gorm:"column:position_id;type:uuid" json:"position_id"`
+	PlanCode                   string     `gorm:"column:plan_code;type:varchar(100)" json:"plan_code"`
+	PlanVersion                int32      `gorm:"column:plan_version;type:integer" json:"plan_version"`
+	ReviewDate                 time.Time  `gorm:"column:review_date;type:date" json:"review_date"`
+	ConfidentialityClass       string     `gorm:"column:confidentiality_class;type:varchar(30)" json:"confidentiality_class"`
+	CreatedByPrincipalID       *string    `gorm:"column:created_by_principal_id;type:uuid" json:"created_by_principal_id"`
+	CreatedAt                  *time.Time `gorm:"column:created_at;type:timestamptz;autoCreateTime:false;autoUpdateTime:false" json:"created_at"`
+	ApprovedByPrincipalID      *string    `gorm:"column:approved_by_principal_id;type:uuid" json:"approved_by_principal_id"`
+	ApprovedAt                 *time.Time `gorm:"column:approved_at;type:timestamptz" json:"approved_at"`
+	ApprovalMandateReferenceID *string    `gorm:"column:approval_mandate_reference_id;type:uuid" json:"approval_mandate_reference_id"`
+	SuccessionRisk             *string    `gorm:"column:succession_risk;type:varchar(30)" json:"succession_risk"`
 }
 
 // TableName menetapkan tabel HRM secara eksplisit.

@@ -127,6 +127,19 @@ func (x *LeaveEntitlement) Validate() error {
 			return hrerrors.Invalid("source_workforce_snapshot_reference_id", "has invalid value")
 		}
 	}
+	if x.ClosedAt != nil {
+		if err := validateTime("closed_at", (*x.ClosedAt)); err != nil {
+			return hrerrors.Invalid("closed_at", "has invalid value")
+		}
+	}
+	if x.ClosedByPrincipalID != nil {
+		if err := ValidateUUID("closed_by_principal_id", (*x.ClosedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("closed_by_principal_id", "has invalid value")
+		}
+	}
+	if ruleOr(ruleAnd(ruleKnown(x.ClosedAt == nil), ruleKnown(x.ClosedByPrincipalID == nil)), ruleAnd(ruleAnd(ruleAnd(ruleKnown(x.ClosedAt != nil), ruleKnown(x.ClosedByPrincipalID != nil)), ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.ClosingBalanceSnapshot)), ruleNumber("0"), "="))), rulePresent(x.ClosedAt != nil, func() bool { return ruleCompareResult(CompareDates((*x.ClosedAt).UTC(), x.EntitlementPeriodEnd), ">") }))) == ruleFalse {
+		return hrerrors.Invalid("hr_leave_entitlements", "ck_hr_leave_entitlement_close")
+	}
 	if ruleAnd(ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.Revision)), ruleNumber("0"), ">")), ruleKnown(ruleNumberCompare(ruleNumber(fmt.Sprint(x.ClosingBalanceSnapshot)), ruleSubtract(ruleAdd(ruleAdd(ruleNumber(fmt.Sprint(x.OpeningBalance)), ruleNumber(fmt.Sprint(x.AccruedQuantity))), ruleNumber(fmt.Sprint(x.AdjustedQuantity))), ruleNumber(fmt.Sprint(x.UsedQuantitySnapshot))), "="))) == ruleFalse {
 		return hrerrors.Invalid("hr_leave_entitlements", "ck_hr_leave_balance_equation")
 	}
@@ -182,6 +195,21 @@ func (x *LeaveAdjustment) Validate() error {
 			return hrerrors.Invalid("approved_at", "has invalid value")
 		}
 	}
+	if x.RejectedAt != nil {
+		if err := validateTime("rejected_at", (*x.RejectedAt)); err != nil {
+			return hrerrors.Invalid("rejected_at", "has invalid value")
+		}
+	}
+	if x.RejectedByPrincipalID != nil {
+		if err := ValidateUUID("rejected_by_principal_id", (*x.RejectedByPrincipalID)); err != nil {
+			return hrerrors.Invalid("rejected_by_principal_id", "has invalid value")
+		}
+	}
+	if x.RejectionReasonCode != nil {
+		if err := validateText("rejection_reason_code", string((*x.RejectionReasonCode)), false, 80, 0); err != nil {
+			return hrerrors.Invalid("rejection_reason_code", "has invalid value")
+		}
+	}
 	if err := validateTime("created_at", x.CreatedAt); err != nil {
 		return hrerrors.Invalid("created_at", "has invalid value")
 	}
@@ -193,6 +221,9 @@ func (x *LeaveAdjustment) Validate() error {
 	}
 	if ruleTruthCompare(ruleKnown(x.ApprovedAt == nil), ruleKnown(x.ApprovedByPrincipalID == nil), "=") == ruleFalse {
 		return hrerrors.Invalid("hr_leave_adjustments", "ck_hr_leave_adjustment_approval")
+	}
+	if ruleOr(ruleAnd(ruleAnd(ruleKnown(x.RejectedAt == nil), ruleKnown(x.RejectedByPrincipalID == nil)), ruleKnown(x.RejectionReasonCode == nil)), ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleAnd(ruleKnown(x.RejectedAt != nil), ruleKnown(x.RejectedByPrincipalID != nil)), ruleKnown(x.RejectionReasonCode != nil)), rulePresent(x.RejectionReasonCode != nil, func() bool { return string(strings.Trim(string((*x.RejectionReasonCode)), " ")) != string("") })), ruleKnown(x.ApprovedAt == nil)), rulePresent(x.RejectedAt != nil, func() bool { return ruleCompareResult((*x.RejectedAt).Compare(x.CreatedAt), ">=") })), rulePresent(x.RejectedByPrincipalID != nil, func() bool { return !strings.EqualFold((*x.RejectedByPrincipalID), x.RequestedByPrincipalID) }))) == ruleFalse {
+		return hrerrors.Invalid("hr_leave_adjustments", "ck_hr_leave_adjustment_rejection")
 	}
 	return nil
 }

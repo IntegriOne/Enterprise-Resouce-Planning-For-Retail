@@ -123,6 +123,36 @@ func TestSecretFileAndAmbiguousSecretSource(t *testing.T) {
 	}
 }
 
+func TestEnterpriseFoundationConfigurationValidation(t *testing.T) {
+	validEnvironment(t)
+	t.Setenv("HRM_EF_ENABLED", "true")
+	t.Setenv("HRM_EF_GRPC_TARGET", "enterprise-foundation:9002")
+	t.Setenv("HRM_EF_GRPC_TIMEOUT", "5s")
+	t.Setenv("HRM_EF_HMAC_SECRET", strings.Repeat("e", 32))
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("valid EF configuration rejected: %v", err)
+	}
+	if !cfg.EnterpriseFoundation.Enabled || cfg.EnterpriseFoundation.Target != "enterprise-foundation:9002" {
+		t.Fatal("unexpected EF configuration values")
+	}
+	for _, invalid := range []struct{ key, value string }{
+		{"HRM_EF_GRPC_TARGET", ""},
+		{"HRM_EF_GRPC_TARGET", "enterprise-foundation"},
+		{"HRM_EF_GRPC_TIMEOUT", "0s"},
+		{"HRM_EF_HMAC_SECRET", "too-short-secret"},
+	} {
+		t.Setenv("HRM_EF_ENABLED", "true")
+		t.Setenv("HRM_EF_GRPC_TARGET", "enterprise-foundation:9002")
+		t.Setenv("HRM_EF_GRPC_TIMEOUT", "5s")
+		t.Setenv("HRM_EF_HMAC_SECRET", strings.Repeat("e", 32))
+		t.Setenv(invalid.key, invalid.value)
+		if _, err := config.Load(); err == nil {
+			t.Fatalf("invalid EF setting %s accepted", invalid.key)
+		}
+	}
+}
+
 func TestTerminationRelayRequiresConnectionForIAMCallback(t *testing.T) {
 	validEnvironment(t)
 	t.Setenv("HRM_TERMINATION_ACCESS_ADDR", "127.0.0.1:9012")
@@ -143,5 +173,23 @@ func TestTerminationRelayRequiresConnectionForIAMCallback(t *testing.T) {
 	t.Setenv("HRM_DB_MAX_OPEN_CONNS", "1")
 	if _, err := config.Load(); err != nil {
 		t.Fatalf("standalone verifier rejected a single-connection pool: %v", err)
+	}
+}
+
+func TestPayrollEventsRequiresSeparateTLSListener(t *testing.T) {
+	validEnvironment(t)
+	t.Setenv("HRM_PAYROLL_EVENTS_ADDR", "127.0.0.1:9013")
+	if _, err := config.Load(); err == nil || !strings.Contains(err.Error(), "payroll events requires") {
+		t.Fatalf("missing payroll workload certificates were accepted: %v", err)
+	}
+	t.Setenv("HRM_PAYROLL_EVENTS_CERT_FILE", "/fixture/payroll.crt")
+	t.Setenv("HRM_PAYROLL_EVENTS_KEY_FILE", "/fixture/payroll.key")
+	t.Setenv("HRM_PAYROLL_EVENTS_CLIENT_CA_FILE", "/fixture/payroll-ca.crt")
+	if _, err := config.Load(); err != nil {
+		t.Fatalf("separate payroll listener was rejected: %v", err)
+	}
+	t.Setenv("HRM_PAYROLL_EVENTS_ADDR", "0.0.0.0:9003")
+	if _, err := config.Load(); err == nil || !strings.Contains(err.Error(), "payroll events requires") {
+		t.Fatalf("payroll workload reused business listener port: %v", err)
 	}
 }

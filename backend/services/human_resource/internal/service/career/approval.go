@@ -31,3 +31,22 @@ func (s *Service) ApproveCareerPath(ctx context.Context, pathID string) (*entity
 		return path, nil
 	})
 }
+
+// ApproveDevelopmentPlan mengaktifkan rencana pengembangan melalui mentor yang terverifikasi.
+func (s *Service) ApproveDevelopmentPlan(ctx context.Context, id string) (*entity.DevelopmentPlan, error) {
+	if s == nil {
+		return nil, hrerrors.ErrUnavailable
+	}
+	return s.developmentPlan.Command(ctx, id, "approve", func(_ context.Context, plan *entity.DevelopmentPlan, actor operation.Actor, now time.Time) (*entity.DevelopmentPlan, error) {
+		if actor.Kind != "human" {
+			return nil, hrerrors.ErrForbidden
+		}
+		if plan.Status != "draft" || plan.ApprovedAt != nil || plan.ApprovedByPrincipalID != nil || plan.MentorWorkerID == nil {
+			return nil, hrerrors.ErrWorkflowRequired
+		}
+		plan.Status = "active"
+		plan.ApprovedAt = &now
+		plan.ApprovedByPrincipalID = &actor.PrincipalID
+		return plan, nil
+	})
+}

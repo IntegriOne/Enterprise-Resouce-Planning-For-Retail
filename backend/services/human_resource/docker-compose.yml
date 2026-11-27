@@ -15,6 +15,9 @@ services:
       HRM_DB_HOST: postgres
       HRM_DB_PORT: "5432"
       HRM_DB_SSLMODE: disable
+      HRM_EF_ENABLED: "true"
+      HRM_EF_GRPC_TARGET: enterprise-foundation:9002
+      HRM_EF_GRPC_TIMEOUT: 5s
     ports:
       - "127.0.0.1:9003:9003"
     volumes:

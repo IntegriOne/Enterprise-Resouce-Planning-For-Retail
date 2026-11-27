@@ -17,6 +17,7 @@ service CompensationService {
   rpc FindCompensationBandByJurisdictionCode(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
   rpc FindCompensationBandByCurrencyCode(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
   rpc FindCompensationBandByApprovalReferenceID(human_resource.common.v1.StringFinderRequest) returns (CompensationBandsResponse);
+  rpc ApproveCompensationRecord(human_resource.common.v1.IDRequest) returns (CompensationRecordResponse);
   rpc CreateCompensationRecord(CreateCompensationRecordRequest) returns (CompensationRecordResponse);
   rpc UpdateCompensationRecord(UpdateCompensationRecordRequest) returns (CompensationRecordResponse);
   rpc DeleteCompensationRecord(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);

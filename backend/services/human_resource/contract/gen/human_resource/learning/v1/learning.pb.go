@@ -1489,7 +1489,7 @@ const file_human_resource_learning_v1_learning_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v24.human_resource.learning.v1.LearningCourseCompetencyR\x04item\"\xa8\x01\n" +
 	"\"LearningCourseCompetenciesResponse\x12J\n" +
 	"\x05items\x18\x01 \x03(\v24.human_resource.learning.v1.LearningCourseCompetencyR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xcb\x1d\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xb9 \n" +
 	"\x0fLearningService\x12\x83\x01\n" +
 	"\x14CreateLearningCourse\x127.human_resource.learning.v1.CreateLearningCourseRequest\x1a2.human_resource.learning.v1.LearningCourseResponse\x12\x83\x01\n" +
 	"\x14UpdateLearningCourse\x127.human_resource.learning.v1.UpdateLearningCourseRequest\x1a2.human_resource.learning.v1.LearningCourseResponse\x12d\n" +
@@ -1498,7 +1498,10 @@ const file_human_resource_learning_v1_learning_proto_rawDesc = "" +
 	"\x15GetAllLearningCourses\x12%.human_resource.common.v1.PageRequest\x1a3.human_resource.learning.v1.LearningCoursesResponse\x12\x84\x01\n" +
 	"\x1eFindLearningCourseByCourseCode\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.learning.v1.LearningCoursesResponse\x12\x84\x01\n" +
 	"\x1eFindLearningCourseByCourseType\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.learning.v1.LearningCoursesResponse\x12\x92\x01\n" +
-	",FindLearningCourseByProviderPartyReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.learning.v1.LearningCoursesResponse\x12\x8f\x01\n" +
+	",FindLearningCourseByProviderPartyReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a3.human_resource.learning.v1.LearningCoursesResponse\x12v\n" +
+	"\x17StartLearningEnrollment\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.learning.v1.LearningEnrollmentResponse\x12y\n" +
+	"\x1aCompleteLearningEnrollment\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.learning.v1.LearningEnrollmentResponse\x12y\n" +
+	"\x1aWithdrawLearningEnrollment\x12#.human_resource.common.v1.IDRequest\x1a6.human_resource.learning.v1.LearningEnrollmentResponse\x12\x8f\x01\n" +
 	"\x18CreateLearningEnrollment\x12;.human_resource.learning.v1.CreateLearningEnrollmentRequest\x1a6.human_resource.learning.v1.LearningEnrollmentResponse\x12\x8f\x01\n" +
 	"\x18UpdateLearningEnrollment\x12;.human_resource.learning.v1.UpdateLearningEnrollmentRequest\x1a6.human_resource.learning.v1.LearningEnrollmentResponse\x12h\n" +
 	"\x18DeleteLearningEnrollment\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12x\n" +
@@ -1594,54 +1597,60 @@ var file_human_resource_learning_v1_learning_proto_depIdxs = []int32{
 	24, // 30: human_resource.learning.v1.LearningService.FindLearningCourseByCourseCode:input_type -> human_resource.common.v1.StringFinderRequest
 	24, // 31: human_resource.learning.v1.LearningService.FindLearningCourseByCourseType:input_type -> human_resource.common.v1.StringFinderRequest
 	24, // 32: human_resource.learning.v1.LearningService.FindLearningCourseByProviderPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 33: human_resource.learning.v1.LearningService.CreateLearningEnrollment:input_type -> human_resource.learning.v1.CreateLearningEnrollmentRequest
-	9,  // 34: human_resource.learning.v1.LearningService.UpdateLearningEnrollment:input_type -> human_resource.learning.v1.UpdateLearningEnrollmentRequest
-	22, // 35: human_resource.learning.v1.LearningService.DeleteLearningEnrollment:input_type -> human_resource.common.v1.IDRequest
-	22, // 36: human_resource.learning.v1.LearningService.GetLearningEnrollmentByID:input_type -> human_resource.common.v1.IDRequest
-	23, // 37: human_resource.learning.v1.LearningService.GetAllLearningEnrollments:input_type -> human_resource.common.v1.PageRequest
-	24, // 38: human_resource.learning.v1.LearningService.FindLearningEnrollmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	24, // 39: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCourseID:input_type -> human_resource.common.v1.StringFinderRequest
-	24, // 40: human_resource.learning.v1.LearningService.FindLearningEnrollmentByEnrollmentStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	24, // 41: human_resource.learning.v1.LearningService.FindLearningEnrollmentByAssignedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	24, // 42: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCredentialReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	24, // 43: human_resource.learning.v1.LearningService.FindLearningEnrollmentByFundingReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	24, // 44: human_resource.learning.v1.LearningService.FindLearningEnrollmentByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	15, // 45: human_resource.learning.v1.LearningService.CreateLearningCourseCompetency:input_type -> human_resource.learning.v1.CreateLearningCourseCompetencyRequest
-	16, // 46: human_resource.learning.v1.LearningService.UpdateLearningCourseCompetency:input_type -> human_resource.learning.v1.UpdateLearningCourseCompetencyRequest
-	13, // 47: human_resource.learning.v1.LearningService.DeleteLearningCourseCompetency:input_type -> human_resource.learning.v1.LearningCourseCompetencyKey
-	13, // 48: human_resource.learning.v1.LearningService.GetLearningCourseCompetencyByID:input_type -> human_resource.learning.v1.LearningCourseCompetencyKey
-	23, // 49: human_resource.learning.v1.LearningService.GetAllLearningCourseCompetencies:input_type -> human_resource.common.v1.PageRequest
-	24, // 50: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCourseID:input_type -> human_resource.common.v1.StringFinderRequest
-	24, // 51: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCompetencyID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 52: human_resource.learning.v1.LearningService.CreateLearningCourse:output_type -> human_resource.learning.v1.LearningCourseResponse
-	4,  // 53: human_resource.learning.v1.LearningService.UpdateLearningCourse:output_type -> human_resource.learning.v1.LearningCourseResponse
-	25, // 54: human_resource.learning.v1.LearningService.DeleteLearningCourse:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 55: human_resource.learning.v1.LearningService.GetLearningCourseByID:output_type -> human_resource.learning.v1.LearningCourseResponse
-	5,  // 56: human_resource.learning.v1.LearningService.GetAllLearningCourses:output_type -> human_resource.learning.v1.LearningCoursesResponse
-	5,  // 57: human_resource.learning.v1.LearningService.FindLearningCourseByCourseCode:output_type -> human_resource.learning.v1.LearningCoursesResponse
-	5,  // 58: human_resource.learning.v1.LearningService.FindLearningCourseByCourseType:output_type -> human_resource.learning.v1.LearningCoursesResponse
-	5,  // 59: human_resource.learning.v1.LearningService.FindLearningCourseByProviderPartyReferenceID:output_type -> human_resource.learning.v1.LearningCoursesResponse
-	10, // 60: human_resource.learning.v1.LearningService.CreateLearningEnrollment:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
-	10, // 61: human_resource.learning.v1.LearningService.UpdateLearningEnrollment:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
-	25, // 62: human_resource.learning.v1.LearningService.DeleteLearningEnrollment:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 63: human_resource.learning.v1.LearningService.GetLearningEnrollmentByID:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
-	11, // 64: human_resource.learning.v1.LearningService.GetAllLearningEnrollments:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	11, // 65: human_resource.learning.v1.LearningService.FindLearningEnrollmentByWorkerID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	11, // 66: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCourseID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	11, // 67: human_resource.learning.v1.LearningService.FindLearningEnrollmentByEnrollmentStatus:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	11, // 68: human_resource.learning.v1.LearningService.FindLearningEnrollmentByAssignedByPrincipalID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	11, // 69: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCredentialReferenceID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	11, // 70: human_resource.learning.v1.LearningService.FindLearningEnrollmentByFundingReferenceID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	11, // 71: human_resource.learning.v1.LearningService.FindLearningEnrollmentByIdempotencyKey:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
-	17, // 72: human_resource.learning.v1.LearningService.CreateLearningCourseCompetency:output_type -> human_resource.learning.v1.LearningCourseCompetencyResponse
-	17, // 73: human_resource.learning.v1.LearningService.UpdateLearningCourseCompetency:output_type -> human_resource.learning.v1.LearningCourseCompetencyResponse
-	25, // 74: human_resource.learning.v1.LearningService.DeleteLearningCourseCompetency:output_type -> human_resource.common.v1.EmptyResponse
-	17, // 75: human_resource.learning.v1.LearningService.GetLearningCourseCompetencyByID:output_type -> human_resource.learning.v1.LearningCourseCompetencyResponse
-	18, // 76: human_resource.learning.v1.LearningService.GetAllLearningCourseCompetencies:output_type -> human_resource.learning.v1.LearningCourseCompetenciesResponse
-	18, // 77: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCourseID:output_type -> human_resource.learning.v1.LearningCourseCompetenciesResponse
-	18, // 78: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCompetencyID:output_type -> human_resource.learning.v1.LearningCourseCompetenciesResponse
-	52, // [52:79] is the sub-list for method output_type
-	25, // [25:52] is the sub-list for method input_type
+	22, // 33: human_resource.learning.v1.LearningService.StartLearningEnrollment:input_type -> human_resource.common.v1.IDRequest
+	22, // 34: human_resource.learning.v1.LearningService.CompleteLearningEnrollment:input_type -> human_resource.common.v1.IDRequest
+	22, // 35: human_resource.learning.v1.LearningService.WithdrawLearningEnrollment:input_type -> human_resource.common.v1.IDRequest
+	8,  // 36: human_resource.learning.v1.LearningService.CreateLearningEnrollment:input_type -> human_resource.learning.v1.CreateLearningEnrollmentRequest
+	9,  // 37: human_resource.learning.v1.LearningService.UpdateLearningEnrollment:input_type -> human_resource.learning.v1.UpdateLearningEnrollmentRequest
+	22, // 38: human_resource.learning.v1.LearningService.DeleteLearningEnrollment:input_type -> human_resource.common.v1.IDRequest
+	22, // 39: human_resource.learning.v1.LearningService.GetLearningEnrollmentByID:input_type -> human_resource.common.v1.IDRequest
+	23, // 40: human_resource.learning.v1.LearningService.GetAllLearningEnrollments:input_type -> human_resource.common.v1.PageRequest
+	24, // 41: human_resource.learning.v1.LearningService.FindLearningEnrollmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	24, // 42: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCourseID:input_type -> human_resource.common.v1.StringFinderRequest
+	24, // 43: human_resource.learning.v1.LearningService.FindLearningEnrollmentByEnrollmentStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	24, // 44: human_resource.learning.v1.LearningService.FindLearningEnrollmentByAssignedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	24, // 45: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCredentialReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	24, // 46: human_resource.learning.v1.LearningService.FindLearningEnrollmentByFundingReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	24, // 47: human_resource.learning.v1.LearningService.FindLearningEnrollmentByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	15, // 48: human_resource.learning.v1.LearningService.CreateLearningCourseCompetency:input_type -> human_resource.learning.v1.CreateLearningCourseCompetencyRequest
+	16, // 49: human_resource.learning.v1.LearningService.UpdateLearningCourseCompetency:input_type -> human_resource.learning.v1.UpdateLearningCourseCompetencyRequest
+	13, // 50: human_resource.learning.v1.LearningService.DeleteLearningCourseCompetency:input_type -> human_resource.learning.v1.LearningCourseCompetencyKey
+	13, // 51: human_resource.learning.v1.LearningService.GetLearningCourseCompetencyByID:input_type -> human_resource.learning.v1.LearningCourseCompetencyKey
+	23, // 52: human_resource.learning.v1.LearningService.GetAllLearningCourseCompetencies:input_type -> human_resource.common.v1.PageRequest
+	24, // 53: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCourseID:input_type -> human_resource.common.v1.StringFinderRequest
+	24, // 54: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCompetencyID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,  // 55: human_resource.learning.v1.LearningService.CreateLearningCourse:output_type -> human_resource.learning.v1.LearningCourseResponse
+	4,  // 56: human_resource.learning.v1.LearningService.UpdateLearningCourse:output_type -> human_resource.learning.v1.LearningCourseResponse
+	25, // 57: human_resource.learning.v1.LearningService.DeleteLearningCourse:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 58: human_resource.learning.v1.LearningService.GetLearningCourseByID:output_type -> human_resource.learning.v1.LearningCourseResponse
+	5,  // 59: human_resource.learning.v1.LearningService.GetAllLearningCourses:output_type -> human_resource.learning.v1.LearningCoursesResponse
+	5,  // 60: human_resource.learning.v1.LearningService.FindLearningCourseByCourseCode:output_type -> human_resource.learning.v1.LearningCoursesResponse
+	5,  // 61: human_resource.learning.v1.LearningService.FindLearningCourseByCourseType:output_type -> human_resource.learning.v1.LearningCoursesResponse
+	5,  // 62: human_resource.learning.v1.LearningService.FindLearningCourseByProviderPartyReferenceID:output_type -> human_resource.learning.v1.LearningCoursesResponse
+	10, // 63: human_resource.learning.v1.LearningService.StartLearningEnrollment:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
+	10, // 64: human_resource.learning.v1.LearningService.CompleteLearningEnrollment:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
+	10, // 65: human_resource.learning.v1.LearningService.WithdrawLearningEnrollment:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
+	10, // 66: human_resource.learning.v1.LearningService.CreateLearningEnrollment:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
+	10, // 67: human_resource.learning.v1.LearningService.UpdateLearningEnrollment:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
+	25, // 68: human_resource.learning.v1.LearningService.DeleteLearningEnrollment:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 69: human_resource.learning.v1.LearningService.GetLearningEnrollmentByID:output_type -> human_resource.learning.v1.LearningEnrollmentResponse
+	11, // 70: human_resource.learning.v1.LearningService.GetAllLearningEnrollments:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	11, // 71: human_resource.learning.v1.LearningService.FindLearningEnrollmentByWorkerID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	11, // 72: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCourseID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	11, // 73: human_resource.learning.v1.LearningService.FindLearningEnrollmentByEnrollmentStatus:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	11, // 74: human_resource.learning.v1.LearningService.FindLearningEnrollmentByAssignedByPrincipalID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	11, // 75: human_resource.learning.v1.LearningService.FindLearningEnrollmentByCredentialReferenceID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	11, // 76: human_resource.learning.v1.LearningService.FindLearningEnrollmentByFundingReferenceID:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	11, // 77: human_resource.learning.v1.LearningService.FindLearningEnrollmentByIdempotencyKey:output_type -> human_resource.learning.v1.LearningEnrollmentsResponse
+	17, // 78: human_resource.learning.v1.LearningService.CreateLearningCourseCompetency:output_type -> human_resource.learning.v1.LearningCourseCompetencyResponse
+	17, // 79: human_resource.learning.v1.LearningService.UpdateLearningCourseCompetency:output_type -> human_resource.learning.v1.LearningCourseCompetencyResponse
+	25, // 80: human_resource.learning.v1.LearningService.DeleteLearningCourseCompetency:output_type -> human_resource.common.v1.EmptyResponse
+	17, // 81: human_resource.learning.v1.LearningService.GetLearningCourseCompetencyByID:output_type -> human_resource.learning.v1.LearningCourseCompetencyResponse
+	18, // 82: human_resource.learning.v1.LearningService.GetAllLearningCourseCompetencies:output_type -> human_resource.learning.v1.LearningCourseCompetenciesResponse
+	18, // 83: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCourseID:output_type -> human_resource.learning.v1.LearningCourseCompetenciesResponse
+	18, // 84: human_resource.learning.v1.LearningService.FindLearningCourseCompetencyByCompetencyID:output_type -> human_resource.learning.v1.LearningCourseCompetenciesResponse
+	55, // [55:85] is the sub-list for method output_type
+	25, // [25:55] is the sub-list for method input_type
 	25, // [25:25] is the sub-list for extension type_name
 	25, // [25:25] is the sub-list for extension extendee
 	0,  // [0:25] is the sub-list for field type_name

@@ -73,6 +73,26 @@ type WorkerAssignment struct {
 // TableName menetapkan tabel HRM secara eksplisit.
 func (WorkerAssignment) TableName() string { return "hr_worker_assignments" }
 
+// WorkerAssignmentTransfer memetakan baris hr_worker_assignment_transfers.
+type WorkerAssignmentTransfer struct {
+	ID                     string     `gorm:"column:id;type:uuid;primaryKey;autoIncrement:false" json:"id"`
+	WorkerID               string     `gorm:"column:worker_id;type:uuid" json:"worker_id"`
+	SourceAssignmentID     string     `gorm:"column:source_assignment_id;type:uuid" json:"source_assignment_id"`
+	TargetPositionID       string     `gorm:"column:target_position_id;type:uuid" json:"target_position_id"`
+	EffectiveDate          time.Time  `gorm:"column:effective_date;type:date" json:"effective_date"`
+	ReasonCode             string     `gorm:"column:reason_code;type:varchar(80)" json:"reason_code"`
+	IdempotencyKey         string     `gorm:"column:idempotency_key;type:varchar(160)" json:"idempotency_key"`
+	Status                 string     `gorm:"column:status;type:varchar(30)" json:"status"`
+	RequestedByPrincipalID string     `gorm:"column:requested_by_principal_id;type:uuid" json:"requested_by_principal_id"`
+	RequestedAt            time.Time  `gorm:"column:requested_at;type:timestamptz" json:"requested_at"`
+	DecidedByPrincipalID   *string    `gorm:"column:decided_by_principal_id;type:uuid" json:"decided_by_principal_id"`
+	DecidedAt              *time.Time `gorm:"column:decided_at;type:timestamptz" json:"decided_at"`
+	AppliedAssignmentID    *string    `gorm:"column:applied_assignment_id;type:uuid" json:"applied_assignment_id"`
+}
+
+// TableName menetapkan tabel HRM secara eksplisit.
+func (WorkerAssignmentTransfer) TableName() string { return "hr_worker_assignment_transfers" }
+
 // WorkerLifecycleEvent memetakan baris hr_worker_lifecycle_events.
 type WorkerLifecycleEvent struct {
 	ID               int64         `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`

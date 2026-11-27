@@ -968,6 +968,58 @@ func (x *BenefitEnrollmentsResponse) GetPage() *v1.PageInfo {
 	return nil
 }
 
+type EndBenefitEnrollmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	EffectiveTo   string                 `protobuf:"bytes,2,opt,name=effective_to,json=effectiveTo,proto3" json:"effective_to,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EndBenefitEnrollmentRequest) Reset() {
+	*x = EndBenefitEnrollmentRequest{}
+	mi := &file_human_resource_benefits_v1_benefits_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EndBenefitEnrollmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EndBenefitEnrollmentRequest) ProtoMessage() {}
+
+func (x *EndBenefitEnrollmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_benefits_v1_benefits_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EndBenefitEnrollmentRequest.ProtoReflect.Descriptor instead.
+func (*EndBenefitEnrollmentRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_benefits_v1_benefits_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *EndBenefitEnrollmentRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *EndBenefitEnrollmentRequest) GetEffectiveTo() string {
+	if x != nil {
+		return x.EffectiveTo
+	}
+	return ""
+}
+
 var File_human_resource_benefits_v1_benefits_proto protoreflect.FileDescriptor
 
 const file_human_resource_benefits_v1_benefits_proto_rawDesc = "" +
@@ -1096,8 +1148,13 @@ const file_human_resource_benefits_v1_benefits_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2-.human_resource.benefits.v1.BenefitEnrollmentR\x04item\"\x99\x01\n" +
 	"\x1aBenefitEnrollmentsResponse\x12C\n" +
 	"\x05items\x18\x01 \x03(\v2-.human_resource.benefits.v1.BenefitEnrollmentR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page2\xc7\x14\n" +
-	"\x0fBenefitsService\x12z\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"P\n" +
+	"\x1bEndBenefitEnrollmentRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
+	"\feffective_to\x18\x02 \x01(\tR\veffectiveTo2\xc8\x16\n" +
+	"\x0fBenefitsService\x12\x86\x01\n" +
+	"\x14EndBenefitEnrollment\x127.human_resource.benefits.v1.EndBenefitEnrollmentRequest\x1a5.human_resource.benefits.v1.BenefitEnrollmentResponse\x12v\n" +
+	"\x18ApproveBenefitEnrollment\x12#.human_resource.common.v1.IDRequest\x1a5.human_resource.benefits.v1.BenefitEnrollmentResponse\x12z\n" +
 	"\x11CreateBenefitPlan\x124.human_resource.benefits.v1.CreateBenefitPlanRequest\x1a/.human_resource.benefits.v1.BenefitPlanResponse\x12z\n" +
 	"\x11UpdateBenefitPlan\x124.human_resource.benefits.v1.UpdateBenefitPlanRequest\x1a/.human_resource.benefits.v1.BenefitPlanResponse\x12a\n" +
 	"\x11DeleteBenefitPlan\x12#.human_resource.common.v1.IDRequest\x1a'.human_resource.common.v1.EmptyResponse\x12j\n" +
@@ -1131,7 +1188,7 @@ func file_human_resource_benefits_v1_benefits_proto_rawDescGZIP() []byte {
 	return file_human_resource_benefits_v1_benefits_proto_rawDescData
 }
 
-var file_human_resource_benefits_v1_benefits_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_human_resource_benefits_v1_benefits_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_human_resource_benefits_v1_benefits_proto_goTypes = []any{
 	(*BenefitPlan)(nil),                    // 0: human_resource.benefits.v1.BenefitPlan
 	(*BenefitPlanInput)(nil),               // 1: human_resource.benefits.v1.BenefitPlanInput
@@ -1145,76 +1202,81 @@ var file_human_resource_benefits_v1_benefits_proto_goTypes = []any{
 	(*UpdateBenefitEnrollmentRequest)(nil), // 9: human_resource.benefits.v1.UpdateBenefitEnrollmentRequest
 	(*BenefitEnrollmentResponse)(nil),      // 10: human_resource.benefits.v1.BenefitEnrollmentResponse
 	(*BenefitEnrollmentsResponse)(nil),     // 11: human_resource.benefits.v1.BenefitEnrollmentsResponse
-	(*v1.JsonDocument)(nil),                // 12: human_resource.common.v1.JsonDocument
-	(*fieldmaskpb.FieldMask)(nil),          // 13: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                    // 14: human_resource.common.v1.PageInfo
-	(*timestamppb.Timestamp)(nil),          // 15: google.protobuf.Timestamp
-	(*v1.IDRequest)(nil),                   // 16: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                 // 17: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),         // 18: human_resource.common.v1.StringFinderRequest
-	(*v1.EmptyResponse)(nil),               // 19: human_resource.common.v1.EmptyResponse
+	(*EndBenefitEnrollmentRequest)(nil),    // 12: human_resource.benefits.v1.EndBenefitEnrollmentRequest
+	(*v1.JsonDocument)(nil),                // 13: human_resource.common.v1.JsonDocument
+	(*fieldmaskpb.FieldMask)(nil),          // 14: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                    // 15: human_resource.common.v1.PageInfo
+	(*timestamppb.Timestamp)(nil),          // 16: google.protobuf.Timestamp
+	(*v1.IDRequest)(nil),                   // 17: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                 // 18: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),         // 19: human_resource.common.v1.StringFinderRequest
+	(*v1.EmptyResponse)(nil),               // 20: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_benefits_v1_benefits_proto_depIdxs = []int32{
-	12, // 0: human_resource.benefits.v1.BenefitPlan.eligibility_rule:type_name -> human_resource.common.v1.JsonDocument
-	12, // 1: human_resource.benefits.v1.BenefitPlanInput.eligibility_rule:type_name -> human_resource.common.v1.JsonDocument
+	13, // 0: human_resource.benefits.v1.BenefitPlan.eligibility_rule:type_name -> human_resource.common.v1.JsonDocument
+	13, // 1: human_resource.benefits.v1.BenefitPlanInput.eligibility_rule:type_name -> human_resource.common.v1.JsonDocument
 	1,  // 2: human_resource.benefits.v1.CreateBenefitPlanRequest.input:type_name -> human_resource.benefits.v1.BenefitPlanInput
 	1,  // 3: human_resource.benefits.v1.UpdateBenefitPlanRequest.input:type_name -> human_resource.benefits.v1.BenefitPlanInput
-	13, // 4: human_resource.benefits.v1.UpdateBenefitPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 4: human_resource.benefits.v1.UpdateBenefitPlanRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 5: human_resource.benefits.v1.BenefitPlanResponse.item:type_name -> human_resource.benefits.v1.BenefitPlan
 	0,  // 6: human_resource.benefits.v1.BenefitPlansResponse.items:type_name -> human_resource.benefits.v1.BenefitPlan
-	14, // 7: human_resource.benefits.v1.BenefitPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
-	15, // 8: human_resource.benefits.v1.BenefitEnrollment.elected_at:type_name -> google.protobuf.Timestamp
-	15, // 9: human_resource.benefits.v1.BenefitEnrollment.verified_at:type_name -> google.protobuf.Timestamp
-	15, // 10: human_resource.benefits.v1.BenefitEnrollmentInput.elected_at:type_name -> google.protobuf.Timestamp
-	15, // 11: human_resource.benefits.v1.BenefitEnrollmentInput.verified_at:type_name -> google.protobuf.Timestamp
+	15, // 7: human_resource.benefits.v1.BenefitPlansResponse.page:type_name -> human_resource.common.v1.PageInfo
+	16, // 8: human_resource.benefits.v1.BenefitEnrollment.elected_at:type_name -> google.protobuf.Timestamp
+	16, // 9: human_resource.benefits.v1.BenefitEnrollment.verified_at:type_name -> google.protobuf.Timestamp
+	16, // 10: human_resource.benefits.v1.BenefitEnrollmentInput.elected_at:type_name -> google.protobuf.Timestamp
+	16, // 11: human_resource.benefits.v1.BenefitEnrollmentInput.verified_at:type_name -> google.protobuf.Timestamp
 	7,  // 12: human_resource.benefits.v1.CreateBenefitEnrollmentRequest.input:type_name -> human_resource.benefits.v1.BenefitEnrollmentInput
 	7,  // 13: human_resource.benefits.v1.UpdateBenefitEnrollmentRequest.input:type_name -> human_resource.benefits.v1.BenefitEnrollmentInput
-	13, // 14: human_resource.benefits.v1.UpdateBenefitEnrollmentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	14, // 14: human_resource.benefits.v1.UpdateBenefitEnrollmentRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,  // 15: human_resource.benefits.v1.BenefitEnrollmentResponse.item:type_name -> human_resource.benefits.v1.BenefitEnrollment
 	6,  // 16: human_resource.benefits.v1.BenefitEnrollmentsResponse.items:type_name -> human_resource.benefits.v1.BenefitEnrollment
-	14, // 17: human_resource.benefits.v1.BenefitEnrollmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	2,  // 18: human_resource.benefits.v1.BenefitsService.CreateBenefitPlan:input_type -> human_resource.benefits.v1.CreateBenefitPlanRequest
-	3,  // 19: human_resource.benefits.v1.BenefitsService.UpdateBenefitPlan:input_type -> human_resource.benefits.v1.UpdateBenefitPlanRequest
-	16, // 20: human_resource.benefits.v1.BenefitsService.DeleteBenefitPlan:input_type -> human_resource.common.v1.IDRequest
-	16, // 21: human_resource.benefits.v1.BenefitsService.GetBenefitPlanByID:input_type -> human_resource.common.v1.IDRequest
-	17, // 22: human_resource.benefits.v1.BenefitsService.GetAllBenefitPlans:input_type -> human_resource.common.v1.PageRequest
-	18, // 23: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 24: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByBenefitType:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 25: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByProviderPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 26: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 27: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployeeContributionRuleReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 28: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployerContributionRuleReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,  // 29: human_resource.benefits.v1.BenefitsService.CreateBenefitEnrollment:input_type -> human_resource.benefits.v1.CreateBenefitEnrollmentRequest
-	9,  // 30: human_resource.benefits.v1.BenefitsService.UpdateBenefitEnrollment:input_type -> human_resource.benefits.v1.UpdateBenefitEnrollmentRequest
-	16, // 31: human_resource.benefits.v1.BenefitsService.DeleteBenefitEnrollment:input_type -> human_resource.common.v1.IDRequest
-	16, // 32: human_resource.benefits.v1.BenefitsService.GetBenefitEnrollmentByID:input_type -> human_resource.common.v1.IDRequest
-	17, // 33: human_resource.benefits.v1.BenefitsService.GetAllBenefitEnrollments:input_type -> human_resource.common.v1.PageRequest
-	18, // 34: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 35: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByBenefitPlanID:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 36: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByEnrollmentStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	18, // 37: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	4,  // 38: human_resource.benefits.v1.BenefitsService.CreateBenefitPlan:output_type -> human_resource.benefits.v1.BenefitPlanResponse
-	4,  // 39: human_resource.benefits.v1.BenefitsService.UpdateBenefitPlan:output_type -> human_resource.benefits.v1.BenefitPlanResponse
-	19, // 40: human_resource.benefits.v1.BenefitsService.DeleteBenefitPlan:output_type -> human_resource.common.v1.EmptyResponse
-	4,  // 41: human_resource.benefits.v1.BenefitsService.GetBenefitPlanByID:output_type -> human_resource.benefits.v1.BenefitPlanResponse
-	5,  // 42: human_resource.benefits.v1.BenefitsService.GetAllBenefitPlans:output_type -> human_resource.benefits.v1.BenefitPlansResponse
-	5,  // 43: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByPlanCode:output_type -> human_resource.benefits.v1.BenefitPlansResponse
-	5,  // 44: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByBenefitType:output_type -> human_resource.benefits.v1.BenefitPlansResponse
-	5,  // 45: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByProviderPartyReferenceID:output_type -> human_resource.benefits.v1.BenefitPlansResponse
-	5,  // 46: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByJurisdictionCode:output_type -> human_resource.benefits.v1.BenefitPlansResponse
-	5,  // 47: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployeeContributionRuleReferenceID:output_type -> human_resource.benefits.v1.BenefitPlansResponse
-	5,  // 48: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployerContributionRuleReferenceID:output_type -> human_resource.benefits.v1.BenefitPlansResponse
-	10, // 49: human_resource.benefits.v1.BenefitsService.CreateBenefitEnrollment:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
-	10, // 50: human_resource.benefits.v1.BenefitsService.UpdateBenefitEnrollment:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
-	19, // 51: human_resource.benefits.v1.BenefitsService.DeleteBenefitEnrollment:output_type -> human_resource.common.v1.EmptyResponse
-	10, // 52: human_resource.benefits.v1.BenefitsService.GetBenefitEnrollmentByID:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
-	11, // 53: human_resource.benefits.v1.BenefitsService.GetAllBenefitEnrollments:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
-	11, // 54: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByWorkerID:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
-	11, // 55: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByBenefitPlanID:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
-	11, // 56: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByEnrollmentStatus:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
-	11, // 57: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByCurrencyCode:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
-	38, // [38:58] is the sub-list for method output_type
-	18, // [18:38] is the sub-list for method input_type
+	15, // 17: human_resource.benefits.v1.BenefitEnrollmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	12, // 18: human_resource.benefits.v1.BenefitsService.EndBenefitEnrollment:input_type -> human_resource.benefits.v1.EndBenefitEnrollmentRequest
+	17, // 19: human_resource.benefits.v1.BenefitsService.ApproveBenefitEnrollment:input_type -> human_resource.common.v1.IDRequest
+	2,  // 20: human_resource.benefits.v1.BenefitsService.CreateBenefitPlan:input_type -> human_resource.benefits.v1.CreateBenefitPlanRequest
+	3,  // 21: human_resource.benefits.v1.BenefitsService.UpdateBenefitPlan:input_type -> human_resource.benefits.v1.UpdateBenefitPlanRequest
+	17, // 22: human_resource.benefits.v1.BenefitsService.DeleteBenefitPlan:input_type -> human_resource.common.v1.IDRequest
+	17, // 23: human_resource.benefits.v1.BenefitsService.GetBenefitPlanByID:input_type -> human_resource.common.v1.IDRequest
+	18, // 24: human_resource.benefits.v1.BenefitsService.GetAllBenefitPlans:input_type -> human_resource.common.v1.PageRequest
+	19, // 25: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByPlanCode:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 26: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByBenefitType:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 27: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByProviderPartyReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 28: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 29: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployeeContributionRuleReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 30: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployerContributionRuleReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	8,  // 31: human_resource.benefits.v1.BenefitsService.CreateBenefitEnrollment:input_type -> human_resource.benefits.v1.CreateBenefitEnrollmentRequest
+	9,  // 32: human_resource.benefits.v1.BenefitsService.UpdateBenefitEnrollment:input_type -> human_resource.benefits.v1.UpdateBenefitEnrollmentRequest
+	17, // 33: human_resource.benefits.v1.BenefitsService.DeleteBenefitEnrollment:input_type -> human_resource.common.v1.IDRequest
+	17, // 34: human_resource.benefits.v1.BenefitsService.GetBenefitEnrollmentByID:input_type -> human_resource.common.v1.IDRequest
+	18, // 35: human_resource.benefits.v1.BenefitsService.GetAllBenefitEnrollments:input_type -> human_resource.common.v1.PageRequest
+	19, // 36: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 37: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByBenefitPlanID:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 38: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByEnrollmentStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	19, // 39: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	10, // 40: human_resource.benefits.v1.BenefitsService.EndBenefitEnrollment:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
+	10, // 41: human_resource.benefits.v1.BenefitsService.ApproveBenefitEnrollment:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
+	4,  // 42: human_resource.benefits.v1.BenefitsService.CreateBenefitPlan:output_type -> human_resource.benefits.v1.BenefitPlanResponse
+	4,  // 43: human_resource.benefits.v1.BenefitsService.UpdateBenefitPlan:output_type -> human_resource.benefits.v1.BenefitPlanResponse
+	20, // 44: human_resource.benefits.v1.BenefitsService.DeleteBenefitPlan:output_type -> human_resource.common.v1.EmptyResponse
+	4,  // 45: human_resource.benefits.v1.BenefitsService.GetBenefitPlanByID:output_type -> human_resource.benefits.v1.BenefitPlanResponse
+	5,  // 46: human_resource.benefits.v1.BenefitsService.GetAllBenefitPlans:output_type -> human_resource.benefits.v1.BenefitPlansResponse
+	5,  // 47: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByPlanCode:output_type -> human_resource.benefits.v1.BenefitPlansResponse
+	5,  // 48: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByBenefitType:output_type -> human_resource.benefits.v1.BenefitPlansResponse
+	5,  // 49: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByProviderPartyReferenceID:output_type -> human_resource.benefits.v1.BenefitPlansResponse
+	5,  // 50: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByJurisdictionCode:output_type -> human_resource.benefits.v1.BenefitPlansResponse
+	5,  // 51: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployeeContributionRuleReferenceID:output_type -> human_resource.benefits.v1.BenefitPlansResponse
+	5,  // 52: human_resource.benefits.v1.BenefitsService.FindBenefitPlanByEmployerContributionRuleReferenceID:output_type -> human_resource.benefits.v1.BenefitPlansResponse
+	10, // 53: human_resource.benefits.v1.BenefitsService.CreateBenefitEnrollment:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
+	10, // 54: human_resource.benefits.v1.BenefitsService.UpdateBenefitEnrollment:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
+	20, // 55: human_resource.benefits.v1.BenefitsService.DeleteBenefitEnrollment:output_type -> human_resource.common.v1.EmptyResponse
+	10, // 56: human_resource.benefits.v1.BenefitsService.GetBenefitEnrollmentByID:output_type -> human_resource.benefits.v1.BenefitEnrollmentResponse
+	11, // 57: human_resource.benefits.v1.BenefitsService.GetAllBenefitEnrollments:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
+	11, // 58: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByWorkerID:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
+	11, // 59: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByBenefitPlanID:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
+	11, // 60: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByEnrollmentStatus:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
+	11, // 61: human_resource.benefits.v1.BenefitsService.FindBenefitEnrollmentByCurrencyCode:output_type -> human_resource.benefits.v1.BenefitEnrollmentsResponse
+	40, // [40:62] is the sub-list for method output_type
+	18, // [18:40] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
@@ -1235,7 +1297,7 @@ func file_human_resource_benefits_v1_benefits_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_benefits_v1_benefits_proto_rawDesc), len(file_human_resource_benefits_v1_benefits_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

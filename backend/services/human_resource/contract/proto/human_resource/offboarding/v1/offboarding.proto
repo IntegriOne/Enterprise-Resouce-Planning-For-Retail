@@ -6,9 +6,11 @@ import "google/protobuf/timestamp.proto";
 import "human_resource/common/v1/common.proto";
 
 service OffboardingService {
-  rpc CreateOffboardingPlan(CreateOffboardingPlanRequest) returns (OffboardingPlanResponse);
-  rpc ApproveOffboardingPlan(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);
+  rpc CompleteOffboardingPlan(CompleteOffboardingPlanRequest) returns (OffboardingPlanResponse);
+  rpc CancelOffboardingPlan(CancelOffboardingPlanRequest) returns (OffboardingPlanResponse);
   rpc StartOffboardingPlan(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);
+  rpc ApproveOffboardingPlan(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);
+  rpc CreateOffboardingPlan(CreateOffboardingPlanRequest) returns (OffboardingPlanResponse);
   rpc UpdateOffboardingPlan(UpdateOffboardingPlanRequest) returns (OffboardingPlanResponse);
   rpc DeleteOffboardingPlan(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
   rpc GetOffboardingPlanByID(human_resource.common.v1.IDRequest) returns (OffboardingPlanResponse);
@@ -22,6 +24,8 @@ service OffboardingService {
   rpc FindOffboardingPlanByFinanceClearanceReferenceID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
   rpc FindOffboardingPlanByApprovedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
   rpc FindOffboardingPlanByCreatedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (OffboardingPlansResponse);
+  rpc CompleteOffboardingTask(CompleteOffboardingTaskRequest) returns (OffboardingTaskResponse);
+  rpc WaiveOffboardingTask(WaiveOffboardingTaskRequest) returns (OffboardingTaskResponse);
   rpc CreateOffboardingTask(CreateOffboardingTaskRequest) returns (OffboardingTaskResponse);
   rpc UpdateOffboardingTask(UpdateOffboardingTaskRequest) returns (OffboardingTaskResponse);
   rpc DeleteOffboardingTask(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);
@@ -51,6 +55,9 @@ message OffboardingPlan {
   google.protobuf.Timestamp completed_at = 14;
   string created_by_principal_id = 15;
   google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp cancelled_at = 17;
+  optional string cancelled_by_principal_id = 18;
+  optional string cancellation_reason = 19;
 }
 message OffboardingPlanInput {
   optional string worker_id = 1;
@@ -105,3 +112,25 @@ message CreateOffboardingTaskRequest { OffboardingTaskInput input = 1; }
 message UpdateOffboardingTaskRequest { string id = 1; OffboardingTaskInput input = 2; google.protobuf.FieldMask update_mask = 3; }
 message OffboardingTaskResponse { OffboardingTask value = 1; }
 message OffboardingTasksResponse { repeated OffboardingTask items = 1; human_resource.common.v1.PageInfo page = 2; }
+
+message WaiveOffboardingTaskRequest {
+  string id = 1;
+  string reason = 2;
+}
+
+message CompleteOffboardingTaskRequest {
+  string id = 1;
+  string owner_confirmation_reference_id = 2;
+}
+
+message CompleteOffboardingPlanRequest {
+  string id = 1;
+  string final_payroll_run_id = 2;
+  string finance_clearance_reference_id = 3;
+}
+
+
+message CancelOffboardingPlanRequest {
+  string id = 1;
+  string reason = 2;
+}

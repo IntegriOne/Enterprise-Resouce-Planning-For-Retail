@@ -42,6 +42,7 @@ type Registry struct {
 	Worker                       domainrepo.WorkerRepository
 	EmploymentContract           domainrepo.EmploymentContractRepository
 	WorkerAssignment             domainrepo.WorkerAssignmentRepository
+	WorkerAssignmentTransfer     domainrepo.WorkerAssignmentTransferRepository
 	WorkerLifecycleEvent         domainrepo.WorkerLifecycleEventRepository
 	WorkerDocument               domainrepo.WorkerDocumentRepository
 	EmergencyContact             domainrepo.EmergencyContactRepository
@@ -152,6 +153,10 @@ func New(db *gorm.DB) (*Registry, error) {
 		return nil, err
 	}
 	r.WorkerAssignment, err = personnel.NewWorkerAssignmentRepository(db)
+	if err != nil {
+		return nil, err
+	}
+	r.WorkerAssignmentTransfer, err = personnel.NewWorkerAssignmentTransferRepository(db)
 	if err != nil {
 		return nil, err
 	}

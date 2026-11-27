@@ -35,7 +35,13 @@ type requisitionReferenceCounter interface {
 	CountWhere(context.Context, []domainrepo.Filter) (int64, error)
 }
 
+type requisitionPlanLineReader interface {
+	FindByID(context.Context, string) (*entity.WorkforcePlanLine, error)
+}
+
 type requisitionValidator struct {
+	plans        workforcePlanReader
+	planLines    requisitionPlanLineReader
 	workers      requisitionWorkerReader
 	jobs         requisitionJobReader
 	positions    requisitionPositionReader
@@ -50,14 +56,15 @@ func RecruitmentRequisitionValidators(repos *repository.Registry, owner Position
 	if repos == nil || operation.RequireDependency(repos.Worker) != nil ||
 		operation.RequireDependency(repos.Job) != nil || operation.RequireDependency(repos.Position) != nil ||
 		operation.RequireDependency(repos.Requisition) != nil || operation.RequireDependency(repos.Application) != nil ||
-		operation.RequireDependency(repos.JobPosting) != nil {
+		operation.RequireDependency(repos.JobPosting) != nil ||
+		operation.RequireDependency(repos.WorkforcePlan) != nil || operation.RequireDependency(repos.WorkforcePlanLine) != nil {
 		return nil, hrerrors.ErrUnavailable
 	}
 	return map[string]MutationValidator{
 		"hr_requisitions": &requisitionValidator{
 			workers: repos.Worker, jobs: repos.Job, positions: repos.Position,
 			requisitions: repos.Requisition, applications: repos.Application,
-			postings: repos.JobPosting, owner: owner,
+			postings: repos.JobPosting, owner: owner, plans: repos.WorkforcePlan, planLines: repos.WorkforcePlanLine,
 		},
 	}, nil
 }
@@ -189,11 +196,12 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 		(!opening && value.OpenedAt != nil) || value.ClosedAt != nil ||
 		value.RejectedAt != nil || value.RejectionReasonCode != nil || value.RejectedByPrincipalID != nil ||
 		(previous != nil && (previous.ID != value.ID || previous.RequisitionNumber != value.RequisitionNumber ||
-			previous.HiringManagerPrincipalID != value.HiringManagerPrincipalID || previous.IdempotencyKey != value.IdempotencyKey ||
+			(previous.HiringManagerPrincipalID != value.HiringManagerPrincipalID && (previous.Status != "draft" || value.Status != "draft")) ||
+			previous.IdempotencyKey != value.IdempotencyKey ||
 			!reflect.DeepEqual(previous.CreatedByPrincipalID, value.CreatedByPrincipalID))) {
 		return hrerrors.ErrWorkflowRequired
 	}
-	if value.WorkforcePlanLineID != nil || (!approving && !opening && value.BudgetReferenceID != nil) || value.RecruiterPrincipalID != nil {
+	if (!approving && !opening && value.BudgetReferenceID != nil) || value.RecruiterPrincipalID != nil {
 		return hrerrors.ErrUnavailable
 	}
 	switch value.RequisitionType {
@@ -207,6 +215,9 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 	}
 	manager, err := v.activeManager(ctx, value.HiringManagerPrincipalID, now, value.TargetStartDate)
 	if err != nil {
+		return err
+	}
+	if err := v.verifyWorkforceLine(ctx, value, manager.PrimaryLegalEntityReferenceID, now); err != nil {
 		return err
 	}
 	job, err := v.jobs.FindByIDForUpdate(ctx, value.JobID)
@@ -258,6 +269,52 @@ func (v *requisitionValidator) ValidateMutation(ctx context.Context, table strin
 		if len(matches) != 0 {
 			return hrerrors.ErrAlreadyExists
 		}
+	}
+	return nil
+}
+
+func (v *requisitionValidator) verifyWorkforceLine(ctx context.Context, value *entity.Requisition, legalID string, now time.Time) error {
+	if value.WorkforcePlanLineID == nil {
+		return nil
+	}
+	if operation.RequireDependency(v.plans) != nil || operation.RequireDependency(v.planLines) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	line, err := v.planLines.FindByID(ctx, *value.WorkforcePlanLineID)
+	if err != nil {
+		return workerAssessmentReferenceError(err)
+	}
+	if line == nil {
+		return hrerrors.ErrReferenceConflict
+	}
+	plan, err := v.plans.FindByIDForUpdate(ctx, line.WorkforcePlanID)
+	if err != nil {
+		return workerAssessmentReferenceError(err)
+	}
+	// Baris rencana disetujui bersifat immutable, tetapi transisi versi induk tetap dikunci.
+	if plan == nil || plan.Status != "approved" || plan.LegalEntityReferenceID != legalID ||
+		plan.ApprovedAt == nil || plan.ApprovedByPrincipalID == nil || plan.FinanceBudgetReferenceID == nil {
+		return hrerrors.ErrReferenceConflict
+	}
+	// Baca kembali baris setelah menunggu lock rencana agar perubahan draf tidak menjadi bukti lama.
+	line, err = v.planLines.FindByID(ctx, *value.WorkforcePlanLineID)
+	if err != nil {
+		return workerAssessmentReferenceError(err)
+	}
+	if line == nil || line.WorkforcePlanID != plan.ID || line.ActionCode != "recruit" ||
+		line.JobID != value.JobID || line.OrganizationUnitReferenceID != value.OrganizationUnitReferenceID ||
+		line.WorkerCategory != value.EmploymentCategory ||
+		(line.WorkLocationReferenceID != nil && !reflect.DeepEqual(line.WorkLocationReferenceID, value.WorkLocationReferenceID)) {
+		return hrerrors.ErrReferenceConflict
+	}
+	needed := now.UTC()
+	if value.TargetStartDate != nil {
+		needed = *value.TargetStartDate
+	}
+	if !planPeriodContainsLine(plan, line) || entity.CompareDates(needed, line.NeededFrom) < 0 ||
+		entity.CompareDates(needed, plan.PeriodEnd) > 0 ||
+		(line.NeededUntil != nil && entity.CompareDates(needed, *line.NeededUntil) > 0) {
+		return hrerrors.ErrReferenceConflict
 	}
 	return nil
 }

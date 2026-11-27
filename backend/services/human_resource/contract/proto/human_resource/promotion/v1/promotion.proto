@@ -69,6 +69,12 @@ message CreatePromotionDecisionRequest { PromotionDecisionInput input = 1; }
 message UpdatePromotionDecisionRequest { string id = 1; PromotionDecisionInput input = 2; google.protobuf.FieldMask update_mask = 3; }
 message PromotionDecisionResponse { PromotionDecision value = 1; }
 message PromotionDecisionsResponse { repeated PromotionDecision items = 1; human_resource.common.v1.PageInfo page = 2; }
+message DecidePromotionRecommendationRequest {
+  string recommendation_id = 1;
+  string rationale_document_version_reference_id = 2;
+  bytes rationale_digest = 3;
+  string idempotency_key = 4;
+}
 service PromotionService {
   rpc CreatePromotionRecommendation(CreatePromotionRecommendationRequest) returns (PromotionRecommendationResponse);
   rpc UpdatePromotionRecommendation(UpdatePromotionRecommendationRequest) returns (PromotionRecommendationResponse);
@@ -88,6 +94,11 @@ service PromotionService {
   rpc FindPromotionRecommendationByAppliedAssignmentID(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
   rpc FindPromotionRecommendationByAppliedLifecycleEventID(human_resource.common.v1.Int64FinderRequest) returns (PromotionRecommendationsResponse);
   rpc FindPromotionRecommendationByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (PromotionRecommendationsResponse);
+  rpc SubmitPromotionRecommendation(human_resource.common.v1.IDRequest) returns (PromotionRecommendationResponse);
+  rpc ApprovePromotionRecommendation(DecidePromotionRecommendationRequest) returns (PromotionRecommendationResponse);
+  rpc RejectPromotionRecommendation(DecidePromotionRecommendationRequest) returns (PromotionRecommendationResponse);
+  rpc ReturnPromotionRecommendation(DecidePromotionRecommendationRequest) returns (PromotionRecommendationResponse);
+  rpc ApplyPromotionRecommendation(human_resource.common.v1.IDRequest) returns (PromotionRecommendationResponse);
   rpc CreatePromotionDecision(CreatePromotionDecisionRequest) returns (PromotionDecisionResponse);
   rpc UpdatePromotionDecision(UpdatePromotionDecisionRequest) returns (PromotionDecisionResponse);
   rpc DeletePromotionDecision(human_resource.common.v1.IDRequest) returns (human_resource.common.v1.EmptyResponse);

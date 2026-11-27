@@ -87,7 +87,13 @@ func ValidateRunResults(run *entity.PayrollRun, results []entity.PayrollResult, 
 		return hrerrors.Invalid("results", "payroll run requires results")
 	}
 	indexed := map[string][]entity.PayrollResultLine{}
+	lineIDs := make(map[string]struct{}, len(lines))
 	for _, line := range lines {
+		id := strings.ToLower(line.ID)
+		if _, exists := lineIDs[id]; exists {
+			return hrerrors.Invalid("lines", "payroll run contains duplicate line identities")
+		}
+		lineIDs[id] = struct{}{}
 		key := strings.ToLower(line.PayrollResultID)
 		indexed[key] = append(indexed[key], line)
 	}

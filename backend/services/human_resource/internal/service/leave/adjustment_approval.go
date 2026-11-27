@@ -19,11 +19,34 @@ func (s *Service) ApproveLeaveAdjustment(ctx context.Context, adjustmentID strin
 		if actor.Kind != "human" || strings.EqualFold(adjustment.RequestedByPrincipalID, actor.PrincipalID) {
 			return nil, hrerrors.ErrForbidden
 		}
-		if adjustment.ApprovedAt != nil || adjustment.ApprovedByPrincipalID != nil {
+		if adjustment.ApprovedAt != nil || adjustment.ApprovedByPrincipalID != nil || adjustment.RejectedAt != nil {
 			return nil, hrerrors.ErrConflict
 		}
 		adjustment.ApprovedByPrincipalID = &actor.PrincipalID
 		adjustment.ApprovedAt = &now
+		return adjustment, nil
+	})
+}
+
+// RejectLeaveAdjustment mencatat penolakan independen tanpa memposting saldo.
+func (s *Service) RejectLeaveAdjustment(ctx context.Context, adjustmentID, reasonCode string) (*entity.LeaveAdjustment, error) {
+	if s == nil {
+		return nil, hrerrors.ErrUnavailable
+	}
+	reasonCode = strings.TrimSpace(reasonCode)
+	if reasonCode == "" || len(reasonCode) > 80 {
+		return nil, hrerrors.Invalid("reason_code", "has invalid value")
+	}
+	return s.leaveAdjustment.Command(ctx, adjustmentID, "reject", func(_ context.Context, adjustment *entity.LeaveAdjustment, actor operation.Actor, now time.Time) (*entity.LeaveAdjustment, error) {
+		if actor.Kind != "human" || strings.EqualFold(adjustment.RequestedByPrincipalID, actor.PrincipalID) {
+			return nil, hrerrors.ErrForbidden
+		}
+		if adjustment.ApprovedAt != nil || adjustment.ApprovedByPrincipalID != nil || adjustment.RejectedAt != nil {
+			return nil, hrerrors.ErrConflict
+		}
+		adjustment.RejectedAt = &now
+		adjustment.RejectedByPrincipalID = &actor.PrincipalID
+		adjustment.RejectionReasonCode = &reasonCode
 		return adjustment, nil
 	})
 }

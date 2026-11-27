@@ -5,6 +5,7 @@ package service
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/integrione/erp-retail/backend/services/human_resource/domain/entity"
@@ -81,6 +82,9 @@ func patchRequisition(v *entity.Requisition, in UpdateRequisitionInput) error {
 	if in.HiringManagerPrincipalID.Set {
 		if in.HiringManagerPrincipalID.Value == nil {
 			return hrerrors.Invalid("hiring_manager_principal_id", "must not be null")
+		}
+		if in.HiringManagerWorkerID == nil && v.HiringManagerPrincipalID != *in.HiringManagerPrincipalID.Value {
+			return hrerrors.ErrWorkflowRequired
 		}
 		v.HiringManagerPrincipalID = *in.HiringManagerPrincipalID.Value
 	}
@@ -573,13 +577,23 @@ func specApplicationStageHistory() operation.Specification[entity.ApplicationSta
 		},
 	}
 }
+
+// normalizeInterviewTime menyamakan presisi jadwal dengan penyimpanan PostgreSQL.
+func normalizeInterviewTime(value *time.Time) *time.Time {
+	if value == nil {
+		return nil
+	}
+	normalized := value.Truncate(time.Microsecond)
+	return &normalized
+}
+
 func createInterview(in CreateInterviewInput) (*entity.Interview, error) {
 	v := &entity.Interview{}
 	v.ApplicationID = in.ApplicationID
 	v.InterviewRound = in.InterviewRound
 	v.InterviewType = in.InterviewType
-	v.ScheduledStart = in.ScheduledStart
-	v.ScheduledEnd = in.ScheduledEnd
+	v.ScheduledStart = normalizeInterviewTime(in.ScheduledStart)
+	v.ScheduledEnd = normalizeInterviewTime(in.ScheduledEnd)
 	v.LocationReferenceID = in.LocationReferenceID
 	v.MeetingReferenceID = in.MeetingReferenceID
 	if in.Status != nil {
@@ -610,10 +624,10 @@ func patchInterview(v *entity.Interview, in UpdateInterviewInput) error {
 		v.InterviewType = *in.InterviewType.Value
 	}
 	if in.ScheduledStart.Set {
-		v.ScheduledStart = in.ScheduledStart.Value
+		v.ScheduledStart = normalizeInterviewTime(in.ScheduledStart.Value)
 	}
 	if in.ScheduledEnd.Set {
-		v.ScheduledEnd = in.ScheduledEnd.Value
+		v.ScheduledEnd = normalizeInterviewTime(in.ScheduledEnd.Value)
 	}
 	if in.LocationReferenceID.Set {
 		v.LocationReferenceID = in.LocationReferenceID.Value
@@ -825,6 +839,15 @@ func specInterviewFeedback() operation.Specification[entity.InterviewFeedback, s
 			a["interviewer_principal_id"] = fmt.Sprint(v.InterviewerPrincipalID)
 			return a
 		},
+		CheckActor: func(action string, value *entity.InterviewFeedback, actor operation.Actor) error {
+			switch action {
+			case "create", "update", "delete":
+				if actor.Kind != "human" || !strings.EqualFold(value.InterviewerPrincipalID, actor.PrincipalID) {
+					return hrerrors.ErrForbidden
+				}
+			}
+			return nil
+		},
 		Guard: func(action string, old, next *entity.InterviewFeedback) error {
 			return nil
 		},
@@ -955,6 +978,8 @@ func specOffer() operation.Specification[entity.Offer, string] {
 		AggregateID: func(v *entity.Offer) string { return v.ID },
 		Initialize: func(v *entity.Offer, actor operation.Actor, now time.Time, id string) {
 			v.ID = id
+			v.CreatedByPrincipalID = &actor.PrincipalID
+			v.CreatedAt = &now
 		},
 		Touch: func(v *entity.Offer, actor operation.Actor, now time.Time) {},
 		Attributes: func(v *entity.Offer) map[string]string {
@@ -1049,6 +1074,9 @@ func patchJobPosting(v *entity.JobPosting, in UpdateJobPostingInput) error {
 	if in.ContentDocumentVersionReferenceID.Set {
 		if in.ContentDocumentVersionReferenceID.Value == nil {
 			return hrerrors.Invalid("content_document_version_reference_id", "must not be null")
+		}
+		if !in.ContentDigest.Set && !strings.EqualFold(v.ContentDocumentVersionReferenceID, *in.ContentDocumentVersionReferenceID.Value) {
+			return hrerrors.Invalid("content_digest", "must be supplied when replacing the content document version")
 		}
 		v.ContentDocumentVersionReferenceID = *in.ContentDocumentVersionReferenceID.Value
 	}

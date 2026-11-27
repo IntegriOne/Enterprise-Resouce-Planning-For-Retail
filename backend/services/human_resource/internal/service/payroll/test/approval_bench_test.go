@@ -2,13 +2,12 @@ package service_test
 
 import (
 	"testing"
-
-	"github.com/integrione/erp-retail/backend/services/human_resource/domain/service/test/fixture"
 )
 
 func BenchmarkServiceApprovePayrollRun(b *testing.B) {
-	h, svc, _, runs, results, lines := setupPayroll(b)
-	run, result := calculatedRun(), fixture.PayrollResult()
+	h, svc, _, runs, results, lines := setupPayroll(b, 6)
+	run, result := calculatedRun(), calculatedResult()
+	run.Status = "review"
 	results.Rows[result.ID] = result
 	for _, line := range calculatedLines() {
 		lines.Rows[line.ID] = line
