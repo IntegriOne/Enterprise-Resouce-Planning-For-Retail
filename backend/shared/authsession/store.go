@@ -97,6 +97,26 @@ func (s *Store) GetGate(ctx context.Context) (*SecurityGateRecord, error) {
 	return &gate, nil
 }
 
+// ReadUserSecurity membaca proyeksi user dan epoch gate dalam satu operasi Redis.
+func (s *Store) ReadUserSecurity(ctx context.Context, userID string) (*UserSecurityRecord, error) {
+	values, err := s.client.MGet(ctx, s.ks.GateKey(), s.ks.UserSecurityKey(userID)).Result()
+	if err != nil {
+		return nil, wrapRedisErr(err)
+	}
+	if len(values) != 2 {
+		return nil, ErrRedisUnavailable
+	}
+	gate, err := decodeGate(values[0])
+	if err != nil || !gate.Open || gate.RecoveryEpoch < 1 {
+		return nil, ErrSecurityGateClosed
+	}
+	record, err := decodeRecord[UserSecurityRecord](values[1], ErrUserSecurityBlocked)
+	if err != nil || record.UserID != userID || record.RecoveryEpoch != gate.RecoveryEpoch {
+		return nil, ErrUserSecurityBlocked
+	}
+	return record, nil
+}
+
 // WriteSession memproyeksikan pasangan token sesi, jendela idle aktivitas, dan state keamanan user ke Redis secara atomik.
 func (s *Store) WriteSession(
 	ctx context.Context,
