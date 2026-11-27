@@ -1,5 +1,6 @@
 """Memeriksa kontrak SDL serta guard sesi dan CSRF Human Resource."""
 
+from argparse import ArgumentParser
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -23,7 +24,13 @@ enums = dict(re.findall(r'^enum (\w+) \{\s*(\w+)', schema, re.M))
 fixtures = {'ID':'"00000000-0000-4000-8000-000000000001"', 'String':'"fixture"', 'Int':'1', 'Float':'1.0', 'Boolean':'true', **enums}
 fixtures["Time"] = json.dumps("2026-11-27T00:00:00Z")
 tls = ssl.create_default_context(cafile=repo / 'backend/deploy/certs/ca.crt')
-url = 'https://erp.localhost:8443/api/graphql'
+parser = ArgumentParser(description=__doc__)
+parser.add_argument('--port', type=int, default=8443, help='Port HTTPS stack development atau disposable.')
+args = parser.parse_args()
+if not 1 <= args.port <= 65535:
+    parser.error('port harus antara 1 dan 65535')
+origin = f'https://erp.localhost:{args.port}'
+url = f'{origin}/api/graphql'
 
 def value(kind):
     if kind.startswith('['):
@@ -43,7 +50,7 @@ def probe(case):
     if result.strip("[]!") in objects:
         field += ' { __typename }'
     request = urllib.request.Request(url, json.dumps({'query': f'{operation.lower()} {{ {field} }}'}).encode(),
-        {'Content-Type':'application/json','Origin':'https://erp.localhost:8443'})
+        {'Content-Type':'application/json','Origin': origin})
     try:
         response = urllib.request.urlopen(request, context=tls, timeout=10)
     except urllib.error.HTTPError as err:
