@@ -673,6 +673,8 @@ type CreateUserRequest struct {
 	Password               string                 `protobuf:"bytes,9,opt,name=password,proto3" json:"password,omitempty"`
 	RequirePasswordChange  bool                   `protobuf:"varint,10,opt,name=require_password_change,json=requirePasswordChange,proto3" json:"require_password_change,omitempty"`
 	MarkIdentitiesVerified bool                   `protobuf:"varint,11,opt,name=mark_identities_verified,json=markIdentitiesVerified,proto3" json:"mark_identities_verified,omitempty"`
+	ProvisioningRequestId  string                 `protobuf:"bytes,12,opt,name=provisioning_request_id,json=provisioningRequestId,proto3" json:"provisioning_request_id,omitempty"`
+	WorkerId               string                 `protobuf:"bytes,13,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -782,6 +784,20 @@ func (x *CreateUserRequest) GetMarkIdentitiesVerified() bool {
 		return x.MarkIdentitiesVerified
 	}
 	return false
+}
+
+func (x *CreateUserRequest) GetProvisioningRequestId() string {
+	if x != nil {
+		return x.ProvisioningRequestId
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetWorkerId() string {
+	if x != nil {
+		return x.WorkerId
+	}
+	return ""
 }
 
 type CreateUserResponse struct {
@@ -2823,7 +2839,7 @@ const file_iam_v1_user_proto_rawDesc = "" +
 	"\f_identity_id\"_\n" +
 	"\vIssuedToken\x12'\n" +
 	"\x05token\x18\x01 \x01(\v2\x11.iam.v1.UserTokenR\x05token\x12'\n" +
-	"\x0fplaintext_token\x18\x02 \x01(\tR\x0eplaintextToken\"\x9b\x03\n" +
+	"\x0fplaintext_token\x18\x02 \x01(\tR\x0eplaintextToken\"\xf0\x03\n" +
 	"\x11CreateUserRequest\x12$\n" +
 	"\x04kind\x18\x01 \x01(\x0e2\x10.iam.v1.UserKindR\x04kind\x12*\n" +
 	"\x06status\x18\x02 \x01(\x0e2\x12.iam.v1.UserStatusR\x06status\x12!\n" +
@@ -2837,7 +2853,9 @@ const file_iam_v1_user_proto_rawDesc = "" +
 	"\bpassword\x18\t \x01(\tR\bpassword\x126\n" +
 	"\x17require_password_change\x18\n" +
 	" \x01(\bR\x15requirePasswordChange\x128\n" +
-	"\x18mark_identities_verified\x18\v \x01(\bR\x16markIdentitiesVerified\"6\n" +
+	"\x18mark_identities_verified\x18\v \x01(\bR\x16markIdentitiesVerified\x126\n" +
+	"\x17provisioning_request_id\x18\f \x01(\tR\x15provisioningRequestId\x12\x1b\n" +
+	"\tworker_id\x18\r \x01(\tR\bworkerId\"6\n" +
 	"\x12CreateUserResponse\x12 \n" +
 	"\x04user\x18\x01 \x01(\v2\f.iam.v1.UserR\x04user\"-\n" +
 	"\x12GetUserByIdRequest\x12\x17\n" +

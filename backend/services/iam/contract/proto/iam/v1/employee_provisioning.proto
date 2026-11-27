@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package iam.v1;
+
+option go_package = "github.com/integrione/erp-retail/backend/services/iam/contract/gen/iam/v1;iamv1";
+
+import "google/protobuf/timestamp.proto";
+import "iam/v1/common.proto";
+
+service EmployeeProvisioningService {
+  rpc ResolveEmployeeProvisioningCatalog(ResolveEmployeeProvisioningCatalogRequest) returns (ResolveEmployeeProvisioningCatalogResponse);
+  rpc ReceiveEmployeeProvisioningRequest(ReceiveEmployeeProvisioningRequestRequest) returns (ReceiveEmployeeProvisioningRequestResponse);
+  rpc ListEmployeeProvisioningRequests(ListEmployeeProvisioningRequestsRequest) returns (ListEmployeeProvisioningRequestsResponse);
+  rpc GetEmployeeProvisioningRequest(GetEmployeeProvisioningRequestRequest) returns (GetEmployeeProvisioningRequestResponse);
+  rpc GetEmployeeProvisioningStatus(GetEmployeeProvisioningStatusRequest) returns (GetEmployeeProvisioningStatusResponse);
+  rpc CompleteEmployeeProvisioningRequest(CompleteEmployeeProvisioningRequestRequest) returns (CompleteEmployeeProvisioningRequestResponse);
+}
+
+message ReceiveEmployeeProvisioningRequestRequest {
+  string hrm_request_id = 1;
+  string worker_id = 2;
+  string legal_entity_id = 3;
+  google.protobuf.Timestamp requested_at = 4;
+  string worker_number = 5;
+  string catalog_role_id = 6;
+}
+
+message ReceiveEmployeeProvisioningRequestResponse {
+  string id = 1;
+  string status = 2;
+  string hrm_request_id = 3;
+  string worker_id = 4;
+  string legal_entity_id = 5;
+}
+
+message EmployeeProvisioningRequest {
+  string id = 1;
+  string worker_id = 2;
+  string legal_entity_id = 3;
+  string requested_by_principal_id = 4;
+  google.protobuf.Timestamp requested_at = 5;
+  google.protobuf.Timestamp received_at = 6;
+  string status = 7;
+  string worker_number = 8;
+}
+
+message ListEmployeeProvisioningRequestsRequest {
+  PageRequest page = 1;
+}
+
+message ListEmployeeProvisioningRequestsResponse {
+  repeated EmployeeProvisioningRequest items = 1;
+  PageInfo page = 2;
+}
+
+message GetEmployeeProvisioningRequestRequest {
+  string id = 1;
+}
+
+message GetEmployeeProvisioningRequestResponse {
+  EmployeeProvisioningRequest item = 1;
+}
+
+message CompleteEmployeeProvisioningRequestRequest {
+  string id = 1;
+  string account_id = 2;
+}
+
+message CompleteEmployeeProvisioningRequestResponse {}
+
+message GetEmployeeProvisioningStatusRequest {
+  string hrm_request_id = 1;
+  string legal_entity_id = 2;
+}
+
+message GetEmployeeProvisioningStatusResponse {
+  string id = 1;
+  string status = 2;
+  string hrm_request_id = 3;
+  string worker_id = 4;
+  string legal_entity_id = 5;
+}
+
+message ResolveEmployeeProvisioningCatalogRequest {
+  string legal_entity_id = 1;
+}
+
+message ResolveEmployeeProvisioningCatalogResponse {
+  string catalog_role_id = 1;
+}

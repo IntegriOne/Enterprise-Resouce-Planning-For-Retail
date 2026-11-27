@@ -89,6 +89,8 @@ message CreateUserRequest {
   string password = 9;
   bool require_password_change = 10;
   bool mark_identities_verified = 11;
+  string provisioning_request_id = 12;
+  string worker_id = 13;
 }
 
 message CreateUserResponse {
