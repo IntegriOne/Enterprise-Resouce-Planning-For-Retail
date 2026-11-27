@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "management_domain": "enterprise_foundation",
+  "permissions": [
+    {
+      "code": "enterprise_foundation.addresses.read",
+      "resource": "enterprise_foundation.addresses",
+      "action": "read",
+      "description": "Read Enterprise Foundation master addresses",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.addresses.write",
+      "resource": "enterprise_foundation.addresses",
+      "action": "write",
+      "description": "Manage Enterprise Foundation master addresses",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.legal_entities.read",
+      "resource": "enterprise_foundation.legal_entities",
+      "action": "read",
+      "description": "Read Enterprise Foundation legal entities",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.legal_entities.write",
+      "resource": "enterprise_foundation.legal_entities",
+      "action": "write",
+      "description": "Manage Enterprise Foundation legal entities",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.locations.read",
+      "resource": "enterprise_foundation.locations",
+      "action": "read",
+      "description": "Read Enterprise Foundation locations",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.locations.write",
+      "resource": "enterprise_foundation.locations",
+      "action": "write",
+      "description": "Manage Enterprise Foundation locations",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.organization_units.read",
+      "resource": "enterprise_foundation.organization_units",
+      "action": "read",
+      "description": "Read Enterprise Foundation organization units",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.organization_units.write",
+      "resource": "enterprise_foundation.organization_units",
+      "action": "write",
+      "description": "Manage Enterprise Foundation organization units",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.parties.read",
+      "resource": "enterprise_foundation.parties",
+      "action": "read",
+      "description": "Read Enterprise Foundation external parties, roles, contacts, and addresses",
+      "is_sensitive": false
+    },
+    {
+      "code": "enterprise_foundation.parties.write",
+      "resource": "enterprise_foundation.parties",
+      "action": "write",
+      "description": "Manage Enterprise Foundation external parties, roles, contacts, and portal access",
+      "is_sensitive": false
+    }
+  ],
+  "roles": [
+    {
+      "code": "ef_admin",
+      "name": "Enterprise Foundation Administrator",
+      "description": "Full administrative role for Enterprise Foundation internal structure, legal entities, locations, addresses, and external partner master",
+      "management_domain": "enterprise_foundation",
+      "default_redirect_path": "/human-resource",
+      "redirect_priority": 15,
+      "is_system": false,
+      "permission_codes": [
+        "enterprise_foundation.addresses.read",
+        "enterprise_foundation.addresses.write",
+        "enterprise_foundation.legal_entities.read",
+        "enterprise_foundation.legal_entities.write",
+        "enterprise_foundation.locations.read",
+        "enterprise_foundation.locations.write",
+        "enterprise_foundation.organization_units.read",
+        "enterprise_foundation.organization_units.write",
+        "enterprise_foundation.parties.read",
+        "enterprise_foundation.parties.write"
+      ]
+    },
+    {
+      "code": "ef_operator",
+      "name": "Enterprise Foundation Operator",
+      "description": "Operational role with full read and write capabilities across Enterprise Foundation masters",
+      "management_domain": "enterprise_foundation",
+      "default_redirect_path": "/human-resource",
+      "redirect_priority": 25,
+      "is_system": false,
+      "permission_codes": [
+        "enterprise_foundation.addresses.read",
+        "enterprise_foundation.addresses.write",
+        "enterprise_foundation.legal_entities.read",
+        "enterprise_foundation.legal_entities.write",
+        "enterprise_foundation.locations.read",
+        "enterprise_foundation.locations.write",
+        "enterprise_foundation.organization_units.read",
+        "enterprise_foundation.organization_units.write",
+        "enterprise_foundation.parties.read",
+        "enterprise_foundation.parties.write"
+      ]
+    },
+    {
+      "code": "ef_structure_manager",
+      "name": "Enterprise Foundation Structure Manager",
+      "description": "Manages internal legal entities, organization units, physical locations, and addresses",
+      "management_domain": "enterprise_foundation",
+      "default_redirect_path": "/human-resource",
+      "redirect_priority": 30,
+      "is_system": false,
+      "permission_codes": [
+        "enterprise_foundation.addresses.read",
+        "enterprise_foundation.addresses.write",
+        "enterprise_foundation.legal_entities.read",
+        "enterprise_foundation.legal_entities.write",
+        "enterprise_foundation.locations.read",
+        "enterprise_foundation.locations.write",
+        "enterprise_foundation.organization_units.read",
+        "enterprise_foundation.organization_units.write"
+      ]
+    },
+    {
+      "code": "ef_partner_manager",
+      "name": "Enterprise Foundation Partner Manager",
+      "description": "Manages external parties (suppliers, vendors, B2B partners), roles, contacts, portal access, and partner addresses",
+      "management_domain": "enterprise_foundation",
+      "default_redirect_path": "/procurement",
+      "redirect_priority": 30,
+      "is_system": false,
+      "permission_codes": [
+        "enterprise_foundation.addresses.read",
+        "enterprise_foundation.addresses.write",
+        "enterprise_foundation.parties.read",
+        "enterprise_foundation.parties.write"
+      ]
+    },
+    {
+      "code": "ef_readonly",
+      "name": "Enterprise Foundation Read-Only Auditor",
+      "description": "Read-only inspection role across all Enterprise Foundation master entities",
+      "management_domain": "enterprise_foundation",
+      "default_redirect_path": "/human-resource",
+      "redirect_priority": 40,
+      "is_system": false,
+      "permission_codes": [
+        "enterprise_foundation.addresses.read",
+        "enterprise_foundation.legal_entities.read",
+        "enterprise_foundation.locations.read",
+        "enterprise_foundation.organization_units.read",
+        "enterprise_foundation.parties.read"
+      ]
+    },
+    {
+      "code": "ef_automation",
+      "name": "Enterprise Foundation Service Automation",
+      "description": "Non-interactive service automation role strictly scoped to Enterprise Foundation operations",
+      "management_domain": "enterprise_foundation",
+      "default_redirect_path": "",
+      "redirect_priority": 999,
+      "is_system": true,
+      "permission_codes": [
+        "enterprise_foundation.addresses.read",
+        "enterprise_foundation.addresses.write",
+        "enterprise_foundation.legal_entities.read",
+        "enterprise_foundation.legal_entities.write",
+        "enterprise_foundation.locations.read",
+        "enterprise_foundation.locations.write",
+        "enterprise_foundation.organization_units.read",
+        "enterprise_foundation.organization_units.write",
+        "enterprise_foundation.parties.read",
+        "enterprise_foundation.parties.write"
+      ]
+    }
+  ]
+}

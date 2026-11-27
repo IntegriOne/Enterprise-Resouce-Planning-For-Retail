@@ -1,0 +1,567 @@
+{
+  "schema_version": 1,
+  "management_domain": "human_resource",
+  "permissions": [
+    {
+      "code": "human_resource.access_requests.create",
+      "resource": "human_resource.access_requests",
+      "action": "create",
+      "description": "Create worker access requests for IAM processing",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.access_requests.read",
+      "resource": "human_resource.access_requests",
+      "action": "read",
+      "description": "Read worker access requests and provisioning status",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.candidates.create",
+      "resource": "human_resource.candidates",
+      "action": "create",
+      "description": "Create recruitment candidates",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.candidates.delete",
+      "resource": "human_resource.candidates",
+      "action": "delete",
+      "description": "Delete unreferenced recruitment candidates",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.candidates.read",
+      "resource": "human_resource.candidates",
+      "action": "read",
+      "description": "Read recruitment candidates",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.candidates.update",
+      "resource": "human_resource.candidates",
+      "action": "update",
+      "description": "Correct recruitment candidate details",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.employment_contracts.create",
+      "resource": "human_resource.employment_contracts",
+      "action": "create",
+      "description": "Create employment contracts",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.employment_contracts.delete",
+      "resource": "human_resource.employment_contracts",
+      "action": "delete",
+      "description": "Delete employment contracts",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.employment_contracts.read",
+      "resource": "human_resource.employment_contracts",
+      "action": "read",
+      "description": "Read employment contracts",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.employment_contracts.update",
+      "resource": "human_resource.employment_contracts",
+      "action": "update",
+      "description": "Correct employment contracts",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.job_families.create",
+      "resource": "human_resource.job_families",
+      "action": "create",
+      "description": "Create job families",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.job_families.read",
+      "resource": "human_resource.job_families",
+      "action": "read",
+      "description": "Read job families",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.jobs.create",
+      "resource": "human_resource.jobs",
+      "action": "create",
+      "description": "Create jobs",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.jobs.read",
+      "resource": "human_resource.jobs",
+      "action": "read",
+      "description": "Read jobs",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.leave_adjustments.approve",
+      "resource": "human_resource.leave_adjustments",
+      "action": "approve",
+      "description": "Approve proposed leave adjustments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.leave_adjustments.create",
+      "resource": "human_resource.leave_adjustments",
+      "action": "create",
+      "description": "Propose leave adjustments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.leave_adjustments.read",
+      "resource": "human_resource.leave_adjustments",
+      "action": "read",
+      "description": "Read leave adjustments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.leave_adjustments.reject",
+      "resource": "human_resource.leave_adjustments",
+      "action": "reject",
+      "description": "Reject proposed leave adjustments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.leave_entitlements.close",
+      "resource": "human_resource.leave_entitlements",
+      "action": "close",
+      "description": "Close leave entitlements",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.leave_entitlements.post",
+      "resource": "human_resource.leave_entitlements",
+      "action": "post",
+      "description": "Post approved adjustments to the leave ledger",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.leave_entitlements.read",
+      "resource": "human_resource.leave_entitlements",
+      "action": "read",
+      "description": "Read leave entitlements",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.leave_ledger_entries.read",
+      "resource": "human_resource.leave_ledger_entries",
+      "action": "read",
+      "description": "Read leave ledger entries",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.leave_policies.read",
+      "resource": "human_resource.leave_policies",
+      "action": "read",
+      "description": "Read leave policies",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_plans.approve",
+      "resource": "human_resource.offboarding_plans",
+      "action": "approve",
+      "description": "Approve offboarding plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offboarding_plans.cancel",
+      "resource": "human_resource.offboarding_plans",
+      "action": "cancel",
+      "description": "Cancel offboarding plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offboarding_plans.create",
+      "resource": "human_resource.offboarding_plans",
+      "action": "create",
+      "description": "Create offboarding plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_plans.read",
+      "resource": "human_resource.offboarding_plans",
+      "action": "read",
+      "description": "Read offboarding plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_plans.start",
+      "resource": "human_resource.offboarding_plans",
+      "action": "start",
+      "description": "Start offboarding plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.offboarding_tasks.create",
+      "resource": "human_resource.offboarding_tasks",
+      "action": "create",
+      "description": "Create offboarding tasks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_tasks.read",
+      "resource": "human_resource.offboarding_tasks",
+      "action": "read",
+      "description": "Read offboarding tasks",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.offboarding_tasks.waive",
+      "resource": "human_resource.offboarding_tasks",
+      "action": "waive",
+      "description": "Waive offboarding tasks",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_groups.read",
+      "resource": "human_resource.payroll_groups",
+      "action": "read",
+      "description": "Read payroll groups",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.payroll_periods.read",
+      "resource": "human_resource.payroll_periods",
+      "action": "read",
+      "description": "Read payroll periods",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.payroll_result_lines.read",
+      "resource": "human_resource.payroll_result_lines",
+      "action": "read",
+      "description": "Read payroll result lines",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_results.read",
+      "resource": "human_resource.payroll_results",
+      "action": "read",
+      "description": "Read payroll results",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_rule_sets.read",
+      "resource": "human_resource.payroll_rule_sets",
+      "action": "read",
+      "description": "Read payroll rule sets",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.payroll_runs.approve",
+      "resource": "human_resource.payroll_runs",
+      "action": "approve",
+      "description": "Approve payroll runs",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_runs.cancel",
+      "resource": "human_resource.payroll_runs",
+      "action": "cancel",
+      "description": "Cancel payroll runs",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_runs.create",
+      "resource": "human_resource.payroll_runs",
+      "action": "create",
+      "description": "Create payroll runs",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_runs.read",
+      "resource": "human_resource.payroll_runs",
+      "action": "read",
+      "description": "Read payroll runs",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.payroll_runs.request_posting",
+      "resource": "human_resource.payroll_runs",
+      "action": "request_posting",
+      "description": "Request posting for payroll runs",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payroll_runs.submit_review",
+      "resource": "human_resource.payroll_runs",
+      "action": "submit_review",
+      "description": "Submit for review: payroll runs",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.payslips.read_self",
+      "resource": "human_resource.payslips",
+      "action": "read_self",
+      "description": "Read published payslips for the authenticated worker",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.payslips.reissue",
+      "resource": "human_resource.payslips",
+      "action": "reissue",
+      "description": "Reissue a published payslip for a worker within the granted legal entity",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.positions.activate",
+      "resource": "human_resource.positions",
+      "action": "activate",
+      "description": "Activate planned positions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.positions.create",
+      "resource": "human_resource.positions",
+      "action": "create",
+      "description": "Create planned positions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.positions.delete",
+      "resource": "human_resource.positions",
+      "action": "delete",
+      "description": "Delete unused planned positions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.positions.read",
+      "resource": "human_resource.positions",
+      "action": "read",
+      "description": "Read positions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.positions.update",
+      "resource": "human_resource.positions",
+      "action": "update",
+      "description": "Correct planned positions",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_assignments.approve",
+      "resource": "human_resource.worker_assignments",
+      "action": "approve",
+      "description": "Approve proposed worker assignments",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.worker_assignments.create",
+      "resource": "human_resource.worker_assignments",
+      "action": "create",
+      "description": "Create draft assignments or request transfers",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_assignments.read",
+      "resource": "human_resource.worker_assignments",
+      "action": "read",
+      "description": "Read worker assignments",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_assignment_transfers.read",
+      "resource": "human_resource.worker_assignment_transfers",
+      "action": "read",
+      "description": "Read worker assignment transfer details",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.worker_assignments.transfer",
+      "resource": "human_resource.worker_assignments",
+      "action": "transfer",
+      "description": "Decide primary worker assignment transfers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.requisitions.approve",
+      "resource": "human_resource.requisitions",
+      "action": "approve",
+      "description": "Approve recruitment requisitions for an assigned organization unit",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.requisitions.close",
+      "resource": "human_resource.requisitions",
+      "action": "close",
+      "description": "Close an open recruitment requisition with no active recruitment",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.requisitions.create",
+      "resource": "human_resource.requisitions",
+      "action": "create",
+      "description": "Create recruitment requisition drafts",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.requisitions.delete",
+      "resource": "human_resource.requisitions",
+      "action": "delete",
+      "description": "Delete a recruitment requisition draft",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.requisitions.open",
+      "resource": "human_resource.requisitions",
+      "action": "open",
+      "description": "Open an approved recruitment requisition after verification",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.requisitions.read",
+      "resource": "human_resource.requisitions",
+      "action": "read",
+      "description": "Read recruitment requisitions",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.requisitions.reject",
+      "resource": "human_resource.requisitions",
+      "action": "reject",
+      "description": "Reject a submitted recruitment requisition",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.requisitions.submit",
+      "resource": "human_resource.requisitions",
+      "action": "submit",
+      "description": "Submit a recruitment requisition draft for approval",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.requisitions.update",
+      "resource": "human_resource.requisitions",
+      "action": "update",
+      "description": "Update draft recruitment requisition details",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workers.activate",
+      "resource": "human_resource.workers",
+      "action": "activate",
+      "description": "Activate a preboarding worker with a verified employment contract",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workers.apply_primary_assignment",
+      "resource": "human_resource.workers",
+      "action": "apply_primary_assignment",
+      "description": "Apply an approved primary worker assignment",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workers.create",
+      "resource": "human_resource.workers",
+      "action": "create",
+      "description": "Create worker records for onboarding",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workers.read",
+      "resource": "human_resource.workers",
+      "action": "read",
+      "description": "Read worker details within the assigned scope",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workers.terminate",
+      "resource": "human_resource.workers",
+      "action": "terminate",
+      "description": "Terminate workers",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workers.update",
+      "resource": "human_resource.workers",
+      "action": "update",
+      "description": "Correct worker dates in preboarding",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workforce_plan_lines.create",
+      "resource": "human_resource.workforce_plan_lines",
+      "action": "create",
+      "description": "Add lines to draft workforce plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workforce_plan_lines.delete",
+      "resource": "human_resource.workforce_plan_lines",
+      "action": "delete",
+      "description": "Delete unused lines on draft workforce plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workforce_plan_lines.read",
+      "resource": "human_resource.workforce_plan_lines",
+      "action": "read",
+      "description": "Read workforce plan lines within the assigned scope",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workforce_plan_lines.update",
+      "resource": "human_resource.workforce_plan_lines",
+      "action": "update",
+      "description": "Correct lines on draft workforce plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workforce_plans.cancel",
+      "resource": "human_resource.workforce_plans",
+      "action": "cancel",
+      "description": "Withdraw draft workforce plans or plans under review",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workforce_plans.create",
+      "resource": "human_resource.workforce_plans",
+      "action": "create",
+      "description": "Create draft workforce plans",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workforce_plans.delete",
+      "resource": "human_resource.workforce_plans",
+      "action": "delete",
+      "description": "Delete workforce plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workforce_plans.read",
+      "resource": "human_resource.workforce_plans",
+      "action": "read",
+      "description": "Read workforce plans within the assigned scope",
+      "is_sensitive": false
+    },
+    {
+      "code": "human_resource.workforce_plans.submit",
+      "resource": "human_resource.workforce_plans",
+      "action": "submit",
+      "description": "Submit workforce plans for review",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workforce_plans.supersede",
+      "resource": "human_resource.workforce_plans",
+      "action": "supersede",
+      "description": "Supersede workforce plans",
+      "is_sensitive": true
+    },
+    {
+      "code": "human_resource.workforce_plans.update",
+      "resource": "human_resource.workforce_plans",
+      "action": "update",
+      "description": "Correct draft workforce plans",
+      "is_sensitive": false
+    }
+  ],
+  "roles": []
+}

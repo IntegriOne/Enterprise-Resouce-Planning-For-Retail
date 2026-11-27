@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "management_domain": "iam",
+  "permissions": [
+    {
+      "code": "iam.dashboard.view",
+      "resource": "iam.dashboard",
+      "action": "view",
+      "description": "View IntegriOne Identity dashboard",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.users.read",
+      "resource": "iam.users",
+      "action": "read",
+      "description": "Read IAM user principals and identities",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.users.readself",
+      "resource": "iam.users",
+      "action": "readself",
+      "description": "Read own IAM user profile, identities, and assigned roles",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.users.write",
+      "resource": "iam.users",
+      "action": "write",
+      "description": "Create, update, suspend, or disable IAM users",
+      "is_sensitive": true
+    },
+    {
+      "code": "iam.users.updateself",
+      "resource": "iam.users",
+      "action": "updateself",
+      "description": "Update own IAM profile, email, username, password, and MFA factors",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.users.deleteself",
+      "resource": "iam.users",
+      "action": "deleteself",
+      "description": "Delete own unverified pending email address",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.roles.read",
+      "resource": "iam.roles",
+      "action": "read",
+      "description": "Read RBAC roles and assignments",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.roles.write",
+      "resource": "iam.roles",
+      "action": "write",
+      "description": "Create, edit, or assign RBAC roles",
+      "is_sensitive": true
+    },
+    {
+      "code": "iam.groups.read",
+      "resource": "iam.groups",
+      "action": "read",
+      "description": "Read IAM groups and memberships",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.groups.write",
+      "resource": "iam.groups",
+      "action": "write",
+      "description": "Manage IAM groups and role bindings",
+      "is_sensitive": true
+    },
+    {
+      "code": "iam.permissions.read",
+      "resource": "iam.permissions",
+      "action": "read",
+      "description": "Read IAM permission catalog",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.sessions.read",
+      "resource": "iam.sessions",
+      "action": "read",
+      "description": "Inspect active IAM sessions",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.sessions.readself",
+      "resource": "iam.sessions",
+      "action": "readself",
+      "description": "Inspect own active IAM sessions",
+      "is_sensitive": false
+    },
+    {
+      "code": "iam.sessions.revoke",
+      "resource": "iam.sessions",
+      "action": "revoke",
+      "description": "Revoke active IAM user sessions",
+      "is_sensitive": true
+    },
+    {
+      "code": "iam.sessions.deleteself",
+      "resource": "iam.sessions",
+      "action": "deleteself",
+      "description": "Revoke own active IAM sessions",
+      "is_sensitive": true
+    }
+  ],
+  "roles": [
+    {
+      "code": "superadmin",
+      "name": "Super Administrator",
+      "description": "IntegriOne full platform and IAM governance super administrator",
+      "management_domain": "iam",
+      "default_redirect_path": "/identity",
+      "redirect_priority": 1,
+      "is_system": true,
+      "permission_codes": [
+        "iam.dashboard.view",
+        "iam.users.read",
+        "iam.users.readself",
+        "iam.users.write",
+        "iam.users.updateself",
+        "iam.users.deleteself",
+        "iam.roles.read",
+        "iam.roles.write",
+        "iam.groups.read",
+        "iam.groups.write",
+        "iam.permissions.read",
+        "iam.sessions.read",
+        "iam.sessions.readself",
+        "iam.sessions.revoke",
+        "iam.sessions.deleteself",
+        "enterprise_foundation.addresses.read",
+        "enterprise_foundation.addresses.write",
+        "enterprise_foundation.legal_entities.read",
+        "enterprise_foundation.legal_entities.write",
+        "enterprise_foundation.locations.read",
+        "enterprise_foundation.locations.write",
+        "enterprise_foundation.organization_units.read",
+        "enterprise_foundation.organization_units.write",
+        "enterprise_foundation.parties.read",
+        "enterprise_foundation.parties.write"
+      ]
+    },
+    {
+      "code": "iam_operator",
+      "name": "IAM Operator",
+      "description": "Operates user onboarding, group assignments, and session revocations",
+      "management_domain": "iam",
+      "default_redirect_path": "/identity",
+      "redirect_priority": 10,
+      "is_system": true,
+      "permission_codes": [
+        "iam.dashboard.view",
+        "iam.users.read",
+        "iam.users.readself",
+        "iam.users.write",
+        "iam.users.updateself",
+        "iam.users.deleteself",
+        "iam.roles.read",
+        "iam.groups.read",
+        "iam.groups.write",
+        "iam.permissions.read",
+        "iam.sessions.read",
+        "iam.sessions.readself",
+        "iam.sessions.revoke",
+        "iam.sessions.deleteself"
+      ]
+    },
+    {
+      "code": "iam_readonly",
+      "name": "IAM Auditor Read-Only",
+      "description": "Read-only visibility into IAM principals, roles, and sessions",
+      "management_domain": "iam",
+      "default_redirect_path": "/identity",
+      "redirect_priority": 20,
+      "is_system": true,
+      "permission_codes": [
+        "iam.dashboard.view",
+        "iam.users.read",
+        "iam.users.readself",
+        "iam.roles.read",
+        "iam.groups.read",
+        "iam.permissions.read",
+        "iam.sessions.read",
+        "iam.sessions.readself"
+      ]
+    },
+    {
+      "code": "customer",
+      "name": "Web Commerce Customer",
+      "description": "Default authenticated storefront customer role",
+      "management_domain": "commerce",
+      "default_redirect_path": "/",
+      "redirect_priority": 100,
+      "is_system": true,
+      "permission_codes": [
+        "iam.users.readself",
+        "iam.users.updateself",
+        "iam.users.deleteself",
+        "iam.sessions.readself",
+        "iam.sessions.deleteself"
+      ]
+    },
+    {
+      "code": "iam_selfservice",
+      "name": "IAM Account Self-Service",
+      "description": "Default self-scoped profile, security, and session controls for internal and partner accounts",
+      "management_domain": "iam",
+      "default_redirect_path": "",
+      "redirect_priority": 999,
+      "is_system": true,
+      "permission_codes": [
+        "iam.users.readself",
+        "iam.users.updateself",
+        "iam.users.deleteself",
+        "iam.sessions.readself",
+        "iam.sessions.deleteself"
+      ]
+    },
+    {
+      "code": "iam_automation",
+      "name": "IAM Service Automation",
+      "description": "Non-interactive service automation role strictly scoped to IAM runtime operations",
+      "management_domain": "iam",
+      "default_redirect_path": "",
+      "redirect_priority": 999,
+      "is_system": true,
+      "permission_codes": [
+        "iam.users.read",
+        "iam.users.write",
+        "iam.roles.read",
+        "iam.groups.read",
+        "iam.permissions.read",
+        "iam.sessions.read",
+        "iam.sessions.revoke"
+      ]
+    }
+  ]
+}
