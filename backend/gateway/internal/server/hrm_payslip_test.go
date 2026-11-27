@@ -333,6 +333,67 @@ func TestHRMPayrollReviewThroughGateway(t *testing.T) {
 	}
 }
 
+func (hrmPayrollServer) FreezePayrollInput(_ context.Context, req *payroll.FreezePayrollInputRequest) (*payroll.FreezePayrollInputResponse, error) {
+	if req.GetPayrollPeriodId() != fixturePeriodID {
+		return nil, status.Error(codes.FailedPrecondition, "payroll period cannot be frozen")
+	}
+	return &payroll.FreezePayrollInputResponse{
+		Item: &payroll.PayrollInputSnapshotMetadata{
+			Id:                              hrmFixtureID,
+			PayrollPeriodId:                 req.GetPayrollPeriodId(),
+			PayrollGroupId:                  hrmFixtureID,
+			EmployingLegalEntityReferenceId: hrmFixtureID,
+			JurisdictionCode:                "ID",
+			CurrencyCode:                    "IDR",
+			Digest:                          bytes.Repeat([]byte{0xab}, 32),
+			FrozenAt:                        fixturePayslip().PublishedAt,
+		},
+	}, nil
+}
+
+func TestHRMFreezePayrollInputThroughGateway(t *testing.T) {
+	conn := newHRMPayrollFixture(t)
+	const validIdem = "99999999-9999-4999-8999-999999999999"
+	for _, tc := range []struct {
+		name       string
+		periodID   string
+		idemKey    string
+		permission string
+		mfa        bool
+		withCSRF   bool
+		want       string
+	}{
+		{"success", fixturePeriodID, validIdem, "human_resource.payroll_runs.create", true, true, `"was_successful":true`},
+		{"closed or empty period", hrmFixtureID, validIdem, "human_resource.payroll_runs.create", true, true, `"type":"CONFLICT"`},
+		{"invalid idempotency key", fixturePeriodID, "not-a-uuid", "human_resource.payroll_runs.create", true, true, `"type":"ARGUMENT"`},
+		{"missing permission", fixturePeriodID, validIdem, "human_resource.payroll_runs.read", true, true, `"type":"AUTHORIZATION"`},
+		{"missing mfa", fixturePeriodID, validIdem, "human_resource.payroll_runs.create", false, true, `"type":"AUTHORIZATION"`},
+		{"missing csrf", fixturePeriodID, validIdem, "human_resource.payroll_runs.create", true, false, `"FORBIDDEN"`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			srv, store, token, csrf := buildTestGatewayServerWithHRM(t, nil, false, conn)
+			session := store.sessions[authsession.HashOpaqueToken(token)]
+			session.Token.MFAAuthenticated = tc.mfa
+			session.Snapshot.Permissions = append(session.Snapshot.Permissions, authz.PermissionGrant{
+				Code: tc.permission, Scope: authz.ScopeGrant{Type: authz.ScopeGlobal},
+			})
+			query := `mutation ($input: FreezePayrollInputInput!) { freezePayrollInput(input: $input) { was_successful errors { type } frozen_payroll_input { input_snapshot_reference_id payroll_period_id payroll_group_id employing_legal_entity_reference_id jurisdiction_code currency_code input_digest_sha256 frozen_at } } }`
+			request := map[string]any{"query": query, "variables": map[string]any{"input": map[string]any{
+				"payroll_period_id": tc.periodID, "idempotency_key": tc.idemKey,
+			}}}
+			headers := map[string]string{"Origin": "https://erp.localhost:8443"}
+			if tc.withCSRF {
+				headers[browserauth.CSRFHeaderName] = csrf
+			}
+			cookies := []*http.Cookie{{Name: config.SessionCookieName, Value: token}}
+			body := readBody(t, doGraphQLPOST(t, srv, request, headers, cookies))
+			if !strings.Contains(body, tc.want) {
+				t.Fatalf("expected %s, got %s", tc.want, body)
+			}
+		})
+	}
+}
+
 func (hrmPayrollServer) CreatePayrollRun(_ context.Context, req *payroll.CreatePayrollRunRequest) (*payroll.PayrollRunResponse, error) {
 	input := req.GetInput()
 	if input.GetIdempotencyKey() == "duplicate" {

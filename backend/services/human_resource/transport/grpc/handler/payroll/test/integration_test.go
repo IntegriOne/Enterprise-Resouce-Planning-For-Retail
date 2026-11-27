@@ -30,6 +30,7 @@ import (
 	operation "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/operation"
 	service "github.com/integrione/erp-retail/backend/services/human_resource/internal/service/payroll"
 	"github.com/integrione/erp-retail/backend/services/human_resource/repository"
+	payrollrepo "github.com/integrione/erp-retail/backend/services/human_resource/repository/payroll"
 	handler "github.com/integrione/erp-retail/backend/services/human_resource/transport/grpc/handler/payroll"
 	"github.com/integrione/erp-retail/backend/shared/authcontext"
 	"google.golang.org/grpc"
@@ -402,6 +403,13 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 	for k, v := range payrollVals {
 		validators[k] = v
 	}
+	snapshotStore, err := payrollrepo.NewInputSnapshotRepository(database)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := security.AttachPayrollInputSnapshotReader(validators, snapshotStore); err != nil {
+		t.Fatal(err)
+	}
 
 	starterID := "00000000-0000-4000-8000-000000000021"
 	approverID := "00000000-0000-4000-8000-000000000022"
@@ -449,6 +457,7 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 			return verifyPosting(ctx, check)
 		}),
 		Calculator:         verifiedCalculator,
+		InputSnapshots:     snapshotStore,
 		PayslipPublication: publication,
 		PayslipReissue:     payslipVerifier,
 		Workers:            repos.Worker, PayslipVerifier: payslipVerifier,
@@ -509,7 +518,7 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 	}
 	secondResultLineID, _ := ids.NewID()
 	var secondProfileID, fixtureResultID, fixtureLineID, replacementResultID, replacementLineID string
-	var groupID, compID, periodID, profileID, adjID, draftRunID, calcRunID, replacementRunID string
+	var groupID, compID, periodID, profileID, adjID, draftRunID, calcRunID, replacementRunID, frozenRunID, frozenSnapID string
 
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -520,6 +529,7 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 				"ALTER TABLE hr_payroll_results DISABLE TRIGGER tr_hr_payroll_result_guard",
 				"ALTER TABLE hr_payroll_runs DISABLE TRIGGER tr_hr_payroll_run_guard",
 				"ALTER TABLE hr_payroll_rule_sets DISABLE TRIGGER tr_hr_payroll_rule_immutable",
+				"ALTER TABLE hr_payroll_input_snapshots DISABLE TRIGGER tr_hr_payroll_input_snapshot_immutable",
 			} {
 				if err := tx.Exec(ddl).Error; err != nil {
 					return err
@@ -538,9 +548,11 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 				{"DELETE FROM hr_payroll_results WHERE id = ?", resultID},
 				{"DELETE FROM hr_payroll_results WHERE id = ?", secondResultID},
 				{"DELETE FROM hr_payroll_adjustments WHERE id = ?", adjID},
+				{"DELETE FROM hr_payroll_runs WHERE id = ?", frozenRunID},
 				{"DELETE FROM hr_payroll_runs WHERE id = ?", replacementRunID},
 				{"DELETE FROM hr_payroll_runs WHERE id = ?", calcRunID},
 				{"DELETE FROM hr_payroll_runs WHERE id = ?", draftRunID},
+				{"DELETE FROM hr_payroll_input_snapshots WHERE id = ?", frozenSnapID},
 				{"DELETE FROM hr_payroll_profiles WHERE id = ?", profileID},
 				{"DELETE FROM hr_payroll_profiles WHERE id = ?", secondProfileID},
 				{"DELETE FROM hr_payroll_periods WHERE id = ?", periodID},
@@ -558,7 +570,7 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 					}
 				}
 			}
-			for _, agg := range []string{adjID, calcRunID, draftRunID, replacementRunID, profileID, secondProfileID, periodID, compID, groupID} {
+			for _, agg := range []string{adjID, calcRunID, draftRunID, replacementRunID, frozenRunID, profileID, secondProfileID, periodID, compID, groupID} {
 				if agg != "" {
 					if err := tx.Exec("DELETE FROM hr_outbox_events WHERE aggregate_id = ?", agg).Error; err != nil {
 						return err
@@ -570,6 +582,7 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 				"ALTER TABLE hr_payroll_results ENABLE TRIGGER tr_hr_payroll_result_guard",
 				"ALTER TABLE hr_payroll_runs ENABLE TRIGGER tr_hr_payroll_run_guard",
 				"ALTER TABLE hr_payroll_rule_sets ENABLE TRIGGER tr_hr_payroll_rule_immutable",
+				"ALTER TABLE hr_payroll_input_snapshots ENABLE TRIGGER tr_hr_payroll_input_snapshot_immutable",
 			} {
 				if err := tx.Exec(ddl).Error; err != nil {
 					return err
@@ -1724,4 +1737,67 @@ func TestPayrollRPCAndApprovalWithPostgreSQL(t *testing.T) {
 		t.Fatalf("simultaneous payroll decisions emitted %d events: %v", outboxCount, err)
 	}
 
+	// Uji FreezePayrollInput end-to-end: invalid arg, idempoten berurutan/paralel, periode kosong, dan validasi CreatePayrollRun.
+	policy.setPrincipal(starterID)
+	freezeIdemKey, err := ids.NewID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.FreezePayrollInput(ctx, &pb.FreezePayrollInputRequest{PayrollPeriodId: "bad", IdempotencyKey: freezeIdemKey}); status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("freeze invalid period = %v, want InvalidArgument", status.Code(err))
+	}
+	if _, err := client.FreezePayrollInput(ctx, &pb.FreezePayrollInputRequest{PayrollPeriodId: legalID, IdempotencyKey: freezeIdemKey}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("freeze missing period = %v, want FailedPrecondition", status.Code(err))
+	}
+	freezeReq := &pb.FreezePayrollInputRequest{PayrollPeriodId: periodID, IdempotencyKey: freezeIdemKey}
+	freezeStart := make(chan struct{})
+	freezeResults := make(chan *pb.FreezePayrollInputResponse, 2)
+	freezeErrs := make(chan error, 2)
+	for range 2 {
+		go func() {
+			<-freezeStart
+			res, err := client.FreezePayrollInput(ctx, freezeReq)
+			freezeErrs <- err
+			freezeResults <- res
+		}()
+	}
+	close(freezeStart)
+	var frozenMeta *pb.PayrollInputSnapshotMetadata
+	for range 2 {
+		if err := <-freezeErrs; err != nil {
+			t.Fatalf("parallel FreezePayrollInput error: %v", err)
+		}
+		res := <-freezeResults
+		if frozenMeta == nil {
+			frozenMeta = res.GetItem()
+		} else if res.GetItem().GetId() != frozenMeta.GetId() || !bytes.Equal(res.GetItem().GetDigest(), frozenMeta.GetDigest()) {
+			t.Fatalf("parallel replay returned different snapshot: %+v vs %+v", res.GetItem(), frozenMeta)
+		}
+	}
+	if frozenMeta == nil || frozenMeta.GetPayrollPeriodId() != periodID || frozenMeta.GetPayrollGroupId() != groupID ||
+		frozenMeta.GetEmployingLegalEntityReferenceId() != legalID || len(frozenMeta.GetDigest()) != sha256.Size || frozenMeta.GetFrozenAt() == nil {
+		t.Fatalf("unexpected frozen metadata: %+v", frozenMeta)
+	}
+	frozenSnapID = frozenMeta.GetId()
+	var snapCount int64
+	if err := database.WithContext(ctx).Table("hr_payroll_input_snapshots").Where("id = ?", frozenMeta.GetId()).Count(&snapCount).Error; err != nil || snapCount != 1 {
+		t.Fatalf("expected 1 snapshot row, got %d (%v)", snapCount, err)
+	}
+	badDraft := proto.CloneOf(draftInput)
+	badDraft.RunNumber = new(int32(4))
+	badDraft.IdempotencyKey = text("frozen-bad-digest-" + periodID)
+	badSnapID := frozenMeta.GetId()
+	badDraft.InputSnapshotReferenceId = &badSnapID
+	badDraft.InputDigest = bytes.Repeat([]byte{0x99}, 32)
+	if _, err := client.CreatePayrollRun(ctx, &pb.CreatePayrollRunRequest{Input: badDraft}); status.Code(err) != codes.FailedPrecondition {
+		t.Fatalf("CreatePayrollRun with mismatched frozen digest = %v, want FailedPrecondition", status.Code(err))
+	}
+	goodDraft := proto.CloneOf(badDraft)
+	goodDraft.IdempotencyKey = text("frozen-good-" + periodID)
+	goodDraft.InputDigest = frozenMeta.GetDigest()
+	goodRun, err := client.CreatePayrollRun(ctx, &pb.CreatePayrollRunRequest{Input: goodDraft})
+	if err != nil || goodRun.GetItem().GetStatus() != "draft" || goodRun.GetItem().GetInputSnapshotReferenceId() != badSnapID {
+		t.Fatalf("CreatePayrollRun from frozen snapshot failed: %+v, err=%v", goodRun, err)
+	}
+	frozenRunID = goodRun.GetItem().GetId()
 }

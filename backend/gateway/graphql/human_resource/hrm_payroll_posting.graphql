@@ -96,6 +96,28 @@ input CreatePayrollRunInput {
   idempotency_key: String!
 }
 
+type FrozenPayrollInput {
+  input_snapshot_reference_id: ID!
+  payroll_period_id: ID!
+  payroll_group_id: ID!
+  employing_legal_entity_reference_id: ID!
+  jurisdiction_code: String!
+  currency_code: String!
+  input_digest_sha256: String!
+  frozen_at: Time!
+}
+
+input FreezePayrollInputInput {
+  payroll_period_id: ID!
+  idempotency_key: String!
+}
+
+type FreezePayrollInputPayload implements MutationResult {
+  frozen_payroll_input: FrozenPayrollInput
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
 type CreatePayrollRunPayload implements MutationResult {
   payroll_run: PayrollRun
   was_successful: Boolean!
@@ -103,6 +125,7 @@ type CreatePayrollRunPayload implements MutationResult {
 }
 
 extend type Mutation {
+  freezePayrollInput(input: FreezePayrollInputInput!): FreezePayrollInputPayload!
   createPayrollRun(input: CreatePayrollRunInput!): CreatePayrollRunPayload!
 }
 

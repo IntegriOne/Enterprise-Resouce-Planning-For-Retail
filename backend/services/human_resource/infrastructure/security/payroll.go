@@ -1,7 +1,9 @@
 package security
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"reflect"
 	"strings"
 	"time"
@@ -88,12 +90,31 @@ type payrollProfileValidator struct {
 }
 
 type payrollRunValidator struct {
-	periods    payrollPeriodStore
-	groups     payrollGroupStore
-	ruleSets   payrollRuleSetReader
-	runs       payrollRunStore
-	results    payrollResultCounter
-	foundation PayrollFoundationVerifier
+	periods        payrollPeriodStore
+	groups         payrollGroupStore
+	ruleSets       payrollRuleSetReader
+	runs           payrollRunStore
+	results        payrollResultCounter
+	foundation     PayrollFoundationVerifier
+	inputSnapshots PayrollInputSnapshotMetadataReader
+}
+
+// PayrollInputSnapshotMetadataReader membaca metadata snapshot input HRM tanpa memuat isi payroll.
+type PayrollInputSnapshotMetadataReader interface {
+	SelectMetadata(ctx context.Context, id string) (entity.PayrollInputSnapshot, error)
+}
+
+// AttachPayrollInputSnapshotReader memasang pembaca metadata snapshot pada validator payroll run.
+func AttachPayrollInputSnapshotReader(validators map[string]MutationValidator, reader PayrollInputSnapshotMetadataReader) error {
+	if validators == nil || operation.RequireDependency(reader) != nil {
+		return hrerrors.ErrUnavailable
+	}
+	validator, ok := validators["hr_payroll_runs"].(*payrollRunValidator)
+	if !ok || validator == nil {
+		return hrerrors.ErrUnavailable
+	}
+	validator.inputSnapshots = reader
+	return nil
 }
 
 type payrollAdjustmentValidator struct {
@@ -585,6 +606,22 @@ func (v *payrollRunValidator) ValidateMutation(ctx context.Context, table string
 	}
 	if previous == nil && (ruleSet.ApprovedAt.IsZero() || ruleSet.ApprovedAt.After(run.CreatedAt)) {
 		return hrerrors.ErrReferenceConflict
+	}
+	if v.inputSnapshots != nil {
+		snapshot, err := v.inputSnapshots.SelectMetadata(ctx, run.InputSnapshotReferenceID)
+		if err == nil {
+			// Cocokkan periode, grup, badan hukum, yurisdiksi, mata uang, dan digest bila snapshot berasal dari HRM.
+			if !strings.EqualFold(snapshot.PeriodID, run.PayrollPeriodID) ||
+				!strings.EqualFold(snapshot.GroupID, run.PayrollGroupID) ||
+				!strings.EqualFold(snapshot.EmployerID, run.EmployingLegalEntityReferenceID) ||
+				snapshot.JurisdictionCode != run.JurisdictionCode ||
+				snapshot.CurrencyCode != run.CurrencyCode ||
+				!bytes.Equal(snapshot.Digest, run.InputDigest) {
+				return hrerrors.ErrReferenceConflict
+			}
+		} else if !errors.Is(err, hrerrors.ErrNotFound) {
+			return err
+		}
 	}
 	if run.OriginalRunID != nil {
 		origin, err := v.runs.FindByIDForUpdate(ctx, *run.OriginalRunID)

@@ -2244,6 +2244,202 @@ func (x *PayrollRunsResponse) GetPage() *v1.PageInfo {
 	return nil
 }
 
+type FreezePayrollInputRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	PayrollPeriodId string                 `protobuf:"bytes,1,opt,name=payroll_period_id,json=payrollPeriodId,proto3" json:"payroll_period_id,omitempty"`
+	IdempotencyKey  string                 `protobuf:"bytes,2,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *FreezePayrollInputRequest) Reset() {
+	*x = FreezePayrollInputRequest{}
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FreezePayrollInputRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FreezePayrollInputRequest) ProtoMessage() {}
+
+func (x *FreezePayrollInputRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FreezePayrollInputRequest.ProtoReflect.Descriptor instead.
+func (*FreezePayrollInputRequest) Descriptor() ([]byte, []int) {
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *FreezePayrollInputRequest) GetPayrollPeriodId() string {
+	if x != nil {
+		return x.PayrollPeriodId
+	}
+	return ""
+}
+
+func (x *FreezePayrollInputRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+type PayrollInputSnapshotMetadata struct {
+	state                           protoimpl.MessageState `protogen:"open.v1"`
+	Id                              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PayrollPeriodId                 string                 `protobuf:"bytes,2,opt,name=payroll_period_id,json=payrollPeriodId,proto3" json:"payroll_period_id,omitempty"`
+	PayrollGroupId                  string                 `protobuf:"bytes,3,opt,name=payroll_group_id,json=payrollGroupId,proto3" json:"payroll_group_id,omitempty"`
+	EmployingLegalEntityReferenceId string                 `protobuf:"bytes,4,opt,name=employing_legal_entity_reference_id,json=employingLegalEntityReferenceId,proto3" json:"employing_legal_entity_reference_id,omitempty"`
+	JurisdictionCode                string                 `protobuf:"bytes,5,opt,name=jurisdiction_code,json=jurisdictionCode,proto3" json:"jurisdiction_code,omitempty"`
+	CurrencyCode                    string                 `protobuf:"bytes,6,opt,name=currency_code,json=currencyCode,proto3" json:"currency_code,omitempty"`
+	Digest                          []byte                 `protobuf:"bytes,7,opt,name=digest,proto3" json:"digest,omitempty"`
+	FrozenAt                        *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=frozen_at,json=frozenAt,proto3" json:"frozen_at,omitempty"`
+	unknownFields                   protoimpl.UnknownFields
+	sizeCache                       protoimpl.SizeCache
+}
+
+func (x *PayrollInputSnapshotMetadata) Reset() {
+	*x = PayrollInputSnapshotMetadata{}
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PayrollInputSnapshotMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PayrollInputSnapshotMetadata) ProtoMessage() {}
+
+func (x *PayrollInputSnapshotMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PayrollInputSnapshotMetadata.ProtoReflect.Descriptor instead.
+func (*PayrollInputSnapshotMetadata) Descriptor() ([]byte, []int) {
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *PayrollInputSnapshotMetadata) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PayrollInputSnapshotMetadata) GetPayrollPeriodId() string {
+	if x != nil {
+		return x.PayrollPeriodId
+	}
+	return ""
+}
+
+func (x *PayrollInputSnapshotMetadata) GetPayrollGroupId() string {
+	if x != nil {
+		return x.PayrollGroupId
+	}
+	return ""
+}
+
+func (x *PayrollInputSnapshotMetadata) GetEmployingLegalEntityReferenceId() string {
+	if x != nil {
+		return x.EmployingLegalEntityReferenceId
+	}
+	return ""
+}
+
+func (x *PayrollInputSnapshotMetadata) GetJurisdictionCode() string {
+	if x != nil {
+		return x.JurisdictionCode
+	}
+	return ""
+}
+
+func (x *PayrollInputSnapshotMetadata) GetCurrencyCode() string {
+	if x != nil {
+		return x.CurrencyCode
+	}
+	return ""
+}
+
+func (x *PayrollInputSnapshotMetadata) GetDigest() []byte {
+	if x != nil {
+		return x.Digest
+	}
+	return nil
+}
+
+func (x *PayrollInputSnapshotMetadata) GetFrozenAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.FrozenAt
+	}
+	return nil
+}
+
+type FreezePayrollInputResponse struct {
+	state         protoimpl.MessageState        `protogen:"open.v1"`
+	Item          *PayrollInputSnapshotMetadata `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FreezePayrollInputResponse) Reset() {
+	*x = FreezePayrollInputResponse{}
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FreezePayrollInputResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FreezePayrollInputResponse) ProtoMessage() {}
+
+func (x *FreezePayrollInputResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FreezePayrollInputResponse.ProtoReflect.Descriptor instead.
+func (*FreezePayrollInputResponse) Descriptor() ([]byte, []int) {
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *FreezePayrollInputResponse) GetItem() *PayrollInputSnapshotMetadata {
+	if x != nil {
+		return x.Item
+	}
+	return nil
+}
+
 type PayrollResult struct {
 	state                      protoimpl.MessageState `protogen:"open.v1"`
 	Id                         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -2268,7 +2464,7 @@ type PayrollResult struct {
 
 func (x *PayrollResult) Reset() {
 	*x = PayrollResult{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[25]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2280,7 +2476,7 @@ func (x *PayrollResult) String() string {
 func (*PayrollResult) ProtoMessage() {}
 
 func (x *PayrollResult) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[25]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2293,7 +2489,7 @@ func (x *PayrollResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResult.ProtoReflect.Descriptor instead.
 func (*PayrollResult) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{25}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *PayrollResult) GetId() string {
@@ -2430,7 +2626,7 @@ type PayrollResultInput struct {
 
 func (x *PayrollResultInput) Reset() {
 	*x = PayrollResultInput{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[26]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2442,7 +2638,7 @@ func (x *PayrollResultInput) String() string {
 func (*PayrollResultInput) ProtoMessage() {}
 
 func (x *PayrollResultInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[26]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2455,7 +2651,7 @@ func (x *PayrollResultInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResultInput.ProtoReflect.Descriptor instead.
 func (*PayrollResultInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{26}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *PayrollResultInput) GetPayrollRunId() string {
@@ -2565,7 +2761,7 @@ type CreatePayrollResultRequest struct {
 
 func (x *CreatePayrollResultRequest) Reset() {
 	*x = CreatePayrollResultRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[27]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2577,7 +2773,7 @@ func (x *CreatePayrollResultRequest) String() string {
 func (*CreatePayrollResultRequest) ProtoMessage() {}
 
 func (x *CreatePayrollResultRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[27]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2590,7 +2786,7 @@ func (x *CreatePayrollResultRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePayrollResultRequest.ProtoReflect.Descriptor instead.
 func (*CreatePayrollResultRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{27}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *CreatePayrollResultRequest) GetInput() *PayrollResultInput {
@@ -2611,7 +2807,7 @@ type UpdatePayrollResultRequest struct {
 
 func (x *UpdatePayrollResultRequest) Reset() {
 	*x = UpdatePayrollResultRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[28]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2623,7 +2819,7 @@ func (x *UpdatePayrollResultRequest) String() string {
 func (*UpdatePayrollResultRequest) ProtoMessage() {}
 
 func (x *UpdatePayrollResultRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[28]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2636,7 +2832,7 @@ func (x *UpdatePayrollResultRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePayrollResultRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePayrollResultRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{28}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *UpdatePayrollResultRequest) GetId() string {
@@ -2669,7 +2865,7 @@ type PayrollResultResponse struct {
 
 func (x *PayrollResultResponse) Reset() {
 	*x = PayrollResultResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[29]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2681,7 +2877,7 @@ func (x *PayrollResultResponse) String() string {
 func (*PayrollResultResponse) ProtoMessage() {}
 
 func (x *PayrollResultResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[29]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2694,7 +2890,7 @@ func (x *PayrollResultResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResultResponse.ProtoReflect.Descriptor instead.
 func (*PayrollResultResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{29}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *PayrollResultResponse) GetItem() *PayrollResult {
@@ -2714,7 +2910,7 @@ type PayrollResultsResponse struct {
 
 func (x *PayrollResultsResponse) Reset() {
 	*x = PayrollResultsResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[30]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2726,7 +2922,7 @@ func (x *PayrollResultsResponse) String() string {
 func (*PayrollResultsResponse) ProtoMessage() {}
 
 func (x *PayrollResultsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[30]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2739,7 +2935,7 @@ func (x *PayrollResultsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResultsResponse.ProtoReflect.Descriptor instead.
 func (*PayrollResultsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{30}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *PayrollResultsResponse) GetItems() []*PayrollResult {
@@ -2776,7 +2972,7 @@ type PayrollResultLine struct {
 
 func (x *PayrollResultLine) Reset() {
 	*x = PayrollResultLine{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[31]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2788,7 +2984,7 @@ func (x *PayrollResultLine) String() string {
 func (*PayrollResultLine) ProtoMessage() {}
 
 func (x *PayrollResultLine) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[31]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2801,7 +2997,7 @@ func (x *PayrollResultLine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResultLine.ProtoReflect.Descriptor instead.
 func (*PayrollResultLine) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{31}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *PayrollResultLine) GetId() string {
@@ -2907,7 +3103,7 @@ type PayrollResultLineInput struct {
 
 func (x *PayrollResultLineInput) Reset() {
 	*x = PayrollResultLineInput{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[32]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2919,7 +3115,7 @@ func (x *PayrollResultLineInput) String() string {
 func (*PayrollResultLineInput) ProtoMessage() {}
 
 func (x *PayrollResultLineInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[32]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2932,7 +3128,7 @@ func (x *PayrollResultLineInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResultLineInput.ProtoReflect.Descriptor instead.
 func (*PayrollResultLineInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{32}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *PayrollResultLineInput) GetPayrollResultId() string {
@@ -3021,7 +3217,7 @@ type CreatePayrollResultLineRequest struct {
 
 func (x *CreatePayrollResultLineRequest) Reset() {
 	*x = CreatePayrollResultLineRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[33]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3033,7 +3229,7 @@ func (x *CreatePayrollResultLineRequest) String() string {
 func (*CreatePayrollResultLineRequest) ProtoMessage() {}
 
 func (x *CreatePayrollResultLineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[33]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3046,7 +3242,7 @@ func (x *CreatePayrollResultLineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePayrollResultLineRequest.ProtoReflect.Descriptor instead.
 func (*CreatePayrollResultLineRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{33}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *CreatePayrollResultLineRequest) GetInput() *PayrollResultLineInput {
@@ -3067,7 +3263,7 @@ type UpdatePayrollResultLineRequest struct {
 
 func (x *UpdatePayrollResultLineRequest) Reset() {
 	*x = UpdatePayrollResultLineRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[34]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3079,7 +3275,7 @@ func (x *UpdatePayrollResultLineRequest) String() string {
 func (*UpdatePayrollResultLineRequest) ProtoMessage() {}
 
 func (x *UpdatePayrollResultLineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[34]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3092,7 +3288,7 @@ func (x *UpdatePayrollResultLineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePayrollResultLineRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePayrollResultLineRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{34}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *UpdatePayrollResultLineRequest) GetId() string {
@@ -3125,7 +3321,7 @@ type PayrollResultLineResponse struct {
 
 func (x *PayrollResultLineResponse) Reset() {
 	*x = PayrollResultLineResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[35]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3137,7 +3333,7 @@ func (x *PayrollResultLineResponse) String() string {
 func (*PayrollResultLineResponse) ProtoMessage() {}
 
 func (x *PayrollResultLineResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[35]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3150,7 +3346,7 @@ func (x *PayrollResultLineResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResultLineResponse.ProtoReflect.Descriptor instead.
 func (*PayrollResultLineResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{35}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *PayrollResultLineResponse) GetItem() *PayrollResultLine {
@@ -3170,7 +3366,7 @@ type PayrollResultLinesResponse struct {
 
 func (x *PayrollResultLinesResponse) Reset() {
 	*x = PayrollResultLinesResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[36]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3182,7 +3378,7 @@ func (x *PayrollResultLinesResponse) String() string {
 func (*PayrollResultLinesResponse) ProtoMessage() {}
 
 func (x *PayrollResultLinesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[36]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3195,7 +3391,7 @@ func (x *PayrollResultLinesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollResultLinesResponse.ProtoReflect.Descriptor instead.
 func (*PayrollResultLinesResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{36}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *PayrollResultLinesResponse) GetItems() []*PayrollResultLine {
@@ -3234,7 +3430,7 @@ type PayrollAdjustment struct {
 
 func (x *PayrollAdjustment) Reset() {
 	*x = PayrollAdjustment{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[37]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3246,7 +3442,7 @@ func (x *PayrollAdjustment) String() string {
 func (*PayrollAdjustment) ProtoMessage() {}
 
 func (x *PayrollAdjustment) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[37]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3259,7 +3455,7 @@ func (x *PayrollAdjustment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollAdjustment.ProtoReflect.Descriptor instead.
 func (*PayrollAdjustment) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{37}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *PayrollAdjustment) GetId() string {
@@ -3379,7 +3575,7 @@ type PayrollAdjustmentInput struct {
 
 func (x *PayrollAdjustmentInput) Reset() {
 	*x = PayrollAdjustmentInput{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[38]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3391,7 +3587,7 @@ func (x *PayrollAdjustmentInput) String() string {
 func (*PayrollAdjustmentInput) ProtoMessage() {}
 
 func (x *PayrollAdjustmentInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[38]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3404,7 +3600,7 @@ func (x *PayrollAdjustmentInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollAdjustmentInput.ProtoReflect.Descriptor instead.
 func (*PayrollAdjustmentInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{38}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *PayrollAdjustmentInput) GetWorkerId() string {
@@ -3493,7 +3689,7 @@ type CreatePayrollAdjustmentRequest struct {
 
 func (x *CreatePayrollAdjustmentRequest) Reset() {
 	*x = CreatePayrollAdjustmentRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[39]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3505,7 +3701,7 @@ func (x *CreatePayrollAdjustmentRequest) String() string {
 func (*CreatePayrollAdjustmentRequest) ProtoMessage() {}
 
 func (x *CreatePayrollAdjustmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[39]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3518,7 +3714,7 @@ func (x *CreatePayrollAdjustmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePayrollAdjustmentRequest.ProtoReflect.Descriptor instead.
 func (*CreatePayrollAdjustmentRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{39}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *CreatePayrollAdjustmentRequest) GetInput() *PayrollAdjustmentInput {
@@ -3539,7 +3735,7 @@ type UpdatePayrollAdjustmentRequest struct {
 
 func (x *UpdatePayrollAdjustmentRequest) Reset() {
 	*x = UpdatePayrollAdjustmentRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[40]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3551,7 +3747,7 @@ func (x *UpdatePayrollAdjustmentRequest) String() string {
 func (*UpdatePayrollAdjustmentRequest) ProtoMessage() {}
 
 func (x *UpdatePayrollAdjustmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[40]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3564,7 +3760,7 @@ func (x *UpdatePayrollAdjustmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePayrollAdjustmentRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePayrollAdjustmentRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{40}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *UpdatePayrollAdjustmentRequest) GetId() string {
@@ -3597,7 +3793,7 @@ type PayrollAdjustmentResponse struct {
 
 func (x *PayrollAdjustmentResponse) Reset() {
 	*x = PayrollAdjustmentResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[41]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3609,7 +3805,7 @@ func (x *PayrollAdjustmentResponse) String() string {
 func (*PayrollAdjustmentResponse) ProtoMessage() {}
 
 func (x *PayrollAdjustmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[41]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3622,7 +3818,7 @@ func (x *PayrollAdjustmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollAdjustmentResponse.ProtoReflect.Descriptor instead.
 func (*PayrollAdjustmentResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{41}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *PayrollAdjustmentResponse) GetItem() *PayrollAdjustment {
@@ -3642,7 +3838,7 @@ type PayrollAdjustmentsResponse struct {
 
 func (x *PayrollAdjustmentsResponse) Reset() {
 	*x = PayrollAdjustmentsResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[42]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3654,7 +3850,7 @@ func (x *PayrollAdjustmentsResponse) String() string {
 func (*PayrollAdjustmentsResponse) ProtoMessage() {}
 
 func (x *PayrollAdjustmentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[42]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3667,7 +3863,7 @@ func (x *PayrollAdjustmentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollAdjustmentsResponse.ProtoReflect.Descriptor instead.
 func (*PayrollAdjustmentsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{42}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *PayrollAdjustmentsResponse) GetItems() []*PayrollAdjustment {
@@ -3702,7 +3898,7 @@ type PayrollGroup struct {
 
 func (x *PayrollGroup) Reset() {
 	*x = PayrollGroup{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[43]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3714,7 +3910,7 @@ func (x *PayrollGroup) String() string {
 func (*PayrollGroup) ProtoMessage() {}
 
 func (x *PayrollGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[43]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3727,7 +3923,7 @@ func (x *PayrollGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollGroup.ProtoReflect.Descriptor instead.
 func (*PayrollGroup) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{43}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *PayrollGroup) GetId() string {
@@ -3817,7 +4013,7 @@ type PayrollGroupInput struct {
 
 func (x *PayrollGroupInput) Reset() {
 	*x = PayrollGroupInput{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[44]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3829,7 +4025,7 @@ func (x *PayrollGroupInput) String() string {
 func (*PayrollGroupInput) ProtoMessage() {}
 
 func (x *PayrollGroupInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[44]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3842,7 +4038,7 @@ func (x *PayrollGroupInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollGroupInput.ProtoReflect.Descriptor instead.
 func (*PayrollGroupInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{44}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *PayrollGroupInput) GetGroupCode() string {
@@ -3917,7 +4113,7 @@ type CreatePayrollGroupRequest struct {
 
 func (x *CreatePayrollGroupRequest) Reset() {
 	*x = CreatePayrollGroupRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[45]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3929,7 +4125,7 @@ func (x *CreatePayrollGroupRequest) String() string {
 func (*CreatePayrollGroupRequest) ProtoMessage() {}
 
 func (x *CreatePayrollGroupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[45]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3942,7 +4138,7 @@ func (x *CreatePayrollGroupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePayrollGroupRequest.ProtoReflect.Descriptor instead.
 func (*CreatePayrollGroupRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{45}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *CreatePayrollGroupRequest) GetInput() *PayrollGroupInput {
@@ -3963,7 +4159,7 @@ type UpdatePayrollGroupRequest struct {
 
 func (x *UpdatePayrollGroupRequest) Reset() {
 	*x = UpdatePayrollGroupRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[46]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3975,7 +4171,7 @@ func (x *UpdatePayrollGroupRequest) String() string {
 func (*UpdatePayrollGroupRequest) ProtoMessage() {}
 
 func (x *UpdatePayrollGroupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[46]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3988,7 +4184,7 @@ func (x *UpdatePayrollGroupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePayrollGroupRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePayrollGroupRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{46}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *UpdatePayrollGroupRequest) GetId() string {
@@ -4021,7 +4217,7 @@ type PayrollGroupResponse struct {
 
 func (x *PayrollGroupResponse) Reset() {
 	*x = PayrollGroupResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[47]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4033,7 +4229,7 @@ func (x *PayrollGroupResponse) String() string {
 func (*PayrollGroupResponse) ProtoMessage() {}
 
 func (x *PayrollGroupResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[47]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4046,7 +4242,7 @@ func (x *PayrollGroupResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollGroupResponse.ProtoReflect.Descriptor instead.
 func (*PayrollGroupResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{47}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *PayrollGroupResponse) GetItem() *PayrollGroup {
@@ -4066,7 +4262,7 @@ type PayrollGroupsResponse struct {
 
 func (x *PayrollGroupsResponse) Reset() {
 	*x = PayrollGroupsResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[48]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4078,7 +4274,7 @@ func (x *PayrollGroupsResponse) String() string {
 func (*PayrollGroupsResponse) ProtoMessage() {}
 
 func (x *PayrollGroupsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[48]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4091,7 +4287,7 @@ func (x *PayrollGroupsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollGroupsResponse.ProtoReflect.Descriptor instead.
 func (*PayrollGroupsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{48}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *PayrollGroupsResponse) GetItems() []*PayrollGroup {
@@ -4127,7 +4323,7 @@ type PayrollRuleSet struct {
 
 func (x *PayrollRuleSet) Reset() {
 	*x = PayrollRuleSet{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[49]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4139,7 +4335,7 @@ func (x *PayrollRuleSet) String() string {
 func (*PayrollRuleSet) ProtoMessage() {}
 
 func (x *PayrollRuleSet) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[49]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4152,7 +4348,7 @@ func (x *PayrollRuleSet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollRuleSet.ProtoReflect.Descriptor instead.
 func (*PayrollRuleSet) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{49}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *PayrollRuleSet) GetId() string {
@@ -4250,7 +4446,7 @@ type PayrollRuleSetInput struct {
 
 func (x *PayrollRuleSetInput) Reset() {
 	*x = PayrollRuleSetInput{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[50]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4262,7 +4458,7 @@ func (x *PayrollRuleSetInput) String() string {
 func (*PayrollRuleSetInput) ProtoMessage() {}
 
 func (x *PayrollRuleSetInput) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[50]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4275,7 +4471,7 @@ func (x *PayrollRuleSetInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollRuleSetInput.ProtoReflect.Descriptor instead.
 func (*PayrollRuleSetInput) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{50}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *PayrollRuleSetInput) GetRuleCode() string {
@@ -4357,7 +4553,7 @@ type CreatePayrollRuleSetRequest struct {
 
 func (x *CreatePayrollRuleSetRequest) Reset() {
 	*x = CreatePayrollRuleSetRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[51]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4369,7 +4565,7 @@ func (x *CreatePayrollRuleSetRequest) String() string {
 func (*CreatePayrollRuleSetRequest) ProtoMessage() {}
 
 func (x *CreatePayrollRuleSetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[51]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4382,7 +4578,7 @@ func (x *CreatePayrollRuleSetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePayrollRuleSetRequest.ProtoReflect.Descriptor instead.
 func (*CreatePayrollRuleSetRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{51}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *CreatePayrollRuleSetRequest) GetInput() *PayrollRuleSetInput {
@@ -4403,7 +4599,7 @@ type UpdatePayrollRuleSetRequest struct {
 
 func (x *UpdatePayrollRuleSetRequest) Reset() {
 	*x = UpdatePayrollRuleSetRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[52]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4415,7 +4611,7 @@ func (x *UpdatePayrollRuleSetRequest) String() string {
 func (*UpdatePayrollRuleSetRequest) ProtoMessage() {}
 
 func (x *UpdatePayrollRuleSetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[52]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4428,7 +4624,7 @@ func (x *UpdatePayrollRuleSetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePayrollRuleSetRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePayrollRuleSetRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{52}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *UpdatePayrollRuleSetRequest) GetId() string {
@@ -4461,7 +4657,7 @@ type PayrollRuleSetResponse struct {
 
 func (x *PayrollRuleSetResponse) Reset() {
 	*x = PayrollRuleSetResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[53]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4473,7 +4669,7 @@ func (x *PayrollRuleSetResponse) String() string {
 func (*PayrollRuleSetResponse) ProtoMessage() {}
 
 func (x *PayrollRuleSetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[53]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4486,7 +4682,7 @@ func (x *PayrollRuleSetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollRuleSetResponse.ProtoReflect.Descriptor instead.
 func (*PayrollRuleSetResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{53}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *PayrollRuleSetResponse) GetItem() *PayrollRuleSet {
@@ -4506,7 +4702,7 @@ type PayrollRuleSetsResponse struct {
 
 func (x *PayrollRuleSetsResponse) Reset() {
 	*x = PayrollRuleSetsResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[54]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4518,7 +4714,7 @@ func (x *PayrollRuleSetsResponse) String() string {
 func (*PayrollRuleSetsResponse) ProtoMessage() {}
 
 func (x *PayrollRuleSetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[54]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4531,7 +4727,7 @@ func (x *PayrollRuleSetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayrollRuleSetsResponse.ProtoReflect.Descriptor instead.
 func (*PayrollRuleSetsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{54}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *PayrollRuleSetsResponse) GetItems() []*PayrollRuleSet {
@@ -4558,7 +4754,7 @@ type GetMyPayslipRequest struct {
 
 func (x *GetMyPayslipRequest) Reset() {
 	*x = GetMyPayslipRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[55]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4570,7 +4766,7 @@ func (x *GetMyPayslipRequest) String() string {
 func (*GetMyPayslipRequest) ProtoMessage() {}
 
 func (x *GetMyPayslipRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[55]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4583,7 +4779,7 @@ func (x *GetMyPayslipRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyPayslipRequest.ProtoReflect.Descriptor instead.
 func (*GetMyPayslipRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{55}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GetMyPayslipRequest) GetPayrollResultId() string {
@@ -4618,7 +4814,7 @@ type GetMyPayslipResponse struct {
 
 func (x *GetMyPayslipResponse) Reset() {
 	*x = GetMyPayslipResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[56]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4630,7 +4826,7 @@ func (x *GetMyPayslipResponse) String() string {
 func (*GetMyPayslipResponse) ProtoMessage() {}
 
 func (x *GetMyPayslipResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[56]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4643,7 +4839,7 @@ func (x *GetMyPayslipResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyPayslipResponse.ProtoReflect.Descriptor instead.
 func (*GetMyPayslipResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{56}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *GetMyPayslipResponse) GetPayrollResultId() string {
@@ -4727,7 +4923,7 @@ type ListMyPayslipsRequest struct {
 
 func (x *ListMyPayslipsRequest) Reset() {
 	*x = ListMyPayslipsRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[57]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4739,7 +4935,7 @@ func (x *ListMyPayslipsRequest) String() string {
 func (*ListMyPayslipsRequest) ProtoMessage() {}
 
 func (x *ListMyPayslipsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[57]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4752,7 +4948,7 @@ func (x *ListMyPayslipsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyPayslipsRequest.ProtoReflect.Descriptor instead.
 func (*ListMyPayslipsRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{57}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *ListMyPayslipsRequest) GetLimit() int32 {
@@ -4786,7 +4982,7 @@ type ListMyPayslipsResponse struct {
 
 func (x *ListMyPayslipsResponse) Reset() {
 	*x = ListMyPayslipsResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[58]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4798,7 +4994,7 @@ func (x *ListMyPayslipsResponse) String() string {
 func (*ListMyPayslipsResponse) ProtoMessage() {}
 
 func (x *ListMyPayslipsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[58]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4811,7 +5007,7 @@ func (x *ListMyPayslipsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyPayslipsResponse.ProtoReflect.Descriptor instead.
 func (*ListMyPayslipsResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{58}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *ListMyPayslipsResponse) GetItems() []*GetMyPayslipResponse {
@@ -4838,7 +5034,7 @@ type ReissueEmployeePayslipRequest struct {
 
 func (x *ReissueEmployeePayslipRequest) Reset() {
 	*x = ReissueEmployeePayslipRequest{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[59]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4850,7 +5046,7 @@ func (x *ReissueEmployeePayslipRequest) String() string {
 func (*ReissueEmployeePayslipRequest) ProtoMessage() {}
 
 func (x *ReissueEmployeePayslipRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[59]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4863,7 +5059,7 @@ func (x *ReissueEmployeePayslipRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReissueEmployeePayslipRequest.ProtoReflect.Descriptor instead.
 func (*ReissueEmployeePayslipRequest) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{59}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *ReissueEmployeePayslipRequest) GetWorkerId() string {
@@ -4890,7 +5086,7 @@ type ReissueEmployeePayslipResponse struct {
 
 func (x *ReissueEmployeePayslipResponse) Reset() {
 	*x = ReissueEmployeePayslipResponse{}
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[60]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4902,7 +5098,7 @@ func (x *ReissueEmployeePayslipResponse) String() string {
 func (*ReissueEmployeePayslipResponse) ProtoMessage() {}
 
 func (x *ReissueEmployeePayslipResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[60]
+	mi := &file_human_resource_payroll_v1_payroll_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4915,7 +5111,7 @@ func (x *ReissueEmployeePayslipResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReissueEmployeePayslipResponse.ProtoReflect.Descriptor instead.
 func (*ReissueEmployeePayslipResponse) Descriptor() ([]byte, []int) {
-	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{60}
+	return file_human_resource_payroll_v1_payroll_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *ReissueEmployeePayslipResponse) GetDocumentVersionId() string {
@@ -5236,7 +5432,21 @@ const file_human_resource_payroll_v1_payroll_proto_rawDesc = "" +
 	"\x04item\x18\x01 \x01(\v2%.human_resource.payroll.v1.PayrollRunR\x04item\"\x8a\x01\n" +
 	"\x13PayrollRunsResponse\x12;\n" +
 	"\x05items\x18\x01 \x03(\v2%.human_resource.payroll.v1.PayrollRunR\x05items\x126\n" +
-	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"\x94\x06\n" +
+	"\x04page\x18\x02 \x01(\v2\".human_resource.common.v1.PageInfoR\x04page\"p\n" +
+	"\x19FreezePayrollInputRequest\x12*\n" +
+	"\x11payroll_period_id\x18\x01 \x01(\tR\x0fpayrollPeriodId\x12'\n" +
+	"\x0fidempotency_key\x18\x02 \x01(\tR\x0eidempotencyKey\"\xf5\x02\n" +
+	"\x1cPayrollInputSnapshotMetadata\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12*\n" +
+	"\x11payroll_period_id\x18\x02 \x01(\tR\x0fpayrollPeriodId\x12(\n" +
+	"\x10payroll_group_id\x18\x03 \x01(\tR\x0epayrollGroupId\x12L\n" +
+	"#employing_legal_entity_reference_id\x18\x04 \x01(\tR\x1femployingLegalEntityReferenceId\x12+\n" +
+	"\x11jurisdiction_code\x18\x05 \x01(\tR\x10jurisdictionCode\x12#\n" +
+	"\rcurrency_code\x18\x06 \x01(\tR\fcurrencyCode\x12\x16\n" +
+	"\x06digest\x18\a \x01(\fR\x06digest\x127\n" +
+	"\tfrozen_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\bfrozenAt\"i\n" +
+	"\x1aFreezePayrollInputResponse\x12K\n" +
+	"\x04item\x18\x01 \x01(\v27.human_resource.payroll.v1.PayrollInputSnapshotMetadataR\x04item\"\x94\x06\n" +
 	"\rPayrollResult\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
 	"\x0epayroll_run_id\x18\x02 \x01(\tR\fpayrollRunId\x12(\n" +
@@ -5543,7 +5753,7 @@ const file_human_resource_payroll_v1_payroll_proto_rawDesc = "" +
 	"\x11payroll_result_id\x18\x02 \x01(\tR\x0fpayrollResultId\"b\n" +
 	"\x1eReissueEmployeePayslipResponse\x12.\n" +
 	"\x13document_version_id\x18\x01 \x01(\tR\x11documentVersionId\x12\x10\n" +
-	"\x03pdf\x18\x02 \x01(\fR\x03pdf2\xb5z\n" +
+	"\x03pdf\x18\x02 \x01(\fR\x03pdf2\xb9{\n" +
 	"\x0ePayrollService\x12\x81\x01\n" +
 	"\x14CreatePayrollProfile\x126.human_resource.payroll.v1.CreatePayrollProfileRequest\x1a1.human_resource.payroll.v1.PayrollProfileResponse\x12\x81\x01\n" +
 	"\x14UpdatePayrollProfile\x126.human_resource.payroll.v1.UpdatePayrollProfileRequest\x1a1.human_resource.payroll.v1.PayrollProfileResponse\x12d\n" +
@@ -5605,7 +5815,8 @@ const file_human_resource_payroll_v1_payroll_proto_rawDesc = "" +
 	"'FindPayrollRunByPaymentBatchReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a..human_resource.payroll.v1.PayrollRunsResponse\x12\x92\x01\n" +
 	"1FindPayrollRunByFinanceSettlementEventReferenceID\x12-.human_resource.common.v1.StringFinderRequest\x1a..human_resource.payroll.v1.PayrollRunsResponse\x12\x85\x01\n" +
 	"$FindPayrollRunByStartedByPrincipalID\x12-.human_resource.common.v1.StringFinderRequest\x1a..human_resource.payroll.v1.PayrollRunsResponse\x12\x7f\n" +
-	"\x1eFindPayrollRunByIdempotencyKey\x12-.human_resource.common.v1.StringFinderRequest\x1a..human_resource.payroll.v1.PayrollRunsResponse\x12i\n" +
+	"\x1eFindPayrollRunByIdempotencyKey\x12-.human_resource.common.v1.StringFinderRequest\x1a..human_resource.payroll.v1.PayrollRunsResponse\x12\x81\x01\n" +
+	"\x12FreezePayrollInput\x124.human_resource.payroll.v1.FreezePayrollInputRequest\x1a5.human_resource.payroll.v1.FreezePayrollInputResponse\x12i\n" +
 	"\x13CalculatePayrollRun\x12#.human_resource.common.v1.IDRequest\x1a-.human_resource.payroll.v1.PayrollRunResponse\x12u\n" +
 	"\x10CancelPayrollRun\x122.human_resource.payroll.v1.CancelPayrollRunRequest\x1a-.human_resource.payroll.v1.PayrollRunResponse\x12o\n" +
 	"\x19SubmitPayrollRunForReview\x12#.human_resource.common.v1.IDRequest\x1a-.human_resource.payroll.v1.PayrollRunResponse\x12k\n" +
@@ -5679,7 +5890,7 @@ func file_human_resource_payroll_v1_payroll_proto_rawDescGZIP() []byte {
 	return file_human_resource_payroll_v1_payroll_proto_rawDescData
 }
 
-var file_human_resource_payroll_v1_payroll_proto_msgTypes = make([]protoimpl.MessageInfo, 61)
+var file_human_resource_payroll_v1_payroll_proto_msgTypes = make([]protoimpl.MessageInfo, 64)
 var file_human_resource_payroll_v1_payroll_proto_goTypes = []any{
 	(*PayrollProfile)(nil),                 // 0: human_resource.payroll.v1.PayrollProfile
 	(*PayrollProfileInput)(nil),            // 1: human_resource.payroll.v1.PayrollProfileInput
@@ -5706,371 +5917,378 @@ var file_human_resource_payroll_v1_payroll_proto_goTypes = []any{
 	(*UpdatePayrollRunRequest)(nil),        // 22: human_resource.payroll.v1.UpdatePayrollRunRequest
 	(*PayrollRunResponse)(nil),             // 23: human_resource.payroll.v1.PayrollRunResponse
 	(*PayrollRunsResponse)(nil),            // 24: human_resource.payroll.v1.PayrollRunsResponse
-	(*PayrollResult)(nil),                  // 25: human_resource.payroll.v1.PayrollResult
-	(*PayrollResultInput)(nil),             // 26: human_resource.payroll.v1.PayrollResultInput
-	(*CreatePayrollResultRequest)(nil),     // 27: human_resource.payroll.v1.CreatePayrollResultRequest
-	(*UpdatePayrollResultRequest)(nil),     // 28: human_resource.payroll.v1.UpdatePayrollResultRequest
-	(*PayrollResultResponse)(nil),          // 29: human_resource.payroll.v1.PayrollResultResponse
-	(*PayrollResultsResponse)(nil),         // 30: human_resource.payroll.v1.PayrollResultsResponse
-	(*PayrollResultLine)(nil),              // 31: human_resource.payroll.v1.PayrollResultLine
-	(*PayrollResultLineInput)(nil),         // 32: human_resource.payroll.v1.PayrollResultLineInput
-	(*CreatePayrollResultLineRequest)(nil), // 33: human_resource.payroll.v1.CreatePayrollResultLineRequest
-	(*UpdatePayrollResultLineRequest)(nil), // 34: human_resource.payroll.v1.UpdatePayrollResultLineRequest
-	(*PayrollResultLineResponse)(nil),      // 35: human_resource.payroll.v1.PayrollResultLineResponse
-	(*PayrollResultLinesResponse)(nil),     // 36: human_resource.payroll.v1.PayrollResultLinesResponse
-	(*PayrollAdjustment)(nil),              // 37: human_resource.payroll.v1.PayrollAdjustment
-	(*PayrollAdjustmentInput)(nil),         // 38: human_resource.payroll.v1.PayrollAdjustmentInput
-	(*CreatePayrollAdjustmentRequest)(nil), // 39: human_resource.payroll.v1.CreatePayrollAdjustmentRequest
-	(*UpdatePayrollAdjustmentRequest)(nil), // 40: human_resource.payroll.v1.UpdatePayrollAdjustmentRequest
-	(*PayrollAdjustmentResponse)(nil),      // 41: human_resource.payroll.v1.PayrollAdjustmentResponse
-	(*PayrollAdjustmentsResponse)(nil),     // 42: human_resource.payroll.v1.PayrollAdjustmentsResponse
-	(*PayrollGroup)(nil),                   // 43: human_resource.payroll.v1.PayrollGroup
-	(*PayrollGroupInput)(nil),              // 44: human_resource.payroll.v1.PayrollGroupInput
-	(*CreatePayrollGroupRequest)(nil),      // 45: human_resource.payroll.v1.CreatePayrollGroupRequest
-	(*UpdatePayrollGroupRequest)(nil),      // 46: human_resource.payroll.v1.UpdatePayrollGroupRequest
-	(*PayrollGroupResponse)(nil),           // 47: human_resource.payroll.v1.PayrollGroupResponse
-	(*PayrollGroupsResponse)(nil),          // 48: human_resource.payroll.v1.PayrollGroupsResponse
-	(*PayrollRuleSet)(nil),                 // 49: human_resource.payroll.v1.PayrollRuleSet
-	(*PayrollRuleSetInput)(nil),            // 50: human_resource.payroll.v1.PayrollRuleSetInput
-	(*CreatePayrollRuleSetRequest)(nil),    // 51: human_resource.payroll.v1.CreatePayrollRuleSetRequest
-	(*UpdatePayrollRuleSetRequest)(nil),    // 52: human_resource.payroll.v1.UpdatePayrollRuleSetRequest
-	(*PayrollRuleSetResponse)(nil),         // 53: human_resource.payroll.v1.PayrollRuleSetResponse
-	(*PayrollRuleSetsResponse)(nil),        // 54: human_resource.payroll.v1.PayrollRuleSetsResponse
-	(*GetMyPayslipRequest)(nil),            // 55: human_resource.payroll.v1.GetMyPayslipRequest
-	(*GetMyPayslipResponse)(nil),           // 56: human_resource.payroll.v1.GetMyPayslipResponse
-	(*ListMyPayslipsRequest)(nil),          // 57: human_resource.payroll.v1.ListMyPayslipsRequest
-	(*ListMyPayslipsResponse)(nil),         // 58: human_resource.payroll.v1.ListMyPayslipsResponse
-	(*ReissueEmployeePayslipRequest)(nil),  // 59: human_resource.payroll.v1.ReissueEmployeePayslipRequest
-	(*ReissueEmployeePayslipResponse)(nil), // 60: human_resource.payroll.v1.ReissueEmployeePayslipResponse
-	(*fieldmaskpb.FieldMask)(nil),          // 61: google.protobuf.FieldMask
-	(*v1.PageInfo)(nil),                    // 62: human_resource.common.v1.PageInfo
-	(*timestamppb.Timestamp)(nil),          // 63: google.protobuf.Timestamp
-	(*v1.IDRequest)(nil),                   // 64: human_resource.common.v1.IDRequest
-	(*v1.PageRequest)(nil),                 // 65: human_resource.common.v1.PageRequest
-	(*v1.StringFinderRequest)(nil),         // 66: human_resource.common.v1.StringFinderRequest
-	(*v1.Int32FinderRequest)(nil),          // 67: human_resource.common.v1.Int32FinderRequest
-	(*v1.EmptyResponse)(nil),               // 68: human_resource.common.v1.EmptyResponse
+	(*FreezePayrollInputRequest)(nil),      // 25: human_resource.payroll.v1.FreezePayrollInputRequest
+	(*PayrollInputSnapshotMetadata)(nil),   // 26: human_resource.payroll.v1.PayrollInputSnapshotMetadata
+	(*FreezePayrollInputResponse)(nil),     // 27: human_resource.payroll.v1.FreezePayrollInputResponse
+	(*PayrollResult)(nil),                  // 28: human_resource.payroll.v1.PayrollResult
+	(*PayrollResultInput)(nil),             // 29: human_resource.payroll.v1.PayrollResultInput
+	(*CreatePayrollResultRequest)(nil),     // 30: human_resource.payroll.v1.CreatePayrollResultRequest
+	(*UpdatePayrollResultRequest)(nil),     // 31: human_resource.payroll.v1.UpdatePayrollResultRequest
+	(*PayrollResultResponse)(nil),          // 32: human_resource.payroll.v1.PayrollResultResponse
+	(*PayrollResultsResponse)(nil),         // 33: human_resource.payroll.v1.PayrollResultsResponse
+	(*PayrollResultLine)(nil),              // 34: human_resource.payroll.v1.PayrollResultLine
+	(*PayrollResultLineInput)(nil),         // 35: human_resource.payroll.v1.PayrollResultLineInput
+	(*CreatePayrollResultLineRequest)(nil), // 36: human_resource.payroll.v1.CreatePayrollResultLineRequest
+	(*UpdatePayrollResultLineRequest)(nil), // 37: human_resource.payroll.v1.UpdatePayrollResultLineRequest
+	(*PayrollResultLineResponse)(nil),      // 38: human_resource.payroll.v1.PayrollResultLineResponse
+	(*PayrollResultLinesResponse)(nil),     // 39: human_resource.payroll.v1.PayrollResultLinesResponse
+	(*PayrollAdjustment)(nil),              // 40: human_resource.payroll.v1.PayrollAdjustment
+	(*PayrollAdjustmentInput)(nil),         // 41: human_resource.payroll.v1.PayrollAdjustmentInput
+	(*CreatePayrollAdjustmentRequest)(nil), // 42: human_resource.payroll.v1.CreatePayrollAdjustmentRequest
+	(*UpdatePayrollAdjustmentRequest)(nil), // 43: human_resource.payroll.v1.UpdatePayrollAdjustmentRequest
+	(*PayrollAdjustmentResponse)(nil),      // 44: human_resource.payroll.v1.PayrollAdjustmentResponse
+	(*PayrollAdjustmentsResponse)(nil),     // 45: human_resource.payroll.v1.PayrollAdjustmentsResponse
+	(*PayrollGroup)(nil),                   // 46: human_resource.payroll.v1.PayrollGroup
+	(*PayrollGroupInput)(nil),              // 47: human_resource.payroll.v1.PayrollGroupInput
+	(*CreatePayrollGroupRequest)(nil),      // 48: human_resource.payroll.v1.CreatePayrollGroupRequest
+	(*UpdatePayrollGroupRequest)(nil),      // 49: human_resource.payroll.v1.UpdatePayrollGroupRequest
+	(*PayrollGroupResponse)(nil),           // 50: human_resource.payroll.v1.PayrollGroupResponse
+	(*PayrollGroupsResponse)(nil),          // 51: human_resource.payroll.v1.PayrollGroupsResponse
+	(*PayrollRuleSet)(nil),                 // 52: human_resource.payroll.v1.PayrollRuleSet
+	(*PayrollRuleSetInput)(nil),            // 53: human_resource.payroll.v1.PayrollRuleSetInput
+	(*CreatePayrollRuleSetRequest)(nil),    // 54: human_resource.payroll.v1.CreatePayrollRuleSetRequest
+	(*UpdatePayrollRuleSetRequest)(nil),    // 55: human_resource.payroll.v1.UpdatePayrollRuleSetRequest
+	(*PayrollRuleSetResponse)(nil),         // 56: human_resource.payroll.v1.PayrollRuleSetResponse
+	(*PayrollRuleSetsResponse)(nil),        // 57: human_resource.payroll.v1.PayrollRuleSetsResponse
+	(*GetMyPayslipRequest)(nil),            // 58: human_resource.payroll.v1.GetMyPayslipRequest
+	(*GetMyPayslipResponse)(nil),           // 59: human_resource.payroll.v1.GetMyPayslipResponse
+	(*ListMyPayslipsRequest)(nil),          // 60: human_resource.payroll.v1.ListMyPayslipsRequest
+	(*ListMyPayslipsResponse)(nil),         // 61: human_resource.payroll.v1.ListMyPayslipsResponse
+	(*ReissueEmployeePayslipRequest)(nil),  // 62: human_resource.payroll.v1.ReissueEmployeePayslipRequest
+	(*ReissueEmployeePayslipResponse)(nil), // 63: human_resource.payroll.v1.ReissueEmployeePayslipResponse
+	(*fieldmaskpb.FieldMask)(nil),          // 64: google.protobuf.FieldMask
+	(*v1.PageInfo)(nil),                    // 65: human_resource.common.v1.PageInfo
+	(*timestamppb.Timestamp)(nil),          // 66: google.protobuf.Timestamp
+	(*v1.IDRequest)(nil),                   // 67: human_resource.common.v1.IDRequest
+	(*v1.PageRequest)(nil),                 // 68: human_resource.common.v1.PageRequest
+	(*v1.StringFinderRequest)(nil),         // 69: human_resource.common.v1.StringFinderRequest
+	(*v1.Int32FinderRequest)(nil),          // 70: human_resource.common.v1.Int32FinderRequest
+	(*v1.EmptyResponse)(nil),               // 71: human_resource.common.v1.EmptyResponse
 }
 var file_human_resource_payroll_v1_payroll_proto_depIdxs = []int32{
 	1,   // 0: human_resource.payroll.v1.CreatePayrollProfileRequest.input:type_name -> human_resource.payroll.v1.PayrollProfileInput
 	1,   // 1: human_resource.payroll.v1.UpdatePayrollProfileRequest.input:type_name -> human_resource.payroll.v1.PayrollProfileInput
-	61,  // 2: human_resource.payroll.v1.UpdatePayrollProfileRequest.update_mask:type_name -> google.protobuf.FieldMask
+	64,  // 2: human_resource.payroll.v1.UpdatePayrollProfileRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,   // 3: human_resource.payroll.v1.PayrollProfileResponse.item:type_name -> human_resource.payroll.v1.PayrollProfile
 	0,   // 4: human_resource.payroll.v1.PayrollProfilesResponse.items:type_name -> human_resource.payroll.v1.PayrollProfile
-	62,  // 5: human_resource.payroll.v1.PayrollProfilesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	65,  // 5: human_resource.payroll.v1.PayrollProfilesResponse.page:type_name -> human_resource.common.v1.PageInfo
 	7,   // 6: human_resource.payroll.v1.CreatePayComponentRequest.input:type_name -> human_resource.payroll.v1.PayComponentInput
 	7,   // 7: human_resource.payroll.v1.UpdatePayComponentRequest.input:type_name -> human_resource.payroll.v1.PayComponentInput
-	61,  // 8: human_resource.payroll.v1.UpdatePayComponentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	64,  // 8: human_resource.payroll.v1.UpdatePayComponentRequest.update_mask:type_name -> google.protobuf.FieldMask
 	6,   // 9: human_resource.payroll.v1.PayComponentResponse.item:type_name -> human_resource.payroll.v1.PayComponent
 	6,   // 10: human_resource.payroll.v1.PayComponentsResponse.items:type_name -> human_resource.payroll.v1.PayComponent
-	62,  // 11: human_resource.payroll.v1.PayComponentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	65,  // 11: human_resource.payroll.v1.PayComponentsResponse.page:type_name -> human_resource.common.v1.PageInfo
 	13,  // 12: human_resource.payroll.v1.CreatePayrollPeriodRequest.input:type_name -> human_resource.payroll.v1.PayrollPeriodInput
 	13,  // 13: human_resource.payroll.v1.UpdatePayrollPeriodRequest.input:type_name -> human_resource.payroll.v1.PayrollPeriodInput
-	61,  // 14: human_resource.payroll.v1.UpdatePayrollPeriodRequest.update_mask:type_name -> google.protobuf.FieldMask
+	64,  // 14: human_resource.payroll.v1.UpdatePayrollPeriodRequest.update_mask:type_name -> google.protobuf.FieldMask
 	12,  // 15: human_resource.payroll.v1.PayrollPeriodResponse.item:type_name -> human_resource.payroll.v1.PayrollPeriod
 	12,  // 16: human_resource.payroll.v1.PayrollPeriodsResponse.items:type_name -> human_resource.payroll.v1.PayrollPeriod
-	62,  // 17: human_resource.payroll.v1.PayrollPeriodsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	63,  // 18: human_resource.payroll.v1.PayrollRun.calculated_at:type_name -> google.protobuf.Timestamp
-	63,  // 19: human_resource.payroll.v1.PayrollRun.approved_at:type_name -> google.protobuf.Timestamp
-	63,  // 20: human_resource.payroll.v1.PayrollRun.finance_settled_at:type_name -> google.protobuf.Timestamp
-	63,  // 21: human_resource.payroll.v1.PayrollRun.created_at:type_name -> google.protobuf.Timestamp
-	63,  // 22: human_resource.payroll.v1.PayrollRun.posting_requested_at:type_name -> google.protobuf.Timestamp
-	63,  // 23: human_resource.payroll.v1.PayrollRun.cancelled_at:type_name -> google.protobuf.Timestamp
-	63,  // 24: human_resource.payroll.v1.PayrollRunInput.calculated_at:type_name -> google.protobuf.Timestamp
-	63,  // 25: human_resource.payroll.v1.PayrollRunInput.approved_at:type_name -> google.protobuf.Timestamp
-	63,  // 26: human_resource.payroll.v1.PayrollRunInput.finance_settled_at:type_name -> google.protobuf.Timestamp
+	65,  // 17: human_resource.payroll.v1.PayrollPeriodsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	66,  // 18: human_resource.payroll.v1.PayrollRun.calculated_at:type_name -> google.protobuf.Timestamp
+	66,  // 19: human_resource.payroll.v1.PayrollRun.approved_at:type_name -> google.protobuf.Timestamp
+	66,  // 20: human_resource.payroll.v1.PayrollRun.finance_settled_at:type_name -> google.protobuf.Timestamp
+	66,  // 21: human_resource.payroll.v1.PayrollRun.created_at:type_name -> google.protobuf.Timestamp
+	66,  // 22: human_resource.payroll.v1.PayrollRun.posting_requested_at:type_name -> google.protobuf.Timestamp
+	66,  // 23: human_resource.payroll.v1.PayrollRun.cancelled_at:type_name -> google.protobuf.Timestamp
+	66,  // 24: human_resource.payroll.v1.PayrollRunInput.calculated_at:type_name -> google.protobuf.Timestamp
+	66,  // 25: human_resource.payroll.v1.PayrollRunInput.approved_at:type_name -> google.protobuf.Timestamp
+	66,  // 26: human_resource.payroll.v1.PayrollRunInput.finance_settled_at:type_name -> google.protobuf.Timestamp
 	20,  // 27: human_resource.payroll.v1.CreatePayrollRunRequest.input:type_name -> human_resource.payroll.v1.PayrollRunInput
 	20,  // 28: human_resource.payroll.v1.UpdatePayrollRunRequest.input:type_name -> human_resource.payroll.v1.PayrollRunInput
-	61,  // 29: human_resource.payroll.v1.UpdatePayrollRunRequest.update_mask:type_name -> google.protobuf.FieldMask
+	64,  // 29: human_resource.payroll.v1.UpdatePayrollRunRequest.update_mask:type_name -> google.protobuf.FieldMask
 	18,  // 30: human_resource.payroll.v1.PayrollRunResponse.item:type_name -> human_resource.payroll.v1.PayrollRun
 	18,  // 31: human_resource.payroll.v1.PayrollRunsResponse.items:type_name -> human_resource.payroll.v1.PayrollRun
-	62,  // 32: human_resource.payroll.v1.PayrollRunsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	63,  // 33: human_resource.payroll.v1.PayrollResult.created_at:type_name -> google.protobuf.Timestamp
-	26,  // 34: human_resource.payroll.v1.CreatePayrollResultRequest.input:type_name -> human_resource.payroll.v1.PayrollResultInput
-	26,  // 35: human_resource.payroll.v1.UpdatePayrollResultRequest.input:type_name -> human_resource.payroll.v1.PayrollResultInput
-	61,  // 36: human_resource.payroll.v1.UpdatePayrollResultRequest.update_mask:type_name -> google.protobuf.FieldMask
-	25,  // 37: human_resource.payroll.v1.PayrollResultResponse.item:type_name -> human_resource.payroll.v1.PayrollResult
-	25,  // 38: human_resource.payroll.v1.PayrollResultsResponse.items:type_name -> human_resource.payroll.v1.PayrollResult
-	62,  // 39: human_resource.payroll.v1.PayrollResultsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	32,  // 40: human_resource.payroll.v1.CreatePayrollResultLineRequest.input:type_name -> human_resource.payroll.v1.PayrollResultLineInput
-	32,  // 41: human_resource.payroll.v1.UpdatePayrollResultLineRequest.input:type_name -> human_resource.payroll.v1.PayrollResultLineInput
-	61,  // 42: human_resource.payroll.v1.UpdatePayrollResultLineRequest.update_mask:type_name -> google.protobuf.FieldMask
-	31,  // 43: human_resource.payroll.v1.PayrollResultLineResponse.item:type_name -> human_resource.payroll.v1.PayrollResultLine
-	31,  // 44: human_resource.payroll.v1.PayrollResultLinesResponse.items:type_name -> human_resource.payroll.v1.PayrollResultLine
-	62,  // 45: human_resource.payroll.v1.PayrollResultLinesResponse.page:type_name -> human_resource.common.v1.PageInfo
-	63,  // 46: human_resource.payroll.v1.PayrollAdjustment.approved_at:type_name -> google.protobuf.Timestamp
-	63,  // 47: human_resource.payroll.v1.PayrollAdjustment.created_at:type_name -> google.protobuf.Timestamp
-	63,  // 48: human_resource.payroll.v1.PayrollAdjustmentInput.approved_at:type_name -> google.protobuf.Timestamp
-	38,  // 49: human_resource.payroll.v1.CreatePayrollAdjustmentRequest.input:type_name -> human_resource.payroll.v1.PayrollAdjustmentInput
-	38,  // 50: human_resource.payroll.v1.UpdatePayrollAdjustmentRequest.input:type_name -> human_resource.payroll.v1.PayrollAdjustmentInput
-	61,  // 51: human_resource.payroll.v1.UpdatePayrollAdjustmentRequest.update_mask:type_name -> google.protobuf.FieldMask
-	37,  // 52: human_resource.payroll.v1.PayrollAdjustmentResponse.item:type_name -> human_resource.payroll.v1.PayrollAdjustment
-	37,  // 53: human_resource.payroll.v1.PayrollAdjustmentsResponse.items:type_name -> human_resource.payroll.v1.PayrollAdjustment
-	62,  // 54: human_resource.payroll.v1.PayrollAdjustmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	44,  // 55: human_resource.payroll.v1.CreatePayrollGroupRequest.input:type_name -> human_resource.payroll.v1.PayrollGroupInput
-	44,  // 56: human_resource.payroll.v1.UpdatePayrollGroupRequest.input:type_name -> human_resource.payroll.v1.PayrollGroupInput
-	61,  // 57: human_resource.payroll.v1.UpdatePayrollGroupRequest.update_mask:type_name -> google.protobuf.FieldMask
-	43,  // 58: human_resource.payroll.v1.PayrollGroupResponse.item:type_name -> human_resource.payroll.v1.PayrollGroup
-	43,  // 59: human_resource.payroll.v1.PayrollGroupsResponse.items:type_name -> human_resource.payroll.v1.PayrollGroup
-	62,  // 60: human_resource.payroll.v1.PayrollGroupsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	63,  // 61: human_resource.payroll.v1.PayrollRuleSet.approved_at:type_name -> google.protobuf.Timestamp
-	63,  // 62: human_resource.payroll.v1.PayrollRuleSetInput.approved_at:type_name -> google.protobuf.Timestamp
-	50,  // 63: human_resource.payroll.v1.CreatePayrollRuleSetRequest.input:type_name -> human_resource.payroll.v1.PayrollRuleSetInput
-	50,  // 64: human_resource.payroll.v1.UpdatePayrollRuleSetRequest.input:type_name -> human_resource.payroll.v1.PayrollRuleSetInput
-	61,  // 65: human_resource.payroll.v1.UpdatePayrollRuleSetRequest.update_mask:type_name -> google.protobuf.FieldMask
-	49,  // 66: human_resource.payroll.v1.PayrollRuleSetResponse.item:type_name -> human_resource.payroll.v1.PayrollRuleSet
-	49,  // 67: human_resource.payroll.v1.PayrollRuleSetsResponse.items:type_name -> human_resource.payroll.v1.PayrollRuleSet
-	62,  // 68: human_resource.payroll.v1.PayrollRuleSetsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	63,  // 69: human_resource.payroll.v1.GetMyPayslipResponse.published_at:type_name -> google.protobuf.Timestamp
-	56,  // 70: human_resource.payroll.v1.ListMyPayslipsResponse.items:type_name -> human_resource.payroll.v1.GetMyPayslipResponse
-	62,  // 71: human_resource.payroll.v1.ListMyPayslipsResponse.page:type_name -> human_resource.common.v1.PageInfo
-	2,   // 72: human_resource.payroll.v1.PayrollService.CreatePayrollProfile:input_type -> human_resource.payroll.v1.CreatePayrollProfileRequest
-	3,   // 73: human_resource.payroll.v1.PayrollService.UpdatePayrollProfile:input_type -> human_resource.payroll.v1.UpdatePayrollProfileRequest
-	64,  // 74: human_resource.payroll.v1.PayrollService.DeletePayrollProfile:input_type -> human_resource.common.v1.IDRequest
-	64,  // 75: human_resource.payroll.v1.PayrollService.GetPayrollProfileByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 76: human_resource.payroll.v1.PayrollService.GetAllPayrollProfiles:input_type -> human_resource.common.v1.PageRequest
-	66,  // 77: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 78: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 79: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 80: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 81: human_resource.payroll.v1.PayrollService.FindPayrollProfileByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 82: human_resource.payroll.v1.PayrollService.FindPayrollProfileByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 83: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxProfileReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 84: human_resource.payroll.v1.PayrollService.FindPayrollProfileByBankAccountTokenReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 85: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxStatusCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 86: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWithholdingElectionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	8,   // 87: human_resource.payroll.v1.PayrollService.CreatePayComponent:input_type -> human_resource.payroll.v1.CreatePayComponentRequest
-	9,   // 88: human_resource.payroll.v1.PayrollService.UpdatePayComponent:input_type -> human_resource.payroll.v1.UpdatePayComponentRequest
-	64,  // 89: human_resource.payroll.v1.PayrollService.DeletePayComponent:input_type -> human_resource.common.v1.IDRequest
-	64,  // 90: human_resource.payroll.v1.PayrollService.GetPayComponentByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 91: human_resource.payroll.v1.PayrollService.GetAllPayComponents:input_type -> human_resource.common.v1.PageRequest
-	66,  // 92: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 93: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentType:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 94: human_resource.payroll.v1.PayrollService.FindPayComponentByTaxTreatmentCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 95: human_resource.payroll.v1.PayrollService.FindPayComponentByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 96: human_resource.payroll.v1.PayrollService.FindPayComponentByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 97: human_resource.payroll.v1.PayrollService.FindPayComponentByRuleSetID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 98: human_resource.payroll.v1.PayrollService.FindPayComponentByFormulaReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	14,  // 99: human_resource.payroll.v1.PayrollService.CreatePayrollPeriod:input_type -> human_resource.payroll.v1.CreatePayrollPeriodRequest
-	15,  // 100: human_resource.payroll.v1.PayrollService.UpdatePayrollPeriod:input_type -> human_resource.payroll.v1.UpdatePayrollPeriodRequest
-	64,  // 101: human_resource.payroll.v1.PayrollService.DeletePayrollPeriod:input_type -> human_resource.common.v1.IDRequest
-	64,  // 102: human_resource.payroll.v1.PayrollService.GetPayrollPeriodByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 103: human_resource.payroll.v1.PayrollService.GetAllPayrollPeriods:input_type -> human_resource.common.v1.PageRequest
-	66,  // 104: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 105: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 106: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 107: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 108: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 109: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 110: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCalendarReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	21,  // 111: human_resource.payroll.v1.PayrollService.CreatePayrollRun:input_type -> human_resource.payroll.v1.CreatePayrollRunRequest
-	22,  // 112: human_resource.payroll.v1.PayrollService.UpdatePayrollRun:input_type -> human_resource.payroll.v1.UpdatePayrollRunRequest
-	64,  // 113: human_resource.payroll.v1.PayrollService.DeletePayrollRun:input_type -> human_resource.common.v1.IDRequest
-	64,  // 114: human_resource.payroll.v1.PayrollService.GetPayrollRunByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 115: human_resource.payroll.v1.PayrollService.GetAllPayrollRuns:input_type -> human_resource.common.v1.PageRequest
-	66,  // 116: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollPeriodID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 117: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 118: human_resource.payroll.v1.PayrollService.FindPayrollRunByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 119: human_resource.payroll.v1.PayrollService.FindPayrollRunByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 120: human_resource.payroll.v1.PayrollService.FindPayrollRunByRuleSetID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 121: human_resource.payroll.v1.PayrollService.FindPayrollRunByOriginalRunID:input_type -> human_resource.common.v1.StringFinderRequest
-	67,  // 122: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunNumber:input_type -> human_resource.common.v1.Int32FinderRequest
-	66,  // 123: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunType:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 124: human_resource.payroll.v1.PayrollService.FindPayrollRunByStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 125: human_resource.payroll.v1.PayrollService.FindPayrollRunByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 126: human_resource.payroll.v1.PayrollService.FindPayrollRunByInputSnapshotReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 127: human_resource.payroll.v1.PayrollService.FindPayrollRunByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 128: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceJournalReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 129: human_resource.payroll.v1.PayrollService.FindPayrollRunByPaymentBatchReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 130: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceSettlementEventReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 131: human_resource.payroll.v1.PayrollService.FindPayrollRunByStartedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 132: human_resource.payroll.v1.PayrollService.FindPayrollRunByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	64,  // 133: human_resource.payroll.v1.PayrollService.CalculatePayrollRun:input_type -> human_resource.common.v1.IDRequest
-	19,  // 134: human_resource.payroll.v1.PayrollService.CancelPayrollRun:input_type -> human_resource.payroll.v1.CancelPayrollRunRequest
-	64,  // 135: human_resource.payroll.v1.PayrollService.SubmitPayrollRunForReview:input_type -> human_resource.common.v1.IDRequest
-	64,  // 136: human_resource.payroll.v1.PayrollService.RequestPayrollPosting:input_type -> human_resource.common.v1.IDRequest
-	64,  // 137: human_resource.payroll.v1.PayrollService.ApprovePayrollRun:input_type -> human_resource.common.v1.IDRequest
-	27,  // 138: human_resource.payroll.v1.PayrollService.CreatePayrollResult:input_type -> human_resource.payroll.v1.CreatePayrollResultRequest
-	28,  // 139: human_resource.payroll.v1.PayrollService.UpdatePayrollResult:input_type -> human_resource.payroll.v1.UpdatePayrollResultRequest
-	64,  // 140: human_resource.payroll.v1.PayrollService.DeletePayrollResult:input_type -> human_resource.common.v1.IDRequest
-	55,  // 141: human_resource.payroll.v1.PayrollService.GetMyPayslip:input_type -> human_resource.payroll.v1.GetMyPayslipRequest
-	57,  // 142: human_resource.payroll.v1.PayrollService.ListMyPayslips:input_type -> human_resource.payroll.v1.ListMyPayslipsRequest
-	59,  // 143: human_resource.payroll.v1.PayrollService.ReissueEmployeePayslip:input_type -> human_resource.payroll.v1.ReissueEmployeePayslipRequest
-	64,  // 144: human_resource.payroll.v1.PayrollService.GetPayrollResultByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 145: human_resource.payroll.v1.PayrollService.GetAllPayrollResults:input_type -> human_resource.common.v1.PageRequest
-	66,  // 146: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollRunID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 147: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 148: human_resource.payroll.v1.PayrollService.FindPayrollResultByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 149: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollProfileReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 150: human_resource.payroll.v1.PayrollService.FindPayrollResultByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 151: human_resource.payroll.v1.PayrollService.FindPayrollResultByResultStatus:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 152: human_resource.payroll.v1.PayrollService.FindPayrollResultByPaymentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 153: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayslipDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	33,  // 154: human_resource.payroll.v1.PayrollService.CreatePayrollResultLine:input_type -> human_resource.payroll.v1.CreatePayrollResultLineRequest
-	34,  // 155: human_resource.payroll.v1.PayrollService.UpdatePayrollResultLine:input_type -> human_resource.payroll.v1.UpdatePayrollResultLineRequest
-	64,  // 156: human_resource.payroll.v1.PayrollService.DeletePayrollResultLine:input_type -> human_resource.common.v1.IDRequest
-	64,  // 157: human_resource.payroll.v1.PayrollService.GetPayrollResultLineByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 158: human_resource.payroll.v1.PayrollService.GetAllPayrollResultLines:input_type -> human_resource.common.v1.PageRequest
-	66,  // 159: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByPayrollResultID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 160: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByComponentID:input_type -> human_resource.common.v1.StringFinderRequest
-	39,  // 161: human_resource.payroll.v1.PayrollService.CreatePayrollAdjustment:input_type -> human_resource.payroll.v1.CreatePayrollAdjustmentRequest
-	40,  // 162: human_resource.payroll.v1.PayrollService.UpdatePayrollAdjustment:input_type -> human_resource.payroll.v1.UpdatePayrollAdjustmentRequest
-	64,  // 163: human_resource.payroll.v1.PayrollService.DeletePayrollAdjustment:input_type -> human_resource.common.v1.IDRequest
-	64,  // 164: human_resource.payroll.v1.PayrollService.GetPayrollAdjustmentByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 165: human_resource.payroll.v1.PayrollService.GetAllPayrollAdjustments:input_type -> human_resource.common.v1.PageRequest
-	66,  // 166: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 167: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByPayrollPeriodID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 168: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByComponentID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 169: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByAdjustmentType:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 170: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 171: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 172: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 173: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
-	45,  // 174: human_resource.payroll.v1.PayrollService.CreatePayrollGroup:input_type -> human_resource.payroll.v1.CreatePayrollGroupRequest
-	46,  // 175: human_resource.payroll.v1.PayrollService.UpdatePayrollGroup:input_type -> human_resource.payroll.v1.UpdatePayrollGroupRequest
-	64,  // 176: human_resource.payroll.v1.PayrollService.DeletePayrollGroup:input_type -> human_resource.common.v1.IDRequest
-	64,  // 177: human_resource.payroll.v1.PayrollService.GetPayrollGroupByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 178: human_resource.payroll.v1.PayrollService.GetAllPayrollGroups:input_type -> human_resource.common.v1.PageRequest
-	66,  // 179: human_resource.payroll.v1.PayrollService.FindPayrollGroupByGroupCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 180: human_resource.payroll.v1.PayrollService.FindPayrollGroupByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 181: human_resource.payroll.v1.PayrollService.FindPayrollGroupByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 182: human_resource.payroll.v1.PayrollService.FindPayrollGroupByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
-	51,  // 183: human_resource.payroll.v1.PayrollService.CreatePayrollRuleSet:input_type -> human_resource.payroll.v1.CreatePayrollRuleSetRequest
-	52,  // 184: human_resource.payroll.v1.PayrollService.UpdatePayrollRuleSet:input_type -> human_resource.payroll.v1.UpdatePayrollRuleSetRequest
-	64,  // 185: human_resource.payroll.v1.PayrollService.DeletePayrollRuleSet:input_type -> human_resource.common.v1.IDRequest
-	64,  // 186: human_resource.payroll.v1.PayrollService.GetPayrollRuleSetByID:input_type -> human_resource.common.v1.IDRequest
-	65,  // 187: human_resource.payroll.v1.PayrollService.GetAllPayrollRuleSets:input_type -> human_resource.common.v1.PageRequest
-	66,  // 188: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByRuleCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 189: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 190: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByArtifactDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 191: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByLegalBasisDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
-	66,  // 192: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
-	4,   // 193: human_resource.payroll.v1.PayrollService.CreatePayrollProfile:output_type -> human_resource.payroll.v1.PayrollProfileResponse
-	4,   // 194: human_resource.payroll.v1.PayrollService.UpdatePayrollProfile:output_type -> human_resource.payroll.v1.PayrollProfileResponse
-	68,  // 195: human_resource.payroll.v1.PayrollService.DeletePayrollProfile:output_type -> human_resource.common.v1.EmptyResponse
-	4,   // 196: human_resource.payroll.v1.PayrollService.GetPayrollProfileByID:output_type -> human_resource.payroll.v1.PayrollProfileResponse
-	5,   // 197: human_resource.payroll.v1.PayrollService.GetAllPayrollProfiles:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 198: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWorkerID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 199: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollCountryCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 200: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 201: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 202: human_resource.payroll.v1.PayrollService.FindPayrollProfileByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 203: human_resource.payroll.v1.PayrollService.FindPayrollProfileByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 204: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxProfileReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 205: human_resource.payroll.v1.PayrollService.FindPayrollProfileByBankAccountTokenReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 206: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxStatusCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	5,   // 207: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWithholdingElectionReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
-	10,  // 208: human_resource.payroll.v1.PayrollService.CreatePayComponent:output_type -> human_resource.payroll.v1.PayComponentResponse
-	10,  // 209: human_resource.payroll.v1.PayrollService.UpdatePayComponent:output_type -> human_resource.payroll.v1.PayComponentResponse
-	68,  // 210: human_resource.payroll.v1.PayrollService.DeletePayComponent:output_type -> human_resource.common.v1.EmptyResponse
-	10,  // 211: human_resource.payroll.v1.PayrollService.GetPayComponentByID:output_type -> human_resource.payroll.v1.PayComponentResponse
-	11,  // 212: human_resource.payroll.v1.PayrollService.GetAllPayComponents:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	11,  // 213: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	11,  // 214: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentType:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	11,  // 215: human_resource.payroll.v1.PayrollService.FindPayComponentByTaxTreatmentCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	11,  // 216: human_resource.payroll.v1.PayrollService.FindPayComponentByJurisdictionCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	11,  // 217: human_resource.payroll.v1.PayrollService.FindPayComponentByCurrencyCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	11,  // 218: human_resource.payroll.v1.PayrollService.FindPayComponentByRuleSetID:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	11,  // 219: human_resource.payroll.v1.PayrollService.FindPayComponentByFormulaReferenceID:output_type -> human_resource.payroll.v1.PayComponentsResponse
-	16,  // 220: human_resource.payroll.v1.PayrollService.CreatePayrollPeriod:output_type -> human_resource.payroll.v1.PayrollPeriodResponse
-	16,  // 221: human_resource.payroll.v1.PayrollService.UpdatePayrollPeriod:output_type -> human_resource.payroll.v1.PayrollPeriodResponse
-	68,  // 222: human_resource.payroll.v1.PayrollService.DeletePayrollPeriod:output_type -> human_resource.common.v1.EmptyResponse
-	16,  // 223: human_resource.payroll.v1.PayrollService.GetPayrollPeriodByID:output_type -> human_resource.payroll.v1.PayrollPeriodResponse
-	17,  // 224: human_resource.payroll.v1.PayrollService.GetAllPayrollPeriods:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	17,  // 225: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	17,  // 226: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	17,  // 227: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	17,  // 228: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	17,  // 229: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodCode:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	17,  // 230: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodStatus:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	17,  // 231: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCalendarReferenceID:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
-	23,  // 232: human_resource.payroll.v1.PayrollService.CreatePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	23,  // 233: human_resource.payroll.v1.PayrollService.UpdatePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	68,  // 234: human_resource.payroll.v1.PayrollService.DeletePayrollRun:output_type -> human_resource.common.v1.EmptyResponse
-	23,  // 235: human_resource.payroll.v1.PayrollService.GetPayrollRunByID:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	24,  // 236: human_resource.payroll.v1.PayrollService.GetAllPayrollRuns:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 237: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollPeriodID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 238: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 239: human_resource.payroll.v1.PayrollService.FindPayrollRunByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 240: human_resource.payroll.v1.PayrollService.FindPayrollRunByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 241: human_resource.payroll.v1.PayrollService.FindPayrollRunByRuleSetID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 242: human_resource.payroll.v1.PayrollService.FindPayrollRunByOriginalRunID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 243: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunNumber:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 244: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunType:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 245: human_resource.payroll.v1.PayrollService.FindPayrollRunByStatus:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 246: human_resource.payroll.v1.PayrollService.FindPayrollRunByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 247: human_resource.payroll.v1.PayrollService.FindPayrollRunByInputSnapshotReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 248: human_resource.payroll.v1.PayrollService.FindPayrollRunByApprovedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 249: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceJournalReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 250: human_resource.payroll.v1.PayrollService.FindPayrollRunByPaymentBatchReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 251: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceSettlementEventReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 252: human_resource.payroll.v1.PayrollService.FindPayrollRunByStartedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	24,  // 253: human_resource.payroll.v1.PayrollService.FindPayrollRunByIdempotencyKey:output_type -> human_resource.payroll.v1.PayrollRunsResponse
-	23,  // 254: human_resource.payroll.v1.PayrollService.CalculatePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	23,  // 255: human_resource.payroll.v1.PayrollService.CancelPayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	23,  // 256: human_resource.payroll.v1.PayrollService.SubmitPayrollRunForReview:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	23,  // 257: human_resource.payroll.v1.PayrollService.RequestPayrollPosting:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	23,  // 258: human_resource.payroll.v1.PayrollService.ApprovePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
-	29,  // 259: human_resource.payroll.v1.PayrollService.CreatePayrollResult:output_type -> human_resource.payroll.v1.PayrollResultResponse
-	29,  // 260: human_resource.payroll.v1.PayrollService.UpdatePayrollResult:output_type -> human_resource.payroll.v1.PayrollResultResponse
-	68,  // 261: human_resource.payroll.v1.PayrollService.DeletePayrollResult:output_type -> human_resource.common.v1.EmptyResponse
-	56,  // 262: human_resource.payroll.v1.PayrollService.GetMyPayslip:output_type -> human_resource.payroll.v1.GetMyPayslipResponse
-	58,  // 263: human_resource.payroll.v1.PayrollService.ListMyPayslips:output_type -> human_resource.payroll.v1.ListMyPayslipsResponse
-	60,  // 264: human_resource.payroll.v1.PayrollService.ReissueEmployeePayslip:output_type -> human_resource.payroll.v1.ReissueEmployeePayslipResponse
-	29,  // 265: human_resource.payroll.v1.PayrollService.GetPayrollResultByID:output_type -> human_resource.payroll.v1.PayrollResultResponse
-	30,  // 266: human_resource.payroll.v1.PayrollService.GetAllPayrollResults:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 267: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollRunID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 268: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 269: human_resource.payroll.v1.PayrollService.FindPayrollResultByWorkerID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 270: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollProfileReferenceID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 271: human_resource.payroll.v1.PayrollService.FindPayrollResultByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 272: human_resource.payroll.v1.PayrollService.FindPayrollResultByResultStatus:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 273: human_resource.payroll.v1.PayrollService.FindPayrollResultByPaymentReferenceID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	30,  // 274: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayslipDocumentReferenceID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
-	35,  // 275: human_resource.payroll.v1.PayrollService.CreatePayrollResultLine:output_type -> human_resource.payroll.v1.PayrollResultLineResponse
-	35,  // 276: human_resource.payroll.v1.PayrollService.UpdatePayrollResultLine:output_type -> human_resource.payroll.v1.PayrollResultLineResponse
-	68,  // 277: human_resource.payroll.v1.PayrollService.DeletePayrollResultLine:output_type -> human_resource.common.v1.EmptyResponse
-	35,  // 278: human_resource.payroll.v1.PayrollService.GetPayrollResultLineByID:output_type -> human_resource.payroll.v1.PayrollResultLineResponse
-	36,  // 279: human_resource.payroll.v1.PayrollService.GetAllPayrollResultLines:output_type -> human_resource.payroll.v1.PayrollResultLinesResponse
-	36,  // 280: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByPayrollResultID:output_type -> human_resource.payroll.v1.PayrollResultLinesResponse
-	36,  // 281: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByComponentID:output_type -> human_resource.payroll.v1.PayrollResultLinesResponse
-	41,  // 282: human_resource.payroll.v1.PayrollService.CreatePayrollAdjustment:output_type -> human_resource.payroll.v1.PayrollAdjustmentResponse
-	41,  // 283: human_resource.payroll.v1.PayrollService.UpdatePayrollAdjustment:output_type -> human_resource.payroll.v1.PayrollAdjustmentResponse
-	68,  // 284: human_resource.payroll.v1.PayrollService.DeletePayrollAdjustment:output_type -> human_resource.common.v1.EmptyResponse
-	41,  // 285: human_resource.payroll.v1.PayrollService.GetPayrollAdjustmentByID:output_type -> human_resource.payroll.v1.PayrollAdjustmentResponse
-	42,  // 286: human_resource.payroll.v1.PayrollService.GetAllPayrollAdjustments:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 287: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByWorkerID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 288: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByPayrollPeriodID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 289: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByComponentID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 290: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByAdjustmentType:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 291: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 292: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByRequestedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 293: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByApprovedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	42,  // 294: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByIdempotencyKey:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
-	47,  // 295: human_resource.payroll.v1.PayrollService.CreatePayrollGroup:output_type -> human_resource.payroll.v1.PayrollGroupResponse
-	47,  // 296: human_resource.payroll.v1.PayrollService.UpdatePayrollGroup:output_type -> human_resource.payroll.v1.PayrollGroupResponse
-	68,  // 297: human_resource.payroll.v1.PayrollService.DeletePayrollGroup:output_type -> human_resource.common.v1.EmptyResponse
-	47,  // 298: human_resource.payroll.v1.PayrollService.GetPayrollGroupByID:output_type -> human_resource.payroll.v1.PayrollGroupResponse
-	48,  // 299: human_resource.payroll.v1.PayrollService.GetAllPayrollGroups:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
-	48,  // 300: human_resource.payroll.v1.PayrollService.FindPayrollGroupByGroupCode:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
-	48,  // 301: human_resource.payroll.v1.PayrollService.FindPayrollGroupByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
-	48,  // 302: human_resource.payroll.v1.PayrollService.FindPayrollGroupByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
-	48,  // 303: human_resource.payroll.v1.PayrollService.FindPayrollGroupByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
-	53,  // 304: human_resource.payroll.v1.PayrollService.CreatePayrollRuleSet:output_type -> human_resource.payroll.v1.PayrollRuleSetResponse
-	53,  // 305: human_resource.payroll.v1.PayrollService.UpdatePayrollRuleSet:output_type -> human_resource.payroll.v1.PayrollRuleSetResponse
-	68,  // 306: human_resource.payroll.v1.PayrollService.DeletePayrollRuleSet:output_type -> human_resource.common.v1.EmptyResponse
-	53,  // 307: human_resource.payroll.v1.PayrollService.GetPayrollRuleSetByID:output_type -> human_resource.payroll.v1.PayrollRuleSetResponse
-	54,  // 308: human_resource.payroll.v1.PayrollService.GetAllPayrollRuleSets:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
-	54,  // 309: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByRuleCode:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
-	54,  // 310: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
-	54,  // 311: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByArtifactDocumentVersionReferenceID:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
-	54,  // 312: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByLegalBasisDocumentVersionReferenceID:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
-	54,  // 313: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByApprovedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
-	193, // [193:314] is the sub-list for method output_type
-	72,  // [72:193] is the sub-list for method input_type
-	72,  // [72:72] is the sub-list for extension type_name
-	72,  // [72:72] is the sub-list for extension extendee
-	0,   // [0:72] is the sub-list for field type_name
+	65,  // 32: human_resource.payroll.v1.PayrollRunsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	66,  // 33: human_resource.payroll.v1.PayrollInputSnapshotMetadata.frozen_at:type_name -> google.protobuf.Timestamp
+	26,  // 34: human_resource.payroll.v1.FreezePayrollInputResponse.item:type_name -> human_resource.payroll.v1.PayrollInputSnapshotMetadata
+	66,  // 35: human_resource.payroll.v1.PayrollResult.created_at:type_name -> google.protobuf.Timestamp
+	29,  // 36: human_resource.payroll.v1.CreatePayrollResultRequest.input:type_name -> human_resource.payroll.v1.PayrollResultInput
+	29,  // 37: human_resource.payroll.v1.UpdatePayrollResultRequest.input:type_name -> human_resource.payroll.v1.PayrollResultInput
+	64,  // 38: human_resource.payroll.v1.UpdatePayrollResultRequest.update_mask:type_name -> google.protobuf.FieldMask
+	28,  // 39: human_resource.payroll.v1.PayrollResultResponse.item:type_name -> human_resource.payroll.v1.PayrollResult
+	28,  // 40: human_resource.payroll.v1.PayrollResultsResponse.items:type_name -> human_resource.payroll.v1.PayrollResult
+	65,  // 41: human_resource.payroll.v1.PayrollResultsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	35,  // 42: human_resource.payroll.v1.CreatePayrollResultLineRequest.input:type_name -> human_resource.payroll.v1.PayrollResultLineInput
+	35,  // 43: human_resource.payroll.v1.UpdatePayrollResultLineRequest.input:type_name -> human_resource.payroll.v1.PayrollResultLineInput
+	64,  // 44: human_resource.payroll.v1.UpdatePayrollResultLineRequest.update_mask:type_name -> google.protobuf.FieldMask
+	34,  // 45: human_resource.payroll.v1.PayrollResultLineResponse.item:type_name -> human_resource.payroll.v1.PayrollResultLine
+	34,  // 46: human_resource.payroll.v1.PayrollResultLinesResponse.items:type_name -> human_resource.payroll.v1.PayrollResultLine
+	65,  // 47: human_resource.payroll.v1.PayrollResultLinesResponse.page:type_name -> human_resource.common.v1.PageInfo
+	66,  // 48: human_resource.payroll.v1.PayrollAdjustment.approved_at:type_name -> google.protobuf.Timestamp
+	66,  // 49: human_resource.payroll.v1.PayrollAdjustment.created_at:type_name -> google.protobuf.Timestamp
+	66,  // 50: human_resource.payroll.v1.PayrollAdjustmentInput.approved_at:type_name -> google.protobuf.Timestamp
+	41,  // 51: human_resource.payroll.v1.CreatePayrollAdjustmentRequest.input:type_name -> human_resource.payroll.v1.PayrollAdjustmentInput
+	41,  // 52: human_resource.payroll.v1.UpdatePayrollAdjustmentRequest.input:type_name -> human_resource.payroll.v1.PayrollAdjustmentInput
+	64,  // 53: human_resource.payroll.v1.UpdatePayrollAdjustmentRequest.update_mask:type_name -> google.protobuf.FieldMask
+	40,  // 54: human_resource.payroll.v1.PayrollAdjustmentResponse.item:type_name -> human_resource.payroll.v1.PayrollAdjustment
+	40,  // 55: human_resource.payroll.v1.PayrollAdjustmentsResponse.items:type_name -> human_resource.payroll.v1.PayrollAdjustment
+	65,  // 56: human_resource.payroll.v1.PayrollAdjustmentsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	47,  // 57: human_resource.payroll.v1.CreatePayrollGroupRequest.input:type_name -> human_resource.payroll.v1.PayrollGroupInput
+	47,  // 58: human_resource.payroll.v1.UpdatePayrollGroupRequest.input:type_name -> human_resource.payroll.v1.PayrollGroupInput
+	64,  // 59: human_resource.payroll.v1.UpdatePayrollGroupRequest.update_mask:type_name -> google.protobuf.FieldMask
+	46,  // 60: human_resource.payroll.v1.PayrollGroupResponse.item:type_name -> human_resource.payroll.v1.PayrollGroup
+	46,  // 61: human_resource.payroll.v1.PayrollGroupsResponse.items:type_name -> human_resource.payroll.v1.PayrollGroup
+	65,  // 62: human_resource.payroll.v1.PayrollGroupsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	66,  // 63: human_resource.payroll.v1.PayrollRuleSet.approved_at:type_name -> google.protobuf.Timestamp
+	66,  // 64: human_resource.payroll.v1.PayrollRuleSetInput.approved_at:type_name -> google.protobuf.Timestamp
+	53,  // 65: human_resource.payroll.v1.CreatePayrollRuleSetRequest.input:type_name -> human_resource.payroll.v1.PayrollRuleSetInput
+	53,  // 66: human_resource.payroll.v1.UpdatePayrollRuleSetRequest.input:type_name -> human_resource.payroll.v1.PayrollRuleSetInput
+	64,  // 67: human_resource.payroll.v1.UpdatePayrollRuleSetRequest.update_mask:type_name -> google.protobuf.FieldMask
+	52,  // 68: human_resource.payroll.v1.PayrollRuleSetResponse.item:type_name -> human_resource.payroll.v1.PayrollRuleSet
+	52,  // 69: human_resource.payroll.v1.PayrollRuleSetsResponse.items:type_name -> human_resource.payroll.v1.PayrollRuleSet
+	65,  // 70: human_resource.payroll.v1.PayrollRuleSetsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	66,  // 71: human_resource.payroll.v1.GetMyPayslipResponse.published_at:type_name -> google.protobuf.Timestamp
+	59,  // 72: human_resource.payroll.v1.ListMyPayslipsResponse.items:type_name -> human_resource.payroll.v1.GetMyPayslipResponse
+	65,  // 73: human_resource.payroll.v1.ListMyPayslipsResponse.page:type_name -> human_resource.common.v1.PageInfo
+	2,   // 74: human_resource.payroll.v1.PayrollService.CreatePayrollProfile:input_type -> human_resource.payroll.v1.CreatePayrollProfileRequest
+	3,   // 75: human_resource.payroll.v1.PayrollService.UpdatePayrollProfile:input_type -> human_resource.payroll.v1.UpdatePayrollProfileRequest
+	67,  // 76: human_resource.payroll.v1.PayrollService.DeletePayrollProfile:input_type -> human_resource.common.v1.IDRequest
+	67,  // 77: human_resource.payroll.v1.PayrollService.GetPayrollProfileByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 78: human_resource.payroll.v1.PayrollService.GetAllPayrollProfiles:input_type -> human_resource.common.v1.PageRequest
+	69,  // 79: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 80: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollCountryCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 81: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 82: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 83: human_resource.payroll.v1.PayrollService.FindPayrollProfileByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 84: human_resource.payroll.v1.PayrollService.FindPayrollProfileByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 85: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxProfileReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 86: human_resource.payroll.v1.PayrollService.FindPayrollProfileByBankAccountTokenReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 87: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxStatusCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 88: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWithholdingElectionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	8,   // 89: human_resource.payroll.v1.PayrollService.CreatePayComponent:input_type -> human_resource.payroll.v1.CreatePayComponentRequest
+	9,   // 90: human_resource.payroll.v1.PayrollService.UpdatePayComponent:input_type -> human_resource.payroll.v1.UpdatePayComponentRequest
+	67,  // 91: human_resource.payroll.v1.PayrollService.DeletePayComponent:input_type -> human_resource.common.v1.IDRequest
+	67,  // 92: human_resource.payroll.v1.PayrollService.GetPayComponentByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 93: human_resource.payroll.v1.PayrollService.GetAllPayComponents:input_type -> human_resource.common.v1.PageRequest
+	69,  // 94: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 95: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentType:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 96: human_resource.payroll.v1.PayrollService.FindPayComponentByTaxTreatmentCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 97: human_resource.payroll.v1.PayrollService.FindPayComponentByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 98: human_resource.payroll.v1.PayrollService.FindPayComponentByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 99: human_resource.payroll.v1.PayrollService.FindPayComponentByRuleSetID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 100: human_resource.payroll.v1.PayrollService.FindPayComponentByFormulaReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	14,  // 101: human_resource.payroll.v1.PayrollService.CreatePayrollPeriod:input_type -> human_resource.payroll.v1.CreatePayrollPeriodRequest
+	15,  // 102: human_resource.payroll.v1.PayrollService.UpdatePayrollPeriod:input_type -> human_resource.payroll.v1.UpdatePayrollPeriodRequest
+	67,  // 103: human_resource.payroll.v1.PayrollService.DeletePayrollPeriod:input_type -> human_resource.common.v1.IDRequest
+	67,  // 104: human_resource.payroll.v1.PayrollService.GetPayrollPeriodByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 105: human_resource.payroll.v1.PayrollService.GetAllPayrollPeriods:input_type -> human_resource.common.v1.PageRequest
+	69,  // 106: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 107: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 108: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 109: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 110: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 111: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 112: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCalendarReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	21,  // 113: human_resource.payroll.v1.PayrollService.CreatePayrollRun:input_type -> human_resource.payroll.v1.CreatePayrollRunRequest
+	22,  // 114: human_resource.payroll.v1.PayrollService.UpdatePayrollRun:input_type -> human_resource.payroll.v1.UpdatePayrollRunRequest
+	67,  // 115: human_resource.payroll.v1.PayrollService.DeletePayrollRun:input_type -> human_resource.common.v1.IDRequest
+	67,  // 116: human_resource.payroll.v1.PayrollService.GetPayrollRunByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 117: human_resource.payroll.v1.PayrollService.GetAllPayrollRuns:input_type -> human_resource.common.v1.PageRequest
+	69,  // 118: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollPeriodID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 119: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 120: human_resource.payroll.v1.PayrollService.FindPayrollRunByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 121: human_resource.payroll.v1.PayrollService.FindPayrollRunByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 122: human_resource.payroll.v1.PayrollService.FindPayrollRunByRuleSetID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 123: human_resource.payroll.v1.PayrollService.FindPayrollRunByOriginalRunID:input_type -> human_resource.common.v1.StringFinderRequest
+	70,  // 124: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunNumber:input_type -> human_resource.common.v1.Int32FinderRequest
+	69,  // 125: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunType:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 126: human_resource.payroll.v1.PayrollService.FindPayrollRunByStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 127: human_resource.payroll.v1.PayrollService.FindPayrollRunByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 128: human_resource.payroll.v1.PayrollService.FindPayrollRunByInputSnapshotReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 129: human_resource.payroll.v1.PayrollService.FindPayrollRunByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 130: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceJournalReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 131: human_resource.payroll.v1.PayrollService.FindPayrollRunByPaymentBatchReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 132: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceSettlementEventReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 133: human_resource.payroll.v1.PayrollService.FindPayrollRunByStartedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 134: human_resource.payroll.v1.PayrollService.FindPayrollRunByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	25,  // 135: human_resource.payroll.v1.PayrollService.FreezePayrollInput:input_type -> human_resource.payroll.v1.FreezePayrollInputRequest
+	67,  // 136: human_resource.payroll.v1.PayrollService.CalculatePayrollRun:input_type -> human_resource.common.v1.IDRequest
+	19,  // 137: human_resource.payroll.v1.PayrollService.CancelPayrollRun:input_type -> human_resource.payroll.v1.CancelPayrollRunRequest
+	67,  // 138: human_resource.payroll.v1.PayrollService.SubmitPayrollRunForReview:input_type -> human_resource.common.v1.IDRequest
+	67,  // 139: human_resource.payroll.v1.PayrollService.RequestPayrollPosting:input_type -> human_resource.common.v1.IDRequest
+	67,  // 140: human_resource.payroll.v1.PayrollService.ApprovePayrollRun:input_type -> human_resource.common.v1.IDRequest
+	30,  // 141: human_resource.payroll.v1.PayrollService.CreatePayrollResult:input_type -> human_resource.payroll.v1.CreatePayrollResultRequest
+	31,  // 142: human_resource.payroll.v1.PayrollService.UpdatePayrollResult:input_type -> human_resource.payroll.v1.UpdatePayrollResultRequest
+	67,  // 143: human_resource.payroll.v1.PayrollService.DeletePayrollResult:input_type -> human_resource.common.v1.IDRequest
+	58,  // 144: human_resource.payroll.v1.PayrollService.GetMyPayslip:input_type -> human_resource.payroll.v1.GetMyPayslipRequest
+	60,  // 145: human_resource.payroll.v1.PayrollService.ListMyPayslips:input_type -> human_resource.payroll.v1.ListMyPayslipsRequest
+	62,  // 146: human_resource.payroll.v1.PayrollService.ReissueEmployeePayslip:input_type -> human_resource.payroll.v1.ReissueEmployeePayslipRequest
+	67,  // 147: human_resource.payroll.v1.PayrollService.GetPayrollResultByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 148: human_resource.payroll.v1.PayrollService.GetAllPayrollResults:input_type -> human_resource.common.v1.PageRequest
+	69,  // 149: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollRunID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 150: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollGroupID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 151: human_resource.payroll.v1.PayrollService.FindPayrollResultByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 152: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollProfileReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 153: human_resource.payroll.v1.PayrollService.FindPayrollResultByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 154: human_resource.payroll.v1.PayrollService.FindPayrollResultByResultStatus:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 155: human_resource.payroll.v1.PayrollService.FindPayrollResultByPaymentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 156: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayslipDocumentReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	36,  // 157: human_resource.payroll.v1.PayrollService.CreatePayrollResultLine:input_type -> human_resource.payroll.v1.CreatePayrollResultLineRequest
+	37,  // 158: human_resource.payroll.v1.PayrollService.UpdatePayrollResultLine:input_type -> human_resource.payroll.v1.UpdatePayrollResultLineRequest
+	67,  // 159: human_resource.payroll.v1.PayrollService.DeletePayrollResultLine:input_type -> human_resource.common.v1.IDRequest
+	67,  // 160: human_resource.payroll.v1.PayrollService.GetPayrollResultLineByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 161: human_resource.payroll.v1.PayrollService.GetAllPayrollResultLines:input_type -> human_resource.common.v1.PageRequest
+	69,  // 162: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByPayrollResultID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 163: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByComponentID:input_type -> human_resource.common.v1.StringFinderRequest
+	42,  // 164: human_resource.payroll.v1.PayrollService.CreatePayrollAdjustment:input_type -> human_resource.payroll.v1.CreatePayrollAdjustmentRequest
+	43,  // 165: human_resource.payroll.v1.PayrollService.UpdatePayrollAdjustment:input_type -> human_resource.payroll.v1.UpdatePayrollAdjustmentRequest
+	67,  // 166: human_resource.payroll.v1.PayrollService.DeletePayrollAdjustment:input_type -> human_resource.common.v1.IDRequest
+	67,  // 167: human_resource.payroll.v1.PayrollService.GetPayrollAdjustmentByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 168: human_resource.payroll.v1.PayrollService.GetAllPayrollAdjustments:input_type -> human_resource.common.v1.PageRequest
+	69,  // 169: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByWorkerID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 170: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByPayrollPeriodID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 171: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByComponentID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 172: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByAdjustmentType:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 173: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 174: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByRequestedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 175: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 176: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByIdempotencyKey:input_type -> human_resource.common.v1.StringFinderRequest
+	48,  // 177: human_resource.payroll.v1.PayrollService.CreatePayrollGroup:input_type -> human_resource.payroll.v1.CreatePayrollGroupRequest
+	49,  // 178: human_resource.payroll.v1.PayrollService.UpdatePayrollGroup:input_type -> human_resource.payroll.v1.UpdatePayrollGroupRequest
+	67,  // 179: human_resource.payroll.v1.PayrollService.DeletePayrollGroup:input_type -> human_resource.common.v1.IDRequest
+	67,  // 180: human_resource.payroll.v1.PayrollService.GetPayrollGroupByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 181: human_resource.payroll.v1.PayrollService.GetAllPayrollGroups:input_type -> human_resource.common.v1.PageRequest
+	69,  // 182: human_resource.payroll.v1.PayrollService.FindPayrollGroupByGroupCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 183: human_resource.payroll.v1.PayrollService.FindPayrollGroupByEmployingLegalEntityReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 184: human_resource.payroll.v1.PayrollService.FindPayrollGroupByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 185: human_resource.payroll.v1.PayrollService.FindPayrollGroupByCurrencyCode:input_type -> human_resource.common.v1.StringFinderRequest
+	54,  // 186: human_resource.payroll.v1.PayrollService.CreatePayrollRuleSet:input_type -> human_resource.payroll.v1.CreatePayrollRuleSetRequest
+	55,  // 187: human_resource.payroll.v1.PayrollService.UpdatePayrollRuleSet:input_type -> human_resource.payroll.v1.UpdatePayrollRuleSetRequest
+	67,  // 188: human_resource.payroll.v1.PayrollService.DeletePayrollRuleSet:input_type -> human_resource.common.v1.IDRequest
+	67,  // 189: human_resource.payroll.v1.PayrollService.GetPayrollRuleSetByID:input_type -> human_resource.common.v1.IDRequest
+	68,  // 190: human_resource.payroll.v1.PayrollService.GetAllPayrollRuleSets:input_type -> human_resource.common.v1.PageRequest
+	69,  // 191: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByRuleCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 192: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByJurisdictionCode:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 193: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByArtifactDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 194: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByLegalBasisDocumentVersionReferenceID:input_type -> human_resource.common.v1.StringFinderRequest
+	69,  // 195: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByApprovedByPrincipalID:input_type -> human_resource.common.v1.StringFinderRequest
+	4,   // 196: human_resource.payroll.v1.PayrollService.CreatePayrollProfile:output_type -> human_resource.payroll.v1.PayrollProfileResponse
+	4,   // 197: human_resource.payroll.v1.PayrollService.UpdatePayrollProfile:output_type -> human_resource.payroll.v1.PayrollProfileResponse
+	71,  // 198: human_resource.payroll.v1.PayrollService.DeletePayrollProfile:output_type -> human_resource.common.v1.EmptyResponse
+	4,   // 199: human_resource.payroll.v1.PayrollService.GetPayrollProfileByID:output_type -> human_resource.payroll.v1.PayrollProfileResponse
+	5,   // 200: human_resource.payroll.v1.PayrollService.GetAllPayrollProfiles:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 201: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWorkerID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 202: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollCountryCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 203: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 204: human_resource.payroll.v1.PayrollService.FindPayrollProfileByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 205: human_resource.payroll.v1.PayrollService.FindPayrollProfileByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 206: human_resource.payroll.v1.PayrollService.FindPayrollProfileByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 207: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxProfileReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 208: human_resource.payroll.v1.PayrollService.FindPayrollProfileByBankAccountTokenReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 209: human_resource.payroll.v1.PayrollService.FindPayrollProfileByTaxStatusCode:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	5,   // 210: human_resource.payroll.v1.PayrollService.FindPayrollProfileByWithholdingElectionReferenceID:output_type -> human_resource.payroll.v1.PayrollProfilesResponse
+	10,  // 211: human_resource.payroll.v1.PayrollService.CreatePayComponent:output_type -> human_resource.payroll.v1.PayComponentResponse
+	10,  // 212: human_resource.payroll.v1.PayrollService.UpdatePayComponent:output_type -> human_resource.payroll.v1.PayComponentResponse
+	71,  // 213: human_resource.payroll.v1.PayrollService.DeletePayComponent:output_type -> human_resource.common.v1.EmptyResponse
+	10,  // 214: human_resource.payroll.v1.PayrollService.GetPayComponentByID:output_type -> human_resource.payroll.v1.PayComponentResponse
+	11,  // 215: human_resource.payroll.v1.PayrollService.GetAllPayComponents:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	11,  // 216: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	11,  // 217: human_resource.payroll.v1.PayrollService.FindPayComponentByComponentType:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	11,  // 218: human_resource.payroll.v1.PayrollService.FindPayComponentByTaxTreatmentCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	11,  // 219: human_resource.payroll.v1.PayrollService.FindPayComponentByJurisdictionCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	11,  // 220: human_resource.payroll.v1.PayrollService.FindPayComponentByCurrencyCode:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	11,  // 221: human_resource.payroll.v1.PayrollService.FindPayComponentByRuleSetID:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	11,  // 222: human_resource.payroll.v1.PayrollService.FindPayComponentByFormulaReferenceID:output_type -> human_resource.payroll.v1.PayComponentsResponse
+	16,  // 223: human_resource.payroll.v1.PayrollService.CreatePayrollPeriod:output_type -> human_resource.payroll.v1.PayrollPeriodResponse
+	16,  // 224: human_resource.payroll.v1.PayrollService.UpdatePayrollPeriod:output_type -> human_resource.payroll.v1.PayrollPeriodResponse
+	71,  // 225: human_resource.payroll.v1.PayrollService.DeletePayrollPeriod:output_type -> human_resource.common.v1.EmptyResponse
+	16,  // 226: human_resource.payroll.v1.PayrollService.GetPayrollPeriodByID:output_type -> human_resource.payroll.v1.PayrollPeriodResponse
+	17,  // 227: human_resource.payroll.v1.PayrollService.GetAllPayrollPeriods:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	17,  // 228: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	17,  // 229: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	17,  // 230: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	17,  // 231: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	17,  // 232: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodCode:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	17,  // 233: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByPeriodStatus:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	17,  // 234: human_resource.payroll.v1.PayrollService.FindPayrollPeriodByCalendarReferenceID:output_type -> human_resource.payroll.v1.PayrollPeriodsResponse
+	23,  // 235: human_resource.payroll.v1.PayrollService.CreatePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	23,  // 236: human_resource.payroll.v1.PayrollService.UpdatePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	71,  // 237: human_resource.payroll.v1.PayrollService.DeletePayrollRun:output_type -> human_resource.common.v1.EmptyResponse
+	23,  // 238: human_resource.payroll.v1.PayrollService.GetPayrollRunByID:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	24,  // 239: human_resource.payroll.v1.PayrollService.GetAllPayrollRuns:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 240: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollPeriodID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 241: human_resource.payroll.v1.PayrollService.FindPayrollRunByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 242: human_resource.payroll.v1.PayrollService.FindPayrollRunByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 243: human_resource.payroll.v1.PayrollService.FindPayrollRunByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 244: human_resource.payroll.v1.PayrollService.FindPayrollRunByRuleSetID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 245: human_resource.payroll.v1.PayrollService.FindPayrollRunByOriginalRunID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 246: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunNumber:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 247: human_resource.payroll.v1.PayrollService.FindPayrollRunByRunType:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 248: human_resource.payroll.v1.PayrollService.FindPayrollRunByStatus:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 249: human_resource.payroll.v1.PayrollService.FindPayrollRunByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 250: human_resource.payroll.v1.PayrollService.FindPayrollRunByInputSnapshotReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 251: human_resource.payroll.v1.PayrollService.FindPayrollRunByApprovedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 252: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceJournalReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 253: human_resource.payroll.v1.PayrollService.FindPayrollRunByPaymentBatchReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 254: human_resource.payroll.v1.PayrollService.FindPayrollRunByFinanceSettlementEventReferenceID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 255: human_resource.payroll.v1.PayrollService.FindPayrollRunByStartedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	24,  // 256: human_resource.payroll.v1.PayrollService.FindPayrollRunByIdempotencyKey:output_type -> human_resource.payroll.v1.PayrollRunsResponse
+	27,  // 257: human_resource.payroll.v1.PayrollService.FreezePayrollInput:output_type -> human_resource.payroll.v1.FreezePayrollInputResponse
+	23,  // 258: human_resource.payroll.v1.PayrollService.CalculatePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	23,  // 259: human_resource.payroll.v1.PayrollService.CancelPayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	23,  // 260: human_resource.payroll.v1.PayrollService.SubmitPayrollRunForReview:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	23,  // 261: human_resource.payroll.v1.PayrollService.RequestPayrollPosting:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	23,  // 262: human_resource.payroll.v1.PayrollService.ApprovePayrollRun:output_type -> human_resource.payroll.v1.PayrollRunResponse
+	32,  // 263: human_resource.payroll.v1.PayrollService.CreatePayrollResult:output_type -> human_resource.payroll.v1.PayrollResultResponse
+	32,  // 264: human_resource.payroll.v1.PayrollService.UpdatePayrollResult:output_type -> human_resource.payroll.v1.PayrollResultResponse
+	71,  // 265: human_resource.payroll.v1.PayrollService.DeletePayrollResult:output_type -> human_resource.common.v1.EmptyResponse
+	59,  // 266: human_resource.payroll.v1.PayrollService.GetMyPayslip:output_type -> human_resource.payroll.v1.GetMyPayslipResponse
+	61,  // 267: human_resource.payroll.v1.PayrollService.ListMyPayslips:output_type -> human_resource.payroll.v1.ListMyPayslipsResponse
+	63,  // 268: human_resource.payroll.v1.PayrollService.ReissueEmployeePayslip:output_type -> human_resource.payroll.v1.ReissueEmployeePayslipResponse
+	32,  // 269: human_resource.payroll.v1.PayrollService.GetPayrollResultByID:output_type -> human_resource.payroll.v1.PayrollResultResponse
+	33,  // 270: human_resource.payroll.v1.PayrollService.GetAllPayrollResults:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 271: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollRunID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 272: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollGroupID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 273: human_resource.payroll.v1.PayrollService.FindPayrollResultByWorkerID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 274: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayrollProfileReferenceID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 275: human_resource.payroll.v1.PayrollService.FindPayrollResultByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 276: human_resource.payroll.v1.PayrollService.FindPayrollResultByResultStatus:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 277: human_resource.payroll.v1.PayrollService.FindPayrollResultByPaymentReferenceID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	33,  // 278: human_resource.payroll.v1.PayrollService.FindPayrollResultByPayslipDocumentReferenceID:output_type -> human_resource.payroll.v1.PayrollResultsResponse
+	38,  // 279: human_resource.payroll.v1.PayrollService.CreatePayrollResultLine:output_type -> human_resource.payroll.v1.PayrollResultLineResponse
+	38,  // 280: human_resource.payroll.v1.PayrollService.UpdatePayrollResultLine:output_type -> human_resource.payroll.v1.PayrollResultLineResponse
+	71,  // 281: human_resource.payroll.v1.PayrollService.DeletePayrollResultLine:output_type -> human_resource.common.v1.EmptyResponse
+	38,  // 282: human_resource.payroll.v1.PayrollService.GetPayrollResultLineByID:output_type -> human_resource.payroll.v1.PayrollResultLineResponse
+	39,  // 283: human_resource.payroll.v1.PayrollService.GetAllPayrollResultLines:output_type -> human_resource.payroll.v1.PayrollResultLinesResponse
+	39,  // 284: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByPayrollResultID:output_type -> human_resource.payroll.v1.PayrollResultLinesResponse
+	39,  // 285: human_resource.payroll.v1.PayrollService.FindPayrollResultLineByComponentID:output_type -> human_resource.payroll.v1.PayrollResultLinesResponse
+	44,  // 286: human_resource.payroll.v1.PayrollService.CreatePayrollAdjustment:output_type -> human_resource.payroll.v1.PayrollAdjustmentResponse
+	44,  // 287: human_resource.payroll.v1.PayrollService.UpdatePayrollAdjustment:output_type -> human_resource.payroll.v1.PayrollAdjustmentResponse
+	71,  // 288: human_resource.payroll.v1.PayrollService.DeletePayrollAdjustment:output_type -> human_resource.common.v1.EmptyResponse
+	44,  // 289: human_resource.payroll.v1.PayrollService.GetPayrollAdjustmentByID:output_type -> human_resource.payroll.v1.PayrollAdjustmentResponse
+	45,  // 290: human_resource.payroll.v1.PayrollService.GetAllPayrollAdjustments:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 291: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByWorkerID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 292: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByPayrollPeriodID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 293: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByComponentID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 294: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByAdjustmentType:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 295: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 296: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByRequestedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 297: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByApprovedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	45,  // 298: human_resource.payroll.v1.PayrollService.FindPayrollAdjustmentByIdempotencyKey:output_type -> human_resource.payroll.v1.PayrollAdjustmentsResponse
+	50,  // 299: human_resource.payroll.v1.PayrollService.CreatePayrollGroup:output_type -> human_resource.payroll.v1.PayrollGroupResponse
+	50,  // 300: human_resource.payroll.v1.PayrollService.UpdatePayrollGroup:output_type -> human_resource.payroll.v1.PayrollGroupResponse
+	71,  // 301: human_resource.payroll.v1.PayrollService.DeletePayrollGroup:output_type -> human_resource.common.v1.EmptyResponse
+	50,  // 302: human_resource.payroll.v1.PayrollService.GetPayrollGroupByID:output_type -> human_resource.payroll.v1.PayrollGroupResponse
+	51,  // 303: human_resource.payroll.v1.PayrollService.GetAllPayrollGroups:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
+	51,  // 304: human_resource.payroll.v1.PayrollService.FindPayrollGroupByGroupCode:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
+	51,  // 305: human_resource.payroll.v1.PayrollService.FindPayrollGroupByEmployingLegalEntityReferenceID:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
+	51,  // 306: human_resource.payroll.v1.PayrollService.FindPayrollGroupByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
+	51,  // 307: human_resource.payroll.v1.PayrollService.FindPayrollGroupByCurrencyCode:output_type -> human_resource.payroll.v1.PayrollGroupsResponse
+	56,  // 308: human_resource.payroll.v1.PayrollService.CreatePayrollRuleSet:output_type -> human_resource.payroll.v1.PayrollRuleSetResponse
+	56,  // 309: human_resource.payroll.v1.PayrollService.UpdatePayrollRuleSet:output_type -> human_resource.payroll.v1.PayrollRuleSetResponse
+	71,  // 310: human_resource.payroll.v1.PayrollService.DeletePayrollRuleSet:output_type -> human_resource.common.v1.EmptyResponse
+	56,  // 311: human_resource.payroll.v1.PayrollService.GetPayrollRuleSetByID:output_type -> human_resource.payroll.v1.PayrollRuleSetResponse
+	57,  // 312: human_resource.payroll.v1.PayrollService.GetAllPayrollRuleSets:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
+	57,  // 313: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByRuleCode:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
+	57,  // 314: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByJurisdictionCode:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
+	57,  // 315: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByArtifactDocumentVersionReferenceID:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
+	57,  // 316: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByLegalBasisDocumentVersionReferenceID:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
+	57,  // 317: human_resource.payroll.v1.PayrollService.FindPayrollRuleSetByApprovedByPrincipalID:output_type -> human_resource.payroll.v1.PayrollRuleSetsResponse
+	196, // [196:318] is the sub-list for method output_type
+	74,  // [74:196] is the sub-list for method input_type
+	74,  // [74:74] is the sub-list for extension type_name
+	74,  // [74:74] is the sub-list for extension extendee
+	0,   // [0:74] is the sub-list for field type_name
 }
 
 func init() { file_human_resource_payroll_v1_payroll_proto_init() }
@@ -6086,23 +6304,23 @@ func file_human_resource_payroll_v1_payroll_proto_init() {
 	file_human_resource_payroll_v1_payroll_proto_msgTypes[13].OneofWrappers = []any{}
 	file_human_resource_payroll_v1_payroll_proto_msgTypes[18].OneofWrappers = []any{}
 	file_human_resource_payroll_v1_payroll_proto_msgTypes[20].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[25].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[26].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[31].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[32].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[37].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[38].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[44].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[49].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[50].OneofWrappers = []any{}
-	file_human_resource_payroll_v1_payroll_proto_msgTypes[57].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[28].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[29].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[34].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[35].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[40].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[41].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[47].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[52].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[53].OneofWrappers = []any{}
+	file_human_resource_payroll_v1_payroll_proto_msgTypes[60].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_human_resource_payroll_v1_payroll_proto_rawDesc), len(file_human_resource_payroll_v1_payroll_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   61,
+			NumMessages:   64,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

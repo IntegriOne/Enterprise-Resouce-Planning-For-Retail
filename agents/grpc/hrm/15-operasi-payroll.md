@@ -1,6 +1,6 @@
 # List operasi
 
-`human_resource.payroll.v1.PayrollService` memiliki 120 RPC bisnis. [Kontrak proto](../../../backend/services/human_resource/contract/proto/human_resource/payroll/v1/payroll.proto) memuat definisi kolom dan tipe pesan.
+`human_resource.payroll.v1.PayrollService` memiliki 122 RPC bisnis. [Kontrak proto](../../../backend/services/human_resource/contract/proto/human_resource/payroll/v1/payroll.proto) memuat definisi kolom dan tipe pesan.
 
 ## Penjelasan operasi
 
@@ -67,6 +67,7 @@
 | `FindPayrollRunByFinanceSettlementEventReferenceID` | Menyaring daftar `payroll_runs` berdasarkan `finance_settlement_event_reference_id`, dengan paginasi. | Query | `StringFinderRequest` → `PayrollRunsResponse` | `human_resource.payroll_runs.read` |
 | `FindPayrollRunByStartedByPrincipalID` | Menyaring daftar `payroll_runs` berdasarkan `started_by_principal_id`, dengan paginasi. | Query | `StringFinderRequest` → `PayrollRunsResponse` | `human_resource.payroll_runs.read` |
 | `FindPayrollRunByIdempotencyKey` | Menyaring daftar `payroll_runs` berdasarkan `idempotency_key`, dengan paginasi. | Query | `StringFinderRequest` → `PayrollRunsResponse` | `human_resource.payroll_runs.read` |
+| `FreezePayrollInput` | Membekukan input payroll periode terbuka secara idempoten dan mengembalikan metadata snapshot tanpa isi sensitif. | Mutation | `FreezePayrollInputRequest` → `FreezePayrollInputResponse` | `human_resource.payroll_runs.create` |
 | `CalculatePayrollRun` | Menghitung run draf melalui adapter kalkulator dan menyimpan snapshot serta komponennya secara atomik. | Mutation | `IDRequest` → `PayrollRunResponse` | `human_resource.payroll_runs.calculate` |
 | `CancelPayrollRun` | Membatalkan run dalam review dengan alasan dan menjaga snapshot audit. | Mutation | `CancelPayrollRunRequest` → `PayrollRunResponse` | `human_resource.payroll_runs.cancel` |
 | `SubmitPayrollRunForReview` | Penginisiasi mengajukan run yang telah dihitung dan direkonsiliasi untuk review. | Mutation | `IDRequest` → `PayrollRunResponse` | `human_resource.payroll_runs.submit_review` |

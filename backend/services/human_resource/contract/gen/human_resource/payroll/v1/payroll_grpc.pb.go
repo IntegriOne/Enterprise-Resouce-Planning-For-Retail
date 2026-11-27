@@ -81,6 +81,7 @@ const (
 	PayrollService_FindPayrollRunByFinanceSettlementEventReferenceID_FullMethodName        = "/human_resource.payroll.v1.PayrollService/FindPayrollRunByFinanceSettlementEventReferenceID"
 	PayrollService_FindPayrollRunByStartedByPrincipalID_FullMethodName                     = "/human_resource.payroll.v1.PayrollService/FindPayrollRunByStartedByPrincipalID"
 	PayrollService_FindPayrollRunByIdempotencyKey_FullMethodName                           = "/human_resource.payroll.v1.PayrollService/FindPayrollRunByIdempotencyKey"
+	PayrollService_FreezePayrollInput_FullMethodName                                       = "/human_resource.payroll.v1.PayrollService/FreezePayrollInput"
 	PayrollService_CalculatePayrollRun_FullMethodName                                      = "/human_resource.payroll.v1.PayrollService/CalculatePayrollRun"
 	PayrollService_CancelPayrollRun_FullMethodName                                         = "/human_resource.payroll.v1.PayrollService/CancelPayrollRun"
 	PayrollService_SubmitPayrollRunForReview_FullMethodName                                = "/human_resource.payroll.v1.PayrollService/SubmitPayrollRunForReview"
@@ -208,6 +209,7 @@ type PayrollServiceClient interface {
 	FindPayrollRunByFinanceSettlementEventReferenceID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PayrollRunsResponse, error)
 	FindPayrollRunByStartedByPrincipalID(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PayrollRunsResponse, error)
 	FindPayrollRunByIdempotencyKey(ctx context.Context, in *v1.StringFinderRequest, opts ...grpc.CallOption) (*PayrollRunsResponse, error)
+	FreezePayrollInput(ctx context.Context, in *FreezePayrollInputRequest, opts ...grpc.CallOption) (*FreezePayrollInputResponse, error)
 	CalculatePayrollRun(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
 	CancelPayrollRun(ctx context.Context, in *CancelPayrollRunRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
 	SubmitPayrollRunForReview(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error)
@@ -888,6 +890,16 @@ func (c *payrollServiceClient) FindPayrollRunByIdempotencyKey(ctx context.Contex
 	return out, nil
 }
 
+func (c *payrollServiceClient) FreezePayrollInput(ctx context.Context, in *FreezePayrollInputRequest, opts ...grpc.CallOption) (*FreezePayrollInputResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FreezePayrollInputResponse)
+	err := c.cc.Invoke(ctx, PayrollService_FreezePayrollInput_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *payrollServiceClient) CalculatePayrollRun(ctx context.Context, in *v1.IDRequest, opts ...grpc.CallOption) (*PayrollRunResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PayrollRunResponse)
@@ -1553,6 +1565,7 @@ type PayrollServiceServer interface {
 	FindPayrollRunByFinanceSettlementEventReferenceID(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error)
 	FindPayrollRunByStartedByPrincipalID(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error)
 	FindPayrollRunByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error)
+	FreezePayrollInput(context.Context, *FreezePayrollInputRequest) (*FreezePayrollInputResponse, error)
 	CalculatePayrollRun(context.Context, *v1.IDRequest) (*PayrollRunResponse, error)
 	CancelPayrollRun(context.Context, *CancelPayrollRunRequest) (*PayrollRunResponse, error)
 	SubmitPayrollRunForReview(context.Context, *v1.IDRequest) (*PayrollRunResponse, error)
@@ -1805,6 +1818,9 @@ func (UnimplementedPayrollServiceServer) FindPayrollRunByStartedByPrincipalID(co
 }
 func (UnimplementedPayrollServiceServer) FindPayrollRunByIdempotencyKey(context.Context, *v1.StringFinderRequest) (*PayrollRunsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FindPayrollRunByIdempotencyKey not implemented")
+}
+func (UnimplementedPayrollServiceServer) FreezePayrollInput(context.Context, *FreezePayrollInputRequest) (*FreezePayrollInputResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FreezePayrollInput not implemented")
 }
 func (UnimplementedPayrollServiceServer) CalculatePayrollRun(context.Context, *v1.IDRequest) (*PayrollRunResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CalculatePayrollRun not implemented")
@@ -3101,6 +3117,24 @@ func _PayrollService_FindPayrollRunByIdempotencyKey_Handler(srv interface{}, ctx
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PayrollServiceServer).FindPayrollRunByIdempotencyKey(ctx, req.(*v1.StringFinderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_FreezePayrollInput_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FreezePayrollInputRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).FreezePayrollInput(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_FreezePayrollInput_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).FreezePayrollInput(ctx, req.(*FreezePayrollInputRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4435,6 +4469,10 @@ var PayrollService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindPayrollRunByIdempotencyKey",
 			Handler:    _PayrollService_FindPayrollRunByIdempotencyKey_Handler,
+		},
+		{
+			MethodName: "FreezePayrollInput",
+			Handler:    _PayrollService_FreezePayrollInput_Handler,
 		},
 		{
 			MethodName: "CalculatePayrollRun",

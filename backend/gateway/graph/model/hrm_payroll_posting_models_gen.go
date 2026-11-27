@@ -100,6 +100,41 @@ func (this CreatePayrollRunPayload) GetErrors() []*MutationError {
 }
 func (this CreatePayrollRunPayload) GetWasSuccessful() bool { return this.WasSuccessful }
 
+type FreezePayrollInputInput struct {
+	PayrollPeriodID string `json:"payroll_period_id"`
+	IdempotencyKey  string `json:"idempotency_key"`
+}
+
+type FreezePayrollInputPayload struct {
+	FrozenPayrollInput *FrozenPayrollInput `json:"frozen_payroll_input,omitempty"`
+	WasSuccessful      bool                `json:"was_successful"`
+	Errors             []*MutationError    `json:"errors"`
+}
+
+func (FreezePayrollInputPayload) IsMutationResult() {}
+func (this FreezePayrollInputPayload) GetErrors() []*MutationError {
+	if this.Errors == nil {
+		return nil
+	}
+	interfaceSlice := make([]*MutationError, 0, len(this.Errors))
+	for _, concrete := range this.Errors {
+		interfaceSlice = append(interfaceSlice, concrete)
+	}
+	return interfaceSlice
+}
+func (this FreezePayrollInputPayload) GetWasSuccessful() bool { return this.WasSuccessful }
+
+type FrozenPayrollInput struct {
+	InputSnapshotReferenceID        string    `json:"input_snapshot_reference_id"`
+	PayrollPeriodID                 string    `json:"payroll_period_id"`
+	PayrollGroupID                  string    `json:"payroll_group_id"`
+	EmployingLegalEntityReferenceID string    `json:"employing_legal_entity_reference_id"`
+	JurisdictionCode                string    `json:"jurisdiction_code"`
+	CurrencyCode                    string    `json:"currency_code"`
+	InputDigestSha256               string    `json:"input_digest_sha256"`
+	FrozenAt                        time.Time `json:"frozen_at"`
+}
+
 type PayrollGroup struct {
 	ID                              string `json:"id"`
 	RawID                           string `json:"_id"`

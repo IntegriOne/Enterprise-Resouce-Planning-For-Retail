@@ -1,6 +1,6 @@
 # List operasi
 
-Terdapat 52 Query dan 61 Mutation khusus HRM di schema Gateway, ditambah jalur lookup 24 entitas melalui Query Relay `node`. Jalur tersebut memanggil 125 RPC berbeda dari inventaris 1.015 kontrak. Cakupan ini menunjukkan wiring saat ini. Inventaris mencatat 997 kandidat operasi aktif, termasuk operasi yang masih memerlukan keputusan produk dan dependency runtime. [Inventaris RPC](1-inventaris-operasi-grpc-hrm.md).
+Terdapat 52 Query dan 62 Mutation khusus HRM di schema Gateway, ditambah jalur lookup 24 entitas melalui Query Relay `node`. Jalur tersebut memanggil 126 RPC berbeda dari inventaris 1.016 kontrak. Cakupan ini menunjukkan wiring saat ini. Inventaris mencatat 998 kandidat operasi aktif, termasuk operasi yang masih memerlukan keputusan produk dan dependency runtime. [Inventaris RPC](1-inventaris-operasi-grpc-hrm.md).
 
 Ke-113 operasi domain yang tercantum di SDL memiliki entri pada matriks bukti. Sebanyak 49 Query dan 53 Mutation sudah memiliki bukti jalur positif HTTPS. Tiga Query dan delapan Mutation masih memiliki prasyarat runtime yang tercatat di matriks masing-masing. Cakupan ini terpisah dari inventaris kandidat gRPC dan dari root bersama `node`. [Query](31-bukti-https-query-gateway.md) · [Mutation](30-bukti-https-mutation-gateway.md)
 
@@ -89,6 +89,7 @@ Seluruh Mutation HRM mengembalikan payload non-null yang mengimplementasikan `Mu
 | `approveWorkerAssignment` | `ApproveWorkerAssignment` | `worker_assignments.approve` | `ApproveWorkerAssignmentPayload!` · `worker_assignment` |
 | `submitWorkerAssignmentTransfer` | `SubmitWorkerAssignmentTransfer` | `worker_assignments.create` | `SubmitWorkerAssignmentTransferPayload!` · `worker_assignment_transfer` |
 | `decideWorkerAssignmentTransfer` | `DecideWorkerAssignmentTransfer` | `worker_assignments.transfer` | `DecideWorkerAssignmentTransferPayload!` · `worker_assignment_transfer` |
+| `freezePayrollInput` | `FreezePayrollInput` | `payroll_runs.create` | `FreezePayrollInputPayload!` · `frozen_payroll_input` |
 | `createPayrollRun` | `CreatePayrollRun` | `payroll_runs.create` | `CreatePayrollRunPayload!` · `payroll_run` |
 | `calculatePayrollRun` | `CalculatePayrollRun` | `payroll_runs.calculate` | `CalculatePayrollRunPayload!` · `payroll_run` |
 | `submitPayrollRunForReview` | `SubmitPayrollRunForReview` | `payroll_runs.submit_review` | `SubmitPayrollRunForReviewPayload!` · `payroll_run` |

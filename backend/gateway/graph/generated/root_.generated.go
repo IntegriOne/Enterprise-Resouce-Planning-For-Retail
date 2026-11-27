@@ -707,6 +707,23 @@ type ComplexityRoot struct {
 		WasSuccessful func(childComplexity int) int
 	}
 
+	FreezePayrollInputPayload struct {
+		Errors             func(childComplexity int) int
+		FrozenPayrollInput func(childComplexity int) int
+		WasSuccessful      func(childComplexity int) int
+	}
+
+	FrozenPayrollInput struct {
+		CurrencyCode                    func(childComplexity int) int
+		EmployingLegalEntityReferenceID func(childComplexity int) int
+		FrozenAt                        func(childComplexity int) int
+		InputDigestSha256               func(childComplexity int) int
+		InputSnapshotReferenceID        func(childComplexity int) int
+		JurisdictionCode                func(childComplexity int) int
+		PayrollGroupID                  func(childComplexity int) int
+		PayrollPeriodID                 func(childComplexity int) int
+	}
+
 	Group struct {
 		Code        func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
@@ -1088,6 +1105,7 @@ type ComplexityRoot struct {
 		Empty                            func(childComplexity int) int
 		EnrollMyTotp                     func(childComplexity int) int
 		FindOrCreateAddress              func(childComplexity int, input model.FindOrCreateAddressInput) int
+		FreezePayrollInput               func(childComplexity int, input model.FreezePayrollInputInput) int
 		LinkPartyAddress                 func(childComplexity int, input model.LinkPartyAddressInput) int
 		OpenRequisition                  func(childComplexity int, id string) int
 		PostLeaveAdjustment              func(childComplexity int, input model.PostLeaveAdjustmentInput) int
@@ -4780,6 +4798,74 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.FindOrCreateAddressPayload.WasSuccessful(childComplexity), true
 
+	case "FreezePayrollInputPayload.errors":
+		if e.ComplexityRoot.FreezePayrollInputPayload.Errors == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FreezePayrollInputPayload.Errors(childComplexity), true
+	case "FreezePayrollInputPayload.frozen_payroll_input":
+		if e.ComplexityRoot.FreezePayrollInputPayload.FrozenPayrollInput == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FreezePayrollInputPayload.FrozenPayrollInput(childComplexity), true
+	case "FreezePayrollInputPayload.was_successful":
+		if e.ComplexityRoot.FreezePayrollInputPayload.WasSuccessful == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FreezePayrollInputPayload.WasSuccessful(childComplexity), true
+
+	case "FrozenPayrollInput.currency_code":
+		if e.ComplexityRoot.FrozenPayrollInput.CurrencyCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.CurrencyCode(childComplexity), true
+	case "FrozenPayrollInput.employing_legal_entity_reference_id":
+		if e.ComplexityRoot.FrozenPayrollInput.EmployingLegalEntityReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.EmployingLegalEntityReferenceID(childComplexity), true
+	case "FrozenPayrollInput.frozen_at":
+		if e.ComplexityRoot.FrozenPayrollInput.FrozenAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.FrozenAt(childComplexity), true
+	case "FrozenPayrollInput.input_digest_sha256":
+		if e.ComplexityRoot.FrozenPayrollInput.InputDigestSha256 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.InputDigestSha256(childComplexity), true
+	case "FrozenPayrollInput.input_snapshot_reference_id":
+		if e.ComplexityRoot.FrozenPayrollInput.InputSnapshotReferenceID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.InputSnapshotReferenceID(childComplexity), true
+	case "FrozenPayrollInput.jurisdiction_code":
+		if e.ComplexityRoot.FrozenPayrollInput.JurisdictionCode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.JurisdictionCode(childComplexity), true
+	case "FrozenPayrollInput.payroll_group_id":
+		if e.ComplexityRoot.FrozenPayrollInput.PayrollGroupID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.PayrollGroupID(childComplexity), true
+	case "FrozenPayrollInput.payroll_period_id":
+		if e.ComplexityRoot.FrozenPayrollInput.PayrollPeriodID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FrozenPayrollInput.PayrollPeriodID(childComplexity), true
+
 	case "Group.code":
 		if e.ComplexityRoot.Group.Code == nil {
 			break
@@ -6966,6 +7052,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.FindOrCreateAddress(childComplexity, args["input"].(model.FindOrCreateAddressInput)), true
+	case "Mutation.freezePayrollInput":
+		if e.ComplexityRoot.Mutation.FreezePayrollInput == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_freezePayrollInput_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.FreezePayrollInput(childComplexity, args["input"].(model.FreezePayrollInputInput)), true
 	case "Mutation.linkPartyAddress":
 		if e.ComplexityRoot.Mutation.LinkPartyAddress == nil {
 			break
@@ -13900,6 +13997,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			graphql.NewInputUnmarshaler("CreateWorkforcePlanInput", ec.unmarshalInputCreateWorkforcePlanInput),
 			graphql.NewInputUnmarshaler("CreateWorkforcePlanLineInput", ec.unmarshalInputCreateWorkforcePlanLineInput),
 			graphql.NewInputUnmarshaler("FindOrCreateAddressInput", ec.unmarshalInputFindOrCreateAddressInput),
+			graphql.NewInputUnmarshaler("FreezePayrollInputInput", ec.unmarshalInputFreezePayrollInputInput),
 			graphql.NewInputUnmarshaler("IAMResetPasswordInput", ec.unmarshalInputIAMResetPasswordInput),
 			graphql.NewInputUnmarshaler("LinkPartyAddressInput", ec.unmarshalInputLinkPartyAddressInput),
 			graphql.NewInputUnmarshaler("PostLeaveAdjustmentInput", ec.unmarshalInputPostLeaveAdjustmentInput),
@@ -15787,6 +15885,28 @@ input CreatePayrollRunInput {
   idempotency_key: String!
 }
 
+type FrozenPayrollInput {
+  input_snapshot_reference_id: ID!
+  payroll_period_id: ID!
+  payroll_group_id: ID!
+  employing_legal_entity_reference_id: ID!
+  jurisdiction_code: String!
+  currency_code: String!
+  input_digest_sha256: String!
+  frozen_at: Time!
+}
+
+input FreezePayrollInputInput {
+  payroll_period_id: ID!
+  idempotency_key: String!
+}
+
+type FreezePayrollInputPayload implements MutationResult {
+  frozen_payroll_input: FrozenPayrollInput
+  was_successful: Boolean!
+  errors: [MutationError!]!
+}
+
 type CreatePayrollRunPayload implements MutationResult {
   payroll_run: PayrollRun
   was_successful: Boolean!
@@ -15794,6 +15914,7 @@ type CreatePayrollRunPayload implements MutationResult {
 }
 
 extend type Mutation {
+  freezePayrollInput(input: FreezePayrollInputInput!): FreezePayrollInputPayload!
   createPayrollRun(input: CreatePayrollRunInput!): CreatePayrollRunPayload!
 }
 
@@ -19217,6 +19338,40 @@ func (ec *executionContext) childFields_FindOrCreateAddressPayload(ctx context.C
 		return ec.fieldContext_FindOrCreateAddressPayload_was_successful(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type FindOrCreateAddressPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_FreezePayrollInputPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "frozen_payroll_input":
+		return ec.fieldContext_FreezePayrollInputPayload_frozen_payroll_input(ctx, field)
+	case "was_successful":
+		return ec.fieldContext_FreezePayrollInputPayload_was_successful(ctx, field)
+	case "errors":
+		return ec.fieldContext_FreezePayrollInputPayload_errors(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type FreezePayrollInputPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_FrozenPayrollInput(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "input_snapshot_reference_id":
+		return ec.fieldContext_FrozenPayrollInput_input_snapshot_reference_id(ctx, field)
+	case "payroll_period_id":
+		return ec.fieldContext_FrozenPayrollInput_payroll_period_id(ctx, field)
+	case "payroll_group_id":
+		return ec.fieldContext_FrozenPayrollInput_payroll_group_id(ctx, field)
+	case "employing_legal_entity_reference_id":
+		return ec.fieldContext_FrozenPayrollInput_employing_legal_entity_reference_id(ctx, field)
+	case "jurisdiction_code":
+		return ec.fieldContext_FrozenPayrollInput_jurisdiction_code(ctx, field)
+	case "currency_code":
+		return ec.fieldContext_FrozenPayrollInput_currency_code(ctx, field)
+	case "input_digest_sha256":
+		return ec.fieldContext_FrozenPayrollInput_input_digest_sha256(ctx, field)
+	case "frozen_at":
+		return ec.fieldContext_FrozenPayrollInput_frozen_at(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type FrozenPayrollInput", field.Name)
 }
 
 func (ec *executionContext) childFields_Group(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {

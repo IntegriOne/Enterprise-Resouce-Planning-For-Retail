@@ -18,6 +18,7 @@ parser.add_argument(
 )
 parser.add_argument('--termination', action='store_true', help='Uji terminasi memakai sertifikat workload dari overlay development.')
 parser.add_argument('--guards', action='store_true', help='Uji guard semua operasi HRM pada stack disposable.')
+parser.add_argument('--freeze-payroll', action='store_true', help='Uji E2E HTTPS pembekuan input payroll dan pembuatan draf.')
 args = parser.parse_args()
 if args.termination and shutil.which("grpcurl") is None:
     parser.error("--termination requires grpcurl for the private IAM clearance check")
@@ -125,6 +126,8 @@ try:
         raise SystemExit('isolated HRM server failed readiness')
     if args.guards:
         subprocess.run(['python3', str(scripts / 'check_hrm_schema_guards.py'), '--port', '18443'], check=True)
+    if args.freeze_payroll:
+        subprocess.run(['python3', str(scripts / 'freeze_payroll_fixture.py')], check=True, env=dict(os.environ, HRM_E2E_DB_NAME=db))
     subprocess.run(['python3', str(scripts / 'provisioning_fixture.py')], check=True, env=dict(os.environ, HRM_E2E_DB_NAME=db, HRM_E2E_IAM_DB_NAME=iam_db, HRM_E2E_TERMINATION='1' if args.termination else '0'))
     count = docker('exec', 'integrione-retail-postgres-1', 'sh', '-c', 'psql -XAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$1" -c "$2"', 'sh', iam_db, "select count(*) from users where display_name = 'Employee Fixture'").strip()
     assert count == '1', count

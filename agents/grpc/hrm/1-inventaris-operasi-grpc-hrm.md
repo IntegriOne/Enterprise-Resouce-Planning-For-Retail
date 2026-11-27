@@ -18,7 +18,7 @@ Lihat [status wiring Gateway](26-status-wiring-gateway-hrm.md) untuk field Graph
 | [LeaveService](12-operasi-leave.md) | 44 | 28 | 13 | 3 |
 | [OffboardingService](13-operasi-offboarding.md) | 31 | 19 | 12 | 0 |
 | [OnboardingService](14-operasi-onboarding.md) | 23 | 14 | 9 | 0 |
-| [PayrollService](15-operasi-payroll.md) | 121 | 88 | 27 | 6 |
+| [PayrollService](15-operasi-payroll.md) | 122 | 88 | 28 | 6 |
 | [PerformanceService](16-operasi-performance.md) | 60 | 38 | 22 | 0 |
 | [PersonnelService](17-operasi-personnel.md) | 80 | 54 | 23 | 3 |
 | [PolicyService](18-operasi-policy.md) | 20 | 13 | 7 | 0 |
@@ -27,7 +27,7 @@ Lihat [status wiring Gateway](26-status-wiring-gateway-hrm.md) untuk field Graph
 | [SuccessionService](21-operasi-succession.md) | 19 | 12 | 7 | 0 |
 | [TalentService](22-operasi-talent.md) | 102 | 64 | 38 | 0 |
 | [WorkforcePlanningService](23-operasi-workforceplanning.md) | 57 | 37 | 20 | 0 |
-| **Total** | **1015** | **672** | **325** | **18** |
+| **Total** | **1016** | **672** | **326** | **18** |
 
 ## Butuh GraphQL
 

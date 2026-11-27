@@ -62,6 +62,16 @@ func (r *mutationResolver) CancelPayrollRun(ctx context.Context, payrollRunID st
 	}, nil
 }
 
+// FreezePayrollInput membekukan input payroll periode terbuka melalui adapter HRM.
+func (r *mutationResolver) FreezePayrollInput(ctx context.Context, input model.FreezePayrollInputInput) (*model.FreezePayrollInputPayload, error) {
+	result, err := r.HRMAdapter.FreezePayrollInput(ctx, input)
+	return &model.FreezePayrollInputPayload{
+		FrozenPayrollInput: result,
+		WasSuccessful:      err == nil,
+		Errors:             hrmMutationErrors(err),
+	}, nil
+}
+
 // CreatePayrollRun is the resolver for the createPayrollRun field.
 func (r *mutationResolver) CreatePayrollRun(ctx context.Context, input model.CreatePayrollRunInput) (*model.CreatePayrollRunPayload, error) {
 	result, err := r.HRMAdapter.CreatePayrollRun(ctx, input)

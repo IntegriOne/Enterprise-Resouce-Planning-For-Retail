@@ -69,6 +69,7 @@ service PayrollService {
   rpc FindPayrollRunByFinanceSettlementEventReferenceID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
   rpc FindPayrollRunByStartedByPrincipalID(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
   rpc FindPayrollRunByIdempotencyKey(human_resource.common.v1.StringFinderRequest) returns (PayrollRunsResponse);
+  rpc FreezePayrollInput(FreezePayrollInputRequest) returns (FreezePayrollInputResponse);
   rpc CalculatePayrollRun(human_resource.common.v1.IDRequest) returns (PayrollRunResponse);
   rpc CancelPayrollRun(CancelPayrollRunRequest) returns (PayrollRunResponse);
   rpc SubmitPayrollRunForReview(human_resource.common.v1.IDRequest) returns (PayrollRunResponse);
@@ -349,6 +350,23 @@ message PayrollRunResponse {
 message PayrollRunsResponse {
   repeated PayrollRun items = 1;
   human_resource.common.v1.PageInfo page = 2;
+}
+message FreezePayrollInputRequest {
+  string payroll_period_id = 1;
+  string idempotency_key = 2;
+}
+message PayrollInputSnapshotMetadata {
+  string id = 1;
+  string payroll_period_id = 2;
+  string payroll_group_id = 3;
+  string employing_legal_entity_reference_id = 4;
+  string jurisdiction_code = 5;
+  string currency_code = 6;
+  bytes digest = 7;
+  google.protobuf.Timestamp frozen_at = 8;
+}
+message FreezePayrollInputResponse {
+  PayrollInputSnapshotMetadata item = 1;
 }
 
 message PayrollResult {

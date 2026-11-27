@@ -108,11 +108,14 @@ func buildDependencies(
 	if err != nil {
 		return fail(err)
 	}
-	integrity := security.NewIntegrity(validators)
 	snapshotStore, err := payrollrepo.NewInputSnapshotRepository(handle)
 	if err != nil {
 		return fail(err)
 	}
+	if err := security.AttachPayrollInputSnapshotReader(validators, snapshotStore); err != nil {
+		return fail(err)
+	}
+	integrity := security.NewIntegrity(validators)
 	serviceOptions = append(serviceOptions, appservice.WithPayrollInputSnapshots(snapshotStore))
 	services, err := appservice.NewRegistry(repos, operation.Dependencies{Policy: policy, Integrity: integrity}, serviceOptions...)
 	if err != nil {

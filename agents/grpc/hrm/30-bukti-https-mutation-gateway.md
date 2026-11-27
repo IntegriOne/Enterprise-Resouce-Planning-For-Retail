@@ -2,9 +2,9 @@
 
 ## Butuh GraphQL Mutation
 
-Schema HRM memiliki 61 Mutation. Pengujian memakai grant uji yang diberikan melalui GraphQL IAM. Matriks ini menyebutkan bukti yang lebih spesifik daripada [uji guard 47 Mutation sebelumnya](../../e2e/gateway/96-hrm-mutation-seluruh-schema-superadmin-https.md).
+Schema HRM memiliki 62 Mutation. Pengujian memakai grant uji yang diberikan melalui GraphQL IAM. Matriks ini menyebutkan bukti yang lebih spesifik daripada [uji guard 47 Mutation sebelumnya](../../e2e/gateway/96-hrm-mutation-seluruh-schema-superadmin-https.md).
 
-Sebanyak 53 Mutation memiliki bukti jalur berhasil melalui HTTPS. Delapan Mutation masih memerlukan verifikasi runtime lengkap. Sejumlah uji jalur berhasil memakai data prasyarat sintetis melalui SQL pada database disposable. Persetujuan, assignment role, dan pemasangan permission tetap lewat GraphQL.
+Sebanyak 54 Mutation memiliki bukti jalur berhasil melalui HTTPS. Delapan Mutation masih memerlukan verifikasi runtime lengkap. Sejumlah uji jalur berhasil memakai data prasyarat sintetis melalui SQL pada database disposable. Persetujuan, assignment role, dan pemasangan permission tetap lewat GraphQL.
 
 ## Penjelasan operasi dengan bukti berhasil
 
@@ -42,6 +42,7 @@ Sebanyak 53 Mutation memiliki bukti jalur berhasil melalui HTTPS. Delapan Mutati
 | `deletePosition` | [112](../../e2e/gateway/112-hrm-query-mutation-lifecycle-posisi-mfa.md) |
 | `deleteWorkforcePlan` | [100](../../e2e/gateway/100-hrm-query-mutation-mfa-payroll-workforce.md) · [116](../../e2e/gateway/116-hrm-mutation-persetujuan-dan-penggantian-workforce-mfa.md) |
 | `deleteWorkforcePlanLine` | [115](../../e2e/gateway/115-hrm-query-mutation-rincian-dan-pengajuan-workforce-mfa.md) |
+| `freezePayrollInput` | [184](../../e2e/gateway/184-hrm-mutation-freeze-payroll-input-https.md), lalu langsung membentuk draf `createPayrollRun` |
 | `postLeaveAdjustment` | [110](../../e2e/gateway/110-hrm-query-mutation-koreksi-cuti-dan-ledger-mfa.md) |
 | `rejectLeaveAdjustment` | [110](../../e2e/gateway/110-hrm-query-mutation-koreksi-cuti-dan-ledger-mfa.md) |
 | `requestPayrollPosting` | [108](../../e2e/gateway/108-hrm-query-mutation-review-approval-dan-pengajuan-payroll.md) |

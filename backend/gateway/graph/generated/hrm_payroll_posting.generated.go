@@ -372,6 +372,277 @@ func (ec *executionContext) fieldContext_CreatePayrollRunPayload_errors(_ contex
 	return fc, nil
 }
 
+func (ec *executionContext) _FreezePayrollInputPayload_frozen_payroll_input(ctx context.Context, field graphql.CollectedField, obj *model.FreezePayrollInputPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FreezePayrollInputPayload_frozen_payroll_input(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.FrozenPayrollInput, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.FrozenPayrollInput) graphql.Marshaler {
+			return ec.marshalOFrozenPayrollInput2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐFrozenPayrollInput(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_FreezePayrollInputPayload_frozen_payroll_input(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FreezePayrollInputPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_FrozenPayrollInput(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FreezePayrollInputPayload_was_successful(ctx context.Context, field graphql.CollectedField, obj *model.FreezePayrollInputPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FreezePayrollInputPayload_was_successful(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.WasSuccessful, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FreezePayrollInputPayload_was_successful(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FreezePayrollInputPayload", field, false, false, "Boolean")
+}
+
+func (ec *executionContext) _FreezePayrollInputPayload_errors(ctx context.Context, field graphql.CollectedField, obj *model.FreezePayrollInputPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FreezePayrollInputPayload_errors(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Errors, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.MutationError) graphql.Marshaler {
+			return ec.marshalNMutationError2ᚕᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐMutationErrorᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FreezePayrollInputPayload_errors(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FreezePayrollInputPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_MutationError(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FrozenPayrollInput_input_snapshot_reference_id(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_input_snapshot_reference_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.InputSnapshotReferenceID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_input_snapshot_reference_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "ID")
+}
+
+func (ec *executionContext) _FrozenPayrollInput_payroll_period_id(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_payroll_period_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PayrollPeriodID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_payroll_period_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "ID")
+}
+
+func (ec *executionContext) _FrozenPayrollInput_payroll_group_id(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_payroll_group_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PayrollGroupID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_payroll_group_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "ID")
+}
+
+func (ec *executionContext) _FrozenPayrollInput_employing_legal_entity_reference_id(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_employing_legal_entity_reference_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.EmployingLegalEntityReferenceID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_employing_legal_entity_reference_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "ID")
+}
+
+func (ec *executionContext) _FrozenPayrollInput_jurisdiction_code(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_jurisdiction_code(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.JurisdictionCode, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_jurisdiction_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "String")
+}
+
+func (ec *executionContext) _FrozenPayrollInput_currency_code(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_currency_code(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CurrencyCode, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_currency_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "String")
+}
+
+func (ec *executionContext) _FrozenPayrollInput_input_digest_sha256(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_input_digest_sha256(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.InputDigestSha256, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_input_digest_sha256(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "String")
+}
+
+func (ec *executionContext) _FrozenPayrollInput_frozen_at(ctx context.Context, field graphql.CollectedField, obj *model.FrozenPayrollInput) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FrozenPayrollInput_frozen_at(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.FrozenAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FrozenPayrollInput_frozen_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FrozenPayrollInput", field, false, false, "Time")
+}
+
 func (ec *executionContext) _PayrollGroup_id(ctx context.Context, field graphql.CollectedField, obj *model.PayrollGroup) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2375,6 +2646,55 @@ func UnmarshalCreatePayrollRunInput(ctx context.Context, raw any) (model.CreateP
 	return out, err
 }
 
+func (ec *executionContext) unmarshalInputFreezePayrollInputInput(ctx context.Context, obj any) (model.FreezePayrollInputInput, error) {
+	var it model.FreezePayrollInputInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"payroll_period_id", "idempotency_key"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "payroll_period_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("payroll_period_id"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PayrollPeriodID = data
+		case "idempotency_key":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idempotency_key"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IdempotencyKey = data
+		}
+	}
+	return it, nil
+}
+
+// UnmarshalFreezePayrollInputInput unmarshals raw into the FreezePayrollInputInput input type, using the
+// unmarshaler bound to ctx's request. Call it from a resolver to decode an input
+// object that was not passed as a field argument.
+//
+// ctx must come from a gqlgen request; outside one there is no unmarshaler to use
+// and the returned error says so.
+func UnmarshalFreezePayrollInputInput(ctx context.Context, raw any) (model.FreezePayrollInputInput, error) {
+	var out model.FreezePayrollInputInput
+	err := graphql.UnmarshalNamedInputFromContext(ctx, "FreezePayrollInputInput", raw, &out)
+	return out, err
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2535,6 +2855,117 @@ func (ec *executionContext) _CreatePayrollRunPayload(ctx context.Context, sel as
 			}
 		case "errors":
 			out.Values[i] = ec._CreatePayrollRunPayload_errors(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var freezePayrollInputPayloadImplementors = []string{"FreezePayrollInputPayload", "MutationResult"}
+
+func (ec *executionContext) _FreezePayrollInputPayload(ctx context.Context, sel ast.SelectionSet, obj *model.FreezePayrollInputPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, freezePayrollInputPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FreezePayrollInputPayload")
+		case "frozen_payroll_input":
+			out.Values[i] = ec._FreezePayrollInputPayload_frozen_payroll_input(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "was_successful":
+			out.Values[i] = ec._FreezePayrollInputPayload_was_successful(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "errors":
+			out.Values[i] = ec._FreezePayrollInputPayload_errors(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var frozenPayrollInputImplementors = []string{"FrozenPayrollInput"}
+
+func (ec *executionContext) _FrozenPayrollInput(ctx context.Context, sel ast.SelectionSet, obj *model.FrozenPayrollInput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, frozenPayrollInputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FrozenPayrollInput")
+		case "input_snapshot_reference_id":
+			out.Values[i] = ec._FrozenPayrollInput_input_snapshot_reference_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "payroll_period_id":
+			out.Values[i] = ec._FrozenPayrollInput_payroll_period_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "payroll_group_id":
+			out.Values[i] = ec._FrozenPayrollInput_payroll_group_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "employing_legal_entity_reference_id":
+			out.Values[i] = ec._FrozenPayrollInput_employing_legal_entity_reference_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "jurisdiction_code":
+			out.Values[i] = ec._FrozenPayrollInput_jurisdiction_code(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "currency_code":
+			out.Values[i] = ec._FrozenPayrollInput_currency_code(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "input_digest_sha256":
+			out.Values[i] = ec._FrozenPayrollInput_input_digest_sha256(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "frozen_at":
+			out.Values[i] = ec._FrozenPayrollInput_frozen_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3381,6 +3812,19 @@ func (ec *executionContext) marshalNCreatePayrollRunPayload2ᚖgithubᚗcomᚋin
 	return ec._CreatePayrollRunPayload(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNFreezePayrollInputInput2githubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐFreezePayrollInputInput(ctx context.Context, v any) (model.FreezePayrollInputInput, error) {
+	res, err := ec.unmarshalInputFreezePayrollInputInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFreezePayrollInputPayload2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐFreezePayrollInputPayload(ctx context.Context, sel ast.SelectionSet, v *model.FreezePayrollInputPayload) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "FreezePayrollInputPayload!")
+		return graphql.Null
+	}
+	return ec._FreezePayrollInputPayload(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNPayrollGroup2ᚕᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐPayrollGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PayrollGroup) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -3619,6 +4063,13 @@ func (ec *executionContext) marshalNSubmitPayrollRunForReviewPayload2ᚖgithub�
 		return graphql.Null
 	}
 	return ec._SubmitPayrollRunForReviewPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOFrozenPayrollInput2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐFrozenPayrollInput(ctx context.Context, sel ast.SelectionSet, v *model.FrozenPayrollInput) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FrozenPayrollInput(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOPayrollGroup2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐPayrollGroup(ctx context.Context, sel ast.SelectionSet, v *model.PayrollGroup) graphql.Marshaler {

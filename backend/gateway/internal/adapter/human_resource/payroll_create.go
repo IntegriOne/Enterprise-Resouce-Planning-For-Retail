@@ -8,12 +8,67 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/google/uuid"
 	"github.com/integrione/erp-retail/backend/gateway/graph/model"
 	"github.com/integrione/erp-retail/backend/gateway/internal/middleware"
 	payroll "github.com/integrione/erp-retail/backend/services/human_resource/contract/gen/human_resource/payroll/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+// FreezePayrollInput membekukan input payroll periode terbuka dan mengembalikan metadata snapshot tanpa isi sensitif.
+func (a *Adapter) FreezePayrollInput(ctx context.Context, input model.FreezePayrollInputInput) (*model.FrozenPayrollInput, error) {
+	rpcCtx, err := a.authorizeSensitivePayroll(ctx, "human_resource.payroll_runs.create")
+	if err != nil {
+		return nil, err
+	}
+	periodID, err := parseNodeID(input.PayrollPeriodID, "payroll-period")
+	if err != nil || periodID == uuid.Nil {
+		return nil, middleware.ErrInvalidArgument("invalid payroll period ID", nil)
+	}
+	idemKey, err := uuid.Parse(strings.TrimSpace(input.IdempotencyKey))
+	if err != nil || idemKey == uuid.Nil {
+		return nil, middleware.ErrInvalidArgument("invalid idempotency key", nil)
+	}
+	response, err := a.payroll.FreezePayrollInput(rpcCtx, &payroll.FreezePayrollInputRequest{
+		PayrollPeriodId: periodID.String(),
+		IdempotencyKey:  idemKey.String(),
+	})
+	if status.Code(err) == codes.FailedPrecondition {
+		return nil, middleware.ErrConflict("payroll period cannot be frozen", err)
+	}
+	if err != nil {
+		return nil, mapReadError(err, "payroll input snapshot")
+	}
+	item := response.GetItem()
+	for _, raw := range []string{
+		item.GetId(),
+		item.GetPayrollPeriodId(),
+		item.GetPayrollGroupId(),
+		item.GetEmployingLegalEntityReferenceId(),
+	} {
+		if id, parseErr := uuid.Parse(raw); parseErr != nil || id == uuid.Nil {
+			return nil, middleware.ErrUnavailable("invalid human resource payroll input snapshot response", nil)
+		}
+	}
+	if !strings.EqualFold(item.GetPayrollPeriodId(), periodID.String()) ||
+		strings.TrimSpace(item.GetJurisdictionCode()) == "" ||
+		strings.TrimSpace(item.GetCurrencyCode()) == "" ||
+		len(item.GetDigest()) != sha256.Size ||
+		item.GetFrozenAt().CheckValid() != nil {
+		return nil, middleware.ErrUnavailable("invalid human resource payroll input snapshot response", nil)
+	}
+	return &model.FrozenPayrollInput{
+		InputSnapshotReferenceID:        item.GetId(),
+		PayrollPeriodID:                 item.GetPayrollPeriodId(),
+		PayrollGroupID:                  item.GetPayrollGroupId(),
+		EmployingLegalEntityReferenceID: item.GetEmployingLegalEntityReferenceId(),
+		JurisdictionCode:                item.GetJurisdictionCode(),
+		CurrencyCode:                    item.GetCurrencyCode(),
+		InputDigestSha256:               hex.EncodeToString(item.GetDigest()),
+		FrozenAt:                        item.GetFrozenAt().AsTime(),
+	}, nil
+}
 
 // CreatePayrollRun membuat draf dari referensi snapshot dan aturan yang diperiksa HRM.
 func (a *Adapter) CreatePayrollRun(ctx context.Context, input model.CreatePayrollRunInput) (*model.PayrollRun, error) {

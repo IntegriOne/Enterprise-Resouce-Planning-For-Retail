@@ -1,6 +1,6 @@
 # List operasi
 
-HRM mendeklarasikan 1.015 RPC bisnis pada 22 service gRPC privat. Tiga RPC workload tambahan melayani integrasi IAM dan Finance. Gateway menyediakan **52 Query dan 61 Mutation** HRM, di luar root bersama seperti `node`. [Inventaris gRPC](1-inventaris-operasi-grpc-hrm.md) · [Matriks Gateway](26-status-wiring-gateway-hrm.md)
+HRM mendeklarasikan 1.016 RPC bisnis pada 22 service gRPC privat. Tiga RPC workload tambahan melayani integrasi IAM dan Finance. Gateway menyediakan **52 Query dan 62 Mutation** HRM, di luar root bersama seperti `node`. [Inventaris gRPC](1-inventaris-operasi-grpc-hrm.md) · [Matriks Gateway](26-status-wiring-gateway-hrm.md)
 
 ## Penjelasan hasil verifikasi
 
@@ -30,4 +30,4 @@ Pengujian memakai akun superadmin dan MFA. Pengikatan role, permission, dan scop
 
 Snapshot `4c9396d` lolos pemeriksaan inventaris terhadap proto, handler, dan izin. Seluruh 1.015 RPC bisnis tercatat tanpa selisih. Ulang uji HTTPS dengan `--termination --guards` lulus untuk 52 Query, 61 Mutation, provisioning idempoten, aktivasi dan terminasi, serta clearance mTLS. Uji gRPC offboarding dan validator pada PostgreSQL disposable juga lulus.
 
-Provider Finance dan DRM ditunda sampai kedua management dibangun. Konfirmasi tugas offboarding milik HRM kini dapat dicatat oleh petugas HR. Pembekuan snapshot input payroll masih terbuka. Jalur positif untuk tahap yang membutuhkan provider tetap tercatat sebagai uji fixture. [Bukti tugas offboarding](13-operasi-offboarding.md#sumber-konfirmasi-penyelesaian-tugas) · [Snapshot payroll](27-kebutuhan-kalkulator-payroll-runtime.md#penyelarasan-snapshot-dengan-pembuatan-run)
+Provider Finance dan DRM ditunda sampai kedua management dibangun. Konfirmasi tugas offboarding milik HRM kini dapat dicatat oleh petugas HR. Pembekuan snapshot input payroll (`FreezePayrollInput` dan `freezePayrollInput`) kini terpasang dari `/api/graphql` hingga PostgreSQL dengan validasi metadata snapshot pada `CreatePayrollRun`. Jalur positif untuk tahap yang membutuhkan provider tetap tercatat sebagai uji fixture. [Bukti tugas offboarding](13-operasi-offboarding.md#sumber-konfirmasi-penyelesaian-tugas) · [Snapshot payroll](27-kebutuhan-kalkulator-payroll-runtime.md#penyelarasan-snapshot-dengan-pembuatan-run)

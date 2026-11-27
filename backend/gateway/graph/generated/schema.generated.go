@@ -93,6 +93,7 @@ type MutationResolver interface {
 	SubmitPayrollRunForReview(ctx context.Context, payrollRunID string) (*model.SubmitPayrollRunForReviewPayload, error)
 	ApprovePayrollRun(ctx context.Context, payrollRunID string) (*model.ApprovePayrollRunPayload, error)
 	CancelPayrollRun(ctx context.Context, payrollRunID string, reason string) (*model.CancelPayrollRunPayload, error)
+	FreezePayrollInput(ctx context.Context, input model.FreezePayrollInputInput) (*model.FreezePayrollInputPayload, error)
 	CreatePayrollRun(ctx context.Context, input model.CreatePayrollRunInput) (*model.CreatePayrollRunPayload, error)
 	ReissueEmployeePayslip(ctx context.Context, workerID string, payrollResultID string) (*model.ReissueEmployeePayslipPayload, error)
 	ActivatePosition(ctx context.Context, id string) (*model.ActivatePositionPayload, error)
@@ -1621,6 +1622,20 @@ func (ec *executionContext) field_Mutation_findOrCreateAddress_args(ctx context.
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (model.FindOrCreateAddressInput, error) {
 			return ec.unmarshalNFindOrCreateAddressInput2githubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐFindOrCreateAddressInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_freezePayrollInput_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.FreezePayrollInputInput, error) {
+			return ec.unmarshalNFreezePayrollInputInput2githubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐFreezePayrollInputInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -10546,6 +10561,50 @@ func (ec *executionContext) fieldContext_Mutation_cancelPayrollRun(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_cancelPayrollRun_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_freezePayrollInput(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_freezePayrollInput(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().FreezePayrollInput(ctx, fc.Args["input"].(model.FreezePayrollInputInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.FreezePayrollInputPayload) graphql.Marshaler {
+			return ec.marshalNFreezePayrollInputPayload2ᚖgithubᚗcomᚋintegrioneᚋerpᚑretailᚋbackendᚋgatewayᚋgraphᚋmodelᚐFreezePayrollInputPayload(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_freezePayrollInput(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_FreezePayrollInputPayload(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_freezePayrollInput_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -21198,6 +21257,13 @@ func (ec *executionContext) _MutationResult(ctx context.Context, sel ast.Selecti
 			return graphql.Null
 		}
 		return ec._LinkPartyAddressPayload(ctx, sel, obj)
+	case model.FreezePayrollInputPayload:
+		return ec._FreezePayrollInputPayload(ctx, sel, &obj)
+	case *model.FreezePayrollInputPayload:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FreezePayrollInputPayload(ctx, sel, obj)
 	case model.FindOrCreateAddressPayload:
 		return ec._FindOrCreateAddressPayload(ctx, sel, &obj)
 	case *model.FindOrCreateAddressPayload:
@@ -22632,6 +22698,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "cancelPayrollRun":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_cancelPayrollRun(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "freezePayrollInput":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_freezePayrollInput(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

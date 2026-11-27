@@ -226,6 +226,46 @@ func TestPayrollRunDraftAndApprovalValidator(t *testing.T) {
 		t.Fatalf("valid draft run failed: %v", err)
 	}
 
+	// Uji verifikasi metadata snapshot milik HRM (periode, grup, badan hukum, digest).
+	snapID := draftRun.InputSnapshotReferenceID
+	snapStub := &payrollInputSnapshotStub{rows: map[string]entity.PayrollInputSnapshot{
+		snapID: {
+			ID:               snapID,
+			PeriodID:         periodID,
+			GroupID:          groupID,
+			EmployerID:       legalEntityID,
+			JurisdictionCode: "ID",
+			CurrencyCode:     "IDR",
+			Digest:           []byte{1},
+		},
+	}}
+	if err := AttachPayrollInputSnapshotReader(map[string]MutationValidator{"hr_payroll_runs": runVal}, snapStub); err != nil {
+		t.Fatalf("attach snapshot reader: %v", err)
+	}
+	if err := runVal.ValidateMutation(t.Context(), "hr_payroll_runs", nil, draftRun); err != nil {
+		t.Fatalf("matching HRM snapshot failed: %v", err)
+	}
+	badDigestRun := *draftRun
+	badDigestRun.InputDigest = []byte{9}
+	if err := runVal.ValidateMutation(t.Context(), "hr_payroll_runs", nil, &badDigestRun); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("mismatched HRM snapshot digest = %v, want ErrReferenceConflict", err)
+	}
+	wrongScopeSnap := snapStub.rows[snapID]
+	wrongScopeSnap.GroupID = "99999999-9999-4999-8999-999999999999"
+	snapStub.rows[snapID] = wrongScopeSnap
+	if err := runVal.ValidateMutation(t.Context(), "hr_payroll_runs", nil, draftRun); !errors.Is(err, hrerrors.ErrReferenceConflict) {
+		t.Fatalf("mismatched HRM snapshot group = %v, want ErrReferenceConflict", err)
+	}
+	delete(snapStub.rows, snapID)
+	if err := runVal.ValidateMutation(t.Context(), "hr_payroll_runs", nil, draftRun); err != nil {
+		t.Fatalf("legacy/non-HRM snapshot fallback failed: %v", err)
+	}
+	snapStub.err = hrerrors.ErrUnavailable
+	if err := runVal.ValidateMutation(t.Context(), "hr_payroll_runs", nil, draftRun); !errors.Is(err, hrerrors.ErrUnavailable) {
+		t.Fatalf("unavailable snapshot metadata = %v, want ErrUnavailable", err)
+	}
+	runVal.inputSnapshots = nil
+
 	ruleSet := ruleSets.rows[ruleSetID]
 	ruleSet.ApprovedAt = now.Add(time.Second)
 	ruleSets.rows[ruleSetID] = ruleSet
@@ -364,4 +404,20 @@ func TestPayrollAdjustmentFindsProfileAfterFirstPage(t *testing.T) {
 	if err := validator.requireActiveProfile(t.Context(), &entity.PayrollAdjustment{CurrencyCode: "IDR"}, period); err != nil {
 		t.Fatalf("valid profile on next page was rejected: %v", err)
 	}
+}
+
+type payrollInputSnapshotStub struct {
+	rows map[string]entity.PayrollInputSnapshot
+	err  error
+}
+
+func (s *payrollInputSnapshotStub) SelectMetadata(_ context.Context, id string) (entity.PayrollInputSnapshot, error) {
+	if s.err != nil {
+		return entity.PayrollInputSnapshot{}, s.err
+	}
+	row, ok := s.rows[id]
+	if !ok {
+		return entity.PayrollInputSnapshot{}, hrerrors.ErrNotFound
+	}
+	return row, nil
 }

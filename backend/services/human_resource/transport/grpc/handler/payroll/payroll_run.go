@@ -136,6 +136,29 @@ func (h *Handler) GetAllPayrollRuns(ctx context.Context, r *common.PageRequest) 
 	return payrollRuns(h.service.GetAllPayrollRuns(ctx, int(r.Limit), int(r.Offset)))
 }
 
+// FreezePayrollInput membekukan input payroll periode terbuka dan mengembalikan metadata snapshot.
+func (h *Handler) FreezePayrollInput(ctx context.Context, r *pb.FreezePayrollInputRequest) (*pb.FreezePayrollInputResponse, error) {
+	if r == nil {
+		return nil, response.Error(hrerrors.ErrInvalidInput)
+	}
+	v, err := h.service.FreezePayrollInput(ctx, r.PayrollPeriodId, r.IdempotencyKey)
+	if err != nil {
+		return nil, response.Error(err)
+	}
+	return &pb.FreezePayrollInputResponse{
+		Item: &pb.PayrollInputSnapshotMetadata{
+			Id:                              v.ID,
+			PayrollPeriodId:                 v.PeriodID,
+			PayrollGroupId:                  v.GroupID,
+			EmployingLegalEntityReferenceId: v.EmployerID,
+			JurisdictionCode:                v.JurisdictionCode,
+			CurrencyCode:                    v.CurrencyCode,
+			Digest:                          append([]byte(nil), v.Digest...),
+			FrozenAt:                        timestamppb.New(v.CreatedAt),
+		},
+	}, nil
+}
+
 // CalculatePayrollRun menjalankan kalkulasi melalui service payroll.
 func (h *Handler) CalculatePayrollRun(ctx context.Context, request *common.IDRequest) (*pb.PayrollRunResponse, error) {
 	if request == nil {
