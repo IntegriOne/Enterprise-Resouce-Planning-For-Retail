@@ -348,6 +348,9 @@ func (s *Service) ConfirmEmailVerificationByToken(ctx context.Context, rawToken 
 		}
 
 		if u.Status == entity.UserStatusPending {
+			if err := s.requireEmployeeLinkForActivation(txCtx, u); err != nil {
+				return err
+			}
 			if err := u.Activate(now); err != nil {
 				return err
 			}

@@ -17,32 +17,33 @@ import (
 
 // Service mengorkestrasi siklus hidup akun pengguna IAM, kredensial, identitas login, token, dan MFA 2FA.
 type Service struct {
-	tx              domainrepo.Transactor
-	users           domainrepo.UserRepository
-	identities      domainrepo.UserIdentityRepository
-	credentials     domainrepo.UserCredentialRepository
-	totpFactors     domainrepo.UserTOTPFactorRepository
-	recoveryCodes   domainrepo.UserRecoveryCodeRepository
-	tokens          domainrepo.UserTokenRepository
-	roles           domainrepo.RoleRepository
-	userRoles       domainrepo.UserRoleRepository
-	securityRuntime domainrepo.SecurityRuntimeRepository
-	sessions        SessionCollaborator
-	clock           domainservice.Clock
-	idGen           domainservice.IDGenerator
-	passwordHasher  domainservice.PasswordHasher
-	passwordPolicy  domainservice.PasswordPolicy
-	tokenGen        domainservice.TokenGenerator
-	secretCipher    domainservice.SecretCipher
-	totpProvider    domainservice.TOTPProvider
-	redirect        domainservice.RedirectResolver
-	emailSender     domainservice.EmailSender
-	outboxCoord     *redisstore.Coordinator
-	projector       domainservice.RuntimeSecurityProjector
-	logger          *slog.Logger
-	cfg             Config
-	dummyHashOnce   sync.Once
-	dummyHash       string
+	tx                   domainrepo.Transactor
+	users                domainrepo.UserRepository
+	employeeProvisioning domainrepo.EmployeeProvisioningRepository
+	identities           domainrepo.UserIdentityRepository
+	credentials          domainrepo.UserCredentialRepository
+	totpFactors          domainrepo.UserTOTPFactorRepository
+	recoveryCodes        domainrepo.UserRecoveryCodeRepository
+	tokens               domainrepo.UserTokenRepository
+	roles                domainrepo.RoleRepository
+	userRoles            domainrepo.UserRoleRepository
+	securityRuntime      domainrepo.SecurityRuntimeRepository
+	sessions             SessionCollaborator
+	clock                domainservice.Clock
+	idGen                domainservice.IDGenerator
+	passwordHasher       domainservice.PasswordHasher
+	passwordPolicy       domainservice.PasswordPolicy
+	tokenGen             domainservice.TokenGenerator
+	secretCipher         domainservice.SecretCipher
+	totpProvider         domainservice.TOTPProvider
+	redirect             domainservice.RedirectResolver
+	emailSender          domainservice.EmailSender
+	outboxCoord          *redisstore.Coordinator
+	projector            domainservice.RuntimeSecurityProjector
+	logger               *slog.Logger
+	cfg                  Config
+	dummyHashOnce        sync.Once
+	dummyHash            string
 }
 
 // NewService membentuk Service pengguna setelah memvalidasi seluruh port repositori dan kriptografi secara fail-closed.
@@ -58,30 +59,31 @@ func NewService(deps Dependencies) (*Service, error) {
 	cfg := normalizeConfig(deps.Config)
 
 	return &Service{
-		tx:              deps.Transactor,
-		users:           deps.Users,
-		identities:      deps.Identities,
-		credentials:     deps.Credentials,
-		totpFactors:     deps.TOTPFactors,
-		recoveryCodes:   deps.RecoveryCodes,
-		tokens:          deps.Tokens,
-		roles:           deps.Roles,
-		userRoles:       deps.UserRoles,
-		securityRuntime: deps.SecurityRuntime,
-		sessions:        deps.Sessions,
-		clock:           clock,
-		idGen:           deps.IDGen,
-		passwordHasher:  deps.PasswordHasher,
-		passwordPolicy:  deps.PasswordPolicy,
-		tokenGen:        deps.TokenGen,
-		secretCipher:    deps.SecretCipher,
-		totpProvider:    deps.TOTPProvider,
-		redirect:        deps.Redirect,
-		emailSender:     deps.EmailSender,
-		outboxCoord:     deps.OutboxCoord,
-		projector:       deps.Projector,
-		logger:          deps.Logger,
-		cfg:             cfg,
+		tx:                   deps.Transactor,
+		users:                deps.Users,
+		employeeProvisioning: deps.EmployeeProvisioning,
+		identities:           deps.Identities,
+		credentials:          deps.Credentials,
+		totpFactors:          deps.TOTPFactors,
+		recoveryCodes:        deps.RecoveryCodes,
+		tokens:               deps.Tokens,
+		roles:                deps.Roles,
+		userRoles:            deps.UserRoles,
+		securityRuntime:      deps.SecurityRuntime,
+		sessions:             deps.Sessions,
+		clock:                clock,
+		idGen:                deps.IDGen,
+		passwordHasher:       deps.PasswordHasher,
+		passwordPolicy:       deps.PasswordPolicy,
+		tokenGen:             deps.TokenGen,
+		secretCipher:         deps.SecretCipher,
+		totpProvider:         deps.TOTPProvider,
+		redirect:             deps.Redirect,
+		emailSender:          deps.EmailSender,
+		outboxCoord:          deps.OutboxCoord,
+		projector:            deps.Projector,
+		logger:               deps.Logger,
+		cfg:                  cfg,
 	}, nil
 }
 
@@ -167,6 +169,13 @@ func (s *Service) CreateUser(ctx context.Context, in CreateUserInput) (*entity.U
 		status = entity.UserStatusPending
 	}
 
+	if (in.ProvisioningRequestID == "") != (in.WorkerID == "") {
+		return nil, iamerrors.ErrInvalidInput
+	}
+	if in.ProvisioningRequestID != "" && (in.Kind != entity.UserKindEmployee || status != entity.UserStatusPending || in.MarkIdentitiesVerified) {
+		return nil, iamerrors.ErrInvalidInput
+	}
+
 	userID, err := s.idGen.NewUUID()
 	if err != nil {
 		return nil, iamerrors.Wrap(err, iamerrors.KindUnavailable, iamerrors.Code("iam.user.id_generation_failed"), "failed to generate user id")
@@ -204,6 +213,16 @@ func (s *Service) CreateUser(ctx context.Context, in CreateUserInput) (*entity.U
 	var issuedVerification *IssuedTokenResult
 	var pendingEmail string
 	err = s.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		if in.ProvisioningRequestID != "" {
+			existing, err := s.claimEmployeeProvisioning(txCtx, in, now)
+			if err != nil {
+				return err
+			}
+			if existing != nil {
+				u = existing
+				return nil
+			}
+		}
 		// Pra-cek eksplisit per jenis identitas (username terlebih dahulu lalu email) untuk memastikan keduanya belum dipakai akun lain.
 		if err := s.ensureEmailAndUsernameAvailable(txCtx, normEmail, normUsername); err != nil {
 			return err
@@ -214,6 +233,11 @@ func (s *Service) CreateUser(ctx context.Context, in CreateUserInput) (*entity.U
 		}
 		if err := s.credentials.Insert(txCtx, cred); err != nil {
 			return err
+		}
+		if in.ProvisioningRequestID != "" {
+			if err := s.associateProvisionedAccount(txCtx, in.ProvisioningRequestID, u.ID); err != nil {
+				return err
+			}
 		}
 		assignedBaseline, err := s.assignBaselineSelfRoleInTx(txCtx, u.ID, u.Kind, now)
 		if err != nil {
@@ -472,6 +496,11 @@ func (s *Service) transitionUserStatus(
 		}
 		if err := mutate(u); err != nil {
 			return err
+		}
+		if u.Status == entity.UserStatusActive {
+			if err := s.requireEmployeeLinkForActivation(txCtx, u); err != nil {
+				return err
+			}
 		}
 		if err := s.users.Update(txCtx, u); err != nil {
 			return err

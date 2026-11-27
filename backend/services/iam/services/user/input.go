@@ -41,30 +41,31 @@ func DefaultConfig() Config {
 
 // Dependencies mengelompokkan seluruh port repositori, kriptografi, kebijakan domain, dan layanan sesi.
 type Dependencies struct {
-	Transactor      domainrepo.Transactor
-	Users           domainrepo.UserRepository
-	Identities      domainrepo.UserIdentityRepository
-	Credentials     domainrepo.UserCredentialRepository
-	TOTPFactors     domainrepo.UserTOTPFactorRepository
-	RecoveryCodes   domainrepo.UserRecoveryCodeRepository
-	Tokens          domainrepo.UserTokenRepository
-	Roles           domainrepo.RoleRepository
-	UserRoles       domainrepo.UserRoleRepository
-	SecurityRuntime domainrepo.SecurityRuntimeRepository
-	Sessions        SessionCollaborator
-	Clock           domainservice.Clock
-	IDGen           domainservice.IDGenerator
-	PasswordHasher  domainservice.PasswordHasher
-	PasswordPolicy  domainservice.PasswordPolicy
-	TokenGen        domainservice.TokenGenerator
-	SecretCipher    domainservice.SecretCipher
-	TOTPProvider    domainservice.TOTPProvider
-	Redirect        domainservice.RedirectResolver
-	EmailSender     domainservice.EmailSender
-	OutboxCoord     *redisstore.Coordinator
-	Projector       domainservice.RuntimeSecurityProjector
-	Logger          *slog.Logger
-	Config          Config
+	Transactor           domainrepo.Transactor
+	Users                domainrepo.UserRepository
+	EmployeeProvisioning domainrepo.EmployeeProvisioningRepository
+	Identities           domainrepo.UserIdentityRepository
+	Credentials          domainrepo.UserCredentialRepository
+	TOTPFactors          domainrepo.UserTOTPFactorRepository
+	RecoveryCodes        domainrepo.UserRecoveryCodeRepository
+	Tokens               domainrepo.UserTokenRepository
+	Roles                domainrepo.RoleRepository
+	UserRoles            domainrepo.UserRoleRepository
+	SecurityRuntime      domainrepo.SecurityRuntimeRepository
+	Sessions             SessionCollaborator
+	Clock                domainservice.Clock
+	IDGen                domainservice.IDGenerator
+	PasswordHasher       domainservice.PasswordHasher
+	PasswordPolicy       domainservice.PasswordPolicy
+	TokenGen             domainservice.TokenGenerator
+	SecretCipher         domainservice.SecretCipher
+	TOTPProvider         domainservice.TOTPProvider
+	Redirect             domainservice.RedirectResolver
+	EmailSender          domainservice.EmailSender
+	OutboxCoord          *redisstore.Coordinator
+	Projector            domainservice.RuntimeSecurityProjector
+	Logger               *slog.Logger
+	Config               Config
 }
 
 // CreateUserInput membawa data pendaftaran atau provisioning akun beserta identitas email/username awal.
@@ -80,6 +81,8 @@ type CreateUserInput struct {
 	Password               string
 	RequirePasswordChange  bool
 	MarkIdentitiesVerified bool
+	ProvisioningRequestID  string
+	WorkerID               string
 }
 
 // UpdateProfileInput membawa pembaruan atribut profil tampilan pengguna.

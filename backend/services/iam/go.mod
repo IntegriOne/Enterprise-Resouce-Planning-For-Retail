@@ -35,6 +35,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.44.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.52.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/integrione/erp-retail/backend/services/enterprise_foundation v0.0.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.3 // indirect
@@ -55,3 +56,5 @@ replace (
 )
 
 replace github.com/integrione/erp-retail/backend/services/human_resource => ../human_resource
+
+replace github.com/integrione/erp-retail/backend/services/enterprise_foundation => ../enterprise_foundation

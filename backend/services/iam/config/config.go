@@ -53,6 +53,9 @@ type Config struct {
 	InternalGatewayHMACSecret string
 	SystemBootstrap           SystemBootstrapConfig
 	Email                     mailer.Config
+	EFGRPCEnabled             bool
+	EFGRPCTarget              string
+	EFGRPCTimeout             time.Duration
 }
 
 // Load membaca konfigurasi dari environment variables dengan nilai default pengembangan.
@@ -114,6 +117,14 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	efGRPCEnabled, err := parseOptionalBoolEnv("IAM_EF_GRPC_ENABLED", false)
+	if err != nil {
+		return nil, fmt.Errorf("invalid IAM_EF_GRPC_ENABLED: %w", err)
+	}
+	efGRPCTimeoutSec, err := getEnvAsInt("IAM_EF_GRPC_TIMEOUT_SECONDS", 5)
+	if err != nil || efGRPCTimeoutSec <= 0 {
+		return nil, fmt.Errorf("invalid IAM_EF_GRPC_TIMEOUT_SECONDS")
+	}
 	return &Config{
 		HRMTerminationAccess: HRMTerminationAccessConfig{
 			Target:     strings.TrimSpace(getEnv("IAM_HRM_TERMINATION_ACCESS_TARGET", "")),
@@ -160,7 +171,10 @@ func Load() (*Config, error) {
 			UserKind:    strings.TrimSpace(getEnv("IAM_SYSTEM_USER_KIND", "system")),
 			RoleCode:    strings.TrimSpace(getEnv("IAM_SYSTEM_ROLE_CODE", "superadmin")),
 		},
-		Email: emailCfg,
+		Email:         emailCfg,
+		EFGRPCEnabled: efGRPCEnabled,
+		EFGRPCTarget:  strings.TrimSpace(getEnv("IAM_EF_GRPC_TARGET", "enterprise-foundation:9002")),
+		EFGRPCTimeout: time.Duration(efGRPCTimeoutSec) * time.Second,
 	}, nil
 }
 
@@ -180,6 +194,9 @@ func (c *Config) GRPCAddress() string {
 
 // ValidateRuntimeStrict menegakkan kebijakan fail-closed saat daemon IAM dijalankan di lingkungan non-pengembangan.
 func (c *Config) ValidateRuntimeStrict(sec SecurityConfig) error {
+	if c != nil && c.EFGRPCEnabled && strings.TrimSpace(c.EFGRPCTarget) == "" {
+		return errors.New("IAM_EF_GRPC_TARGET is required when IAM_EF_GRPC_ENABLED is true")
+	}
 	if c == nil {
 		return errors.New("iam config is required")
 	}

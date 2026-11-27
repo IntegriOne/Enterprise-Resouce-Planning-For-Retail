@@ -16,6 +16,7 @@ import (
 	iamrepo "github.com/integrione/erp-retail/backend/services/iam/repository"
 	"github.com/integrione/erp-retail/backend/services/iam/services/group"
 	"github.com/integrione/erp-retail/backend/services/iam/services/permission"
+	"github.com/integrione/erp-retail/backend/services/iam/services/provisioning"
 	"github.com/integrione/erp-retail/backend/services/iam/services/role"
 	"github.com/integrione/erp-retail/backend/services/iam/services/session"
 	"github.com/integrione/erp-retail/backend/services/iam/services/user"
@@ -24,6 +25,7 @@ import (
 
 // SecurityOptions mengonfigurasi adaptor kriptografi, keyring 2FA/CSRF, kebijakan lockout, allowlist rute redirect, dan proyeksi Redis IAM.
 type SecurityOptions struct {
+	ScopeVerifier         domainservice.ScopeOwnerVerifier
 	TOTPIssuer            string
 	TOTPActiveKeyVersion  int16
 	TOTPKeyring           map[int16][]byte
@@ -52,11 +54,12 @@ type SecurityOptions struct {
 
 // Registry menyatukan seluruh layanan domain aplikasi IAM beserta koordinator outbox dan worker rekonsiliasi Redis.
 type Registry struct {
-	Permissions *permission.Service
-	Roles       *role.Service
-	Groups      *group.Service
-	Sessions    *session.Service
-	Users       *user.Service
+	EmployeeProvisioning *provisioning.Service
+	Permissions          *permission.Service
+	Roles                *role.Service
+	Groups               *group.Service
+	Sessions             *session.Service
+	Users                *user.Service
 
 	Projector       *redisstore.Projector
 	OutboxCoord     *redisstore.Coordinator
@@ -232,45 +235,47 @@ func NewRegistry(repos *iamrepo.Registry, opts SecurityOptions) (*Registry, erro
 	}
 
 	userSvc, err := user.NewService(user.Dependencies{
-		Transactor:      repos.Transactor,
-		Users:           repos.Users,
-		Identities:      repos.UserIdentities,
-		Credentials:     repos.UserCredentials,
-		TOTPFactors:     repos.UserTOTPFactors,
-		RecoveryCodes:   repos.UserRecoveryCodes,
-		Tokens:          repos.UserTokens,
-		Roles:           repos.Roles,
-		UserRoles:       repos.UserRoles,
-		SecurityRuntime: repos.SecurityRuntime,
-		Sessions:        sessSvc,
-		Clock:           clock,
-		IDGen:           idGen,
-		PasswordHasher:  hasher,
-		PasswordPolicy:  passwordPolicy,
-		TokenGen:        tokenGen,
-		SecretCipher:    secretCipher,
-		TOTPProvider:    totpProv,
-		Redirect:        redirectResolver,
-		EmailSender:     opts.EmailSender,
-		OutboxCoord:     outboxCoord,
-		Projector:       projector,
-		Logger:          opts.Logger,
-		Config:          userCfg,
+		EmployeeProvisioning: repos.EmployeeProvisioning,
+		Transactor:           repos.Transactor,
+		Users:                repos.Users,
+		Identities:           repos.UserIdentities,
+		Credentials:          repos.UserCredentials,
+		TOTPFactors:          repos.UserTOTPFactors,
+		RecoveryCodes:        repos.UserRecoveryCodes,
+		Tokens:               repos.UserTokens,
+		Roles:                repos.Roles,
+		UserRoles:            repos.UserRoles,
+		SecurityRuntime:      repos.SecurityRuntime,
+		Sessions:             sessSvc,
+		Clock:                clock,
+		IDGen:                idGen,
+		PasswordHasher:       hasher,
+		PasswordPolicy:       passwordPolicy,
+		TokenGen:             tokenGen,
+		SecretCipher:         secretCipher,
+		TOTPProvider:         totpProv,
+		Redirect:             redirectResolver,
+		EmailSender:          opts.EmailSender,
+		OutboxCoord:          outboxCoord,
+		Projector:            projector,
+		Logger:               opts.Logger,
+		Config:               userCfg,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	reg := &Registry{
-		Permissions:     permSvc,
-		Roles:           roleSvc,
-		Groups:          groupSvc,
-		Sessions:        sessSvc,
-		Users:           userSvc,
-		Projector:       projector,
-		OutboxCoord:     outboxCoord,
-		Reconciler:      reconciler,
-		EmailDispatcher: emailDisp,
+		EmployeeProvisioning: provisioning.NewService(repos.EmployeeProvisioning, repos.Users, repos.Roles, opts.ScopeVerifier, clock),
+		Permissions:          permSvc,
+		Roles:                roleSvc,
+		Groups:               groupSvc,
+		Sessions:             sessSvc,
+		Users:                userSvc,
+		Projector:            projector,
+		OutboxCoord:          outboxCoord,
+		Reconciler:           reconciler,
+		EmailDispatcher:      emailDisp,
 	}
 	if err := reg.Validate(); err != nil {
 		return nil, err

@@ -51,6 +51,8 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *iamv1.CreateUserReque
 		Password:               req.GetPassword(),
 		RequirePasswordChange:  req.GetRequirePasswordChange(),
 		MarkIdentitiesVerified: req.GetMarkIdentitiesVerified(),
+		ProvisioningRequestID:  req.GetProvisioningRequestId(),
+		WorkerID:               req.GetWorkerId(),
 	})
 	if err != nil {
 		return nil, h.errMapper.ToStatus(err)

@@ -61,3 +61,9 @@ var (
 	// ErrSensitiveReauthRequired menandakan izin sensitif memerlukan autentikasi ulang sesi terkini.
 	ErrSensitiveReauthRequired = newSentinel(KindForbidden, "iam.rbac.sensitive_reauth_required", "sensitive permission requires recent authentication")
 )
+
+var ErrScopeOwnerVerificationUnavailable = newSentinel(KindUnavailable, "iam.scope.owner_verification_unavailable", "scope owner verification is unavailable")
+
+var ErrScopeTargetNotEligible = newSentinel(KindConflict, "iam.scope.target_not_eligible", "scope target is not active or eligible")
+
+var ErrScopeTargetNotFound = newSentinel(KindNotFound, "iam.scope.target_not_found", "scope target not found")

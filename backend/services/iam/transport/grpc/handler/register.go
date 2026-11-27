@@ -11,7 +11,7 @@ import (
 	"github.com/integrione/erp-retail/backend/services/iam/services"
 )
 
-// RegisterAll mendaftarkan seluruh 6 gRPC service IAM ke server secara fail-closed.
+// RegisterAll mendaftarkan layanan gRPC IAM ke server secara fail-closed.
 func RegisterAll(grpcSrv *grpc.Server, reg *services.Registry, logger *slog.Logger) error {
 	if grpcSrv == nil {
 		return fmt.Errorf("grpc server cannot be nil")
@@ -56,6 +56,9 @@ func RegisterAll(grpcSrv *grpc.Server, reg *services.Registry, logger *slog.Logg
 	iamv1.RegisterSessionServiceServer(grpcSrv, sessH)
 	iamv1.RegisterUserServiceServer(grpcSrv, userH)
 	iamv1.RegisterAuthServiceServer(grpcSrv, authH)
+	if reg.EmployeeProvisioning != nil {
+		iamv1.RegisterEmployeeProvisioningServiceServer(grpcSrv, &EmployeeProvisioningHandler{service: reg.EmployeeProvisioning, errMapper: errMapper})
+	}
 	return nil
 }
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/integrione/erp-retail/backend/services/iam/config"
 	"github.com/integrione/erp-retail/backend/services/iam/infrastructure/terminationaccess"
+	"github.com/integrione/erp-retail/backend/services/iam/services/provisioning"
 	"github.com/integrione/erp-retail/backend/services/iam/services/user"
 	"github.com/integrione/erp-retail/backend/services/iam/transport/grpc/handler"
 	"github.com/integrione/erp-retail/backend/services/iam/transport/grpc/interceptor"
@@ -18,7 +19,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-func startHRMWorkloads(cfg *config.Config, users *user.Service, logger *slog.Logger, errorsOut chan<- error) (func(), error) {
+func startHRMWorkloads(cfg *config.Config, users *user.Service, provisioningService *provisioning.Service, logger *slog.Logger, errorsOut chan<- error) (func(), error) {
 	var verifier user.TerminationAccessVerifier
 	var conn *grpc.ClientConn
 	if access := cfg.HRMTerminationAccess; access != (config.HRMTerminationAccessConfig{}) {
@@ -30,6 +31,9 @@ func startHRMWorkloads(cfg *config.Config, users *user.Service, logger *slog.Log
 			return nil, fmt.Errorf("configure HRM termination access verifier: %w", err)
 		}
 		conn, verifier = clientConn, client
+		if provisioningService != nil {
+			provisioningService.ConfigureWorkerAccountLinkVerifier(client)
+		}
 	}
 	stop, err := startRequisitionMandate(cfg.RequisitionMandate, users, verifier, logger, errorsOut)
 	if err != nil {

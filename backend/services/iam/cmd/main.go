@@ -48,11 +48,18 @@ func main() {
 
 	// Rangkai repositori GORM, client Redis TLS+ACL, dan seluruh layanan aplikasi IAM secara fail-closed.
 	initCtx, initCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	svcRegistry, repos, redisClient, err := wireRuntimeStack(initCtx, gormDB, cfg, logger)
+	svcRegistry, repos, redisClient, efScopeCloser, err := wireRuntimeStack(initCtx, gormDB, cfg, logger)
 	initCancel()
 	if err != nil {
 		logger.Error("failed to wire IAM runtime stack", slog.String("error", err.Error()))
 		os.Exit(1)
+	}
+	if efScopeCloser != nil {
+		defer func() {
+			if closeErr := efScopeCloser.Close(); closeErr != nil {
+				logger.Warn("failed to close enterprise foundation scope verifier connection", slog.String("error", closeErr.Error()))
+			}
+		}()
 	}
 	if redisClient != nil {
 		defer func() {
@@ -90,7 +97,7 @@ func main() {
 	}
 
 	errCh := make(chan error, 2)
-	stopWorkloads, err := startHRMWorkloads(cfg, svcRegistry.Users, logger, errCh)
+	stopWorkloads, err := startHRMWorkloads(cfg, svcRegistry.Users, svcRegistry.EmployeeProvisioning, logger, errCh)
 	if err != nil {
 		logger.Error("failed to start IAM workload listener", slog.String("error", err.Error()))
 		os.Exit(1)
