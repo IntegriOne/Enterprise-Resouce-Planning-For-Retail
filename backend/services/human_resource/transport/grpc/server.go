@@ -3,13 +3,10 @@ package grpc
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net"
-	"os"
 	"time"
 
 	appservice "github.com/integrione/erp-retail/backend/services/human_resource/internal/service"
@@ -45,29 +42,13 @@ func NewServer(cfg Config, services *appservice.Registry, logger *slog.Logger) (
 	if services == nil || cfg.Address == "" || cfg.ServiceName == "" || len(cfg.GatewayHMACSecret) < 32 {
 		return nil, fmt.Errorf("services, address and gateway proof key are required")
 	}
-	certificate, err := tls.LoadX509KeyPair(cfg.TLSCertFile, cfg.TLSKeyFile)
+	tlsConfig, err := loadServerTLS(cfg.TLSCertFile, cfg.TLSKeyFile, cfg.TLSCAFile)
 	if err != nil {
-		return nil, fmt.Errorf("load HRM server certificate: %w", err)
-	}
-	ca, err := os.ReadFile(cfg.TLSCAFile)
-	if err != nil {
-		return nil, fmt.Errorf("load HRM client CA: %w", err)
-	}
-	pool := x509.NewCertPool()
-	if !pool.AppendCertsFromPEM(ca) {
-		return nil, fmt.Errorf("invalid HRM client CA")
-	}
-	if logger == nil {
-		logger = slog.Default()
+		return nil, err
 	}
 	key := append([]byte{}, cfg.GatewayHMACSecret...)
 	server := stdgrpc.NewServer(
-		stdgrpc.Creds(credentials.NewTLS(&tls.Config{
-			MinVersion:   tls.VersionTLS13,
-			Certificates: []tls.Certificate{certificate},
-			ClientAuth:   tls.RequireAndVerifyClientCert,
-			ClientCAs:    pool,
-		})),
+		stdgrpc.Creds(credentials.NewTLS(tlsConfig)),
 		stdgrpc.MaxRecvMsgSize(4<<20),
 		stdgrpc.MaxSendMsgSize(4<<20),
 		stdgrpc.KeepaliveParams(keepalive.ServerParameters{

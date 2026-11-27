@@ -23,6 +23,8 @@ type Dependencies struct {
 
 // Service mengoordinasikan operasi domain personnel.
 type Service struct {
+	transferDependencies Dependencies
+	lifecycleEvents      domainrepo.RecordRepository[entity.WorkerLifecycleEvent, int64]
 	worker               *operation.Resource[entity.Worker, string, *entity.Worker]
 	employmentContract   *operation.Resource[entity.EmploymentContract, string, *entity.EmploymentContract]
 	workerAssignment     *operation.Resource[entity.WorkerAssignment, string, *entity.WorkerAssignment]
@@ -33,7 +35,13 @@ type Service struct {
 
 // NewService memeriksa seluruh port dan dependency sebelum service dapat dipakai.
 func NewService(deps Dependencies) (*Service, error) {
-	s := &Service{}
+	if operation.RequireDependency(deps.Runtime.Clock) != nil {
+		deps.Runtime.Clock = operation.SystemClock{}
+	}
+	if operation.RequireDependency(deps.Runtime.IDs) != nil {
+		deps.Runtime.IDs = operation.UUIDGenerator{}
+	}
+	s := &Service{lifecycleEvents: deps.WorkerLifecycleEvent, transferDependencies: deps}
 	var err error
 	s.worker, err = operation.NewResource[entity.Worker, string, *entity.Worker](
 		deps.Worker,

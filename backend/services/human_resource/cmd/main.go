@@ -72,6 +72,15 @@ func run(logger *slog.Logger) error {
 	if err := startup.Err(); err != nil {
 		return err
 	}
+	terminationFailed := make(chan error, 1)
+	terminationTLS := cfg.TerminationAccessTLS
+	stopTermination, err := transportgrpc.StartTerminationAccess(cfg.TerminationAccessAddress,
+		terminationTLS.CertFile, terminationTLS.KeyFile, terminationTLS.CAFile, dependencies.Services.Personnel, logger, terminationFailed)
+	if err != nil {
+		return fmt.Errorf("configure HRM termination access: %w", err)
+	}
+	defer stopTermination()
+
 	cancel()
 	logger.Warn("HRM mutation validators are limited to selected local catalog resources; other mutations remain unavailable")
 	logger.Info("starting private HRM gRPC listener", "address", cfg.GRPCAddress())
@@ -101,6 +110,11 @@ func run(logger *slog.Logger) error {
 			err = errors.New("HRM outbox relay stopped unexpectedly")
 		}
 		return errors.Join(err, stopErr, serveErr)
+	case err := <-terminationFailed:
+		stop()
+		shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+		defer finish()
+		return errors.Join(err, server.Stop(shutdown), <-served, <-relayed)
 	case <-ctx.Done():
 		shutdown, finish := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 		defer finish()

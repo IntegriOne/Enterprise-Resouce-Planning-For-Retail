@@ -43,6 +43,8 @@ type OutboxConfig struct {
 
 // Config menyediakan dependency runtime yang sudah divalidasi sebelum listener dibuka.
 type Config struct {
+	TerminationAccessAddress      string
+	TerminationAccessTLS          TLSConfig
 	AppEnv, ServiceName, GRPCHost string
 	GRPCPort                      int
 	Database                      DatabaseConfig
@@ -58,6 +60,11 @@ type Config struct {
 // Load membaca environment; nilai secret dapat dipasang sebagai berkas Docker secret.
 func Load() (Config, error) {
 	cfg := Config{
+		TerminationAccessAddress: env("HRM_TERMINATION_ACCESS_ADDR", ""),
+		TerminationAccessTLS: TLSConfig{
+			CertFile: env("HRM_TERMINATION_ACCESS_CERT_FILE", ""), KeyFile: env("HRM_TERMINATION_ACCESS_KEY_FILE", ""),
+			CAFile: env("HRM_TERMINATION_ACCESS_CLIENT_CA_FILE", ""),
+		},
 		AppEnv: env("APP_ENV", "development"), ServiceName: env("HRM_SERVICE_NAME", "integrione-human-resource"),
 		GRPCHost:          env("HRM_GRPC_HOST", "127.0.0.1"),
 		SecurityNamespace: env("HRM_SECURITY_NAMESPACE", "development"),
@@ -165,6 +172,16 @@ func (c Config) Validate() error {
 	if c.TLS.CertFile == "" || c.TLS.KeyFile == "" || c.TLS.CAFile == "" || strings.TrimSpace(c.TLS.ServerName) == "" {
 		return errors.New("HRM gRPC mTLS certificate, key, CA, and server name are required")
 	}
+	if c.TerminationAccessAddress != "" || c.TerminationAccessTLS != (TLSConfig{}) {
+		_, port, err := net.SplitHostPort(c.TerminationAccessAddress)
+		portNumber, portErr := strconv.Atoi(port)
+		tls := c.TerminationAccessTLS
+		if err != nil || portErr != nil || portNumber < 1 || portNumber > 65535 ||
+			portNumber == c.GRPCPort || tls.CertFile == "" || tls.KeyFile == "" || tls.CAFile == "" {
+			return errors.New("HRM termination access requires a separate port, certificate, key, and client CA")
+		}
+	}
+
 	if len(c.GatewayHMACSecret) < 32 {
 		return errors.New("HRM_GATEWAY_HMAC_SECRET must contain at least 32 bytes")
 	}
