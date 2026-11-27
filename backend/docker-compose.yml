@@ -65,6 +65,9 @@ services:
       IAM_REDIS_CA_CERT_PATH: /etc/integrione/certs/ca.crt
       IAM_REDIS_SERVER_NAME: redis
       IAM_REDIS_TLS_INSECURE_SKIP_VERIFY: "false"
+      IAM_EF_GRPC_ENABLED: "true"
+      IAM_EF_GRPC_TARGET: enterprise-foundation:9002
+      IAM_EF_GRPC_TIMEOUT_SECONDS: "5"
     ports:
       - "127.0.0.1:9001:9001"
     volumes:
@@ -74,6 +77,41 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/grpc-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      start_period: 15s
+      retries: 5
+
+  enterprise-foundation:
+    build:
+      context: .
+      dockerfile: services/enterprise_foundation/Dockerfile
+    image: integrione-retail-enterprise-foundation:dev
+    restart: unless-stopped
+    env_file:
+      - path: ./services/enterprise_foundation/.env
+        required: false
+    environment:
+      TZ: Asia/Jakarta
+      APP_ENV: ${EF_APP_ENV:-production}
+      EF_SERVICE_NAME: integrione-enterprise-foundation
+      EF_GRPC_HOST: 0.0.0.0
+      EF_GRPC_PORT: "9002"
+      EF_SHUTDOWN_TIMEOUT_SECONDS: "15"
+    ports:
+      - "127.0.0.1:9002:9002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "/usr/local/bin/grpc-healthcheck"]
       interval: 10s

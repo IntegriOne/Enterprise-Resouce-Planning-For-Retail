@@ -135,6 +135,7 @@ message UpdateOrganizationUnitRequest {
   OrgUnitKind kind = 5;
   optional string cost_center_code = 6;
   optional string head_person_id = 7;
+  bool preserve_head_person = 8;
 }
 
 message UpdateOrganizationUnitResponse {

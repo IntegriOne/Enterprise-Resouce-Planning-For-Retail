@@ -26,7 +26,7 @@
 //    - foundation_outbox_events : Antrean outbox transaksional untuk memberitahu IAM, Procurement,
 //                                 WMS, dan HRM saat status entity/unit/lokasi/party/PIC berubah.
 //
-// BATASAN DOMAIN (BOUNDED CONTEXT — agents/boundary.md & agents/principals.md):
+// BATASAN DOMAIN (BOUNDED CONTEXT — agents/boundary.md & agents/users.md):
 // - Dilarang membuat FK SQL lintas database (hanya UUID logis ke `iam.users.id` & `hrm` worker).
 // - Akun login, password, role, dan scope grant 100% dimiliki oleh database `iam`.
 // - Karyawan/kontrak/payroll dikelola HRM; kualifikasi/PO di Procurement; rekening AP di Finance.

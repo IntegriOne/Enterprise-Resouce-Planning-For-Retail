@@ -1228,16 +1228,17 @@ func (x *CreateOrganizationUnitResponse) GetOrganizationUnit() *OrganizationUnit
 }
 
 type UpdateOrganizationUnitRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ParentUnitId      *string                `protobuf:"bytes,2,opt,name=parent_unit_id,json=parentUnitId,proto3,oneof" json:"parent_unit_id,omitempty"`
-	PrimaryLocationId *string                `protobuf:"bytes,3,opt,name=primary_location_id,json=primaryLocationId,proto3,oneof" json:"primary_location_id,omitempty"`
-	Name              string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Kind              OrgUnitKind            `protobuf:"varint,5,opt,name=kind,proto3,enum=enterprise_foundation.v1.OrgUnitKind" json:"kind,omitempty"`
-	CostCenterCode    *string                `protobuf:"bytes,6,opt,name=cost_center_code,json=costCenterCode,proto3,oneof" json:"cost_center_code,omitempty"`
-	HeadPersonId      *string                `protobuf:"bytes,7,opt,name=head_person_id,json=headPersonId,proto3,oneof" json:"head_person_id,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ParentUnitId       *string                `protobuf:"bytes,2,opt,name=parent_unit_id,json=parentUnitId,proto3,oneof" json:"parent_unit_id,omitempty"`
+	PrimaryLocationId  *string                `protobuf:"bytes,3,opt,name=primary_location_id,json=primaryLocationId,proto3,oneof" json:"primary_location_id,omitempty"`
+	Name               string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Kind               OrgUnitKind            `protobuf:"varint,5,opt,name=kind,proto3,enum=enterprise_foundation.v1.OrgUnitKind" json:"kind,omitempty"`
+	CostCenterCode     *string                `protobuf:"bytes,6,opt,name=cost_center_code,json=costCenterCode,proto3,oneof" json:"cost_center_code,omitempty"`
+	HeadPersonId       *string                `protobuf:"bytes,7,opt,name=head_person_id,json=headPersonId,proto3,oneof" json:"head_person_id,omitempty"`
+	PreserveHeadPerson bool                   `protobuf:"varint,8,opt,name=preserve_head_person,json=preserveHeadPerson,proto3" json:"preserve_head_person,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *UpdateOrganizationUnitRequest) Reset() {
@@ -1317,6 +1318,13 @@ func (x *UpdateOrganizationUnitRequest) GetHeadPersonId() string {
 		return *x.HeadPersonId
 	}
 	return ""
+}
+
+func (x *UpdateOrganizationUnitRequest) GetPreserveHeadPerson() bool {
+	if x != nil {
+		return x.PreserveHeadPerson
+	}
+	return false
 }
 
 type UpdateOrganizationUnitResponse struct {
@@ -1820,7 +1828,7 @@ const file_enterprise_foundation_v1_organization_unit_proto_rawDesc = "" +
 	"\x11_cost_center_codeB\x11\n" +
 	"\x0f_head_person_id\"y\n" +
 	"\x1eCreateOrganizationUnitResponse\x12W\n" +
-	"\x11organization_unit\x18\x01 \x01(\v2*.enterprise_foundation.v1.OrganizationUnitR\x10organizationUnit\"\x8b\x03\n" +
+	"\x11organization_unit\x18\x01 \x01(\v2*.enterprise_foundation.v1.OrganizationUnitR\x10organizationUnit\"\xbd\x03\n" +
 	"\x1dUpdateOrganizationUnitRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12)\n" +
 	"\x0eparent_unit_id\x18\x02 \x01(\tH\x00R\fparentUnitId\x88\x01\x01\x123\n" +
@@ -1828,7 +1836,8 @@ const file_enterprise_foundation_v1_organization_unit_proto_rawDesc = "" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x129\n" +
 	"\x04kind\x18\x05 \x01(\x0e2%.enterprise_foundation.v1.OrgUnitKindR\x04kind\x12-\n" +
 	"\x10cost_center_code\x18\x06 \x01(\tH\x02R\x0ecostCenterCode\x88\x01\x01\x12)\n" +
-	"\x0ehead_person_id\x18\a \x01(\tH\x03R\fheadPersonId\x88\x01\x01B\x11\n" +
+	"\x0ehead_person_id\x18\a \x01(\tH\x03R\fheadPersonId\x88\x01\x01\x120\n" +
+	"\x14preserve_head_person\x18\b \x01(\bR\x12preserveHeadPersonB\x11\n" +
 	"\x0f_parent_unit_idB\x16\n" +
 	"\x14_primary_location_idB\x13\n" +
 	"\x11_cost_center_codeB\x11\n" +
