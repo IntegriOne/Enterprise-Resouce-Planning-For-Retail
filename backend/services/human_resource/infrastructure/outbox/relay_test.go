@@ -1,9 +1,12 @@
 package outbox
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"errors"
+	"log/slog"
+	"strings"
 	"testing"
 	"time"
 
@@ -47,12 +50,14 @@ func (s *deliveryStoreStub) MarkRetry(_ context.Context, _ string, _ time.Time, 
 }
 
 type publishStub struct {
-	err   error
-	calls int
+	err      error
+	calls    int
+	eventIDs []string
 }
 
-func (p *publishStub) Publish(context.Context, *entity.OutboxEvent) error {
+func (p *publishStub) Publish(_ context.Context, event *entity.OutboxEvent) error {
 	p.calls++
+	p.eventIDs = append(p.eventIDs, event.ID)
 	return p.err
 }
 
@@ -131,5 +136,63 @@ func TestActiveRelayReturnsDatabaseFailure(t *testing.T) {
 	}
 	if err := relay.Run(t.Context()); !errors.Is(err, want) {
 		t.Fatalf("relay failure = %v, want database error", err)
+	}
+}
+
+func TestWorkerTerminationRequiresIAMAcknowledgement(t *testing.T) {
+	t.Parallel()
+	event := validEvent()
+	event.EventType = entity.WorkerTerminationRecorded
+	store := &deliveryStoreStub{event: event}
+	general := &publishStub{}
+	iam := &publishStub{err: errors.New("iam unavailable")}
+	relay, err := NewRelay(transactionStub{}, store, RouteWorkerTermination(general, iam), Config{}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := relay.Drain(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if general.calls != 0 || iam.calls != 1 || store.published || store.retryCode != "delivery_failed" {
+		t.Fatal("termination must remain pending after failed IAM delivery")
+	}
+	store.retryCode = ""
+	store.event.AttemptCount = store.attempts
+	iam.err = nil
+	if err := relay.Drain(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if general.calls != 0 || iam.calls != 2 || !store.published || store.attempts != 2 {
+		t.Fatal("termination must be published after IAM acknowledges retry")
+	}
+}
+
+func TestRelayReportsExhaustedTerminationWithoutPayload(t *testing.T) {
+	t.Parallel()
+	event := validEvent()
+	event.EventType = entity.WorkerTerminationRecorded
+	event.AttemptCount = 2
+	store := &deliveryStoreStub{event: event}
+	publisher := &publishStub{err: errors.New("private upstream detail")}
+	var logs bytes.Buffer
+	logger := slog.New(slog.NewTextHandler(&logs, nil))
+	relay, err := NewRelay(transactionStub{}, store, publisher, Config{MaxAttempts: 3}, logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := relay.Drain(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if store.published || store.attempts != 3 || store.retryCode != "delivery_failed" {
+		t.Fatalf("exhausted event state: %+v", store)
+	}
+	log := logs.String()
+	for _, want := range []string{"HRM outbox delivery exhausted", event.ID, entity.WorkerTerminationRecorded, "delivery_failed"} {
+		if !strings.Contains(log, want) {
+			t.Fatalf("missing recovery detail %q in %q", want, log)
+		}
+	}
+	if strings.Contains(log, event.AggregateID) || strings.Contains(log, "private upstream detail") {
+		t.Fatal("outbox warning disclosed event payload or upstream details")
 	}
 }

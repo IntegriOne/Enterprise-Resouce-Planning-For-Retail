@@ -122,3 +122,29 @@ func (p *LogPublisher) Publish(ctx context.Context, event *entity.OutboxEvent) e
 		"aggregate_id", event.AggregateID, "aggregate_version", event.AggregateVersion)
 	return nil
 }
+
+type workerTerminationRoute struct {
+	general     Publisher
+	termination Publisher
+}
+
+// RouteWorkerTermination mengarahkan event terminasi hanya ke receiver IAM.
+func RouteWorkerTermination(general, termination Publisher) Publisher {
+	return workerTerminationRoute{general: general, termination: termination}
+}
+
+func (r workerTerminationRoute) Publish(ctx context.Context, event *entity.OutboxEvent) error {
+	if event == nil {
+		return hrerrors.ErrInvalidInput
+	}
+	if event.EventType == entity.WorkerTerminationRecorded {
+		if r.termination == nil {
+			return hrerrors.ErrUnavailable
+		}
+		return r.termination.Publish(ctx, event)
+	}
+	if r.general == nil {
+		return hrerrors.ErrUnavailable
+	}
+	return r.general.Publish(ctx, event)
+}

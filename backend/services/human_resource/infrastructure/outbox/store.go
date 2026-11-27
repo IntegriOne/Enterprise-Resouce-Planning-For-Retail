@@ -13,14 +13,23 @@ import (
 )
 
 // Store menyediakan operasi pengiriman outbox di luar CRUD bisnis.
-type Store struct{ db *gorm.DB }
+type Store struct {
+	db          *gorm.DB
+	general     bool
+	termination bool
+}
 
 // NewStore mengikat pengiriman event pada koneksi dan transaksi HRM yang sama.
 func NewStore(db *gorm.DB) (*Store, error) {
+	return NewStoreForRoutes(db, true, false)
+}
+
+// NewStoreForRoutes membatasi antrean ke jalur pengiriman yang aktif.
+func NewStoreForRoutes(db *gorm.DB, general, termination bool) (*Store, error) {
 	if err := pgstore.CheckDB(db); err != nil {
 		return nil, err
 	}
-	return &Store{db: db}, nil
+	return &Store{db: db, general: general, termination: termination}, nil
 }
 
 func (s *Store) query(ctx context.Context) (*gorm.DB, error) {
@@ -43,8 +52,17 @@ func (s *Store) SelectDue(ctx context.Context, now time.Time, limit, maxAttempts
 		return nil, err
 	}
 	items := make([]entity.OutboxEvent, 0, limit)
-	err = db.Model(&entity.OutboxEvent{}).
-		Where("published_at IS NULL AND available_at <= ? AND attempt_count < ?", now, maxAttempts).
+	db = db.Model(&entity.OutboxEvent{}).
+		Where("published_at IS NULL AND available_at <= ? AND attempt_count < ?", now, maxAttempts)
+	switch {
+	case !s.general && !s.termination:
+		return items, nil
+	case !s.general:
+		db = db.Where("event_type = ?", entity.WorkerTerminationRecorded)
+	case !s.termination:
+		db = db.Where("event_type <> ?", entity.WorkerTerminationRecorded)
+	}
+	err = db.
 		Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).
 		Order("occurred_at ASC").Order("id ASC").Limit(limit).Find(&items).Error
 	return items, pgstore.MapError(err)

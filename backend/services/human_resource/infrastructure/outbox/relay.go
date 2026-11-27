@@ -1,6 +1,7 @@
 package outbox
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"crypto/subtle"
@@ -141,6 +142,7 @@ func (r *Relay) Drain(ctx context.Context) error {
 
 func (r *Relay) drainOne(ctx context.Context) (bool, error) {
 	processed := false
+	var terminalID, terminalType, terminalCode string
 	txCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), r.cfg.PublishTimeout+5*time.Second)
 	defer cancel()
 	err := r.tx.WithinTransaction(txCtx, func(tc context.Context) error {
@@ -158,6 +160,7 @@ func (r *Relay) drainOne(ctx context.Context) (bool, error) {
 			return hrerrors.ErrConflict
 		}
 		if err := validatePayload(&event); err != nil {
+			terminalID, terminalType, terminalCode = event.ID, event.EventType, "invalid_payload"
 			return r.store.MarkRetry(tc, event.ID, time.Now().UTC(), int32(r.cfg.MaxAttempts), "invalid_payload")
 		}
 		pubCtx, stop := context.WithTimeout(ctx, r.cfg.PublishTimeout)
@@ -166,10 +169,17 @@ func (r *Relay) drainOne(ctx context.Context) (bool, error) {
 			if ctx.Err() != nil {
 				return ctx.Err()
 			}
+			if int(attempts) == r.cfg.MaxAttempts {
+				terminalID, terminalType, terminalCode = event.ID, event.EventType, "delivery_failed"
+			}
 			return r.store.MarkRetry(tc, event.ID, time.Now().UTC().Add(retryDelay(int(attempts))), attempts, "delivery_failed")
 		}
 		return r.store.MarkPublished(tc, event.ID, time.Now().UTC(), attempts)
 	})
+	if err == nil && terminalCode != "" {
+		r.logger.WarnContext(ctx, "HRM outbox delivery exhausted",
+			"event_id", terminalID, "event_type", terminalType, "error_code", terminalCode)
+	}
 	return processed, err
 }
 
@@ -180,11 +190,21 @@ func validatePayload(event *entity.OutboxEvent) error {
 	if err := event.Validate(); err != nil {
 		return err
 	}
-	var payload map[string]json.RawMessage
-	if err := json.Unmarshal(event.Payload, &payload); err != nil || payload == nil {
+	if !json.Valid(event.Payload) {
 		return hrerrors.ErrInvalidInput
 	}
-	digest := sha256.Sum256(event.Payload)
+	// Marshal ulang mengikuti format map JSON penulis sebelum PostgreSQL menormalisasi JSONB.
+	var object map[string]any
+	decoder := json.NewDecoder(bytes.NewReader(event.Payload))
+	decoder.UseNumber()
+	if err := decoder.Decode(&object); err != nil || object == nil {
+		return hrerrors.ErrInvalidInput
+	}
+	canonical, err := json.Marshal(object)
+	if err != nil {
+		return hrerrors.ErrInvalidInput
+	}
+	digest := sha256.Sum256(canonical)
 	if subtle.ConstantTimeCompare(digest[:], event.PayloadDigest) != 1 {
 		return hrerrors.ErrConstraintViolation
 	}
