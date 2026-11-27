@@ -24,11 +24,13 @@ FROM go-toolchain AS deps
 ENV PATH="/usr/local/go/bin:${PATH}" GOWORK=off
 WORKDIR /src
 COPY shared /src/shared
+COPY services/iam/go.mod services/iam/go.sum /src/services/iam/
 COPY services/human_resource/go.mod services/human_resource/go.sum /src/services/human_resource/
 WORKDIR /src/services/human_resource
 RUN go mod download
 
 FROM deps AS builder
+COPY services/iam/contract /src/services/iam/contract
 COPY services/human_resource /src/services/human_resource
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/hrm-server ./cmd && \
     CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/grpc-healthcheck ./cmd/healthcheck
