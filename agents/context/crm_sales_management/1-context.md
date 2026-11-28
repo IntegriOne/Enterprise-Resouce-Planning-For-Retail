@@ -7,7 +7,7 @@
 
 ## Apa yang belum dikerjakan
 
-- Checkout belum memuat modul CRM di `backend/services/` atau entri CRM di `backend/go.work`. Penyimpanan lead dan opportunity, pengelolaan consent, kontrak verifikasi untuk konsumen, wiring Gateway, katalog izin, dan bukti E2E CRM belum tersedia dalam cakupan yang diperiksa.
+- Pada 29 November 2026 checkout memuat DBML di `backend/services/customer_relationship_sales/db/schema/customer_relationship_management.dbml`. Modul Go, entri workspace, server gRPC, manifest, SDL dan E2E CRM masih perlu dibuat. [Konteks aktif dan lokasi instruksi developer](../customer_relationship_sales/1-context.md).
 
 ## Apa yang harus dikerjakan selanjutanya
 

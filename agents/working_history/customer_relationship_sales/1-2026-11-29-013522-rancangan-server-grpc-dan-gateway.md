@@ -1,0 +1,5 @@
+# Rancangan server CRM dan wiring Gateway
+
+Membandingkan usulan logika, DBML 35 tabel dan batas owner dengan kode Commerce. Menyusun instruksi DB–handler–Gateway, matriks 35 query, 54 mutation dan 10 RPC privat, serta kontrak koordinasi lintas management. Quotation Commerce, konfirmasi order OMS, pendapatan Finance dan tiket Customer Service memiliki pemilik berbeda. Empat catatan menjelaskan kebutuhan Commerce, Finance, DRM dan Customer Service. Verifikasi mencakup ketersediaan path sumber, nama field usulan terhadap SDL aktual dan hitungan operasi. Implementasi dan bukti E2E ditugaskan kepada developer.
+
+[Instruksi backend](../../../agents/instructions/customer_relationship_sales/1-leader-implementasi-server-grpc-dan-gateway-instructions.md) · [Katalog operasi](../../../agents/grpc/customer_relationship_sales/1-katalog-operasi-relasi-pelanggan-dan-penjualan.md) · [Wiring integrasi](../../../agents/instructions/customer_relationship_sales/2-leader-wiring-lintas-management-instructions.md).
