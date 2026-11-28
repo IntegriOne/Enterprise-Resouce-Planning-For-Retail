@@ -1,0 +1,35 @@
+# Audit koneksi HRM — Gateway, gRPC dan korelasi bisnis
+
+**Kesimpulan.** Rute keluar terminasi, posting payroll dan pelepasan anggaran tersedia. Penerimaan publikasi payroll dari Finance sudah mencapai handler HR, tetapi penyimpanan dan pembacaan PDF DRM tidak dirangkai di entrypoint yang diperiksa. Pengiriman pengajuan akun ke IAM masih dipicu Gateway.
+
+**Lingkup pemeriksaan.** Pembacaan statis checkout bersama pada 28 November 2026 WIB, HEAD `22bc75143003d6d745f386d9808eefb3c5c5c26c`, termasuk source lokal yang belum di-commit. Bukti runtime terdahulu disebut terpisah bila tersedia. Tidak dilakukan transaksi HTTPS, transfer, deployment atau perubahan aplikasi pada audit ini.
+
+## Jalur yang terkonfirmasi dari source
+
+`cmd/main` memasang verifier mandat IAM, posting/payment/settlement Finance dan clearance gabungan bila dependency diaktifkan. `NewStoreForRoutesWithFinance` membatasi pengambilan event privat ketika suatu rute belum dikonfigurasi. `hr_payroll_runs.request_posting` menuju inbox Finance; callback `payroll.posted`, `payroll.result_paid`, `payroll.settled` dan `payroll.published` memiliki tujuan HR. Finance tetap memegang penerbitan, transfer dan bukti pembayaran. Verifikasi anggaran serta clearance menggunakan RPC sinkron; event penutupan requisition/supersesi plan dapat melepas reservasi. Riwayat E2E yang tersedia menggunakan bukti pembayaran fixture. [cmd/main.go L64](../../../backend/services/human_resource/cmd/main.go#L64) · [cmd/wiring.go L125](../../../backend/services/human_resource/cmd/wiring.go#L125) · [outbox/store.go L53](../../../backend/services/human_resource/infrastructure/outbox/store.go#L53) · [finance/budget_verifier.go](../../../backend/services/human_resource/infrastructure/integration/finance/budget_verifier.go) · [finance/offboarding_clearance.go](../../../backend/services/human_resource/infrastructure/integration/finance/offboarding_clearance.go) · [iam/employee_termination.go](../../../backend/services/human_resource/infrastructure/integration/iam/employee_termination.go) · [payrollevents/handler.go](../../../backend/services/human_resource/transport/grpc/handler/payrollevents/handler.go) · [gateway/191-finance-mutation-review-finance-clearance.md](../../e2e/gateway/191-finance-mutation-review-finance-clearance.md) · [human_resource/hrm_payslip.graphql](../../../backend/gateway/graphql/human_resource/hrm_payslip.graphql)
+
+**Permukaan kontrak.** Parser gqlparser membaca 176 root Query dan 326 root Mutation dari SDL `backend/gateway/graphql/human_resource/`. Descriptor dari `buf build` memuat 1022 RPC dalam 24 service proto milik HRM. RPC privat/callback ikut terhitung. Angka ini mengukur deklarasi dan tidak dipakai sebagai bukti E2E.
+
+## Kecocokan dengan rancangan bisnis
+
+Di procurement §23, informasi staf HRM bersifat kondisional. Tidak ditemukan kebutuhan agar HR menyalin PO atau menerima setiap pembayaran supplier. Ketiga logic.md berfokus pada pengadaan, gudang, dan produk. Sumber pembanding untuk jalur HR adalah aturan provisioning, mandat, payroll/offboarding, implementasi kedua owner dan laporan HTTPS terdahulu. Sinkronisasi payroll mengikuti bukti Finance, sedangkan bukti cetak mengikuti versi dokumen DRM. [procurement/logic.md](../../logic/procurement/logic.md) · [inventory_warehouse/logic.md](../../logic/inventory_warehouse/logic.md) · [product_life_cycle/logic.md](../../logic/product_life_cycle/logic.md)
+
+## Temuan dan dampak
+
+### HR-01 — P1 · Pengajuan akses tersimpan tanpa jaminan sampai di antrean IAM
+
+`CreateAccessRequest` memeriksa lifecycle aktivasi worker. Gateway melakukan `ReceiveEmployeeProvisioningRequest` setelah write HR. `SelectDue` dan komposisi publisher privat mengkhususkan terminasi, posting dan pelepasan anggaran. Tidak ditemukan rute bertanda terima IAM untuk pengajuan employee account pada wiring tersebut. Retry via Gateway ada dan terikat key/aktor, tetapi bergantung pada submit kembali. [accessrequest/service.go L42](../../../backend/services/human_resource/internal/service/accessrequest/service.go#L42) · [outbox/store.go L53](../../../backend/services/human_resource/infrastructure/outbox/store.go#L53) · [cmd/wiring.go L145](../../../backend/services/human_resource/cmd/wiring.go#L145) · [human_resource/access_request.go L69](../../../backend/gateway/internal/adapter/human_resource/access_request.go#L69)
+
+### HR-02 — P1 · Hasil publikasi gaji belum mencapai dokumen yang dapat dicetak
+
+Finance menghasilkan `payroll.published`. Penerima memanggil `PublishPayslipsForRun`. Ada `NewPayslipProcessor`, use case cetak mandiri dan `ReissueEmployeePayslip` (termasuk pemulihan dokumen hilang). Registry menyediakan `WithPayslipPublication`, `WithPayslipVerifier` dan `WithPayslipReissue`; main yang diperiksa memasang verifier posting, payment dan settlement tanpa memasang ketiga opsi dokumen. Karena itu adanya callback dan renderer PDF belum membuktikan PDF tersimpan. [payroll/service.go L558](../../../backend/services/finance_accounting/internal/service/payroll/service.go#L558) · [inbox/payroll_publication.go](../../../backend/services/human_resource/infrastructure/inbox/payroll_publication.go) · [document_records/payslip.go L51](../../../backend/services/human_resource/infrastructure/integration/document_records/payslip.go#L51) · [service/registry.go L180](../../../backend/services/human_resource/internal/service/registry.go#L180) · [payroll/payslip_reissue.go L27](../../../backend/services/human_resource/internal/service/payroll/payslip_reissue.go#L27) · [payroll/payslip.go L57](../../../backend/services/human_resource/internal/service/payroll/payslip.go#L57) · [cmd/main.go L94](../../../backend/services/human_resource/cmd/main.go#L94)
+
+### HR-03 — P2 · Validasi organisasi di EF belum memakai profil transport terverifikasi
+
+`Dial` pada client EF HR memakai insecure transport sementara callback Finance/IAM memakai listener khusus. Pada jalur ini ada timeout, signature dan validasi referensi organisasi. Diperlukan client yang dapat berbicara ke profil TLS EF-01. [enterprise_foundation/client.go L82](../../../backend/services/human_resource/infrastructure/integration/enterprise_foundation/client.go#L82) · [cmd/wiring.go L78](../../../backend/services/human_resource/cmd/wiring.go#L78) · [grpc/procurement_workload.go](../../../backend/services/enterprise_foundation/transport/grpc/procurement_workload.go)
+
+## Tindak lanjut
+
+[Instruksi per temuan, pemilik, pengujian dan kriteria penutupan](../../instructions/hrm/6-leader-perbaikan-korelasi-gateway-grpc-instructions.md). [Matriks lintas management dan perhitungan permukaan kontrak](../gateway/2-2026-11-28-133000-korelasi-gateway-grpc-inbox-outbox.md).
+
+**Jejak baseline lokal.** SHA-256 gabungan 21 file backend/logic yang ditautkan pada audit ini adalah `6d85d0bb73b11e44ce6a5099d437a9f7efa59ac683e8183d3bd0899e67a0bcb9`. Urutkan path relatif unik, lalu untuk tiap path gabungkan UTF-8 path, byte NUL dan digest SHA-256 biner dari isi file. Hash gabungan membantu mencocokkan checkout ketika source lokal belum dipublikasikan.
