@@ -6,6 +6,10 @@ Ada tiga pekerjaan yang perlu didahulukan sebelum memakai alur pembayaran dengan
 
 Audit statis atas working tree `main` berbasis `da64877287ad` pada 28 November 2026 WIB. Perubahan lokal aktif ikut diperiksa. Inventaris mencakup seluruh field root pada ketiga direktori SDL. Penelusuran logika berfokus pada jalur PO hingga pengeluaran aktual, termin pembayaran, payroll dan slip, reimbursement, serta anggaran tenaga kerja. Bukti berupa deklarasi produksi, pemanggil, SQL dan wiring. Dampak bersyarat dijelaskan bersama konfigurasinya. Audit ini tidak mengukur trafik, isi database, pengiriman nyata atau persentase kesiapan rilis. [Matriks 648 field dan selisih terhadap katalog](../../../agents/grpc/finance_accounting/6-matriks-operasi-procurement-hrm-finance.md)
 
+### Lokasi bahan untuk agent
+
+Ketujuh dokumen serah terima tersedia di Git. Saat commit dokumentasi `e29cdcb` diperiksa, 52 dari 130 target tautan lokal belum tersedia di tree `origin/main`, dan 38 target terlacak memiliki perubahan lokal. Agent dapat membaca sumber lengkap dari checkout bersama. Untuk audit ulang dari clone bersih, cocokkan dahulu commit kode owner Finance, Procurement, HRM dan Gateway yang memuat revisi tersebut. Angka cakupan di atas merujuk ke snapshot lokal itu.
+
 ## Temuan dan instruksi
 
 ### PHF-01 · Tinggi · Settlement gaji positif tidak mempunyai penulis alokasi pada alur produksi
