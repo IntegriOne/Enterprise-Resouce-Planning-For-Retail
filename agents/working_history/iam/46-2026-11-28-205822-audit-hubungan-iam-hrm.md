@@ -1,0 +1,5 @@
+# Audit hubungan IAM dan HRM
+
+Audit statis pada checkout bersama menelusuri pengajuan akun, pembuatan employee, penautan worker, mandat requisition, terminasi dan clearance. Lima temuan mencakup syarat pengajuan di IAM, aktivasi ulang setelah terminasi, konsistensi pengajuan HR yang telah dikirim, identitas event saat replay, serta scope badan hukum bagi petugas HR. Pemulihan ketika pengklaim awal tidak tersedia tetap memerlukan keputusan IAM. Laporan mencantumkan jalur privat dua arah dan operasi Gateway. Instruksi implementasi serta kriteria penerimaan diserahkan ke tiga pemilik kode. Verifikasi pada sesi ini berupa pembacaan source produksi dan pemeriksaan referensi dokumen.
+
+[Laporan audit](../../../agents/audit/iam/18-2026-11-28-205822-audit-kode-inti-hubungan-iam-hrm.md) · [Instruksi IAM](../../../agents/instructions/iam/2-leader-remediasi-hubungan-iam-hrm-instructions.md) · [Instruksi HRM](../../../agents/instructions/hrm/9-leader-remediasi-hubungan-iam-hrm-instructions.md) · [Instruksi Gateway](../../../agents/instructions/gateway/4-leader-remediasi-hubungan-iam-hrm-instructions.md)
