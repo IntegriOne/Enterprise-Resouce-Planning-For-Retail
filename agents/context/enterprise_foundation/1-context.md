@@ -2,6 +2,8 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Audit master dan mandat PIC, 28 November 2026.** Katalog terverifikasi mencakup 64 query, 48 mutation dan 112 RPC. Delapan perbaikan EFL-01 hingga EFL-08 masih terbuka, termasuk bukti mandat per role, pencabutan untuk principal lama dan validasi kepala unit oleh HRM. Baca [hasil audit](../../../agents/audit/enterprise_foundation/2-2026-11-28-233707-audit-logika-master-dan-mandat.md) dan [instruksi agent EF](../../../agents/instructions/enterprise_foundation/4-leader-remediasi-logika-master-dan-mandat-instructions.md).
+
 - **Perancangan Ulang DBML Ramping untuk Retail UMKM (10–50 Staf) & Integrasi IAM:**
   - Menyederhanakan [enterprise_foundation.dbml](../../backend/services/enterprise_foundation/db/schema/enterprise_foundation.dbml) dari 17 tabel menjadi **9 tabel inti** dan 9 enum sesuai target operasional 1 kantor utama, 1 gudang, dan mitra eksternal.
   - **Pilar Internal:** `legal_entities` (menyerap NIB, NPWP, `is_pkp`, dan `registered_address_id` -> target `scope_type = 'legal_entity'`), `organization_units` (UUID stabil tanpa SCD2 berisiko, pohon `parent_unit_id`, dan `primary_location_id` -> target `scope_type = 'organization_unit'`), serta `locations` (`headquarters`, `warehouse`, `retail_store`, `branch_office`, menunjuk `address_id` langsung -> target `scope_type = 'facility'`).
