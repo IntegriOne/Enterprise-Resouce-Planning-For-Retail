@@ -1,0 +1,5 @@
+# Audit lintas IAM, EF dan Procurement
+
+Audit kode produksi menelusuri assignment scope, provisioning PIC, mandat mitra, referensi organisasi, policy approval, penerbitan PO dan pembacaan Procurement. Tujuh temuan diserahkan kepada empat pemilik. Prioritas mencakup pencabutan akses PIC yang dapat tertimpa, otorisasi pada service, validasi unit/lokasi, kelayakan komitmen mitra dan pemulihan akun setelah timeout. Gate portal F2 dicatat sesuai keputusan owner. Verifikasi sesi ini berupa penelusuran kode dan pemeriksaan referensi dokumen.
+
+[Laporan audit](../../../agents/audit/procurement_sourcing/3-2026-11-28-210516-audit-kode-inti-iam-ef-procurement.md) · [Instruksi IAM](../../../agents/instructions/iam/3-leader-remediasi-iam-ef-procurement-instructions.md) · [Instruksi EF](../../../agents/instructions/enterprise_foundation/3-leader-remediasi-iam-ef-procurement-instructions.md) · [Instruksi Procurement](../../../agents/instructions/procurement_sourcing/5-leader-remediasi-iam-ef-procurement-instructions.md) · [Instruksi Gateway](../../../agents/instructions/gateway/5-leader-remediasi-iam-ef-procurement-instructions.md)
