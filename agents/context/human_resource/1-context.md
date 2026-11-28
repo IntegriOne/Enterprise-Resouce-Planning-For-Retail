@@ -2,6 +2,8 @@
 
 ## Apa yang sudah dikerjakan
 
+- **Audit HRM 29 November 2026.** Seluruh 176 query dan 326 mutation mempunyai resolver dan adapter. Dua belas temuan HRL masih terbuka untuk implementasi, termasuk freeze kompensasi, wiring kalkulator, kewajiban reguler ganda, slip tanpa jurnal dan kerahasiaan kasus. [Audit kode produksi](../../../agents/audit/human_resource/199-2026-11-29-000433-audit-logika-operasi-dan-otorisasi-hrm.md) · [Instruksi remediasi](../../../agents/instructions/hrm/11-leader-remediasi-logika-operasi-dan-otorisasi-hrm-instructions.md) · [Matriks operasi](../../../agents/grpc/hrm/45-matriks-operasi-publik-dan-kebutuhan-domain.md).
+
 - Relay HRM mengirim event terminasi ke IAM lewat mTLS. Outbox mempertahankan event tanpa konfirmasi IAM dan tidak mengirimkannya ke publisher umum. Uji HTTPS terminasi otomatis lulus, termasuk penolakan sesi lama dan login ulang. [Kontrak dan konfigurasi](../../grpc/hrm/40-deaktivasi-akun-setelah-terminasi.md)
 
 - Regresi penuh terbaru lulus pada 67 paket dengan PostgreSQL sementara. Registrasi 22 layanan dan 985 RPC diperiksa terhadap descriptor. Alur tiket mencakup assign, resolve dengan verifier DRM, dan close oleh pemohon. Lampiran komentar menunggu verifikasi DRM. [Audit regresi](../../audit/human_resource/117-2026-11-25-023515-regresi-workflow-dan-verifier.md) · [Matriks dependency](../../audit/human_resource/111-2026-11-25-022738-dependensi-command-produksi.md).
