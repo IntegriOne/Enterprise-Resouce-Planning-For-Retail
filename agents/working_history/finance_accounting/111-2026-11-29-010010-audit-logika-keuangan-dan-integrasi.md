@@ -1,0 +1,5 @@
+# Audit Finance Accounting dan integrasi retail
+
+Meninjau 48 bagian usulan logika, kontrak, service, repository, mapper Gateway dan caller lintas management. Terpetakan 11 query, 34 mutation dan 74 RPC. Audit mencatat risiko scope laporan, pajak AR, diskon dan selisih biaya AP, konfigurasi akun, payroll tanpa jurnal, konkurensi stok dan tutup periode. Instruksi memisahkan perbaikan dari pengembangan rekonsiliasi bank, Commerce, aset dan WIP vendor. Handoff khusus tersedia untuk HRM dan Web Commerce. Verifikasi berupa penelusuran source dan rekonsiliasi inventaris. E2E, transaksi provider dan perubahan kode produksi merupakan pekerjaan implementasi.
+
+[Instruksi Finance](../../../agents/instructions/finance_accounting/9-leader-remediasi-logika-keuangan-dan-integrasi-instructions.md) · [Matriks operasi](../../../agents/grpc/finance_accounting/7-matriks-operasi-publik-privat-dan-usulan-keuangan.md) · [Temuan dan bukti](../../../agents/audit/finance_accounting/10-2026-11-29-010010-audit-logika-keuangan-dan-integrasi.md)
