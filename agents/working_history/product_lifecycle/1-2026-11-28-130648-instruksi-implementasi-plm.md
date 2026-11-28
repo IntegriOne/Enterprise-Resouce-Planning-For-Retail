@@ -1,0 +1,3 @@
+# Penugasan implementasi Product Lifecycle
+
+Leader mencocokkan rancangan bisnis dengan 27 tabel dalam tujuh kelompok DBML dan kontrak konsumen Inventory, Procurement serta Finance. Instruksi membagi implementasi menjadi sepuluh unit, dari master SKU hingga verifikasi HTTPS. Agent menerima peta operasi awal, tujuh RPC teknis inti, pembagian otorisasi teknis dan komersial untuk substitusi, serta kriteria uji dari 31 skenario penerimaan. Pada saat penugasan, direktori service PLM lokal baru berisi DBML. Implementasi dan bukti runtime merupakan tugas agent penerima. [Instruksi PLM](../../instructions/product_lifecycle/1-leader-implementasi-grpc-dan-gateway-plm-instructions.md)
