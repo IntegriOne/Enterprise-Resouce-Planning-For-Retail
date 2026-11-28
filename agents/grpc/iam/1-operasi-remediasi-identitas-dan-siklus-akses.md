@@ -1,0 +1,29 @@
+# List operasi IAM untuk remediasi
+
+Dokumen ini memetakan operasi yang tersentuh audit IAM-L01–09. Nama calon field menjadi dasar diskusi kontrak dan perlu dicocokkan dengan SDL aktual sebelum dipublikasikan. API publik tetap `/api/graphql`. Verifikasi workload, pemulihan bootstrap dan rekonsiliasi delivery berjalan privat. [Bukti dan keputusan](../../../agents/audit/iam/19-2026-11-28-224034-audit-logic-iam-dan-kode-produksi.md) · [Instruksi implementasi](../../../agents/instructions/iam/4-leader-remediasi-logic-dan-siklus-akses-iam-instructions.md)
+
+## Penjelasan operasi dan kebutuhan Query/Mutation
+
+| Operasi / padanan saat ini | Butuh GraphQL | Perubahan yang ditugaskan |
+| --- | --- | --- |
+| `createUser` → `UserService.CreateUser` | Mutation publik, sudah ada | Pertahankan kompatibilitas self-registration customer. IAM menetapkan pending, kind dan SELF. Samakan observable response untuk privacy email. Batasi RPC publik lewat kontrak purpose-specific. |
+| Usulan `inviteCustomer` | Mutation petugas | Assisted customer berizin membuat akun pending dan intent pengiriman. Password ditetapkan penerima. |
+| `createEmployeeUser`, `createVendorUser`, `createSupplierUser` | Mutation petugas, sudah ada | Pertahankan request ID dan worker/party. Jalankan alur invitation dan jadikan bukti link owner sebagai syarat akses. Keputusan otomatis tidak membaca role arbitrer dari input UI. |
+| Usulan `acceptAccountInvitation`, `resendAccountInvitation` | Mutation | Acceptance mengambil token dan password baru dari penerima. Batasi resend menurut actor, rate limit dan status. Revoke versi undangan lama. |
+| `verifyEmail`, `resendValidationEmailToken`, `userResetPassword`, `resetPassword` | Mutation, sudah ada | Pertahankan semantik purpose dan rate limit. Tambahkan intent delivery yang dapat diulang. |
+| `userLogin`, `validateUserMfa`, `enrollMyTotp`, `confirmMyTotp`, `verifyMySessionMfa`, `disableMyTotp` | Mutation, sudah ada | Wajibkan assurance menurut policy, sediakan enrollment terbatas dan cegah penurunan faktor yang membuka akses sensitif. |
+| `assignUserRole`, `revokeUserRole`, `assignGroupRole`, `revokeGroupRole`, `addGroupMember`, `removeGroupMember`, `assignRolePermission`, `revokeRolePermission` | Mutation, sudah ada | Validasi delegasi di IAM, expiry, scope, kind dan proteksi role khusus. Invalidate semua principal terdampak saat efektif. |
+| `myAccessSnapshot`, `myWorkspaceAccess` | Query, sudah ada | Grant, menu dan route mengikuti waktu transisi hak sumber. Recheck resource tetap di owner. |
+| `employeeProvisioningRequest(s)` | Dua Query, sudah ada | Detail dan daftar dari antrean pegawai. Pertahankan worker_id dan filter operator. |
+| `GetPartnerProvisioningRequest`, `ListPartnerProvisioningRequests` → usulan `partnerProvisioningRequest`, `partnerProvisioningRequests` | Dua Query operator | Ekspos RPC yang sudah tersedia melalui detail dan connection scoped. Sertakan nomor/kode partner, role, status, waktu, owner tahap berikut dan alasan aman. |
+| Usulan `rejectProvisioningRequest` dan keputusan change/revoke | Mutation operator | Claim terpisah hanya bila dibutuhkan alur reviewer. Bind jenis subject, versi dan alasan. Kirim perubahan state ke requester dan bukti efektif ke owner. |
+| `ResolveEmployeeProvisioningCatalog`; calon lookup catalog untuk requester | Privat antarservice, Query operator bila diperlukan | Pertahankan role baseline dan izin asal. Untuk katalog bisnis yang telah disetujui berikan reference/version, eligibility dan scope type. |
+| `CompleteEmployeeProvisioningRequest`, `CompletePartnerProvisioningRequest`, bukti mandat/ACK owner | Privat | Konfirmasi cek owner serta retry persisten; event punya correlation, source version dan idempotency. Pengalihan PIC, revocation dan termination diproses menurut waktu efektif. |
+| Audit keputusan dan notifikasi pribadi | Usulan Query `securityAuditEvents`, `myNotifications`, Mutation `markMyNotificationRead` | Audit dibatasi reviewer. Inbox pribadi dimulai dari keputusan IAM; publikasi lintas management menunggu ownership, audience dan retensi yang disepakati. |
+| Bootstrap pertama dan recovery admin | Deployment privat | Simpan bukti one-time, lakukan recovery teraudit. Startup biasa tidak menetapkan ulang hak admin yang telah dicabut. |
+
+## RBAC, error dan data respons
+
+Gunakan kode dalam manifest owner. Berikan scope SELF dari sesi pada notifikasi dan kredensial. Petugas IAM memerlukan izin baca/tulis sesuai operasi, MFA untuk tindakan administratif dan penugasan sah untuk scope target. Grant bisnis serta verifikasi dokumen tetap mengikuti owner. Periksa sumber yang sama pada Node, edges, nodes dan totalCount. Jangan mengembalikan raw token pada payload petugas. Response publik verifikasi dapat membantu pengguna yang sudah memegang token tanpa membuka keberadaan email pada register/resend/recovery.
+
+Gunakan error domain/proto yang ada untuk invalid input, unavailable, forbidden, conflict dan prasyarat state. Pada timeout owner kirim identitas operasi serta status pending yang dapat dibaca kembali. UI memakai nama tampilan atau kode dan status; sertakan ID opaque sebagai input aksi. [backend/gateway/graphql/iam/iam_auth.graphql](../../../backend/gateway/graphql/iam/iam_auth.graphql#L1) · [backend/gateway/graphql/iam/iam_user.graphql](../../../backend/gateway/graphql/iam/iam_user.graphql#L152) · [backend/gateway/graphql/iam/iam_rbac.graphql](../../../backend/gateway/graphql/iam/iam_rbac.graphql#L1) · [backend/gateway/graphql/iam/iam_employee_provisioning.graphql](../../../backend/gateway/graphql/iam/iam_employee_provisioning.graphql#L24) · [backend/services/iam/contract/proto/iam/v1/employee_provisioning.proto](../../../backend/services/iam/contract/proto/iam/v1/employee_provisioning.proto#L10) · [backend/shared/rbac/catalogs/iam.json](../../../backend/shared/rbac/catalogs/iam.json#L1)
